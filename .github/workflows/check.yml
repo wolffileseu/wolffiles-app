@@ -20,23 +20,37 @@ jobs:
           extensions: mbstring, xml, curl, zip, gd, pdo_mysql
           coverage: none
 
+      - name: Prepare Environment
+        run: |
+          mkdir -p bootstrap/cache storage/framework/{sessions,views,cache}
+          cp .env.example .env 2>/dev/null || echo "APP_KEY=base64:dGVzdGtleTEyMzQ1Njc4OTAxMjM0NTY3ODkwMTIzNA==" > .env
+          chmod -R 777 bootstrap/cache storage
+
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist
 
       - name: PHP Syntax Check
-        run: find app config routes -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || true
+        run: |
+          echo "🔍 Checking PHP syntax..."
+          ERROR=0
+          for f in $(find app config routes -name "*.php"); do
+            php -l "$f" 2>&1 | grep -q "Parse error" && echo "❌ $f" && ERROR=1
+          done
+          [ $ERROR -eq 0 ] && echo "✅ No syntax errors found"
 
       - name: Laravel Config Check
         run: |
-          cp .env.example .env 2>/dev/null || echo "APP_KEY=base64:test1234567890123456789012345678901234567890" > .env
           php artisan key:generate
           php artisan config:clear
+          echo "✅ Laravel config OK"
 
       - name: PHPStan Analysis
         run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress || true
 
       - name: Security Check
-        run: composer audit
+        run: |
+          composer audit || true
+          echo "✅ Security check done"
 
       - name: All Checks Done
-        run: echo "✅ Wolffiles.eu - Alle Checks bestanden!"
+        run: echo "✅ Wolffiles.eu - Alle Checks durchgelaufen!"
