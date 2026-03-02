@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'en' => ['name' => 'English', 'flag' => '🇬🇧', 'country' => 'gb'],
+    'de' => ['name' => 'Deutsch', 'flag' => '🇩🇪', 'country' => 'de'],
+    'fr' => ['name' => 'Français', 'flag' => '🇫🇷', 'country' => 'fr'],
+    'es' => ['name' => 'Español', 'flag' => '🇪🇸', 'country' => 'es'],
+    'nl' => ['name' => 'Nederlands', 'flag' => '🇳🇱', 'country' => 'nl'],
+    'pl' => ['name' => 'Polski', 'flag' => '🇵🇱', 'country' => 'pl'],
+    'it' => ['name' => 'Italiano', 'flag' => '🇮🇹', 'country' => 'it'],
+    'pt' => ['name' => 'Português', 'flag' => '🇵🇹', 'country' => 'pt'],
+    'ru' => ['name' => 'Русский', 'flag' => '🇷🇺', 'country' => 'ru'],
+    'sv' => ['name' => 'Svenska', 'flag' => '🇸🇪', 'country' => 'se'],
+    'fi' => ['name' => 'Suomi', 'flag' => '🇫🇮', 'country' => 'fi'],
+    'da' => ['name' => 'Dansk', 'flag' => '🇩🇰', 'country' => 'dk'],
+    'no' => ['name' => 'Norsk', 'flag' => '🇳🇴', 'country' => 'no'],
+    'tr' => ['name' => 'Türkçe', 'flag' => '🇹🇷', 'country' => 'tr'],
+    'hu' => ['name' => 'Magyar', 'flag' => '🇭🇺', 'country' => 'hu'],
+    'cs' => ['name' => 'Čeština', 'flag' => '🇨🇿', 'country' => 'cz'],
+    'ro' => ['name' => 'Română', 'flag' => '🇷🇴', 'country' => 'ro'],
+    'hr' => ['name' => 'Hrvatski', 'flag' => '🇭🇷', 'country' => 'hr'],
+    'ja' => ['name' => '日本語', 'flag' => '🇯🇵', 'country' => 'jp'],
+    'zh' => ['name' => '中文', 'flag' => '🇨🇳', 'country' => 'cn'],
+    'ko' => ['name' => '한국어', 'flag' => '🇰🇷', 'country' => 'kr'],
+];

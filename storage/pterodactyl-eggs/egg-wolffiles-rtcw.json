@@ -1,0 +1,119 @@
+{
+    "_comment": "Wolffiles.eu RtCW Egg",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-02-20T08:30:00+00:00",
+    "name": "RtCW Multiplayer (Wolffiles)",
+    "author": "hosting@wolffiles.eu",
+    "description": "Return to Castle Wolfenstein Multiplayer dedicated server. Supports OSP mod.",
+    "features": null,
+    "docker_images": {
+        "Debian": "ghcr.io/parkervcp/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "./wolfded.x86 +set dedicated 2 +set net_port {{SERVER_PORT}} +set sv_maxclients {{MAX_PLAYERS}} +set fs_game {{MOD}} +set g_password \"{{SERVER_PASSWORD}}\" +set rconPassword \"{{RCON_PASSWORD}}\" +set sv_hostname \"{{SERVER_NAME}}\" +map {{MAP}} +exec {{CONFIG_FILE}} +set com_hunkmegs {{HUNK_MEGS}}",
+    "config": {
+        "files": "{}",
+        "startup": {
+            "done": [
+                "Opening IP socket"
+            ]
+        },
+        "stop": "quit",
+        "logs": {
+            "custom": false,
+            "location": "logs/wolfded.log"
+        }
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\n\napt update\napt install -y curl unzip ca-certificates lib32gcc-s1 lib32stdc++6 2>\/dev\/null || true\n\ncd \/mnt\/server\n\necho \"========================================\"\necho \" Wolffiles.eu RtCW Server Installer\"\necho \"========================================\"\n\n## Download RtCW dedicated server\nif [ ! -f \"wolfded.x86\" ]; then\n    echo \"Downloading RtCW MP server files...\"\n    curl -sSL -o rtcw-server.zip \"https:\/\/filebase.trackbase.net\/rtcw\/full\/rtcw-dedicated-linux.zip\" || {\n        curl -sSL -o rtcw-server.zip \"https:\/\/wolffiles.eu\/downloads\/rtcw-dedicated-linux.zip\" || {\n            echo \"WARNING: Could not download RtCW files. Manual upload required.\"\n        }\n    }\n    \n    if [ -f rtcw-server.zip ]; then\n        unzip -o rtcw-server.zip\n        rm -f rtcw-server.zip\n    fi\nfi\n\nchmod +x wolfded.x86 2>\/dev\/null || true\n\nmkdir -p main\nmkdir -p logs\n\n## Default config\nif [ ! -f \"main\/server.cfg\" ]; then\n    cat > main\/server.cfg << 'CFG'\n\/\/ Wolffiles.eu RtCW Server Config\nset sv_hostname      \"RtCW - Wolffiles.eu\"\nset sv_maxclients    16\nset g_gametype       5\nset timelimit        20\nset sv_maxRate       25000\nset sv_allowDownload 1\nset g_log            \"logs\/wolfded.log\"\nCFG\nfi\n\necho \"========================================\"\necho \" RtCW Installation complete!\"\necho \"========================================\"",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Name",
+            "description": "Server name in browser.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "RtCW - Wolffiles.eu",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:128",
+            "sort": 1
+        },
+        {
+            "name": "Max Players",
+            "description": "Maximum player slots.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "16",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:2,32",
+            "sort": 2
+        },
+        {
+            "name": "Default Map",
+            "description": "Starting map.",
+            "env_variable": "MAP",
+            "default_value": "mp_beach",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": 3
+        },
+        {
+            "name": "Mod",
+            "description": "Game mod: main, osp, shrub",
+            "env_variable": "MOD",
+            "default_value": "main",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:32",
+            "sort": 4
+        },
+        {
+            "name": "RCON Password",
+            "description": "Remote console password.",
+            "env_variable": "RCON_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": 5
+        },
+        {
+            "name": "Server Password",
+            "description": "Join password.",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": 6
+        },
+        {
+            "name": "Config File",
+            "description": "Config file to execute.",
+            "env_variable": "CONFIG_FILE",
+            "default_value": "server.cfg",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": 7
+        },
+        {
+            "name": "Hunk Megs",
+            "description": "Memory allocation.",
+            "env_variable": "HUNK_MEGS",
+            "default_value": "64",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer|between:32,256",
+            "sort": 8
+        }
+    ]
+}

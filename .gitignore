@@ -1,0 +1,11 @@
+vendor/
+node_modules/
+.env
+storage/framework/
+storage/logs/
+bootstrap/cache/
+public/build/
+public/hot
+
+.env.plesk
+database/database.sqlite

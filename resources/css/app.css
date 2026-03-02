@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom dark theme overrides */
+.bg-gray-750 {
+    background-color: rgb(42, 46, 55);
+}
+html.light body { background-color: #f3f4f6; color: #111827; }
+html.light .bg-gray-800 { background-color: #ffffff; }
+html.light .bg-gray-900 { background-color: #f3f4f6; }
+html.light .bg-gray-700 { background-color: #e5e7eb; }
+html.light .text-gray-100 { color: #111827; }
+html.light .text-gray-300 { color: #374151; }
+html.light .text-gray-400 { color: #6b7280; }
+html.light .border-gray-700 { border-color: #d1d5db; }

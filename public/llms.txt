@@ -1,0 +1,59 @@
+# Wolffiles.eu
+
+> Wolffiles.eu is the largest community-driven file repository for Wolfenstein: Enemy Territory (ET) and related games. It hosts nearly 5,000 downloadable files including maps, mods, skins, scripts, configs, and tools.
+
+## About
+
+Wolffiles.eu serves as the central hub for the Wolfenstein: Enemy Territory gaming community. The platform provides maps, mods, scripts, and other game content with modern web features including an interactive 3D map viewer, file ratings, community comments, and multilingual support (German/English).
+
+## Supported Games
+
+- Wolfenstein: Enemy Territory (ET)
+- Return to Castle Wolfenstein (RtCW)
+- Wolfenstein (2009)
+- Enemy Territory: Quake Wars (ETQW)
+
+## Content Categories
+
+- Maps: Multiplayer maps for ET and related games
+- Mods: Game modifications including gameplay changes
+- Skins: Player model skins and texture replacements
+- Sounds: Custom sound packs and voice packs
+- Configs: Player and server configurations
+- Scripts: Lua scripts for ET: Legacy servers
+- Tools: Mapping tools, server tools, and utilities
+- Media: Screenshots, videos, and movies
+- Mapscripts: Custom map scripts
+
+## Key Features
+
+- Nearly 5,000 downloadable files
+- Interactive 3D BSP map previewer (WebGL)
+- Community ratings and comments
+- File categorization and tagging
+- Fast-download support for ET servers
+- User profiles and upload system
+- Wiki and tutorials section
+- RSS feeds for new content
+- Multilingual (English/German)
+
+## Links
+
+- Homepage: https://wolffiles.eu
+- Files: https://wolffiles.eu/files
+- Categories: https://wolffiles.eu/categories
+- Tutorials: https://wolffiles.eu/tutorials
+- Wiki: https://wolffiles.eu/wiki
+- Lua Scripts: https://wolffiles.eu/lua
+- News: https://wolffiles.eu/news
+- Statistics: https://wolffiles.eu/statistics
+- RSS Feed: https://wolffiles.eu/rss/files
+
+## API & Data
+
+- Sitemap: https://wolffiles.eu/sitemap.xml
+- RSS: https://wolffiles.eu/rss/files
+
+## Community
+
+Wolffiles.eu is a community project by and for the Wolfenstein: Enemy Territory community. The game was originally released by Splash Damage and id Software in 2003 as a free multiplayer FPS. Despite being over 20 years old, ET maintains an active player base worldwide. The ET: Legacy project continues development of an open-source client and server.
