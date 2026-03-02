@@ -1,0 +1,120 @@
+{
+    "_comment": "Wolffiles.eu Classic ET 2.60b Egg",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-02-20T08:30:00+00:00",
+    "name": "ET 2.60b Classic (Wolffiles)",
+    "author": "hosting@wolffiles.eu",
+    "description": "Classic Wolfenstein: Enemy Territory 2.60b dedicated server. Compatible with all mods. Optimized for Wolffiles.eu hosting.",
+    "features": null,
+    "docker_images": {
+        "Debian": "ghcr.io/parkervcp/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "./etded.x86 +set dedicated 2 +set net_port {{SERVER_PORT}} +set sv_maxclients {{MAX_PLAYERS}} +set fs_game {{MOD}} +set g_password \"{{SERVER_PASSWORD}}\" +set rconPassword \"{{RCON_PASSWORD}}\" +set sv_hostname \"{{SERVER_NAME}}\" +map {{MAP}} +exec {{CONFIG_FILE}} +set sv_punkbuster 0 +set com_hunkmegs {{HUNK_MEGS}}",
+    "config": {
+        "files": "{}",
+        "startup": {
+            "done": [
+                "Opening IP socket",
+                "Resolving"
+            ]
+        },
+        "stop": "quit",
+        "logs": {
+            "custom": false,
+            "location": "logs/etded.log"
+        }
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\n\napt update\napt install -y curl unzip ca-certificates lib32gcc-s1 lib32stdc++6 2>\/dev\/null || true\n\ncd \/mnt\/server\n\necho \"========================================\"\necho \" Wolffiles.eu ET 2.60b Server Installer\"\necho \"========================================\"\n\n## Download ET 2.60b full\nif [ ! -f \"etded.x86\" ]; then\n    echo \"Downloading ET 2.60b...\"\n    curl -sSL -o et260b.zip \"https:\/\/filebase.trackbase.net\/et\/full\/et260b.x86_full.zip\" || {\n        curl -sSL -o et260b.zip \"https:\/\/wolffiles.eu\/downloads\/et260b.x86_full.zip\"\n    }\n    \n    if [ -f et260b.zip ]; then\n        unzip -o et260b.zip\n        rm -f et260b.zip\n        \n        ## Extract the .run installer\n        if ls *.run 1>\/dev\/null 2>&1; then\n            chmod +x *.run\n            .\/*.run --noexec --target \/tmp\/et-install\n            cp -r \/tmp\/et-install\/* .\/ 2>\/dev\/null || true\n            rm -rf \/tmp\/et-install *.run\n        fi\n    fi\nfi\n\nchmod +x etded.x86 2>\/dev\/null || true\n\n## Create directories\nmkdir -p etmain\nmkdir -p logs\n\n## Create default config\nif [ ! -f \"etmain\/server.cfg\" ]; then\n    cat > etmain\/server.cfg << 'CFG'\n\/\/ Wolffiles.eu ET 2.60b Server Config\nset sv_hostname      \"ET 2.60b - Wolffiles.eu\"\nset sv_maxclients    24\nset g_gametype       6\nset timelimit        30\nset g_warmup         30\nset g_doWarmup       1\nset sv_maxRate       25000\nset sv_allowDownload 1\nset g_log            \"logs\/etded.log\"\nset sv_mapRotation   \"map oasis; map goldrush; map battery; map radar; map railgun; map fuel_dump\"\nCFG\nfi\n\necho \"========================================\"\necho \" ET 2.60b Installation complete!\"\necho \"========================================\"",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Name",
+            "description": "The name of your server.",
+            "env_variable": "SERVER_NAME",
+            "default_value": "ET 2.60b - Wolffiles.eu",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:128",
+            "sort": 1
+        },
+        {
+            "name": "Max Players",
+            "description": "Maximum player slots.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "24",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|between:2,64",
+            "sort": 2
+        },
+        {
+            "name": "Default Map",
+            "description": "Starting map.",
+            "env_variable": "MAP",
+            "default_value": "oasis",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": 3
+        },
+        {
+            "name": "Mod",
+            "description": "Game mod: etmain, etpro, jaymod, nitmod, noquarter, silent",
+            "env_variable": "MOD",
+            "default_value": "etmain",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:32",
+            "sort": 4
+        },
+        {
+            "name": "RCON Password",
+            "description": "Remote console password.",
+            "env_variable": "RCON_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": 5
+        },
+        {
+            "name": "Server Password",
+            "description": "Join password. Empty = public.",
+            "env_variable": "SERVER_PASSWORD",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string|max:64",
+            "sort": 6
+        },
+        {
+            "name": "Config File",
+            "description": "Config file to execute.",
+            "env_variable": "CONFIG_FILE",
+            "default_value": "server.cfg",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:64",
+            "sort": 7
+        },
+        {
+            "name": "Hunk Megs",
+            "description": "Memory allocation in MB.",
+            "env_variable": "HUNK_MEGS",
+            "default_value": "128",
+            "user_viewable": false,
+            "user_editable": false,
+            "rules": "required|integer|between:64,512",
+            "sort": 8
+        }
+    ]
+}
