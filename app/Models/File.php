@@ -71,7 +71,7 @@ class File extends Model
 
     public function getFilenameAttribute(): ?string
     {
-        return $this->file_name;
+        return $this->attributes['file_name'] ?? null;
     }
 
     public function getSlugOptions(): SlugOptions
