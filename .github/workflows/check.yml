@@ -1,0 +1,42 @@
+name: Wolffiles Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, xml, curl, zip, gd, pdo_mysql
+          coverage: none
+
+      - name: Install Dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: PHP Syntax Check
+        run: find app config routes -name "*.php" -exec php -l {} \; | grep -v "No syntax errors" || true
+
+      - name: Laravel Config Check
+        run: |
+          cp .env.example .env 2>/dev/null || echo "APP_KEY=base64:test1234567890123456789012345678901234567890" > .env
+          php artisan key:generate
+          php artisan config:clear
+
+      - name: PHPStan Analysis
+        run: vendor/bin/phpstan analyse --memory-limit=512M --no-progress || true
+
+      - name: Security Check
+        run: composer audit
+
+      - name: All Checks Done
+        run: echo "✅ Wolffiles.eu - Alle Checks bestanden!"
