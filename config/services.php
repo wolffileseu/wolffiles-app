@@ -72,5 +72,13 @@ return [
         'github_token' => env('GITHUB_TOKEN', ''),
     ],
 
+
+    'mistral' => [
+        'key' => env('MISTRAL_API_KEY'),
+    ],
+
+    'qdrant' => [
+        'url' => env('QDRANT_URL', 'http://localhost:6333'),
+    ],
 ];
 
