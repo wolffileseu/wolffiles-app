@@ -6,23 +6,19 @@ use App\Models\File;
 use App\Models\Badge;
 use Illuminate\Support\Facades\Storage;
 use App\Services\OmnibotWaypointService;
+use App\Services\EmbeddingService;
 
 class FileObserver
 {
-    /**
-     * When a file is approved, check for badge assignments
-     */
     public function updated(File $file): void
     {
         if ($file->isDirty('status') && $file->status === 'approved') {
             $this->checkBadges($file);
             $this->scanForWaypoints($file);
+            $this->indexEmbedding($file);
         }
     }
 
-    /**
-     * When a file is being deleted, clean up S3
-     */
     public function deleting(File $file): void
     {
         // Delete the file from S3
@@ -59,20 +55,23 @@ class FileObserver
         $file->favorites()->delete();
         $file->downloads()->delete();
         $file->versions()->delete();
+
+        // Remove from Qdrant index
+        try {
+            app(EmbeddingService::class)->deleteFile($file->id);
+        } catch (\Exception $e) {
+            \Log::warning("Failed to remove file from Qdrant: {$e->getMessage()}");
+        }
     }
 
-    /**
-     * Check and assign badges to uploader
-     */
     protected function checkBadges(File $file): void
     {
         $user = $file->user;
         if (!$user) return;
 
-        $approvedCount = $user->files()->where('status', 'approved')->count();
+        $approvedCount  = $user->files()->where('status', 'approved')->count();
         $totalDownloads = $user->files()->sum('download_count');
 
-        // First Upload badge
         if ($approvedCount === 1) {
             $badge = Badge::where('slug', 'first-upload')->first();
             if ($badge && !$user->badges->contains($badge->id)) {
@@ -80,7 +79,6 @@ class FileObserver
             }
         }
 
-        // Prolific Uploader (10+)
         if ($approvedCount >= 10) {
             $badge = Badge::where('slug', 'prolific-uploader')->first();
             if ($badge && !$user->badges->contains($badge->id)) {
@@ -88,7 +86,6 @@ class FileObserver
             }
         }
 
-        // Popular Files (1000+ total downloads)
         if ($totalDownloads >= 1000) {
             $badge = Badge::where('slug', 'popular-files')->first();
             if ($badge && !$user->badges->contains($badge->id)) {
@@ -96,23 +93,29 @@ class FileObserver
             }
         }
 
-        // Update user total uploads count
         $user->update(['total_uploads' => $approvedCount]);
     }
 
-    /**
-     * Scan approved file for Omni-Bot waypoints
-     */
     protected function scanForWaypoints(File $file): void
     {
         try {
             $service = app(OmnibotWaypointService::class);
-            $result = $service->scanFile($file);
+            $result  = $service->scanFile($file);
             if (!empty($result['new'])) {
                 \Log::info("Omnibot: Found " . count($result['new']) . " new waypoints in {$file->file_name}");
             }
         } catch (\Exception $e) {
             \Log::warning("Omnibot scan failed: " . $e->getMessage());
+        }
+    }
+
+    protected function indexEmbedding(File $file): void
+    {
+        try {
+            app(EmbeddingService::class)->indexFile($file);
+            \Log::info("Embedding indexed for file {$file->id}");
+        } catch (\Exception $e) {
+            \Log::warning("Embedding indexing failed: " . $e->getMessage());
         }
     }
 }
