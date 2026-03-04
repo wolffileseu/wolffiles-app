@@ -55,7 +55,7 @@
                 <h2 class="text-lg font-semibold text-white mb-3">{{ __('messages.current_map') }}</h2>
                 <x-levelshot :map="$server->current_map" x-ref="levelshot" />
                 <div class="text-2xl font-medium mt-2">
-                    <a :href="'/maps/' + currentMap" class="text-amber-400 hover:text-amber-300" x-text="currentMap">{{ $server->current_map }}</a>
+                    <template x-if="currentMapSlug"><a :href="'/files/' + currentMapSlug" class="text-amber-400 hover:text-amber-300" x-text="currentMap"></a></template><template x-if="currentMapSlug === ''"><span class="text-gray-300" x-text="currentMap"></span></template>
                 </div>
                 <div class="text-gray-400 text-sm mt-1" x-text="gametype || 'Unknown gametype'">{{ $server->gametype ?? 'Unknown gametype' }}</div>
             </div>
@@ -229,6 +229,7 @@ function serverLive() {
         currentPlayers: {{ $server->current_players }},
         maxPlayers: {{ $server->max_players }},
         currentMap: '{{ $server->current_map }}',
+        currentMapSlug: '{{ \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? "" }}',
         gametype: '{{ $server->gametype ?? '' }}',
         players: {!! json_encode($activeSessions->sortByDesc('score')->values()->map(fn($s) => [
             'player_name' => $s->player?->name_html ?: e($s->player?->name_clean ?? 'Unknown'),
@@ -249,6 +250,7 @@ function serverLive() {
                 this.currentPlayers = d.current_players;
                 this.maxPlayers = d.max_players;
                 this.currentMap = d.current_map;
+                this.currentMapSlug = d.map_file_slug || "";
                 this.gametype = d.gametype || '';
                 this.players = d.players;
             } catch(e) {}
