@@ -424,6 +424,7 @@ class TrackerController extends Controller
             'gametype' => $server->gametype,
             'players' => $activeSessions,
             'last_seen' => $server->last_seen_at?->diffForHumans(),
+            'map_file_slug' => \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? null,
         ]);
     }
 }
