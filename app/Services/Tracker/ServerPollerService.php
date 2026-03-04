@@ -125,6 +125,7 @@ class ServerPollerService
             'last_seen_at' => now(),
             'last_poll_at' => now(),
             'poll_failures' => 0,
+            'status' => 'active',
         ]);
 
         // Update server settings (key-value store)

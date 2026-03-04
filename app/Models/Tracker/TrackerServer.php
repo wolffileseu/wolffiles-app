@@ -64,7 +64,7 @@ class TrackerServer extends Model
     public function snapshots(): HasMany { return $this->hasMany(TrackerPlayerSnapshot::class, 'server_id'); }
 
     public function scopeOnline($query) { return $query->where('is_online', true); }
-    public function scopeActive($query) { return $query->where('status', 'active'); }
+    public function scopeActive($query) { return $query->whereIn('status', ['active', 'pending']); }
 
     public function getFullAddressAttribute(): string
     {

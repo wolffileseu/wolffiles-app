@@ -26,6 +26,10 @@ Schedule::command('tracker:discover-servers')->everyFifteenMinutes()->withoutOve
 // Poll all active servers
 Schedule::command('tracker:poll-servers')->everyTwoMinutes()->withoutOverlapping();
 
+// Cleanup ghost/spam servers daily
+Schedule::command('tracker:health-check')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('tracker:cleanup-servers --days-never-online=1')->dailyAt('03:00');
+
 // Sync maps with Wolffiles downloads
 Schedule::command('tracker:sync-maps')->hourly();
 
