@@ -55,7 +55,7 @@
                 <h2 class="text-lg font-semibold text-white mb-3">{{ __('messages.current_map') }}</h2>
                 <x-levelshot :map="$server->current_map" x-ref="levelshot" />
                 <div class="text-2xl font-medium mt-2">
-                    <a :href="'/tracker/maps/' + currentMap" class="text-amber-400 hover:text-amber-300" x-text="currentMap">{{ $server->current_map }}</a>
+                    <a :href="'/maps/' + currentMap" class="text-amber-400 hover:text-amber-300" x-text="currentMap">{{ $server->current_map }}</a>
                 </div>
                 <div class="text-gray-400 text-sm mt-1" x-text="gametype || 'Unknown gametype'">{{ $server->gametype ?? 'Unknown gametype' }}</div>
             </div>
