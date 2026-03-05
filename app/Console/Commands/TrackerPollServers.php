@@ -63,7 +63,7 @@ class TrackerPollServers extends Command
         }
         $playerTracker->endStaleSessions();
         $elapsed = round(microtime(true) - $startTime, 1);
-        Cache::put('tracker:last_poll_at', now(), 600);
+        
         $this->info(" Polled: {$results['polled']} | Online: {$results['online']} | Offline: {$results['offline']} | Errors: {$results['errors']} | Time: {$elapsed}s");
         return 0;
     }
