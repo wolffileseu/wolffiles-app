@@ -390,3 +390,31 @@ Route::middleware('auth')->group(function () {
 // Server live data API
 Route::get('/tracker/servers/{server}/live', [\App\Http\Controllers\Frontend\TrackerController::class, 'serverLiveData'])->name('tracker.server.live');
 require __DIR__.'/ettv-routes.php';
+
+// =====================
+// FORUM
+// =====================
+use App\Http\Controllers\ForumController;
+
+Route::prefix('forum')->name('forum.')->group(function () {
+    // Öffentlich
+    Route::get('/', [ForumController::class, 'index'])->name('index');
+    Route::get('/{category}', [ForumController::class, 'category'])->name('category');
+    Route::get('/{category}/{thread}', [ForumController::class, 'thread'])->name('thread');
+
+    // Eingeloggte User
+    Route::middleware('auth')->group(function () {
+        Route::get('/{category}/new-thread/create', [ForumController::class, 'createThread'])->name('create-thread');
+        Route::post('/{category}/new-thread/create', [ForumController::class, 'storeThread'])->name('store-thread');
+        Route::post('/{category}/{thread}/reply', [ForumController::class, 'storePost'])->name('store-post');
+        Route::get('/post/{post}/edit', [ForumController::class, 'editPost'])->name('edit-post');
+        Route::put('/post/{post}', [ForumController::class, 'updatePost'])->name('update-post');
+        Route::delete('/post/{post}', [ForumController::class, 'deletePost'])->name('delete-post');
+
+        // Moderation (Admin + Moderator)
+        Route::post('/thread/{thread}/toggle-pin', [ForumController::class, 'togglePin'])->name('toggle-pin');
+        Route::post('/thread/{thread}/toggle-lock', [ForumController::class, 'toggleLock'])->name('toggle-lock');
+        Route::post('/thread/{thread}/move', [ForumController::class, 'moveThread'])->name('move-thread');
+        Route::delete('/thread/{thread}/delete', [ForumController::class, 'deleteThread'])->name('delete-thread');
+    });
+});

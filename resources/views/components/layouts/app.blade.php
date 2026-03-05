@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Wolffiles.eu' }} - {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('images/favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     {{-- #30 Dynamic SEO Meta Tags --}}
     @include('components.seo-meta', ['seo' => $seo ?? []])
