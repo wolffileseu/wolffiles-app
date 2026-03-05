@@ -14,6 +14,6 @@ class AppLayout extends Component
     {
         /** @phpstan-ignore argument.type */
         /** @phpstan-ignore argument.type */
-        return view('layouts.app');
+        return view('components.layouts.app');
     }
 }
