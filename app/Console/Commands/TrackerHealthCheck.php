@@ -3,7 +3,7 @@ namespace App\Console\Commands;
 use App\Models\Tracker\TrackerServer;
 use App\Services\TelegramNotificationService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Cache;
+
 class TrackerHealthCheck extends Command
 {
     protected $signature = 'tracker:health-check';
@@ -12,8 +12,8 @@ class TrackerHealthCheck extends Command
     {
         $telegram = new TelegramNotificationService();
         $issues = [];
-        $lastPoll = Cache::get('tracker:last_poll_at');
-        if (!$lastPoll || now()->diffInMinutes($lastPoll) > 10) {
+        $lastPoll = \App\Models\Tracker\TrackerServer::where('is_online', true)->max('last_poll_at');
+        if (!$lastPoll || now()->diffInMinutes($lastPoll) > 15) {
             $issues[] = '⚠️ <b>Tracker Poll hängt</b> — letzter erfolgreicher Poll: ' . ($lastPoll ? $lastPoll : 'nie');
         }
         $total  = TrackerServer::where('status', 'active')->count();
