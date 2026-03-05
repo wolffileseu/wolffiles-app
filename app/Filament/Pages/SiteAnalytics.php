@@ -16,13 +16,104 @@ class SiteAnalytics extends Page
 
     public string $period = '7';
 
+    protected $queryString = ['period'];
+
+    public function setPeriod(string $period): void
+    {
+        $this->period = in_array($period, ['1', '7', '30', '90', 'all']) ? $period : '7';
+    }
+
+    public function getAllData(): array
+    {
+        $cacheKey = 'analytics_data_' . $this->period;
+        return Cache::remember($cacheKey, 300, function () {
+            $start = $this->getStartDate();
+            $today = today()->toDateString();
+
+            // Alle Queries parallel in einem Block
+            $totals = [
+                'pageviews'          => DB::table('site_analytics')->when($start, fn($q) => $q->where('created_at', '>=', $start))->count(),
+                'unique_visitors'    => DB::table('site_analytics')->when($start, fn($q) => $q->where('created_at', '>=', $start))->where('is_unique_today', true)->count(),
+                'today_pageviews'    => DB::table('site_analytics')->where('created_at', '>=', $today)->count(),
+                'today_visitors'     => DB::table('site_analytics')->where('created_at', '>=', $today)->where('is_unique_today', true)->count(),
+                'online'             => Cache::get('online_count', 0),
+                'all_time_visitors'  => DB::table('site_stats')->where('key', 'total_visitors')->value('value') ?? 0,
+                'all_time_pageviews' => DB::table('site_stats')->where('key', 'total_pageviews')->value('value') ?? 0,
+            ];
+
+            $chart = DB::table('site_analytics')
+                ->selectRaw('DATE(created_at) as date, COUNT(*) as views, SUM(is_unique_today) as visitors')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->groupByRaw('DATE(created_at)')->orderBy('date')->get();
+
+            $topPages = DB::table('site_analytics')
+                ->selectRaw('path, COUNT(*) as views, COUNT(DISTINCT ip) as unique_views')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->where('path', 'not like', '/admin%')
+                ->groupBy('path')->orderByDesc('views')->limit(20)->get();
+
+            $referrers = DB::table('site_analytics')
+                ->selectRaw('referrer, COUNT(*) as visits')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->whereNotNull('referrer')
+                ->where('referrer', 'not like', '%wolffiles.eu%')
+                ->where('referrer', 'not like', 'origin:%')
+                ->where('referrer', '!=', '')
+                ->groupBy('referrer')->orderByDesc('visits')->limit(15)->get()
+                ->map(function ($r) {
+                    $parsed = parse_url($r->referrer);
+                    $r->domain = $parsed['host'] ?? $r->referrer;
+                    return $r;
+                });
+
+            $countries = DB::table('site_analytics')
+                ->selectRaw('country, COUNT(*) as views, COUNT(DISTINCT ip) as visitors')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->whereNotNull('country')->groupBy('country')->orderByDesc('views')->limit(20)->get()
+                ->map(function ($c) { $c->flag = $this->countryFlag($c->country); return $c; });
+
+            $browsers = DB::table('site_analytics')
+                ->selectRaw('browser, COUNT(*) as count')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->whereNotNull('browser')->groupBy('browser')->orderByDesc('count')->limit(10)->get();
+
+            $devices = DB::table('site_analytics')
+                ->selectRaw('device, COUNT(*) as count')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->whereNotNull('device')->groupBy('device')->orderByDesc('count')->get();
+
+            $languages = DB::table('site_analytics')
+                ->selectRaw('locale, COUNT(*) as count')
+                ->when($start, fn($q) => $q->where('created_at', '>=', $start))
+                ->whereNotNull('locale')->groupBy('locale')->orderByDesc('count')->get();
+
+            $chartData = [
+                'labels'   => $chart->pluck('date')->map(fn($d) => date('d.m', strtotime($d)))->toArray(),
+                'views'    => $chart->pluck('views')->toArray(),
+                'visitors' => $chart->pluck('visitors')->toArray(),
+            ];
+
+            return [
+                'totals'    => $totals,
+                'chartData' => $chartData,
+                'topPages'  => $topPages->toArray(),
+                'referrers' => $referrers->toArray(),
+                'countries' => $countries->toArray(),
+                'browsers'  => $browsers->toArray(),
+                'devices'   => $devices->toArray(),
+                'languages' => $languages->toArray(),
+            ];
+        });
+    }
+
     public static function canAccess(): bool
     {
         return auth()->user()->hasRole('admin');
     }
 
-    public function getStartDate(): string
+    public function getStartDate(): ?string
     {
+        if ($this->period === 'all') return null;
         return now()->subDays((int)$this->period)->toDateString();
     }
 
@@ -30,8 +121,8 @@ class SiteAnalytics extends Page
     {
         $start = $this->getStartDate();
         return [
-            'pageviews' => DB::table('site_analytics')->where('created_at', '>=', $start)->count(),
-            'unique_visitors' => DB::table('site_analytics')->where('created_at', '>=', $start)->where('is_unique_today', true)->count(),
+            'pageviews' => DB::table('site_analytics')->when($start, fn($q) => $q->where('created_at', '>=', $start))->count(),
+            'unique_visitors' => DB::table('site_analytics')->when($start, fn($q) => $q->where('created_at', '>=', $start))->where('is_unique_today', true)->count(),
             'today_pageviews' => DB::table('site_analytics')->where('created_at', '>=', today())->count(),
             'today_visitors' => DB::table('site_analytics')->where('created_at', '>=', today())->where('is_unique_today', true)->count(),
             'online' => Cache::get('online_count', 0),
@@ -45,7 +136,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         $days = DB::table('site_analytics')
             ->selectRaw('DATE(created_at) as date, COUNT(*) as views, SUM(is_unique_today) as visitors')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->groupByRaw('DATE(created_at)')
             ->orderBy('date')
             ->get();
@@ -62,7 +153,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('path, COUNT(*) as views, COUNT(DISTINCT ip) as unique_views')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->where('path', 'not like', '/admin%')
             ->groupBy('path')
             ->orderByDesc('views')
@@ -76,7 +167,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('referrer, COUNT(*) as visits')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('referrer')
             ->where('referrer', 'not like', '%wolffiles.eu%')
             ->where('referrer', 'not like', 'origin:%')
@@ -100,7 +191,7 @@ class SiteAnalytics extends Page
 
         return DB::table('site_analytics')
             ->selectRaw('country, COUNT(*) as views, COUNT(DISTINCT ip) as visitors')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('country')
             ->groupBy('country')
             ->orderByDesc('views')
@@ -118,7 +209,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('browser, COUNT(*) as count')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('browser')
             ->groupBy('browser')
             ->orderByDesc('count')
@@ -132,7 +223,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('device, COUNT(*) as count')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('device')
             ->groupBy('device')
             ->orderByDesc('count')
@@ -145,7 +236,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('locale, COUNT(*) as count')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('locale')
             ->groupBy('locale')
             ->orderByDesc('count')
@@ -158,7 +249,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('country, COUNT(DISTINCT ip) as visitors')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('country')
             ->groupBy('country')
             ->pluck('visitors', 'country')
@@ -170,7 +261,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('heatmap_clicks')
             ->selectRaw('path, COUNT(*) as clicks')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->groupBy('path')
             ->orderByDesc('clicks')
             ->limit(20)
@@ -183,7 +274,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('heatmap_clicks')
             ->selectRaw('x_percent, y_px, COUNT(*) as intensity')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->where('path', $path)
             ->groupByRaw('ROUND(x_percent, 0), ROUND(y_px / 20) * 20')
             ->orderByDesc('intensity')
@@ -198,7 +289,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('heatmap_clicks')
             ->selectRaw('element, path, COUNT(*) as clicks')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('element')
             ->groupBy('element', 'path')
             ->orderByDesc('clicks')
@@ -222,7 +313,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('utm_source, COUNT(*) as visits, COUNT(DISTINCT ip) as visitors')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('utm_source')
             ->groupBy('utm_source')
             ->orderByDesc('visits')
@@ -236,7 +327,7 @@ class SiteAnalytics extends Page
         $start = $this->getStartDate();
         return DB::table('site_analytics')
             ->selectRaw('utm_campaign, utm_source, COUNT(*) as visits, COUNT(DISTINCT ip) as visitors')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('utm_campaign')
             ->groupBy('utm_campaign', 'utm_source')
             ->orderByDesc('visits')
@@ -248,22 +339,22 @@ class SiteAnalytics extends Page
     public function getTrafficSources(): array
     {
         $start = $this->getStartDate();
-        $total = DB::table('site_analytics')->where('created_at', '>=', $start)->count();
+        $total = DB::table('site_analytics')->when($start, fn($q) => $q->where('created_at', '>=', $start))->count();
         if ($total === 0) return [];
 
         $direct = DB::table('site_analytics')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNull('referrer')
             ->whereNull('utm_source')
             ->count();
 
         $internal = DB::table('site_analytics')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->where('referrer', 'like', '%wolffiles.eu%')
             ->count();
 
         $utm = DB::table('site_analytics')
-            ->where('created_at', '>=', $start)
+            ->when($start, fn($q) => $q->where('created_at', '>=', $start))
             ->whereNotNull('utm_source')
             ->count();
 
