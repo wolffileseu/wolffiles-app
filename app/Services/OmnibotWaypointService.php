@@ -6,7 +6,7 @@ use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use ZipArchive;
+use App\Services\ArchiveHelper;
 
 class OmnibotWaypointService
 {
@@ -39,11 +39,11 @@ class OmnibotWaypointService
     /**
      * Scan a single uploaded file for bot waypoints
      */
-    public function scanFile(File $file): array
+public function scanFile(File $file): array
     {
         $results = ['new' => [], 'existing' => [], 'errors' => []];
 
-        if (!in_array($file->file_extension, ['zip', 'pk3'])) {
+        if (!in_array($file->file_extension, ['zip', 'pk3', 'rar', '7z'])) {
             return $results;
         }
 
@@ -60,23 +60,23 @@ class OmnibotWaypointService
             fclose($fp);
             fclose($stream);
 
-            $zip = new ZipArchive();
-            if ($zip->open($tmp) !== true) {
+            $archive = new ArchiveHelper($tmp);
+            if (!$archive->open()) {
                 unlink($tmp);
                 return $results;
             }
 
             $botFiles = [];
-            for ($i = 0; $i < $zip->numFiles; $i++) {
-                $name = basename($zip->getNameIndex($i));
+            foreach ($archive->listEntries() as $entry) {
+                $name = basename($entry['name']);
                 $ext = pathinfo($name, PATHINFO_EXTENSION);
                 if (in_array($ext, ['way', 'gm'])) {
-                    $botFiles[] = ['name' => $name, 'index' => $i];
+                    $botFiles[] = ['name' => $name, 'fullpath' => $entry['name']];
                 }
             }
 
             if (empty($botFiles)) {
-                $zip->close();
+                $archive->close();
                 unlink($tmp);
                 return $results;
             }
@@ -105,15 +105,15 @@ class OmnibotWaypointService
                 }
 
                 foreach ($files as $f) {
-                    $content = $zip->getFromIndex($f['index']);
-                    if ($content !== false) {
+                    $content = $archive->getFromName($f['fullpath']);
+                    if ($content !== null) {
                         file_put_contents($navPath . '/' . strtolower($f['name']), $content);
                     }
                 }
                 $results['new'][] = $mapName;
             }
 
-            $zip->close();
+            $archive->close();
             unlink($tmp);
 
             if (!empty($results['new'])) {
@@ -137,7 +137,7 @@ class OmnibotWaypointService
     public function scanAll(): array
     {
         $total = ['new' => [], 'existing' => [], 'errors' => []];
-        $files = File::whereIn('file_extension', ['zip', 'pk3'])->get();
+        $files = File::whereIn('file_extension', ['zip', 'pk3', 'rar', '7z'])->get();
         foreach ($files as $file) {
             $result = $this->scanFile($file);
             $total['new'] = array_merge($total['new'], $result['new']);

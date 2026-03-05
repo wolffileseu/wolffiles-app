@@ -30,14 +30,17 @@ class AnalyzeUploadedFile implements ShouldQueue
     {
         // Download file from S3 to temp location
         $tempPath = tempnam(sys_get_temp_dir(), 'wf_analyze_');
-        $content = Storage::disk('s3')->get($this->file->file_path);
+        $stream = Storage::disk('s3')->readStream($this->file->file_path);
 
-        if (!$content) {
+        if (!$stream) {
             $this->fail(new \Exception('Could not read file from S3'));
             return;
         }
 
-        file_put_contents($tempPath, $content);
+        $fp = fopen($tempPath, 'w');
+        stream_copy_to_stream($stream, $fp);
+        fclose($fp);
+        fclose($stream);
 
         try {
             $result = $analyzer->analyze($tempPath, $this->file->file_name);
@@ -137,7 +140,7 @@ class AnalyzeUploadedFile implements ShouldQueue
         }
 
         // Case 2: Archive containing videos
-        if (!in_array($ext, ['zip', 'pk3'])) {
+        if (!in_array($ext, ['zip', 'pk3', 'rar', '7z'])) {
             return;
         }
 
