@@ -28,8 +28,8 @@ class User extends Authenticatable implements FilamentUser
 
     protected $fillable = [
         'name', 'email', 'password', 'avatar', 'discord_id',
-        'discord_username', 'bio', 'website', 'locale',
-        'is_active', 'last_login_at',
+        'discord_username', 'telegram_username', 'clan', 'favorite_games', 'bio', 'website', 'locale',
+        'is_active', 'last_login_at', 'notification_preferences',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -42,6 +42,8 @@ class User extends Authenticatable implements FilamentUser
             'last_activity_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            'favorite_games' => 'array',
+            'notification_preferences' => 'array',
         ];
     }
 

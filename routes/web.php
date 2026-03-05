@@ -178,6 +178,11 @@ Route::post('/files/{file}/rate-criterion', function (\Illuminate\Http\Request $
     Route::get('/my/uploads', [ProfileController::class, 'myUploads'])->name('profile.uploads');
     Route::get('/my/settings', [ProfileController::class, 'settings'])->name('profile.settings');
     Route::put('/my/settings', [ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+    Route::post('/my/settings/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::delete('/my/settings/avatar', [ProfileController::class, 'deleteAvatar'])->name('profile.avatar.delete');
+    Route::delete('/my/settings', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/my/settings/delete-account', [ProfileController::class, 'destroy'])->name('profile.destroy.post');
+    Route::post('/my/settings/notifications', [ProfileController::class, 'updateNotifications'])->name('profile.notifications.update');
 
     // Discord connect/disconnect
     Route::get('/auth/discord/disconnect', [DiscordController::class, 'disconnect'])->name('auth.discord.disconnect');

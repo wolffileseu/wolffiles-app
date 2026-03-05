@@ -7,55 +7,33 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
     public function show(User $user)
     {
-        // Load badges - try relationship first, fallback to pivot table
-        if (true) {
-            $user->load(['badges']);
-        }
-
-        // If badges relationship returned empty, try loading from badge_user pivot
+        $user->load(['badges']);
         if ($user->badges->isEmpty()) {
             $badgeIds = DB::table('badge_user')->where('user_id', $user->id)->pluck('badge_id');
             if ($badgeIds->isNotEmpty()) {
                 $user->setRelation('badges', \App\Models\Badge::whereIn('id', $badgeIds)->get());
             }
         }
-
-        $uploads = $user->files()
-            ->where('status', 'approved')
-            ->with(['category', 'screenshots'])
-            ->orderByDesc('created_at')
-            ->paginate(12);
-
-        $luaScripts = $user->luaScripts()
-            ->where('status', 'approved')
-            ->orderByDesc('created_at')
-            ->get();
-
+        $uploads = $user->files()->where('status', 'approved')->with(['category', 'screenshots'])->orderByDesc('created_at')->paginate(12);
+        $luaScripts = $user->luaScripts()->where('status', 'approved')->orderByDesc('created_at')->get();
         return view('frontend.profile.show', compact('user', 'uploads', 'luaScripts'));
     }
 
     public function favorites()
     {
-        $favorites = auth()->user()->favorites()
-            ->with(['file.category', 'file.screenshots'])
-            ->latest()
-            ->paginate(24);
-
+        $favorites = auth()->user()->favorites()->with(['file.category', 'file.screenshots'])->latest()->paginate(24);
         return view('frontend.profile.favorites', compact('favorites'));
     }
 
     public function myUploads()
     {
-        $files = auth()->user()->files()
-            ->with(['category', 'screenshots'])
-            ->latest()
-            ->paginate(24);
-
+        $files = auth()->user()->files()->with(['category', 'screenshots'])->latest()->paginate(24);
         return view('frontend.profile.uploads', compact('files'));
     }
 
@@ -67,16 +45,70 @@ class ProfileController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'bio' => 'nullable|string|max:1000',
+            'name'    => 'required|string|max:255',
+            'bio'     => 'nullable|string|max:1000',
             'website' => 'nullable|url|max:255',
-            'locale' => 'required|in:en,de',
+            'discord_username' => 'nullable|string|max:100',
+            'telegram_username' => 'nullable|string|max:100',
+            'clan' => 'nullable|string|max:100',
+            'favorite_games' => 'nullable|array',
+            'locale'  => 'required|string|max:10',
         ]);
-
-        auth()->user()->update($request->only(['name', 'bio', 'website', 'locale']));
-
-        ActivityLogger::profileUpdate(auth()->user(), $request->only(['name', 'bio', 'website', 'locale']));
-
+        auth()->user()->update(array_merge($request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan']), ['favorite_games' => $request->input('favorite_games', [])]));
+        ActivityLogger::profileUpdate(auth()->user(), $request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan', 'favorite_games']));
         return back()->with('success', __('messages.settings_updated'));
+    }
+
+    public function updateAvatar(Request $request)
+    {
+        $request->validate(['avatar' => 'required|image|mimes:jpeg,png,gif|max:2048']);
+        $user = auth()->user();
+        if ($user->avatar && Storage::disk('s3')->exists($user->avatar)) {
+            Storage::disk('s3')->delete($user->avatar);
+        }
+        $file   = $request->file('avatar');
+        $ext    = strtolower($file->getClientOriginalExtension());
+        $s3Path = 'avatars/user_' . $user->id . '.' . $ext;
+        $stream = fopen($file->getRealPath(), 'r');
+        Storage::disk('s3')->put($s3Path, $stream, 'public');
+        if (is_resource($stream)) fclose($stream);
+        $user->update(['avatar' => $s3Path]);
+        ActivityLogger::profileUpdate($user, ['avatar' => $s3Path]);
+        return back()->with('success', __('messages.avatar_updated') ?? 'Profilbild aktualisiert.');
+    }
+
+    public function deleteAvatar()
+    {
+        $user = auth()->user();
+        if ($user->avatar && Storage::disk('s3')->exists($user->avatar)) {
+            Storage::disk('s3')->delete($user->avatar);
+        }
+        $user->update(['avatar' => null]);
+        return back()->with('success', __('messages.avatar_deleted') ?? 'Profilbild entfernt.');
+    }
+
+    public function updateNotifications(Request $request)
+    {
+        $request->validate([
+            'key'   => 'required|string|in:comments,downloads,ratings,telegram,newsletter',
+            'value' => 'required|in:0,1,true,false',
+        ]);
+        $user  = auth()->user();
+        $prefs = $user->notification_preferences ?? [];
+        $prefs[$request->key] = filter_var($request->value, FILTER_VALIDATE_BOOLEAN);
+        $user->update(['notification_preferences' => $prefs]);
+        return response()->json(['ok' => true]);
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validate(["password" => ["required", "current_password"]], [], ["password.userDeletion"]);
+        $user = auth()->user();
+        auth()->logout();
+        if ($user->avatar && Storage::disk("s3")->exists($user->avatar)) { Storage::disk("s3")->delete($user->avatar); }
+        $user->delete();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        return redirect("/");
     }
 }
