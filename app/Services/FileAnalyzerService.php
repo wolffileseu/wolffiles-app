@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
+use App\Services\ArchiveHelper;
 
 class FileAnalyzerService
 {
@@ -38,6 +39,8 @@ class FileAnalyzerService
                 $result = array_merge($result, $this->analyzePk3($filePath));
             } elseif ($extension === 'zip') {
                 $result = array_merge($result, $this->analyzeZip($filePath));
+            } elseif (in_array($extension, ['rar', '7z'])) {
+                $result = array_merge($result, $this->analyzeArchive($filePath, $extension));
             } elseif ($extension === 'lua') {
                 $result = array_merge($result, $this->analyzeLua($filePath));
             }
@@ -284,6 +287,137 @@ class FileAnalyzerService
         }
 
         $zip->close();
+        return $result;
+    }
+
+    /**
+     * Analyze RAR or 7z archive using ArchiveHelper
+     */
+    protected function analyzeArchive(string $filePath, string $extension): array
+    {
+        $result = ['extracted_images' => [], 'extracted_metadata' => []];
+        $archive = new ArchiveHelper($filePath);
+        if (!$archive->open()) return $result;
+
+        $pk3Files = [];
+        $imageFiles = [];
+        $readmeFiles = [];
+        $tgaFiles = [];
+        $allFiles = [];
+        $fileList = [];
+        $totalUncompressed = 0;
+
+        foreach ($archive->listEntries() as $entry) {
+            $name = $entry['name'];
+            $safeName = $this->sanitizeString($name);
+            $lower = strtolower($safeName);
+            $allFiles[] = $safeName;
+
+            $fileList[] = [
+                'name' => $safeName,
+                'size' => $entry['size'] ?? 0,
+                'compressed' => $entry['compressed'] ?? 0,
+            ];
+            $totalUncompressed += ($entry['size'] ?? 0);
+
+            if (str_ends_with($lower, '.pk3')) $pk3Files[] = $name;
+            if ($this->isImage($name)) $imageFiles[] = $name;
+            if (str_ends_with($lower, '.tga')) $tgaFiles[] = $name;
+            if (preg_match('/readme/i', basename($name)) && preg_match('/\.(txt|md|nfo)$/i', $name)) {
+                $readmeFiles[] = $name;
+            }
+        }
+
+        $result['extracted_metadata']['total_files'] = $archive->numFiles();
+        $result['extracted_metadata']['total_uncompressed_size'] = $totalUncompressed;
+        $result['extracted_metadata']['file_list'] = $fileList;
+        $result['extracted_metadata']['file_types'] = $this->categorizeFiles($allFiles);
+        $result['extracted_metadata']['archive_type'] = $extension;
+
+        // Analyze contained PK3s
+        if (!empty($pk3Files)) {
+            $result['extracted_metadata']['contained_pk3s'] = array_map([$this, 'sanitizeString'], $pk3Files);
+            foreach ($pk3Files as $pk3Name) {
+                $pk3Data = $archive->getFromName($pk3Name);
+                if ($pk3Data) {
+                    $tempPk3 = $this->tempDir . '/temp_' . \Illuminate\Support\Str::uuid() . '.pk3';
+                    file_put_contents($tempPk3, $pk3Data);
+                    $pk3Result = $this->analyzePk3($tempPk3);
+                    @unlink($tempPk3);
+
+                    if (empty($result['map_name']) && !empty($pk3Result['map_name'])) {
+                        $result['map_name'] = $pk3Result['map_name'];
+                    }
+                    $result['extracted_images'] = array_merge($result['extracted_images'], $pk3Result['extracted_images'] ?? []);
+
+                    foreach (['bsp_files', 'arena', 'has_bots'] as $key) {
+                        if (!empty($pk3Result['extracted_metadata'][$key])) {
+                            $result['extracted_metadata'][$key] = $pk3Result['extracted_metadata'][$key];
+                        }
+                    }
+
+                    if (!empty($pk3Result['extracted_metadata']['file_list'])) {
+                        $safePk3Name = $this->sanitizeString($pk3Name);
+                        $result['extracted_metadata']['pk3_contents'][$safePk3Name] = $pk3Result['extracted_metadata']['file_list'];
+                    }
+
+                    if (!empty($pk3Result['readme_content']) && empty($result['readme_content'])) {
+                        $result['readme_content'] = $pk3Result['readme_content'];
+                    }
+                }
+            }
+        }
+
+        // Extract TGA files
+        foreach ($tgaFiles as $tgaFile) {
+            $data = $archive->getFromName($tgaFile);
+            if (!$data) continue;
+            $tempTga = $this->tempDir . '/' . \Illuminate\Support\Str::uuid() . '.tga';
+            file_put_contents($tempTga, $data);
+            $converted = $this->convertTgaToPng($tempTga);
+            if ($converted) {
+                @unlink($tempTga);
+                $result['extracted_images'][] = [
+                    'path' => $converted,
+                    'original_name' => $this->sanitizeString(pathinfo($tgaFile, PATHINFO_FILENAME)) . '.png',
+                    'source' => 'extracted',
+                ];
+            } else {
+                @unlink($tempTga);
+            }
+        }
+
+        // Extract regular images
+        $regularImages = array_filter($imageFiles, fn($f) => !str_ends_with(strtolower($f), '.tga'));
+        foreach (array_slice($regularImages, 0, 5) as $img) {
+            $data = $archive->getFromName($img);
+            if (!$data) continue;
+            $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                $tempFile = $this->tempDir . '/' . \Illuminate\Support\Str::uuid() . '.' . $ext;
+                file_put_contents($tempFile, $data);
+                $result['extracted_images'][] = [
+                    'path' => $tempFile,
+                    'original_name' => $this->sanitizeString(basename($img)),
+                    'source' => 'extracted',
+                ];
+            }
+        }
+
+        // Extract README
+        if (empty($result['readme_content'])) {
+            foreach ($readmeFiles as $rf) {
+                $content = $archive->getFromName($rf);
+                if ($content) {
+                    $result['readme_content'] = $this->sanitizeString(substr($content, 0, 10000));
+                    break;
+                }
+            }
+        }
+
+        $result['extracted_metadata']['has_bots'] = $result['extracted_metadata']['has_bots'] ?? $this->hasBotFiles($allFiles);
+
+        $archive->close();
         return $result;
     }
 
