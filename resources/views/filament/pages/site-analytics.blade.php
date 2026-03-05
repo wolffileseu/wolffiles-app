@@ -1,23 +1,24 @@
 <x-filament-panels::page>
     @php
-        $totals = $this->getTotals();
-        $chart = $this->getDailyChart();
-        $topPages = $this->getTopPages();
-        $referrers = $this->getTopReferrers();
-        $countries = $this->getCountries();
-        $browsers = $this->getBrowsers();
-        $devices = $this->getDevices();
-        $languages = $this->getLanguages();
+        $data = $this->getAllData();
+        $totals = $data['totals'];
+        $chart = $data['chartData'];
+        $topPages = $data['topPages'];
+        $referrers = $data['referrers'];
+        $countries = $data['countries'];
+        $browsers = $data['browsers'];
+        $devices = $data['devices'];
+        $languages = $data['languages'];
     @endphp
 
     {{-- Period Selector --}}
-    <div class="flex items-center gap-3 mb-6">
-        @foreach(['1' => 'Today', '7' => '7 Days', '30' => '30 Days', '90' => '90 Days'] as $val => $label)
-        <button wire:click="$set('period', '{{ $val }}')"
-            class="px-4 py-2 rounded-lg text-sm transition {{ $period === $val ? 'bg-primary-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-            {{ $label }}
-        </button>
-        @endforeach
+    <div class="flex items-center gap-3 mb-6 flex-wrap">
+        @php $a = 'px-4 py-2 rounded-lg text-sm font-medium border'; $on = 'border-indigo-500'; $off = 'bg-gray-800 text-gray-300 border-gray-600 hover:bg-gray-700'; @endphp
+        <button wire:click="setPeriod('1')" type="button" class="{{ $a }} {{ $period==='1' ? $on : $off }}" style="{{ $period==='1' ? 'background:#6366f1;color:#fff;' : '' }}">Today</button>
+        <button wire:click="setPeriod('7')" type="button" class="{{ $a }} {{ $period==='7' ? $on : $off }}" style="{{ $period==='7' ? 'background:#6366f1;color:#fff;' : '' }}">7 Days</button>
+        <button wire:click="setPeriod('30')" type="button" class="{{ $a }} {{ $period==='30' ? $on : $off }}" style="{{ $period==='30' ? 'background:#6366f1;color:#fff;' : '' }}">30 Days</button>
+        <button wire:click="setPeriod('90')" type="button" class="{{ $a }} {{ $period==='90' ? $on : $off }}" style="{{ $period==='90' ? 'background:#6366f1;color:#fff;' : '' }}">90 Days</button>
+        <button wire:click="setPeriod('all')" type="button" class="{{ $a }} {{ $period==='all' ? $on : $off }}" style="{{ $period==='all' ? 'background:#6366f1;color:#fff;' : '' }}">All Time</button>
     </div>
 
     {{-- Stats Cards --}}
