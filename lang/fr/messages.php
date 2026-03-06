@@ -529,7 +529,7 @@ return [
     'play_time' => 'Temps de jeu',
     'player_already_claimed' => 'Ce profil joueur est déjà lié à un autre compte.',
     'player_claimed' => 'Profil joueur lié à votre compte !',
-    'player_count_24h' => 'Nombre de joueurs (dernières 24h)',
+    'player_count_24h' => 'Nombre de joueurs (dernières 48h)',
     'player_profile' => 'Profil du joueur',
     'player_search' => 'Recherche de joueurs',
     'player_unclaimed' => 'Profil joueur dissocié.',

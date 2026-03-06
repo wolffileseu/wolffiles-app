@@ -62,7 +62,7 @@
             <div class="flex-shrink-0 flex gap-2 self-center">
                 @auth
                     @if(auth()->id() !== $user->id)
-                        <a href="{{ route('messages.create', ['to' => $user->id]) }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-gray-400 border border-gray-600 hover:border-amber-600 hover:text-amber-400 transition-all" style="font-family:'Rajdhani',sans-serif;">✉ {{ __('messages.message') ?? 'Nachricht' }}</a>
+                        {{-- TODO: messages.create route not yet implemented --}}
                     @else
                         <a href="{{ route('profile.settings') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-black transition-all" style="background:linear-gradient(135deg,#f59e0b,#ea580c);font-family:'Rajdhani',sans-serif;">⚙ {{ __('messages.settings') ?? 'Einstellungen' }}</a>
                     @endif
@@ -328,12 +328,25 @@ function filterFiles() {
 }
 var hm = document.getElementById('heatmap');
 if (hm) {
+    var uploadDays = @json($uploadHeatmap ?? []);
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var startDay = new Date(today);
+    startDay.setDate(startDay.getDate() - (52*7 - 1));
+    // align to Monday
+    var dow = startDay.getDay();
+    var diff = (dow === 0) ? -6 : 1 - dow;
+    startDay.setDate(startDay.getDate() + diff);
     for (var i = 0; i < 52*7; i++) {
-        var r = Math.random();
-        var l = r>.88?4:r>.68?3:r>.48?2:r>.33?1:0;
-        var d = document.createElement('div');
-        d.className = 'hm-cell hm-'+l;
-        hm.appendChild(d);
+        var d = new Date(startDay);
+        d.setDate(d.getDate() + i);
+        var key = d.toISOString().slice(0,10);
+        var count = uploadDays[key] || 0;
+        var l = count === 0 ? 0 : count === 1 ? 1 : count <= 3 ? 2 : count <= 6 ? 3 : 4;
+        var cell = document.createElement('div');
+        cell.className = 'hm-cell hm-'+l;
+        cell.title = key + ': ' + count + ' Upload(s)';
+        hm.appendChild(cell);
     }
 }
 </script>

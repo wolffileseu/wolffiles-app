@@ -529,7 +529,7 @@ return [
     'play_time' => 'Czas gry',
     'player_already_claimed' => 'Ten profil gracza jest już powiązany z innym kontem.',
     'player_claimed' => 'Profil gracza powiązany z Twoim kontem!',
-    'player_count_24h' => 'Liczba graczy (ostatnie 24 godziny)',
+    'player_count_24h' => 'Liczba graczy (ostatnie 48 godzin)',
     'player_profile' => 'Profil gracza',
     'player_search' => 'Wyszukiwanie graczy',
     'player_unclaimed' => 'Profil gracza nie jest powiązany.',

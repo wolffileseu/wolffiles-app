@@ -28,6 +28,12 @@ class TrackerHealthCheck extends Command
         if ($ghosts > 100) {
             $issues[] = "⚠️ <b>{$ghosts} Ghost-Server</b> entdeckt — Discovery läuft heiß";
         }
+        // Wenn Alert quittiert wurde, nicht senden
+        if (!empty($issues) && \Illuminate\Support\Facades\Cache::get('tracker:alert_acked')) {
+            $this->info('Alert acked, skipping notification.');
+            return 0;
+        }
+
         if (!empty($issues)) {
             $msg  = "🚨 <b>Wolffiles Tracker Alert</b>\n\n";
             $msg .= implode("\n\n", $issues);

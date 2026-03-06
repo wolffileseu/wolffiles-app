@@ -1,169 +1,180 @@
+<div>
 <x-filament-panels::page>
-    @php
-        $languages = $this->getLanguages();
-        $stats = $this->getLanguageStats();
-        $rows = $this->getTranslationRows();
-        $langNames = [
-            'de' => '🇩🇪 Deutsch', 'fr' => '🇫🇷 Français', 'es' => '🇪🇸 Español',
-            'nl' => '🇳🇱 Nederlands', 'pl' => '🇵🇱 Polski', 'it' => '🇮🇹 Italiano',
-            'pt' => '🇵🇹 Português', 'ru' => '🇷🇺 Русский', 'ja' => '🇯🇵 日本語',
-            'zh' => '🇨🇳 中文', 'ko' => '🇰🇷 한국어', 'sv' => '🇸🇪 Svenska',
-            'fi' => '🇫🇮 Suomi', 'da' => '🇩🇰 Dansk', 'no' => '🇳🇴 Norsk',
-            'tr' => '🇹🇷 Türkçe', 'hu' => '🇭🇺 Magyar', 'cs' => '🇨🇿 Čeština',
-            'ro' => '🇷🇴 Română', 'bg' => '🇧🇬 Български', 'hr' => '🇭🇷 Hrvatski',
-        ];
-    @endphp
+@php
+    $stats = $this->getLanguageStats();
+    $rows  = $this->getTranslationRows();
+    $langNames = [
+        'de'=>'🇩🇪 Deutsch','fr'=>'🇫🇷 Français','nl'=>'🇳🇱 Nederlands',
+        'pl'=>'🇵🇱 Polski','tr'=>'🇹🇷 Türkçe','es'=>'🇪🇸 Español',
+        'it'=>'🇮🇹 Italiano','pt'=>'🇵🇹 Português','ru'=>'🇷🇺 Русский',
+    ];
+@endphp
 
-    {{-- Language Overview --}}
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 mb-6">
-        @foreach($stats as $lang => $s)
-        <button wire:click="$set('selectedLang', '{{ $lang }}')"
-            class="rounded-xl p-4 text-left transition {{ $selectedLang === $lang ? 'bg-primary-500/20 border-2 border-primary-500' : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:border-primary-400' }}">
-            <div class="font-bold text-lg">{{ $langNames[$lang] ?? strtoupper($lang) }}</div>
-            <div class="text-xs text-gray-500 mt-1">{{ $s['translated'] }}/{{ $s['total'] }} translated</div>
-            <div style="width:100%;background:#374151;border-radius:9999px;height:6px;margin-top:8px;overflow:hidden;">
-                <div style="width:{{ $s['percent'] }}%;height:100%;border-radius:9999px;background:{{ $s['percent'] === 100 ? '#22c55e' : ($s['percent'] > 50 ? '#f59e0b' : '#ef4444') }};"></div>
-            </div>
-            <div class="text-xs mt-1 {{ $s['percent'] === 100 ? 'text-green-500' : 'text-gray-500' }}">{{ $s['percent'] }}%</div>
-        </button>
-        @endforeach
+<style>
+.tm-wrap{display:flex;gap:0;height:calc(100vh - 160px);overflow:hidden;border-radius:12px;border:1px solid rgb(55,65,81)}
+.tm-sidebar{width:220px;flex-shrink:0;background:rgb(17,24,39);border-right:1px solid rgb(55,65,81);display:flex;flex-direction:column;overflow:hidden}
+.tm-sidebar-head{padding:14px 16px 10px;border-bottom:1px solid rgb(55,65,81)}
+.tm-sidebar-title{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgb(107,114,128);margin-bottom:8px}
+.tm-overall-bar{height:4px;background:rgb(55,65,81);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.tm-overall-fill{height:100%;background:linear-gradient(90deg,#f59e0b,#fcd34d);border-radius:2px;transition:width .4s}
+.tm-overall-stats{display:flex;justify-content:space-between;font-size:10px;color:rgb(107,114,128);font-family:monospace}
+.tm-lang-list{flex:1;overflow-y:auto;padding:4px 0}
+.tm-lang-item{display:flex;align-items:center;gap:8px;padding:9px 14px;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+.tm-lang-item:hover{background:rgb(31,41,55)}
+.tm-lang-item.active{background:rgb(31,41,55);border-left-color:#f59e0b}
+.tm-lang-flag{font-size:18px}
+.tm-lang-info{flex:1;min-width:0}
+.tm-lang-name{font-size:12px;font-weight:600;color:rgb(229,231,235)}
+.tm-lang-sub{display:flex;align-items:center;gap:5px;margin-top:2px}
+.tm-lang-pct{font-size:10px;font-family:monospace;color:rgb(107,114,128)}
+.tm-lang-mini{flex:1;height:3px;background:rgb(55,65,81);border-radius:2px;overflow:hidden}
+.tm-lang-mini-fill{height:100%;border-radius:2px;transition:width .3s}
+.tm-sidebar-footer{padding:10px 12px;border-top:1px solid rgb(55,65,81);display:flex;flex-direction:column;gap:6px}
+.tm-editor{flex:1;display:flex;flex-direction:column;overflow:hidden;background:rgb(11,13,17)}
+.tm-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgb(17,24,39);border-bottom:1px solid rgb(55,65,81);flex-wrap:wrap}
+.tm-lang-badge{display:flex;align-items:center;gap:6px;padding:5px 12px;background:rgb(31,41,55);border:1px solid rgb(55,65,81);border-radius:8px;font-size:13px;font-weight:600;color:#f59e0b;white-space:nowrap}
+.tm-search{flex:1;min-width:120px;background:rgb(31,41,55);border:1px solid rgb(55,65,81);border-radius:8px;padding:6px 12px;color:rgb(229,231,235);font-size:13px;outline:none}
+.tm-search:focus{border-color:#f59e0b}
+.tm-filter{background:rgb(31,41,55);border:1px solid rgb(55,65,81);border-radius:8px;padding:6px 10px;color:rgb(229,231,235);font-size:12px;outline:none}
+.tm-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid rgb(55,65,81);background:rgb(31,41,55);color:rgb(229,231,235);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none}
+.tm-btn:hover{background:rgb(55,65,81)}.tm-btn.ai{border-color:rgba(59,130,246,.4);color:rgb(96,165,250)}.tm-btn.ai:hover{background:rgba(59,130,246,.1)}
+.tm-table-wrap{flex:1;overflow-y:auto}
+.tm-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.tm-thead{position:sticky;top:0;z-index:10;background:rgb(17,24,39);border-bottom:2px solid rgb(55,65,81)}
+.tm-table th{text-align:left;padding:8px 12px;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgb(107,114,128)}
+.tm-table td{padding:0;border-bottom:1px solid rgb(31,41,55);vertical-align:top}
+.tm-table tr:hover td{background:rgba(255,255,255,.015)}
+.tm-key-cell{padding:10px 12px;font-family:monospace;font-size:11px;color:#f59e0b;word-break:break-all;display:flex;align-items:flex-start;gap:6px}
+.tm-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:2px}
+.tm-dot.ok{background:#22c55e}.tm-dot.todo{background:#f59e0b}.tm-dot.missing{background:#ef4444}
+.tm-ta{width:100%;background:transparent;border:1px solid transparent;border-radius:5px;color:rgb(229,231,235);font-family:inherit;font-size:13px;padding:8px 10px;outline:none;resize:none;line-height:1.5;transition:all .15s;display:block;min-height:38px}
+.tm-ta:focus{background:rgb(31,41,55);border-color:rgb(59,130,246)}
+.tm-ta.en-field{color:rgb(156,163,175)}
+.tm-ta.en-field:focus{border-color:#22c55e}
+.tm-ai-btn{width:26px;height:26px;border-radius:5px;border:1px solid rgb(55,65,81);background:rgb(31,41,55);color:rgb(107,114,128);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;margin:8px auto}
+.tm-ai-btn:hover{color:rgb(96,165,250);border-color:rgba(59,130,246,.4);background:rgba(59,130,246,.1)}
+.tm-statsbar{display:flex;align-items:center;gap:14px;padding:7px 14px;background:rgb(17,24,39);border-top:1px solid rgb(55,65,81);font-size:11px;color:rgb(107,114,128);font-family:monospace;flex-shrink:0}
+.tm-statdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.tm-add-lang{padding:8px 12px;border-top:1px solid rgb(55,65,81)}
+.tm-add-lang input{width:100%;background:rgb(31,41,55);border:1px solid rgb(55,65,81);border-radius:6px;padding:5px 8px;color:rgb(229,231,235);font-size:12px;outline:none;margin-bottom:5px}
+</style>
 
-        {{-- Add Language --}}
-        <div class="rounded-xl p-4 bg-white dark:bg-gray-800 border border-dashed border-gray-300 dark:border-gray-600">
-            <div class="text-sm font-medium text-gray-500 mb-2">Add Language</div>
-            <div class="flex gap-2">
-                <input type="text" wire:model="newLangCode" placeholder="e.g. it"
-                    class="w-16 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm" maxlength="3">
-                <button wire:click="addLanguage" class="px-3 py-1 bg-primary-500 text-white rounded text-sm hover:bg-primary-600">+</button>
-            </div>
-        </div>
+<div class="tm-wrap">
+  {{-- SIDEBAR --}}
+  <div class="tm-sidebar">
+    <div class="tm-sidebar-head">
+      <div class="tm-sidebar-title">Sprachen</div>
+      @php
+        $totalDone = array_sum(array_column($stats, 'translated'));
+        $totalAll  = array_sum(array_column($stats, 'total'));
+        $overallPct = $totalAll ? round($totalDone/$totalAll*100) : 0;
+      @endphp
+      <div class="tm-overall-bar"><div class="tm-overall-fill" style="width:{{$overallPct}}%"></div></div>
+      <div class="tm-overall-stats"><span>{{$totalDone}}/{{$totalAll}}</span><span>{{$overallPct}}%</span></div>
     </div>
 
-    {{-- Actions Bar --}}
-    <div class="flex flex-wrap items-center gap-3 mb-4">
-        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search keys..."
-            class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm w-64">
-
-        <select wire:model.live="filter" class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm">
-            <option value="all">All Keys</option>
-            <option value="missing">Missing / TODO</option>
-            <option value="translated">Translated</option>
-        </select>
-
-        <button wire:click="syncAll" class="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm hover:bg-amber-600">
-            🔄 Sync All Languages
-        </button>
-
-        @if($selectedLang)
-        <a href="#" wire:click.prevent="exportCsv('{{ $selectedLang }}')"
-            class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
-            📥 Export CSV
-        </a>
-        <a href="#" wire:click.prevent="exportJson('{{ $selectedLang }}')"
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
-            📥 Export JSON
-        </a>
-
-        {{-- Import --}}
-        <div class="flex items-center gap-2 flex-wrap" x-data="{ csvName: '', jsonName: '' }">
-            <label class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 cursor-pointer">
-                📤 Import CSV
-                <input type="file" wire:model="importFile" accept=".csv" class="hidden"
-                    @change="csvName = $event.target.files[0]?.name || ''">
-            </label>
-            <template x-if="csvName">
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400" x-text="csvName"></span>
-                    @if($importFile)
-                    <button wire:click="importCsv" class="px-3 py-1.5 bg-purple-800 text-white rounded-lg text-xs hover:bg-purple-900">✓ CSV Import</button>
-                    @endif
-                </div>
-            </template>
-
-            <label class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 cursor-pointer">
-                📤 Import JSON
-                <input type="file" wire:model="importJsonFile" accept=".json" class="hidden"
-                    @change="jsonName = $event.target.files[0]?.name || ''">
-            </label>
-            <span class="text-xs text-gray-400" x-show="jsonName" x-text="jsonName"></span>
-            <span class="text-xs text-yellow-400" wire:loading wire:target="importJsonFile">⏳ Uploading...</span>
-            @if($importJsonFile)
-                <button wire:click="importJson"
-                    class="px-3 py-1.5 bg-indigo-800 text-white rounded-lg text-xs hover:bg-indigo-900 animate-pulse">
-                    ✓ JSON Import
-                </button>
-            @endif
+    <div class="tm-lang-list">
+      @foreach($stats as $lang => $s)
+      @php $cls = $s['percent']>=80?'#22c55e':($s['percent']>=50?'#f59e0b':'#ef4444'); @endphp
+      <div class="tm-lang-item {{ $selectedLang===$lang?'active':'' }}" wire:click="$set('selectedLang','{{$lang}}')">
+        <span class="tm-lang-flag">{{ $langNames[$lang] ? mb_substr($langNames[$lang],0,2) : '🌐' }}</span>
+        <div class="tm-lang-info">
+          <div class="tm-lang-name">{{ $langNames[$lang] ?? strtoupper($lang) }}</div>
+          <div class="tm-lang-sub">
+            <span class="tm-lang-pct">{{$s['done'] ?? $s['translated']}}/{{$s['total']}}</span>
+            <div class="tm-lang-mini"><div class="tm-lang-mini-fill" style="width:{{$s['percent']}}%;background:{{$cls}}"></div></div>
+            <span class="tm-lang-pct">{{$s['percent']}}%</span>
+          </div>
         </div>
-        @endif
-
-        @if($selectedLang && $selectedLang !== 'de')
-        <button wire:click="deleteLanguage('{{ $selectedLang }}')" wire:confirm="Are you sure you want to delete this language?"
-            class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 ml-auto">
-            🗑️ Delete {{ strtoupper($selectedLang) }}
-        </button>
-        @endif
+      </div>
+      @endforeach
     </div>
 
-    {{-- Translation Table --}}
-    @if($selectedLang)
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 flex justify-between">
-            <span class="font-semibold">{{ $langNames[$selectedLang] ?? strtoupper($selectedLang) }} — {{ count($rows) }} keys</span>
-            <span class="text-sm text-gray-500">🇬🇧 English → {{ $langNames[$selectedLang] ?? strtoupper($selectedLang) }}</span>
-        </div>
-
-        <div class="divide-y divide-gray-100 dark:divide-gray-700 max-h-[70vh] overflow-y-auto">
-            @forelse($rows as $key => $row)
-            <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50" x-data="{ editing: false }">
-                <div class="flex items-start gap-3">
-                    {{-- Status --}}
-                    <div class="mt-1">
-                        @if($row['status'] === 'translated')
-                            <span class="text-green-500 text-lg">✅</span>
-                        @elseif($row['status'] === 'todo')
-                            <span class="text-amber-500 text-lg">⚠️</span>
-                        @else
-                            <span class="text-red-500 text-lg">❌</span>
-                        @endif
-                    </div>
-
-                    {{-- Content --}}
-                    <div class="flex-1 min-w-0">
-                        <div class="text-xs font-mono text-gray-400 mb-1">{{ $row['key'] }}</div>
-                        <div class="text-sm text-gray-500 mb-2">🇬🇧 {{ Str::limit($row['en'], 120) }}</div>
-
-                        {{-- Edit field --}}
-                        <div x-show="!editing" @click="editing = true" class="cursor-pointer">
-                            @if($row['value'])
-                                <div class="text-sm {{ $row['status'] === 'todo' ? 'text-amber-400 italic' : 'text-white' }}">
-                                    {{ Str::limit($row['value'], 120) }}
-                                </div>
-                            @else
-                                <div class="text-sm text-red-400 italic">Click to translate...</div>
-                            @endif
-                        </div>
-
-                        <div x-show="editing" x-cloak class="flex gap-2">
-                            <input type="text"
-                                x-ref="input_{{ str_replace('.', '_', $row['key']) }}"
-                                x-init="$watch('editing', v => { if(v) $nextTick(() => $refs.input_{{ str_replace('.', '_', $row['key']) }}.focus()) })"
-                                value="{{ $row['value'] }}"
-                                @keydown.enter="$wire.saveTranslation('{{ $row['key'] }}', $el.value); editing = false"
-                                @keydown.escape="editing = false"
-                                class="flex-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1 text-sm">
-                            <button @click="$wire.saveTranslation('{{ $row['key'] }}', $refs.input_{{ str_replace('.', '_', $row['key']) }}.value); editing = false"
-                                class="px-3 py-1 bg-green-500 text-white rounded text-sm">✓</button>
-                            <button @click="editing = false" class="px-3 py-1 bg-gray-500 text-white rounded text-sm">✕</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            @empty
-            <div class="px-4 py-8 text-center text-gray-500">
-                No translations found matching your filter.
-            </div>
-            @endforelse
-        </div>
+    <div class="tm-add-lang">
+      <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgb(107,114,128);margin-bottom:6px">+ Sprache</div>
+      <input type="text" wire:model="newLangCode" placeholder="z.B. it" maxlength="3">
+      <button wire:click="addLanguage" class="tm-btn" style="width:100%;justify-content:center">Hinzufügen</button>
     </div>
-    @endif
+
+    <div class="tm-sidebar-footer">
+      <button wire:click="syncAll" class="tm-btn" style="font-size:11px;justify-content:center">🔄 Sync alle</button>
+    </div>
+  </div>
+
+  {{-- EDITOR --}}
+  <div class="tm-editor">
+    <div class="tm-toolbar">
+      <div class="tm-lang-badge">{{ $langNames[$selectedLang] ?? strtoupper($selectedLang) }}</div>
+      <input class="tm-search" wire:model.live.debounce.300ms="search" placeholder="🔍 Key oder Text suchen...">
+      <select class="tm-filter" wire:model.live="filter">
+        <option value="all">Alle Keys</option>
+        <option value="missing">Nur TODO</option>
+        <option value="translated">Fertig</option>
+      </select>
+      <button wire:click="aiTranslateAll" class="tm-btn ai">✦ AI: alle TODO</button>
+      <a href="#" wire:click.prevent="exportJson('{{$selectedLang}}')" class="tm-btn">⬇ JSON</a>
+      <a href="#" wire:click.prevent="exportCsv('{{$selectedLang}}')" class="tm-btn">⬇ CSV</a>
+      <label class="tm-btn" style="cursor:pointer">📤 Import JSON<input type="file" wire:model="importJsonFile" accept=".json" class="hidden"></label>
+      @if($importJsonFile)<button wire:click="importJson" class="tm-btn ai">✓ Import</button>@endif
+    </div>
+
+    <div class="tm-table-wrap">
+      <table class="tm-table">
+        <thead class="tm-thead">
+          <tr>
+            <th style="width:170px">Key</th>
+            <th>🇬🇧 English <span style="color:#22c55e;font-size:9px">● editierbar</span></th>
+            <th>{{ $langNames[$selectedLang] ?? strtoupper($selectedLang) }}</th>
+            <th style="width:44px">AI</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($rows as $key => $row)
+          @php
+            $dotCls = $row['status']==='translated'?'ok':($row['status']==='todo'?'todo':'missing');
+            $trVal  = ($row['status']==='todo') ? '' : ($row['value'] ?? '');
+          @endphp
+          <tr>
+            <td>
+              <div class="tm-key-cell">
+                <span class="tm-dot {{$dotCls}}"></span>
+                {{ $row['key'] }}
+              </div>
+            </td>
+            <td>
+              <textarea class="tm-ta en-field"
+                wire:blur="saveEnglish('{{ $row['key'] }}', $event.target.value)"
+                rows="1"
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+              >{{ $row['en'] }}</textarea>
+            </td>
+            <td>
+              <textarea class="tm-ta"
+                wire:blur="saveTranslation('{{ $row['key'] }}', $event.target.value)"
+                rows="1"
+                placeholder="Übersetzung..."
+                oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"
+              >{{ $trVal }}</textarea>
+            </td>
+            <td>
+              <button class="tm-ai-btn" wire:click="aiTranslate('{{ $row['key'] }}')" title="AI übersetzen">✦</button>
+            </td>
+          </tr>
+          @empty
+          <tr><td colspan="4" style="padding:32px;text-align:center;color:rgb(107,114,128)">Keine Keys gefunden.</td></tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tm-statsbar">
+      <span><span class="tm-statdot" style="background:#22c55e"></span>{{ collect($rows)->where('status','translated')->count() }} fertig</span>
+      <span><span class="tm-statdot" style="background:#ef4444"></span>{{ collect($rows)->whereIn('status',['todo','missing'])->count() }} TODO</span>
+      <span>{{ count($rows) }} angezeigt</span>
+      <span style="margin-left:auto">Auto-Save aktiv ✓</span>
+    </div>
+  </div>
+</div>
+
 </x-filament-panels::page>
+</div>

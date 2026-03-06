@@ -24,7 +24,7 @@ Schedule::command('cleanup:temp')->daily();
 Schedule::command('tracker:discover-servers')->everyFifteenMinutes()->withoutOverlapping();
 
 // Poll all active servers
-Schedule::command('tracker:poll-servers')->everyTwoMinutes()->withoutOverlapping();
+Schedule::command('tracker:poll-servers')->everyMinute()->withoutOverlapping();
 
 // Cleanup ghost/spam servers daily
 Schedule::command('tracker:health-check')->everyFiveMinutes()->withoutOverlapping();

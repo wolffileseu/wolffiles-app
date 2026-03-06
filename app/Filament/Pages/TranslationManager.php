@@ -112,6 +112,20 @@ class TranslationManager extends Page
         return $rows;
     }
 
+    public function saveEnglish(string $key, string $value): void
+    {
+        $filePath = lang_path("en/{$this->selectedFile}.php");
+        if (!file_exists($filePath)) return;
+        $translations = include $filePath;
+        $translations[$key] = $value;
+        $content = "<?php
+
+return " . $this->arrayExport($translations) . ";
+";
+        file_put_contents($filePath, $content);
+        Notification::make()->title("English saved!")->success()->send();
+    }
+
     public function saveTranslation(string $key, string $value): void
     {
         $filePath = lang_path("{$this->selectedLang}/{$this->selectedFile}.php");
@@ -496,4 +510,85 @@ class TranslationManager extends Page
         $this->dispatch('$refresh');
     }
 
+
+    public function aiTranslate(string $key): void
+    {
+        $enValue = $this->getBaseKeys()[$key] ?? '';
+        if (!$enValue) {
+            Notification::make()->title('Key not found')->danger()->send();
+            return;
+        }
+
+        $langNames = [
+            'de' => 'German', 'fr' => 'French', 'nl' => 'Dutch',
+            'pl' => 'Polish', 'tr' => 'Turkish', 'es' => 'Spanish',
+            'it' => 'Italian', 'pt' => 'Portuguese',
+        ];
+        $targetLang = $langNames[$this->selectedLang] ?? $this->selectedLang;
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'x-api-key'         => config('services.anthropic.key'),
+                'anthropic-version' => '2023-06-01',
+                'Content-Type'      => 'application/json',
+            ])->timeout(15)->post('https://api.anthropic.com/v1/messages', [
+                'model'      => 'claude-haiku-4-5-20251001',
+                'max_tokens' => 200,
+                'system'     => 'You are a translation assistant for Wolffiles.eu, a file hosting platform for the Wolfenstein: Enemy Territory gaming community. Translate UI strings naturally and concisely. Keep gaming terms (map, mod, server, clan, frag). Respond with ONLY the translated text, nothing else.',
+                'messages'   => [[
+                    'role'    => 'user',
+                    'content' => "Translate to {$targetLang}:\nKey: {$key}\nEnglish: {$enValue}\n\nReturn ONLY the translation.",
+                ]],
+            ]);
+
+            if (!$response->successful()) {
+                Notification::make()->title('AI Error: ' . $response->status())->danger()->send();
+                return;
+            }
+
+            $translation = trim($response->json('content.0.text') ?? '');
+
+            if ($translation) {
+                $this->saveTranslation($key, $translation);
+                Notification::make()
+                    ->title('✦ AI übersetzt!')
+                    ->body("{$key}: {$translation}")
+                    ->success()->send();
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('AI Translation: ' . $e->getMessage());
+            Notification::make()->title('Fehler: ' . $e->getMessage())->danger()->send();
+        }
+    }
+
+    public function aiTranslateAll(): void
+    {
+        $baseKeys = $this->getBaseKeys();
+        $langKeys = $this->getLangKeys($this->selectedLang);
+        $todo = [];
+
+        foreach ($baseKeys as $key => $value) {
+            $lv = $langKeys[$key] ?? '';
+            if (empty($lv) || str_starts_with($lv, '[TODO:')) {
+                $todo[$key] = $value;
+            }
+        }
+
+        if (empty($todo)) {
+            Notification::make()->title('Keine TODO keys!')->warning()->send();
+            return;
+        }
+
+        $count = 0;
+        foreach (array_slice($todo, 0, 20) as $key => $val) {
+            $this->aiTranslate($key);
+            $count++;
+        }
+
+        $rem = count($todo) - $count;
+        $msg = "✦ {$count} Keys übersetzt!";
+        if ($rem > 0) $msg .= " Noch {$rem} übrig — nochmal klicken.";
+        Notification::make()->title($msg)->success()->send();
+    }
 }

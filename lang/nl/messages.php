@@ -529,7 +529,7 @@ return [
     'play_time' => '[TODO:nl] Play Time',
     'player_already_claimed' => '[TODO:nl] This player profile is already linked to another account.',
     'player_claimed' => '[TODO:nl] Player profile linked to your account!',
-    'player_count_24h' => '[TODO:nl] Player Count (Last 24h)',
+    'player_count_24h' => 'Spelersaantal (laatste 48u)',
     'player_profile' => '[TODO:nl] Player Profile',
     'player_search' => '[TODO:nl] Player Search',
     'player_unclaimed' => '[TODO:nl] Player profile unlinked.',

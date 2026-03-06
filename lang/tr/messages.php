@@ -529,7 +529,7 @@ return [
     'play_time' => '[TODO:tr] Play Time',
     'player_already_claimed' => '[TODO:tr] This player profile is already linked to another account.',
     'player_claimed' => '[TODO:tr] Player profile linked to your account!',
-    'player_count_24h' => '[TODO:tr] Player Count (Last 24h)',
+    'player_count_24h' => 'Oyuncu Sayısı (Son 48s)',
     'player_profile' => '[TODO:tr] Player Profile',
     'player_search' => '[TODO:tr] Player Search',
     'player_unclaimed' => '[TODO:tr] Player profile unlinked.',
