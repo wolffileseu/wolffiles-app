@@ -52,7 +52,13 @@ class OmnibotController extends Controller
 
         $files = [];
         foreach ($map['files'] as $file) {
+            // Prevent path traversal - only allow basenames
+            $file = basename($file);			
             $fp = $basePath . '/' . $file;
+            $realPath = realpath($fp);
+            if ($realPath && str_starts_with($realPath, realpath($basePath) . DIRECTORY_SEPARATOR) && file_exists($fp)) {
+                $files[] = $fp;
+            }			
             if (file_exists($fp)) $files[] = $fp;
         }
         if (empty($files)) abort(404);

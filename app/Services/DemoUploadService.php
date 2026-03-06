@@ -30,6 +30,7 @@ class DemoUploadService
             if ($isArchive) {
                 mkdir($extractedDir, 0755, true);
                 $this->extractArchive($tempFile, $extractedDir);
+				$this->validateExtractedSize($extractedDir, 500 * 1024 * 1024); // 500MB max
                 $demoFiles = $this->findDemoFiles($extractedDir);
             } elseif ($this->isDemoFile($originalName)) {
                 $demoFiles = [$tempFile];
@@ -448,6 +449,20 @@ class DemoUploadService
         return $path;
     }
 
+    protected function validateExtractedSize(string $dir, int $maxBytes): void
+    {
+        $totalSize = 0;
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS));
+        foreach ($it as $f) {
+            if ($f->isFile()) {
+                $totalSize += $f->getSize();
+                if ($totalSize > $maxBytes) {
+                    throw new \RuntimeException('Extracted archive exceeds maximum allowed size of ' . round($maxBytes / 1024 / 1024) . 'MB');
+                }
+            }
+        }
+    }
+	
     protected function cleanupDir(string $dir): void
     {
         if (!is_dir($dir)) return;

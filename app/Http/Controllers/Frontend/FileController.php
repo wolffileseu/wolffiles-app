@@ -105,8 +105,10 @@ class FileController extends Controller
         $disk = Storage::disk('s3');
         $path = $file->file_path;
         $fileName = $file->file_name ?? ($file->slug . '.pk3');
+        // Sanitize filename for Content-Disposition header
+        $safeFileName = preg_replace('/[^\w.\-]/', '_', $fileName);
         $url = $disk->temporaryUrl($path, now()->addMinutes(60), [
-            'ResponseContentDisposition' => 'attachment; filename="' . $fileName . '"',
+			'ResponseContentDisposition' => 'attachment; filename="' . $safeFileName . '"',
             'ResponseContentType' => 'application/octet-stream',
         ]);
         return redirect($url);

@@ -11,6 +11,12 @@ class TelegramWebhookController extends Controller
 {
     public function handle(Request $request, TelegramBotService $bot): Response
     {
+        // Verify webhook secret token
+        $secretToken = config('services.telegram.webhook_secret');
+        if ($secretToken && $request->header('X-Telegram-Bot-Api-Secret-Token') !== $secretToken) {
+            return response('Unauthorized', 403);
+        }
+
         $update = $request->all();
 
         if (empty($update)) {
