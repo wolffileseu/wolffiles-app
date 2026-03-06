@@ -20,9 +20,10 @@ class ProfileController extends Controller
                 $user->setRelation('badges', \App\Models\Badge::whereIn('id', $badgeIds)->get());
             }
         }
+        $uploadHeatmap = $user->files()->where('status', 'approved')->selectRaw('DATE(created_at) as date, COUNT(*) as count')->groupBy('date')->pluck('count', 'date')->toArray();
         $uploads = $user->files()->where('status', 'approved')->with(['category', 'screenshots'])->orderByDesc('created_at')->paginate(12);
         $luaScripts = $user->luaScripts()->where('status', 'approved')->orderByDesc('created_at')->get();
-        return view('frontend.profile.show', compact('user', 'uploads', 'luaScripts'));
+        return view('frontend.profile.show', compact('user', 'uploads', 'luaScripts', 'uploadHeatmap'));
     }
 
     public function favorites()

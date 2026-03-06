@@ -20,14 +20,11 @@ use App\Http\Controllers\Frontend\DemoController;
 use App\Http\Controllers\Frontend\DonationController;
 use App\Http\Controllers\FastDlController;
 use App\Http\Controllers\Frontend\ClanFastDlController;
-
 use App\Http\Controllers\Auth\DiscordController;
 use App\Http\Controllers\Api\EasterEggController;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\Frontend\WikiController;
 use App\Http\Controllers\Frontend\TutorialController;
-
 use App\Http\Controllers\Frontend\CampaignCreatorController;
 
 Route::prefix('tools')->name('tools.')->group(function () {
@@ -423,3 +420,4 @@ Route::prefix('forum')->name('forum.')->group(function () {
         Route::delete('/thread/{thread}/delete', [ForumController::class, 'deleteThread'])->name('delete-thread');
     });
 });
+

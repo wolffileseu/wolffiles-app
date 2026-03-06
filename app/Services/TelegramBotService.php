@@ -77,6 +77,7 @@ class TelegramBotService
             '/approve' => $isAdmin ? $this->cmdApprove($chatId, $args) : $this->sendMessage($chatId, '🚫 Admin only.'),
             '/reject' => $isAdmin ? $this->cmdReject($chatId, $args) : $this->sendMessage($chatId, '🚫 Admin only.'),
             '/pending' => $isAdmin ? $this->cmdPending($chatId) : $this->sendMessage($chatId, '🚫 Admin only.'),
+            '/ack' => $isAdmin ? $this->cmdAck($chatId) : $this->sendMessage($chatId, ' Admin only.'),
             default => $this->cmdUnknown($chatId, $command),
         };
     }
@@ -467,6 +468,12 @@ class TelegramBotService
         }
     }
 
+
+    protected function cmdAck(int $chatId): void
+    {
+        \Illuminate\Support\Facades\Cache::put('tracker:alert_acked', true, today()->addDay()->setHour(6)->setMinute(0)->setSecond(0));
+        $this->sendMessage($chatId, '✅ <b>Alert quittiert</b> — keine Benachrichtigungen bis morgen 06:00 Uhr.');
+    }
     // ─── Inline Query (search from any chat) ─────────────────
 
     protected function handleInlineQuery(array $query): void

@@ -144,7 +144,7 @@ class TrackerController extends Controller
 
         // Player count history (last 24h)
         $history = $server->history()
-            ->where('polled_at', '>=', now()->subHours(24))
+            ->where('polled_at', '>=', now()->subHours(48))
             ->orderBy('polled_at')
             ->get(['players', 'polled_at']);
 

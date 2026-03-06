@@ -80,5 +80,7 @@ return [
     'qdrant' => [
         'url' => env('QDRANT_URL', 'http://localhost:6333'),
     ],
+    'anthropic' => [
+        'key' => env('ANTHROPIC_API_KEY'),
+    ],
 ];
-

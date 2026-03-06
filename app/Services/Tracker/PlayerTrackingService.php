@@ -236,8 +236,9 @@ class PlayerTrackingService
      */
     private function generateGuidHash(string $name, string $serverIp): string
     {
+        // Use name only (not IP) so players are recognized across servers
         $cleanName = ColorCodeService::toClean($name);
-        return hash('sha256', strtolower($cleanName) . ':' . $serverIp);
+        return hash('sha256', strtolower($cleanName));
     }
 
     /**
