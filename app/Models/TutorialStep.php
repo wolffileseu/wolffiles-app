@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -10,6 +11,13 @@ class TutorialStep extends Model
     protected $fillable = [
         'tutorial_id', 'step_number', 'title', 'content', 'image_path', 'video_url', 'tip',
     ];
+
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+        );
+    }
 
     public function tutorial()
     {
