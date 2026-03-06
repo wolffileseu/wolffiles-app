@@ -231,15 +231,10 @@ function serverLive() {
         currentMap: '{{ $server->current_map }}',
         currentMapSlug: '{{ \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? "" }}',
         gametype: '{{ $server->gametype ?? '' }}',
-        players: {!! json_encode($activeSessions->sortByDesc('score')->values()->map(fn($s) => [
-            'player_name' => $s->player?->name_html ?: e($s->player?->name_clean ?? 'Unknown'),
-            'player_url' => $s->player ? route('tracker.player.show', $s->player) : null,
-            'score' => $s->score,
-            'duration' => $s->duration_minutes . 'm',
-        ])) !!},
+        players: [],
         polling: null,
         startPolling() {
-            this.refresh();
+            setTimeout(() => this.refresh(), 500);
             this.polling = setInterval(() => this.refresh(), 30000);
         },
         async refresh() {
