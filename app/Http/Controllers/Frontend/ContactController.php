@@ -24,12 +24,17 @@ class ContactController extends Controller
             'honeypot' => 'size:0', // spam protection
         ]);
 
+        // Sanitize inputs to prevent email header injection
+        $safeName = str_replace(["\r", "\n", "\t"], ' ', $request->name);
+        $safeSubject = str_replace(["\r", "\n", "\t"], ' ', $request->subject);
+        $safeMessage = $request->message;
+
         Mail::raw(
-            "From: {$request->name} ({$request->email})\n\nSubject: {$request->subject}\n\n{$request->message}",
-            function ($mail) use ($request) {
+            "From: {$safeName} ({$request->email})\n\nSubject: {$safeSubject}\n\n{$safeMessage}",
+            function ($mail) use ($request, $safeName, $safeSubject) {
                 $mail->to(config('mail.from.address', 'admin@wolffiles.eu'))
-                    ->replyTo($request->email, $request->name)
-                    ->subject('[Wolffiles.eu Contact] ' . $request->subject);
+                    ->replyTo($request->email, $safeName)
+                    ->subject('[Wolffiles.eu Contact] ' . $safeSubject);
             }
         );
 
