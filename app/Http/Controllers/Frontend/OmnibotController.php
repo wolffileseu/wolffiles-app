@@ -58,8 +58,7 @@ class OmnibotController extends Controller
             $realPath = realpath($fp);
             if ($realPath && str_starts_with($realPath, realpath($basePath) . DIRECTORY_SEPARATOR) && file_exists($fp)) {
                 $files[] = $fp;
-            }			
-            if (file_exists($fp)) $files[] = $fp;
+            }
         }
         if (empty($files)) abort(404);
 
