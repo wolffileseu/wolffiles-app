@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -54,6 +55,13 @@ class WikiArticle extends Model
                 $article->excerpt = Str::limit(strip_tags($article->content), 300);
             }
         });
+    }
+
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+        );
     }
 
     // Scopes

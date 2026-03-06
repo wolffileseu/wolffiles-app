@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 /**
  * @property int $id
@@ -26,6 +27,13 @@ class KnowledgeBase extends Model
     protected $casts = [
         'is_pinned' => 'boolean',
     ];
+
+    protected function content(): Attribute
+    {
+        return Attribute::make(
+            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+        );
+    }
 
     public function editor()
     {
