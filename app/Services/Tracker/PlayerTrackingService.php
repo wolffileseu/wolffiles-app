@@ -28,6 +28,12 @@ class PlayerTrackingService
             if (($playerData['ping'] ?? 0) <= 0) continue;
 
             $name = $playerData['name'] ?? 'Unknown';
+            // Sanitize to valid UTF-8 (ET servers may send non-UTF8 bytes)
+            if (!mb_check_encoding($name, 'UTF-8')) {
+                $name = mb_convert_encoding($name, 'UTF-8', 'ISO-8859-1');
+            }
+            $name = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $name);
+            $name = mb_substr($name, 0, 64);
             $score = $playerData['score'] ?? 0;
             $ping = $playerData['ping'] ?? 0;
 
@@ -81,6 +87,13 @@ class PlayerTrackingService
      */
     public function findOrCreatePlayer(string $guidHash, string $name, string $ip): TrackerPlayer
     {
+        // Sanitize name to valid UTF-8 (ET servers may send non-UTF8 bytes)
+        $name = mb_convert_encoding($name, 'UTF-8', 'UTF-8');
+        $name = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $name);
+        if (!mb_check_encoding($name, 'UTF-8')) {
+            $name = utf8_encode($name);
+        }
+        $name = mb_substr($name, 0, 64);
         $player = TrackerPlayer::where('guid_hash', $guidHash)->first();
 
         if ($player) {
