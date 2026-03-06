@@ -239,6 +239,7 @@ function serverLive() {
         ])) !!},
         polling: null,
         startPolling() {
+            this.refresh();
             this.polling = setInterval(() => this.refresh(), 30000);
         },
         async refresh() {
