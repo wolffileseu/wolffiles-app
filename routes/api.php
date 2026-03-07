@@ -4,7 +4,7 @@ use App\Http\Controllers\Api\FileApiController;
 use Illuminate\Support\Facades\Route;
 
 // Public API (for Discord bot etc.)
-Route::prefix('v1')->group(function () {
+Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
     Route::get('/files/search', [FileApiController::class, 'search']);
     Route::get('/files/latest', [FileApiController::class, 'latest']);
     Route::get('/files/random', [FileApiController::class, 'random']);
