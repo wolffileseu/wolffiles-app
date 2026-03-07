@@ -160,14 +160,47 @@ class PterodactylService
         return null;
     }
 
+    public function startHostedServer($identifier): bool
+    {
+        return $this->sendHostedPowerSignal($identifier, 'start');
+    }
+
+    public function stopHostedServer($identifier): bool
+    {
+        return $this->sendHostedPowerSignal($identifier, 'stop');
+    }
+
     public function restartServer($identifier): bool
     {
-        return false;
+        return $this->sendHostedPowerSignal($identifier, 'restart');
+    }
+
+    protected function sendHostedPowerSignal($identifier, string $signal): bool
+    {
+        try {
+            $response = Http::withHeaders($this->headers())
+                ->post("{$this->baseUrl}/api/client/servers/{$identifier}/power", [
+                    'signal' => $signal,
+                ]);
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error("Pterodactyl hosted power: {$e->getMessage()}", compact('identifier', 'signal'));
+            return false;
+        }
     }
 
     public function sendCommand($identifier, string $command): bool
     {
-        return false;
+        try {
+            $response = Http::withHeaders($this->headers())
+                ->post("{$this->baseUrl}/api/client/servers/{$identifier}/command", [
+                    'command' => $command,
+                ]);
+            return $response->successful();
+        } catch (\Exception $e) {
+            Log::error("Pterodactyl command: {$e->getMessage()}", compact('identifier', 'command'));
+            return false;
+        }
     }
 
     public function getOrCreateUser(array $data): ?array

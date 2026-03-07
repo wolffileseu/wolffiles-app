@@ -14,6 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [
             'donate/paypal-ipn',
+            'hosting/paypal/ipn',
+            'api/*',
         ]);
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,

@@ -79,6 +79,16 @@ class DonationController extends Controller
             return response('DUPLICATE');
         }
 
+        // Verify receiver email matches our PayPal
+        $expectedEmail = DonationSetting::get('paypal_email', '');
+        $receiverEmail = $data['receiver_email'] ?? '';
+        if ($expectedEmail && strtolower($receiverEmail) !== strtolower($expectedEmail)) {
+            Log::warning('PayPal IPN: Receiver email mismatch', [
+                'expected' => $expectedEmail, 'received' => $receiverEmail,
+            ]);
+            return response('RECEIVER_MISMATCH', 400);
+        }
+
         // Extract donor info
         $amount = (float) ($data['mc_gross'] ?? 0);
         $currency = $data['mc_currency'] ?? 'EUR';

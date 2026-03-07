@@ -15,10 +15,11 @@ class WikiController extends Controller
         $query = WikiArticle::published()->with(['category', 'user']);
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('content', 'like', "%{$search}%")
-                  ->orWhere('excerpt', 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('title', 'like', "%{$escaped}%")
+                  ->orWhere('content', 'like', "%{$escaped}%")
+                  ->orWhere('excerpt', 'like', "%{$escaped}%");
             });
         }
 
@@ -62,9 +63,9 @@ class WikiController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:100000',
             'wiki_category_id' => 'required|exists:wiki_categories,id',
-            'tags' => 'nullable|string',
+            'tags' => 'nullable|string|max:500',
         ]);
 
         $article = WikiArticle::create([
@@ -96,7 +97,7 @@ class WikiController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'required|string|max:100000',
             'wiki_category_id' => 'required|exists:wiki_categories,id',
             'change_summary' => 'nullable|string|max:255',
         ]);

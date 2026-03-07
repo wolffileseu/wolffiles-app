@@ -24,11 +24,12 @@ class FileController extends Controller
     {
         $query = File::where('status', 'approved')->with(['category', 'screenshots', 'user', 'tags']);
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('map_name', 'like', "%{$search}%")
-                  ->orWhere('file_name', 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('title', 'like', "%{$escaped}%")
+                  ->orWhere('description', 'like', "%{$escaped}%")
+                  ->orWhere('map_name', 'like', "%{$escaped}%")
+                  ->orWhere('file_name', 'like', "%{$escaped}%");
             });
         }
         if ($categorySlug = $request->input('category')) {

@@ -210,6 +210,25 @@ class HostingController extends Controller
             return response('NO_INVOICE', 404);
         }
 
+        // Verify currency
+        $receivedCurrency = $data['mc_currency'] ?? '';
+        if (strtoupper($receivedCurrency) !== strtoupper($invoice->currency ?? 'EUR')) {
+            \Illuminate\Support\Facades\Log::warning('Hosting IPN: Currency mismatch', [
+                'expected' => $invoice->currency ?? 'EUR', 'received' => $receivedCurrency,
+            ]);
+            return response('CURRENCY_MISMATCH', 400);
+        }
+
+        // Verify receiver email
+        $expectedEmail = \App\Models\DonationSetting::get('paypal_email', '');
+        $receiverEmail = $data['receiver_email'] ?? '';
+        if ($expectedEmail && strtolower($receiverEmail) !== strtolower($expectedEmail)) {
+            \Illuminate\Support\Facades\Log::warning('Hosting IPN: Receiver email mismatch', [
+                'expected' => $expectedEmail, 'received' => $receiverEmail,
+            ]);
+            return response('RECEIVER_MISMATCH', 400);
+        }
+
         // Verify amount
         $paidAmount = (float) ($data['mc_gross'] ?? 0);
         if ($paidAmount < (float) $invoice->amount) {
@@ -312,8 +331,8 @@ class HostingController extends Controller
         $action = $request->action;
 
         $success = match($action) {
-            'start' => $ptero->restartServer($identifier),
-            'stop' => $ptero->restartServer($identifier),
+            'start' => $ptero->startHostedServer($identifier),
+            'stop' => $ptero->stopHostedServer($identifier),
             'restart' => $ptero->restartServer($identifier),
             default => false,
         };

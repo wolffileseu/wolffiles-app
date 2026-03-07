@@ -29,7 +29,7 @@ class User extends Authenticatable implements FilamentUser
     protected $fillable = [
         'name', 'email', 'password', 'avatar', 'discord_id',
         'discord_username', 'telegram_username', 'clan', 'favorite_games', 'bio', 'website', 'locale',
-        'is_active', 'last_login_at', 'notification_preferences',
+        'last_login_at', 'notification_preferences',
     ];
 
     protected $hidden = ['password', 'remember_token'];

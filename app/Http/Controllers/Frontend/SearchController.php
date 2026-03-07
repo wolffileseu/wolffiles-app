@@ -17,12 +17,13 @@ class SearchController extends Controller
 
         // Text search
         if ($search = $request->input('q')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('map_name', 'like', "%{$search}%")
-                  ->orWhere('file_name', 'like', "%{$search}%")
-                  ->orWhere('original_author', 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('title', 'like', "%{$escaped}%")
+                  ->orWhere('description', 'like', "%{$escaped}%")
+                  ->orWhere('map_name', 'like', "%{$escaped}%")
+                  ->orWhere('file_name', 'like', "%{$escaped}%")
+                  ->orWhere('original_author', 'like', "%{$escaped}%");
             });
         }
 
@@ -47,9 +48,10 @@ class SearchController extends Controller
 
         // Author filter
         if ($author = $request->input('author')) {
-            $query->where(function ($q) use ($author) {
-                $q->where('original_author', 'like', "%{$author}%")
-                  ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$author}%"));
+            $escapedAuthor = str_replace(['%', '_'], ['\\%', '\\_'], $author);
+            $query->where(function ($q) use ($escapedAuthor) {
+                $q->where('original_author', 'like', "%{$escapedAuthor}%")
+                  ->orWhereHas('user', fn ($uq) => $uq->where('name', 'like', "%{$escapedAuthor}%"));
             });
         }
 
@@ -88,7 +90,7 @@ class SearchController extends Controller
             'rating' => $query->orderByDesc('average_rating'),
             'name_asc' => $query->orderBy('title'),
             'size_desc' => $query->orderByDesc('file_size'),
-            default => $search ? $query->orderByRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END", ["%{$search}%"])->orderByDesc('download_count') : $query->orderByDesc('created_at'),
+            default => $search ? $query->orderByRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END", ['%' . str_replace(['%', '_'], ['\\%', '\\_'], $search) . '%'])->orderByDesc('download_count') : $query->orderByDesc('created_at'),
         };
 
         $files = $query->paginate(24)->withQueryString();

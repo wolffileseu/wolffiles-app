@@ -44,4 +44,5 @@ Route::get('/heatmap-data', function (\Illuminate\Http\Request $request) {
 
 
 // Telegram Bot Webhook
-Route::post('/telegram/webhook', [\App\Http\Controllers\Api\TelegramWebhookController::class, 'handle']);
+Route::post('/telegram/webhook', [\App\Http\Controllers\Api\TelegramWebhookController::class, 'handle'])
+    ->middleware('throttle:120,1');

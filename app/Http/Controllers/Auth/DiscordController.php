@@ -17,11 +17,15 @@ class DiscordController extends Controller
      */
     public function redirect()
     {
+        $state = Str::random(40);
+        session(['discord_oauth_state' => $state]);
+
         $params = http_build_query([
             'client_id' => config('services.discord.client_id'),
             'redirect_uri' => config('services.discord.redirect'),
             'response_type' => 'code',
             'scope' => 'identify email',
+            'state' => $state,
         ]);
 
         return redirect('https://discord.com/api/oauth2/authorize?' . $params);
@@ -39,6 +43,12 @@ class DiscordController extends Controller
         $code = $request->get('code');
         if (!$code) {
             return redirect()->route('login')->with('error', 'Invalid Discord response.');
+        }
+
+        // Verify OAuth state to prevent CSRF attacks
+        $expectedState = session()->pull('discord_oauth_state');
+        if (!$expectedState || $request->get('state') !== $expectedState) {
+            return redirect()->route('login')->with('error', 'Invalid OAuth state. Please try again.');
         }
 
         // Exchange code for token

@@ -57,7 +57,7 @@ class ForumController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|min:5|max:255',
-            'body' => 'required|string|min:10',
+            'body' => 'required|string|min:10|max:50000',
         ]);
 
         $thread = $category->threads()->create([
@@ -83,7 +83,7 @@ class ForumController extends Controller
         abort_if($thread->is_locked, 403, __('messages.forum_thread_locked'));
 
         $validated = $request->validate([
-            'body' => 'required|string|min:3',
+            'body' => 'required|string|min:3|max:50000',
         ]);
 
         $thread->posts()->create([
@@ -108,7 +108,7 @@ class ForumController extends Controller
         abort_unless($post->canEdit(auth()->user()), 403);
 
         $validated = $request->validate([
-            'body' => 'required|string|min:3',
+            'body' => 'required|string|min:3|max:50000',
         ]);
 
         $post->update([

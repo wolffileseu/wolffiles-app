@@ -10,6 +10,14 @@ use Illuminate\Http\Request;
 
 class TrackerClaimAdminController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(function ($request, $next) {
+            abort_unless(auth()->user()->hasAnyRole(['admin', 'moderator']), 403);
+            return $next($request);
+        });
+    }
+
     /**
      * List all claims (filterable by status)
      */

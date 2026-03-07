@@ -105,11 +105,21 @@ class ClanFastDlController extends Controller
 
         $request->validate([
             'file' => 'required|file|max:102400',
-            'directory' => 'required|string|max:50',
+            'directory' => 'required|string|max:50|alpha_dash',
         ]);
 
         $file = $request->file('file');
         $filename = $file->getClientOriginalName();
+
+        // Validate file extension (only game-related files allowed)
+        $allowedExtensions = ['pk3', 'pk3o', 'cfg', 'toml', 'lua', 'shader', 'skin', 'md3', 'mdc', 'tga', 'jpg', 'jpeg', 'wav', 'roq', 'arena', 'bot', 'menu'];
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (!in_array($ext, $allowedExtensions)) {
+            return back()->with('error', __('messages.invalid_file_type') ?: 'Invalid file type. Only game-related files are allowed.');
+        }
+
+        // Sanitize filename to prevent path traversal
+        $filename = basename($filename);
         $directory = $request->input('directory');
 
         $currentUsage = $clan->ownFiles()->sum('file_size');

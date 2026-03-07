@@ -17,13 +17,14 @@ class DemoController extends Controller
         $query = Demo::where('status', 'approved')->with(['category', 'user', 'tags']);
 
         if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('map_name', 'like', "%{$search}%")
-                  ->orWhere('team_axis', 'like', "%{$search}%")
-                  ->orWhere('team_allies', 'like', "%{$search}%")
-                  ->orWhere('recorder_name', 'like', "%{$search}%");
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+            $query->where(function ($q) use ($escaped) {
+                $q->where('title', 'like', "%{$escaped}%")
+                  ->orWhere('description', 'like', "%{$escaped}%")
+                  ->orWhere('map_name', 'like', "%{$escaped}%")
+                  ->orWhere('team_axis', 'like', "%{$escaped}%")
+                  ->orWhere('team_allies', 'like', "%{$escaped}%")
+                  ->orWhere('recorder_name', 'like', "%{$escaped}%");
             });
         }
 
@@ -40,7 +41,7 @@ class DemoController extends Controller
         if ($gametype = $request->input('gametype')) { $query->where('gametype', $gametype); }
         if ($format = $request->input('format')) { $query->where('match_format', $format); }
         if ($demoFormat = $request->input('demo_format')) { $query->where('demo_format', $demoFormat); }
-        if ($map = $request->input('map')) { $query->where('map_name', 'like', "%{$map}%"); }
+        if ($map = $request->input('map')) { $escapedMap = str_replace(['%', '_'], ['\\%', '\\_'], $map); $query->where('map_name', 'like', "%{$escapedMap}%"); }
         if ($tag = $request->input('tag')) { $query->whereHas('tags', fn ($q) => $q->where('slug', $tag)); }
 
         $sort = $request->input('sort', 'newest');
@@ -108,9 +109,10 @@ class DemoController extends Controller
         $disk = Storage::disk('s3');
         $path = $demo->file_path;
         $fileName = $demo->file_name ?? ($demo->slug . '.' . ($demo->file_extension ?? 'dm_84'));
+        $safeFileName = preg_replace('/[^\w.\-]/', '_', $fileName);
 
         $url = $disk->temporaryUrl($path, now()->addMinutes(60), [
-            'ResponseContentDisposition' => 'attachment; filename="' . $fileName . '"',
+            'ResponseContentDisposition' => 'attachment; filename="' . $safeFileName . '"',
             'ResponseContentType' => 'application/octet-stream',
         ]);
 
