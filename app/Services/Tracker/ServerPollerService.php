@@ -170,8 +170,8 @@ class ServerPollerService
         $stat->increment('total_time_minutes', 2);
         $stat->update([
             'last_played_at' => now(),
-            'avg_players' => DB::raw("(avg_players * (total_time_minutes - 2) + {$playerCount} * 2) / total_time_minutes"),
-            'peak_players' => max($stat->peak_players, $playerCount),
+            'avg_players' => DB::raw("(avg_players * (total_time_minutes - 2) + " . (int) $playerCount . " * 2) / total_time_minutes"),
+            'peak_players' => max($stat->peak_players, (int) $playerCount),
         ]);
     }
 
