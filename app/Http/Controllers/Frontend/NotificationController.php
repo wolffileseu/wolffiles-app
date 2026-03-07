@@ -23,6 +23,14 @@ class NotificationController extends Controller
         
         $notification->markAsRead();
         $url = $notification->data['url'] ?? route('home');
+
+        // Prevent open redirect - only allow internal URLs
+        $parsed = parse_url($url);
+        $appHost = parse_url(config('app.url', ''), PHP_URL_HOST);
+        if (isset($parsed['host']) && $parsed['host'] !== $appHost) {
+            $url = route('home');
+        }
+
         return redirect($url);
     }
 
