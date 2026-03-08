@@ -40,7 +40,8 @@ class ProfileController extends Controller
 
     public function settings()
     {
-        return view('frontend.profile.settings');
+        $profileFields = \App\Models\ProfileField::where('is_active', true)->orderBy('sort_order')->get();
+        return view('frontend.profile.settings', compact('profileFields'));
     }
 
     public function updateSettings(Request $request)
@@ -55,7 +56,10 @@ class ProfileController extends Controller
             'favorite_games' => 'nullable|array',
             'locale'  => 'required|string|max:10',
         ]);
-        auth()->user()->update(array_merge($request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan']), ['favorite_games' => $request->input('favorite_games', [])]));
+        $profileFields = \App\Models\ProfileField::where('is_active', true)->pluck('key');
+        $profileData = [];
+        foreach ($profileFields as $key) { $profileData[$key] = $request->input('profile_data.'.$key); }
+        auth()->user()->update(array_merge($request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan']), ['favorite_games' => $request->input('favorite_games', []), 'profile_data' => $profileData]));
         ActivityLogger::profileUpdate(auth()->user(), $request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan', 'favorite_games']));
         return back()->with('success', __('messages.settings_updated'));
     }
