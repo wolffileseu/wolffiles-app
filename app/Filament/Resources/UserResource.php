@@ -24,14 +24,43 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
-            Forms\Components\TextInput::make('password')->password()->required()->hiddenOn('edit'),
-            Forms\Components\Select::make('roles')->relationship('roles', 'name')->multiple()->preload(),
-            Forms\Components\Textarea::make('bio'),
-            Forms\Components\TextInput::make('website'),
-            Forms\Components\Toggle::make('is_active')->default(true),
-            Forms\Components\Select::make('locale')->options(['en' => 'English', 'de' => 'Deutsch'])->default('en'),
+            Forms\Components\Section::make('Account')
+                ->columns(2)
+                ->schema([
+                    Forms\Components\TextInput::make('name')->required(),
+                    Forms\Components\TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
+                    Forms\Components\TextInput::make('password')->password()->required()->hiddenOn('edit'),
+                    Forms\Components\Select::make('roles')->relationship('roles', 'name')->multiple()->preload(),
+                    Forms\Components\Toggle::make('is_active')->default(true),
+                    Forms\Components\Toggle::make('is_trusted_uploader')->label('Trusted Uploader'),
+                    Forms\Components\Select::make('locale')
+                        ->options(['en'=>'English','de'=>'Deutsch','fr'=>'Français','nl'=>'Nederlands','pl'=>'Polski','tr'=>'Türkçe'])
+                        ->default('en'),
+                    Forms\Components\TextInput::make('total_uploads')->numeric()->label('Total Uploads'),
+                    Forms\Components\TextInput::make('total_downloads')->numeric()->label('Total Downloads'),
+                ]),
+            Forms\Components\Section::make('Öffentliches Profil')
+                ->columns(2)
+                ->schema([
+                    Forms\Components\Textarea::make('bio')->columnSpanFull()->rows(3),
+                    Forms\Components\TextInput::make('website')->url()->placeholder('https://'),
+                    Forms\Components\TextInput::make('clan')->placeholder('z.B. |ETI|Clan'),
+                    Forms\Components\TextInput::make('discord_username')->label('Discord Username'),
+                    Forms\Components\TextInput::make('telegram_username')->label('Telegram Username')->placeholder('@username'),
+                    Forms\Components\CheckboxList::make('favorite_games')
+                        ->label('Lieblingsspiele')
+                        ->options(['et'=>'Wolfenstein: ET','rtcw'=>'Return to Castle Wolfenstein','etl'=>'ET: Legacy'])
+                        ->columns(3)
+                        ->columnSpanFull(),
+                ]),
+            Forms\Components\Section::make('Statistiken & Aktivität')
+                ->columns(2)
+                ->collapsed()
+                ->schema([
+                    Forms\Components\TextInput::make('last_login_at')->label('Letzter Login')->disabled(),
+                    Forms\Components\TextInput::make('last_activity_at')->label('Letzte Aktivität')->disabled(),
+                    Forms\Components\TextInput::make('created_at')->label('Registriert am')->disabled(),
+                ]),
         ]);
     }
 

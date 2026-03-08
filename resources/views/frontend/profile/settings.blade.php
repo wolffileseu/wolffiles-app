@@ -172,6 +172,42 @@
                                 <input type="text" name="clan" value="{{ old('clan', auth()->user()->clan) }}" placeholder="z.B. |ETI|Clan" class="ifield" oninput="markDirty()">
                             </div>
                         </div>
+                        @if(isset($profileFields) && $profileFields->count() > 0)
+                        <div class="mb-4">
+                            <div class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                <span class="flex-1 h-px bg-gray-700"></span>
+                                <span>Community Felder</span>
+                                <span class="flex-1 h-px bg-gray-700"></span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                @foreach($profileFields as $field)
+                                <div @if($field->type === 'textarea') class="sm:col-span-2" @endif>
+                                    <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">
+                                        {{ $field->label }}@if($field->is_required)<span class="text-red-400 ml-0.5">*</span>@endif
+                                    </label>
+                                    @if($field->type === 'textarea')
+                                        <textarea name="profile_data[{{ $field->key }}]" class="ifield" rows="2"
+                                            placeholder="{{ $field->placeholder }}" oninput="markDirty()">{{ old('profile_data.'.$field->key, auth()->user()->profile_data[$field->key] ?? '') }}</textarea>
+                                    @elseif($field->type === 'select' && $field->options)
+                                        <select name="profile_data[{{ $field->key }}]" class="ifield" onchange="markDirty()">
+                                            <option value="">— {{ $field->placeholder ?: 'Auswählen' }} —</option>
+                                            @foreach($field->options as $opt)
+                                            <option value="{{ $opt }}" {{ (old('profile_data.'.$field->key, auth()->user()->profile_data[$field->key] ?? '') == $opt) ? 'selected' : '' }}>{{ $opt }}</option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <input type="{{ $field->type === 'url' ? 'url' : 'text' }}"
+                                               name="profile_data[{{ $field->key }}]"
+                                               value="{{ old('profile_data.'.$field->key, auth()->user()->profile_data[$field->key] ?? '') }}"
+                                               placeholder="{{ $field->placeholder }}"
+                                               class="ifield" oninput="markDirty()">
+                                    @endif
+                                </div>
+                                @endforeach
+                            </div>
+                        </div>
+                        @endif
+
                         <div class="mb-4">
                             <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Lieblingsspiele</label>
                             <div class="flex flex-col gap-2">
