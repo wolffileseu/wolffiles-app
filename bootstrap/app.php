@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: [
             'donate/paypal-ipn',
         ]);
+        $middleware->api(append: [
+            \App\Http\Middleware\LogApiRequests::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\TrackUserActivity::class,
