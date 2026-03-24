@@ -131,22 +131,33 @@
                                 }
                             }
                         @endphp
-                        <article class="bg-gray-800 rounded-lg border border-gray-700 p-6">
-                            <div class="flex items-start space-x-4">
+                        <article class="bg-gray-800 rounded-lg border border-gray-700 p-4 hover:border-gray-600 transition-colors">
+                            <div class="flex items-start gap-3">
                                 @if($imageUrl)
                                     <img src="{{ $imageUrl }}" alt="{{ $post->title }}"
-                                         class="w-24 h-24 object-cover rounded-lg flex-shrink-0" loading="lazy" width="96" height="96"
+                                         class="w-20 h-16 object-cover rounded flex-shrink-0" loading="lazy"
                                          onerror="this.style.display='none'">
                                 @endif
                                 <div class="flex-1 min-w-0">
-                                    <h3 class="text-lg font-semibold text-amber-400 mb-2">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
+                                        @include('frontend.posts._type_badge', ['post' => $post])
+                                        @if($post->clan)
+                                            <span class="bg-blue-900/30 text-blue-400 px-2 py-0.5 rounded text-xs">[{{ $post->clan->tag }}] {{ $post->clan->name }}</span>
+                                        @endif
+                                    </div>
+                                    <h3 class="text-base font-semibold text-amber-400 mb-1 leading-tight">
                                         <a href="{{ route('posts.show', $post) }}" class="hover:underline">{{ $post->title }}</a>
                                     </h3>
-                                    <p class="text-gray-400 text-sm mb-3">{{ $cleanContent }}</p>
-                                    <div class="flex items-center space-x-3 text-xs text-gray-500">
+                                    @if($post->type === 'event' && $post->event_date)
+                                        <p class="text-green-400 text-xs mb-1">📅 {{ $post->event_date->format('d.m.Y H:i') }}{{ $post->event_location ? ' · ' . $post->event_location : '' }}</p>
+                                    @elseif($post->type === 'match' && $post->match_opponent)
+                                        <p class="text-yellow-400 text-xs mb-1">⚔️ vs {{ $post->match_opponent }}{{ $post->match_result ? ' · ' . $post->match_result : '' }}</p>
+                                    @endif
+                                    <p class="text-gray-400 text-xs mb-2 line-clamp-2">{{ $cleanContent }}</p>
+                                    <div class="flex items-center gap-3 text-xs text-gray-500">
                                         <span>{{ $post->published_at?->format('d.m.Y') }}</span>
-                                        <span>von {{ $post->user?->name }}</span>
-                                        <a href="{{ route('posts.show', $post) }}" class="text-amber-400 hover:underline ml-auto">Weiterlesen →</a>
+                                        <span>{{ $post->user?->name }}</span>
+                                        <a href="{{ route('posts.show', $post) }}" class="text-amber-400 hover:underline ml-auto">{{ __('messages.read_more') }} →</a>
                                     </div>
                                 </div>
                             </div>

@@ -93,7 +93,7 @@ class FastDlController extends Controller
 
         // 2. Check base directory (if include_base)
         if ($clan->include_base) {
-            $baseDir = $game->directories()->where('slug', $dirSlug)->where('is_base', true)->first();
+            $baseDir = $game->directories()->where('slug', $dirSlug)->first();
             if ($baseDir) {
                 $file = FastDlFile::where('directory_id', $baseDir->id)
                     ->where('filename', $filename)
@@ -155,22 +155,47 @@ class FastDlController extends Controller
 
         if (!$game) abort(404);
 
-        /** @var \App\Models\FastDl\FastDlDirectory|null $dir */
-        $dir = FastDlDirectory::where('game_id', $game->id)
-            ->where('slug', $directory)
-            ->where('is_active', true)
-            ->first();
+        $allFiles = collect();
 
-        if (!$dir) abort(404);
+        if ($clan) {
+            $clanFiles = FastDlClanFile::where('clan_id', $clan->id)
+                ->where('directory', $directory)
+                ->where('is_active', true)
+                ->orderBy('filename')
+                ->get(['filename', 'file_size', 'updated_at']);
+            $allFiles = $allFiles->merge($clanFiles);
 
-        $files = FastDlFile::where('directory_id', $dir->id)
-            ->where('is_active', true)
-            ->orderBy('filename')
-            ->get(['filename', 'file_size', 'updated_at']);
+            if ($clan->include_base) {
+                $baseDir = FastDlDirectory::where('game_id', $game->id)
+                    ->where('slug', $directory)
+                    //->where('is_base', true)
+                    ->where('is_active', true)
+                    ->first();
+                if ($baseDir) {
+                    $baseFiles = FastDlFile::where('directory_id', $baseDir->id)
+                        ->where('is_active', true)
+                        ->orderBy('filename')
+                        ->get(['filename', 'file_size', 'updated_at']);
+                    $allFiles = $allFiles->merge($baseFiles);
+                }
+            }
+        } else {
+            /** @var \App\Models\FastDl\FastDlDirectory|null $dir */
+            $dir = FastDlDirectory::where('game_id', $game->id)
+                ->where('slug', $directory)
+                ->where('is_active', true)
+                ->first();
+            if (!$dir) abort(404);
+            $allFiles = FastDlFile::where('directory_id', $dir->id)
+                ->where('is_active', true)
+                ->orderBy('filename')
+                ->get(['filename', 'file_size', 'updated_at']);
+        }
 
-        // Simple text listing (ET clients don't need HTML)
-        $output = "# " . $game->name . " / " . $dir->name . "\n# Files: " . $files->count() . "\n\n";
-        foreach ($files as $f) {
+        $allFiles = $allFiles->unique('filename')->sortBy('filename');
+        $dirLabel = $clan ? $clan->slug . '/' . $directory : $directory;
+        $output = "# " . $game->name . " / " . $dirLabel . "\n# Files: " . $allFiles->count() . "\n\n";
+        foreach ($allFiles as $f) {
             $output .= $f->filename . "\n";
         }
 

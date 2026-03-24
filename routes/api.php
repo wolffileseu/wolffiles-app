@@ -45,3 +45,17 @@ Route::get('/heatmap-data', function (\Illuminate\Http\Request $request) {
 
 // Telegram Bot Webhook
 Route::post('/telegram/webhook', [\App\Http\Controllers\Api\TelegramWebhookController::class, 'handle']);
+
+// Clan Tool - Version Check (public)
+Route::get("/v1/clan/version", [\App\Http\Controllers\Api\V1\ClanController::class, "version"]);
+
+// Clan Tool - Authenticated Routes
+Route::middleware(\App\Http\Middleware\ValidateClanApiKey::class)
+    ->prefix("v1/clan")
+    ->group(function () {
+        Route::get("/me",             [\App\Http\Controllers\Api\V1\ClanController::class, "me"]);
+        Route::post("/news",          [\App\Http\Controllers\Api\V1\ClanController::class, "postNews"]);
+        Route::post("/event",         [\App\Http\Controllers\Api\V1\ClanController::class, "postEvent"]);
+        Route::post("/match",         [\App\Http\Controllers\Api\V1\ClanController::class, "postMatch"]);
+        Route::post("/recruitment",   [\App\Http\Controllers\Api\V1\ClanController::class, "postRecruitment"]);
+    });

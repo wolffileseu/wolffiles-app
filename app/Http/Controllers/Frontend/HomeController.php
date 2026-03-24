@@ -27,7 +27,7 @@ class HomeController extends Controller
         });
 
         $latestPosts = Cache::remember('home_posts', 600, function () {
-            return Post::where('is_published', true)
+            return Post::where('is_published', true)->with(['user', 'clan'])
                 ->orderByDesc('published_at')
                 ->limit(5)->get();
         });

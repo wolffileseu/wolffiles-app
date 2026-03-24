@@ -1,22 +1,21 @@
 <?php
-
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
+use App\Models\Clan;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use App\Services\SocialMedia\SocialMediaService;
 
 class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
     protected static ?string $navigationGroup = 'Content';
-
 
     public static function canAccess(): bool
     {
@@ -26,29 +25,103 @@ class PostResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Forms\Components\TextInput::make('title')->required()->maxLength(255),
-            Forms\Components\TextInput::make('slug')
-                ->maxLength(255)
-                ->hint('Leave empty to auto-generate')
-                ->unique(ignoreRecord: true),
-            Forms\Components\Textarea::make('excerpt')->rows(3)->hint('Short preview text for listings'),
-            Forms\Components\RichEditor::make('content')->required()->columnSpanFull(),
-            Forms\Components\FileUpload::make('featured_image')
-                ->disk('s3')
-                ->directory('posts/images')
-                ->image()
-                ->imageResizeMode('cover')
-                ->imageCropAspectRatio('16:9')
-                ->imageResizeTargetWidth('1200')
-                ->imageResizeTargetHeight('675')
-                ->label('Featured Image')
-                ->hint('Recommended: 1200x675px. Shown on homepage and post detail.'),
-            Forms\Components\Grid::make(3)->schema([
-                Forms\Components\Toggle::make('is_published')->default(false),
-                Forms\Components\Toggle::make('is_pinned')->default(false),
-                Forms\Components\DateTimePicker::make('published_at')->default(now()),
-            ]),
-            Forms\Components\KeyValue::make('title_translations')->label('Title Translations'),
+
+            Forms\Components\Section::make('Allgemein')->schema([
+                Forms\Components\Select::make('type')
+                    ->label('Typ')
+                    ->options(Post::TYPES)
+                    ->default(Post::TYPE_NEWS)
+                    ->required()
+                    ->live(),
+                Forms\Components\Select::make('clan_id')
+                    ->label('Clan')
+                    ->options(Clan::where('is_active', true)->pluck('name', 'id'))
+                    ->searchable()
+                    ->nullable()
+                    ->placeholder('Kein Clan (Wolffiles News)')
+                    ->visible(fn(Get $get) => $get('type') !== Post::TYPE_NEWS || true),
+            ])->columns(2),
+
+            Forms\Components\Section::make('Inhalt')->schema([
+                Forms\Components\TextInput::make('title')
+                    ->label('Titel')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('slug')
+                    ->maxLength(255)
+                    ->hint('Leer lassen für automatische Generierung')
+                    ->unique(ignoreRecord: true),
+                Forms\Components\Textarea::make('excerpt')
+                    ->label('Kurzbeschreibung')
+                    ->rows(3),
+                Forms\Components\RichEditor::make('content')
+                    ->label('Inhalt')
+                    ->required()
+                    ->columnSpanFull(),
+                Forms\Components\FileUpload::make('featured_image')
+                    ->disk('s3')
+                    ->directory('posts/images')
+                    ->image()
+                    ->imageResizeMode('cover')
+                    ->imageCropAspectRatio('16:9')
+                    ->imageResizeTargetWidth('1200')
+                    ->imageResizeTargetHeight('675')
+                    ->label('Beitragsbild')
+                    ->columnSpanFull(),
+            ])->columns(2),
+
+            // Event Felder
+            Forms\Components\Section::make('Event Details')
+                ->schema([
+                    Forms\Components\DateTimePicker::make('event_date')
+                        ->label('Event Datum & Uhrzeit')
+                        ->required(),
+                    Forms\Components\TextInput::make('event_location')
+                        ->label('Ort / Server')
+                        ->maxLength(255),
+                ])
+                ->columns(2)
+                ->visible(fn(Get $get) => $get('type') === Post::TYPE_EVENT),
+
+            // Match Felder
+            Forms\Components\Section::make('Match Details')
+                ->schema([
+                    Forms\Components\TextInput::make('match_opponent')
+                        ->label('Gegner-Clan')
+                        ->required()
+                        ->maxLength(100),
+                    Forms\Components\TextInput::make('match_result')
+                        ->label('Ergebnis (z.B. 2:1)')
+                        ->maxLength(50),
+                    Forms\Components\TextInput::make('match_map')
+                        ->label('Map')
+                        ->maxLength(100),
+                    Forms\Components\DateTimePicker::make('event_date')
+                        ->label('Match Datum'),
+                ])
+                ->columns(2)
+                ->visible(fn(Get $get) => $get('type') === Post::TYPE_MATCH),
+
+            // Rekrutierung Felder
+            Forms\Components\Section::make('Rekrutierung Details')
+                ->schema([
+                    Forms\Components\Repeater::make('recruitment_requirements')
+                        ->label('Anforderungen')
+                        ->schema([
+                            Forms\Components\TextInput::make('requirement')
+                                ->label('Anforderung')
+                                ->required(),
+                        ])
+                        ->columnSpanFull(),
+                ])
+                ->visible(fn(Get $get) => $get('type') === Post::TYPE_RECRUITMENT),
+
+            Forms\Components\Section::make('Veröffentlichung')->schema([
+                Forms\Components\Toggle::make('is_published')->label('Veröffentlicht')->default(false),
+                Forms\Components\Toggle::make('is_pinned')->label('Angepinnt')->default(false),
+                Forms\Components\DateTimePicker::make('published_at')->label('Veröffentlichungsdatum')->default(now()),
+            ])->columns(3),
+
         ]);
     }
 
@@ -58,27 +131,66 @@ class PostResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('featured_image')
                     ->disk('s3')
-                    ->label('Image')
-                    ->circular(false)
+                    ->label('Bild')
                     ->width(60)
                     ->height(40),
-                Tables\Columns\TextColumn::make('title')->searchable()->sortable(),
-                Tables\Columns\IconColumn::make('is_published')->boolean(),
-                Tables\Columns\IconColumn::make('is_pinned')->boolean(),
-                Tables\Columns\TextColumn::make('view_count')->sortable(),
-                Tables\Columns\TextColumn::make('published_at')->dateTime('d.m.Y'),
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Typ')
+                    ->badge()
+                    ->color(fn(string $state): string => match($state) {
+                        Post::TYPE_NEWS        => 'info',
+                        Post::TYPE_EVENT       => 'success',
+                        Post::TYPE_MATCH       => 'warning',
+                        Post::TYPE_RECRUITMENT => 'danger',
+                        default                => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => Post::TYPES[$state] ?? $state),
+                Tables\Columns\TextColumn::make('clan.name')
+                    ->label('Clan')
+                    ->placeholder('Wolffiles')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Titel')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\IconColumn::make('is_published')
+                    ->label('Veröffentlicht')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('is_pinned')
+                    ->label('Angepinnt')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('published_at')
+                    ->label('Datum')
+                    ->dateTime('d.m.Y'),
+            ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('type')
+                    ->label('Typ')
+                    ->options(Post::TYPES),
+                Tables\Filters\SelectFilter::make('clan_id')
+                    ->label('Clan')
+                    ->options(Clan::pluck('name', 'id')),
+                Tables\Filters\TernaryFilter::make('is_published')
+                    ->label('Veröffentlicht'),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPosts::route('/'),
+            'index'  => Pages\ListPosts::route('/'),
             'create' => Pages\CreatePost::route('/create'),
-            'edit' => Pages\EditPost::route('/{record}/edit'),
+            'edit'   => Pages\EditPost::route('/{record}/edit'),
         ];
     }
 }
