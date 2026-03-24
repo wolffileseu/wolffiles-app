@@ -43,6 +43,8 @@ Route::get('/wiki/{wikiArticle}/history', [WikiController::class, 'history'])->n
 
 // Wiki (auth required)
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/wiki-create', [WikiController::class, 'create'])->name('wiki.create');
     Route::post('/wiki', [WikiController::class, 'store'])->name('wiki.store');
     Route::get('/wiki/{wikiArticle}/edit', [WikiController::class, 'edit'])->name('wiki.edit');
@@ -55,6 +57,8 @@ Route::get('/tutorials/{slug}', [TutorialController::class, 'show'])->name('tuto
 
 // Tutorials (auth required)
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/tutorial-create', [TutorialController::class, 'create'])->name('tutorials.create');
     Route::post('/tutorials', [TutorialController::class, 'store'])->name('tutorials.store');
     Route::post('/tutorials/{tutorial}/vote', [TutorialController::class, 'vote'])->name('tutorials.vote');
@@ -72,6 +76,8 @@ Route::get('/demos/{demo}/viewer', [DemoController::class, 'viewer'])->name('dem
 Route::get('/demos/{demo}/download', [DemoController::class, 'download'])->name('demos.download');
 
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/demo/upload', [DemoController::class, 'upload'])->name('demos.upload');
     Route::post('/demo/upload', [DemoController::class, 'store'])->name('demos.store');
 });
@@ -91,6 +97,8 @@ Route::get('/lua', [LuaScriptController::class, 'index'])->name('lua.index');
 
 // LUA Upload (muss VOR {luaScript} stehen!)
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/lua/upload', [LuaScriptController::class, 'upload'])->name('lua.upload');
     Route::post('/lua/upload', [LuaScriptController::class, 'store'])->name('lua.store');
 });
@@ -138,6 +146,8 @@ Route::get('/auth/discord/callback', [DiscordController::class, 'callback'])->na
 
 // Auth-required routes
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     // Upload
     Route::get('/upload', [FileController::class, 'upload'])->name('files.upload');
     Route::post('/upload', [FileController::class, 'store'])->name('files.store');
@@ -320,6 +330,8 @@ Route::prefix('hosting')->name('hosting.')->group(function () {
     Route::post('/calculate-price', [\App\Http\Controllers\Frontend\HostingController::class, 'calculatePrice'])->name('calculate-price');
 
     Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
         Route::post('/checkout', [\App\Http\Controllers\Frontend\HostingController::class, 'checkout'])->name('checkout');
         Route::get('/payment/{order}', [\App\Http\Controllers\Frontend\HostingController::class, 'payment'])->name('payment');
         Route::get('/payment/{order}/success', [\App\Http\Controllers\Frontend\HostingController::class, 'paymentSuccess'])->name('payment.success');
@@ -350,6 +362,8 @@ Route::get('/tracker/compare', [TrackerExtendedController::class, 'playerCompare
 Route::get('/tracker/scrims', [TrackerExtendedController::class, 'scrims'])->name('tracker.scrims');
 
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/tracker/scrims/create', [TrackerExtendedController::class, 'scrimCreate'])->name('tracker.scrims.create');
     Route::post('/tracker/scrims', [TrackerExtendedController::class, 'scrimStore'])->name('tracker.scrims.store');
     Route::post('/servers/{server}/rate', [TrackerExtendedController::class, 'rateServer'])->name('tracker.server.rate');
@@ -363,6 +377,8 @@ use App\Http\Controllers\Frontend\TrackerClaimController;
 use App\Http\Controllers\Frontend\TrackerClaimAdminController;
 
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     // Player claims
     Route::get('/tracker/players/{player}/claim', [TrackerClaimController::class, 'claimPlayer'])->name('tracker.claim.player');
     Route::post('/tracker/players/{player}/claim', [TrackerClaimController::class, 'storePlayerClaim'])->name('tracker.claim.player.store');
@@ -385,6 +401,8 @@ Route::middleware(['auth'])->prefix('tracker/admin')->group(function () {
 
 // ===== Tracker Server Claims =====
 Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
     Route::get('/tracker/servers/{server}/claim', [\App\Http\Controllers\Frontend\TrackerClaimController::class, 'claimServer'])->name('tracker.claim.server');
     Route::post('/tracker/servers/{server}/claim', [\App\Http\Controllers\Frontend\TrackerClaimController::class, 'storeServerClaim'])->name('tracker.claim.server.store');
 });
@@ -406,6 +424,8 @@ Route::prefix('forum')->name('forum.')->group(function () {
 
     // Eingeloggte User
     Route::middleware('auth')->group(function () {
+    Route::get('settings/privacy/download-export', [\App\Http\Controllers\PrivacyExportController::class, 'download'])->name('settings.privacy.download');
+    Route::get('settings/privacy', \App\Livewire\Settings\Privacy::class)->name('settings.privacy');
         Route::get('/{category}/new-thread/create', [ForumController::class, 'createThread'])->name('create-thread');
         Route::post('/{category}/new-thread/create', [ForumController::class, 'storeThread'])->name('store-thread');
         Route::post('/{category}/{thread}/reply', [ForumController::class, 'storePost'])->name('store-post');

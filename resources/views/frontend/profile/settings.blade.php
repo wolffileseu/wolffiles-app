@@ -52,6 +52,7 @@
                 <a href="#section-password" class="snav-item flex items-center gap-2.5 px-3 py-2 rounded-r-lg text-sm text-gray-400">🔐 {{ __('messages.password') }}</a>
                 <a href="#section-discord"  class="snav-item flex items-center gap-2.5 px-3 py-2 rounded-r-lg text-sm text-gray-400">💬 Discord</a>
                 <div class="text-xs font-semibold text-red-800 uppercase tracking-widest px-3 py-2 mt-2">Danger</div>
+                <a href="{{ route('settings.privacy') }}" class="snav-item flex items-center gap-2.5 px-3 py-2 rounded-r-lg text-sm text-gray-400">🔒 {{ __('messages.privacy_settings') }}</a>
                 <a href="#section-danger"   class="snav-item flex items-center gap-2.5 px-3 py-2 rounded-r-lg text-sm text-red-400">⚠️ {{ __('messages.delete_account') }}</a>
             </div>
         </nav>
