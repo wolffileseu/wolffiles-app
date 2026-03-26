@@ -1,5 +1,6 @@
 <?php
-
+use App\Http\Controllers\Api\AuthApiController;
+use App\Http\Controllers\Api\FileUploadApiController;
 use App\Http\Controllers\Api\FileApiController;
 use Illuminate\Support\Facades\Route;
 
@@ -41,6 +42,42 @@ Route::get('/heatmap-data', function (\Illuminate\Http\Request $request) {
         ->limit(500)
         ->get();
 })->middleware('throttle:30,1');
+
+
+// ── AUTH (öffentlich) ─────────────────────────────────────────
+Route::prefix('v1')->group(function () {
+
+    Route::post('/auth/login', [AuthApiController::class, 'login'])
+        ->middleware('throttle:10,1')
+        ->name('api.auth.login');
+
+    Route::post('/auth/register', [AuthApiController::class, 'register'])
+        ->middleware('throttle:5,1')
+        ->name('api.auth.register');
+
+    // ── AUTH (eingeloggt) ─────────────────────────────────────
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::get('/auth/me', [AuthApiController::class, 'me'])
+            ->name('api.auth.me');
+
+        Route::post('/auth/logout', [AuthApiController::class, 'logout'])
+            ->name('api.auth.logout');
+
+        // Upload
+        Route::post('/files', [FileUploadApiController::class, 'store'])
+            ->middleware('throttle:30,1')
+            ->name('api.files.store');
+
+        Route::get('/files/my', [FileUploadApiController::class, 'myFiles'])
+            ->name('api.files.my');
+    });
+
+    // Kategorien (öffentlich)
+    Route::get('/categories', [\App\Http\Controllers\Api\CategoryApiController::class, 'index'])
+        ->name('api.categories.index');
+
+});
 
 
 // Telegram Bot Webhook
