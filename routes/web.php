@@ -123,7 +123,7 @@ Route::get('/page/{page}', [PageController::class, 'show'])->name('pages.show');
 Route::get('/statistics', [StatisticsController::class, 'index'])->name('statistics');
 
 // Sitemap
-Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')->withoutMiddleware(['web']);
 
 // Contact
 Route::get('/contact', [ContactController::class, 'show'])->name('contact');

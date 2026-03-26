@@ -13,6 +13,7 @@ class SitemapController extends Controller
 
         return response()
             ->view('frontend.sitemap', compact('urls'))
-            ->header('Content-Type', 'application/xml');
+            ->header('Content-Type', 'application/xml')
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 }
