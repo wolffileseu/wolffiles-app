@@ -203,12 +203,13 @@ class ServerPollerService
                 'is_online' => false,
                 'current_players' => 0,
                 'last_poll_at' => now(),
+                'next_poll_at' => now()->addSeconds(300),
             ]);
 
             // End all active sessions on this server
             $this->playerTracker->endServerSessions($server);
         } else {
-            $server->update(['last_poll_at' => now()]);
+            $server->update(['last_poll_at' => now(), 'next_poll_at' => now()->addSeconds(300)]);
         }
     }
 }

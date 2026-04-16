@@ -36,7 +36,7 @@ class TrackerServer extends Model
         'os', 'sv_pure', 'punkbuster', 'is_ranked',
         'is_online', 'is_manually_added', 'added_by', 'status',
         'total_players_tracked', 'total_unique_players', 'uptime_percentage',
-        'last_seen_at', 'first_seen_at', 'last_poll_at', 'poll_failures',
+        'last_seen_at', 'first_seen_at', 'last_poll_at', 'next_poll_at', 'poll_failures',
     ];
 
     protected function casts(): array
@@ -52,6 +52,7 @@ class TrackerServer extends Model
             'last_seen_at' => 'datetime',
             'first_seen_at' => 'datetime',
             'last_poll_at' => 'datetime',
+            'next_poll_at' => 'datetime',
         ];
     }
 
