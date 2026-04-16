@@ -41,6 +41,10 @@
                 <div class="text-lg mb-1">📖</div>
                 <div class="text-xs text-gray-300">Wiki</div>
             </a>
+            <a href="#section-tracker" class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-amber-500 transition text-center">
+                <div class="text-lg mb-1">📡</div>
+                <div class="text-xs text-gray-300">Tracker</div>
+            </a>
         </div>
 
         {{-- Endpoints --}}
@@ -376,6 +380,321 @@
             </div>
 
         </div>
+
+
+            {{-- Section: Tracker --}}
+            <h2 id="section-tracker" class="text-xl font-bold text-white border-b border-gray-700 pb-2 pt-4">📡 Tracker API</h2>
+
+            {{-- GET /tracker/online --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-online' ? null : 'tracker-online'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/online</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Global player &amp; server count</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-online' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-online'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns the current number of players and servers online across all tracked games.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/online</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/online', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/stats --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-stats' ? null : 'tracker-stats'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/stats</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Tracker statistics per game</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-stats' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-stats'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns server and player counts broken down by game (ET 2.60b, ETL, RtCW, etc.).</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/stats</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/stats', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-servers' ? null : 'tracker-servers'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— List all online servers</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-servers' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-servers'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns all currently online servers, sorted by player count. Filter by game slug.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm space-y-2">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">game</code><span class="text-gray-300">Filter by game slug (e.g. <code class="text-gray-400">etl</code>, <code class="text-gray-400">et-260b</code>) <span class="text-gray-500 text-xs">(optional)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers?game=etl</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers/top --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-servers-top' ? null : 'tracker-servers-top'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/top</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Top servers by player count</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-servers-top' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-servers-top'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns the most populated servers currently online. Max 25.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">limit</code><span class="text-gray-300">Number of results, max 25 <span class="text-gray-500 text-xs">(optional, default 10)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/top?limit=5</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/top?limit=5', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/maps/{mapName} --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-maps' ? null : 'tracker-maps'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/maps/{mapName}</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Servers playing a specific map</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-maps' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-maps'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns all servers currently playing the given map, plus historical stats (times played, peak players, avg players).</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Path Parameter</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">mapName</code><span class="text-gray-300">Map filename without extension (e.g. <code class="text-gray-400">venice</code>, <code class="text-gray-400">supply</code>) <span class="text-red-400 text-xs">(required)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/maps/venice</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/maps/venice', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/players/search --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-players-search' ? null : 'tracker-players-search'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/players/search</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Search players by name</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-players-search' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-players-search'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Search tracked players by name. Minimum 2 characters required.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">q</code><span class="text-gray-300">Player name (min 2 chars) <span class="text-red-400 text-xs">(required)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/players/search?q=ninja</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/players/search?q=ninja', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/players/top --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-players-top' ? null : 'tracker-players-top'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/players/top</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Top players leaderboard</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-players-top' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-players-top'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns top players sorted by ELO, kills, playtime, or K/D ratio. Max 25.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm space-y-2">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">sort</code><span class="text-gray-300"><code class="text-gray-400">elo</code> / <code class="text-gray-400">kills</code> / <code class="text-gray-400">playtime</code> / <code class="text-gray-400">kd</code> <span class="text-gray-500 text-xs">(optional, default elo)</span></span></div>
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">limit</code><span class="text-gray-300">Number of results, max 25 <span class="text-gray-500 text-xs">(optional, default 10)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/players/top?sort=elo&limit=10</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/players/top?sort=elo&limit=5', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/players/{id} --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-player' ? null : 'tracker-player'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/players/{id}</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Player profile</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-player' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-player'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns full profile for a tracked player including ELO, stats, and last 5 sessions.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Path Parameter</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">id</code><span class="text-gray-300">Player ID <span class="text-red-400 text-xs">(required)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/players/1</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/players/1', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/rankings --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-rankings' ? null : 'tracker-rankings'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/rankings</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Period rankings</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-rankings' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-rankings'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns paginated player rankings for a given period.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm space-y-2">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">period</code><span class="text-gray-300"><code class="text-gray-400">alltime</code> / <code class="text-gray-400">month</code> / <code class="text-gray-400">week</code> <span class="text-gray-500 text-xs">(optional, default alltime)</span></span></div>
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">limit</code><span class="text-gray-300">Results per page <span class="text-gray-500 text-xs">(optional, default 50)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/rankings?period=month&limit=10</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/rankings?period=alltime&limit=5', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/clans --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-clans' ? null : 'tracker-clans'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/clans</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Clan list &amp; search</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-clans' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-clans'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns active clans sorted by member count. Optionally search by tag or name.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm space-y-2">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">q</code><span class="text-gray-300">Search by clan tag or name <span class="text-gray-500 text-xs">(optional)</span></span></div>
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">limit</code><span class="text-gray-300">Results per page <span class="text-gray-500 text-xs">(optional, default 50)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/clans?q=etj</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/clans?limit=5', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
 
         {{-- Rate Limits --}}
         <div class="mt-8 bg-gray-800 rounded-xl border border-amber-500/20 p-6">

@@ -223,14 +223,6 @@ Route::get('/servers', [TrackerController::class, 'servers'])->name('tracker.ser
 Route::get('/servers/{server}', [TrackerController::class, 'serverShow'])->name('tracker.server.show');
 Route::get('/players', [TrackerController::class, 'players'])->name('tracker.players');
 Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name('tracker.player.show');
-Route::get('/api/tracker/servers', [TrackerController::class, 'apiServers'])->name('tracker.api.servers');
-Route::get('/api/tracker/stats', [TrackerController::class, 'apiStats'])->name('tracker.api.stats');
-Route::get('/api/tracker/servers/top', [TrackerController::class, 'apiTopServers'])->name('tracker.api.top-servers');
-Route::get('/api/tracker/players/top', [TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
-Route::get('/api/tracker/players/search', [TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
-Route::get('/api/tracker/players/{id}', [TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
-Route::get('/api/tracker/online', [TrackerController::class, 'apiOnline'])->name('tracker.api.online');
-Route::get('/api/tracker/maps/{mapName}', [TrackerController::class, 'apiMapStats'])->name('tracker.api.map-stats');
 Route::post('/players/{player}/claim', [TrackerController::class, 'claimPlayer'])->middleware('auth')->name('tracker.player.claim');
 Route::post('/players/{player}/unclaim', [TrackerController::class, 'unclaimPlayer'])->middleware('auth')->name('tracker.player.unclaim');
 
@@ -372,8 +364,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/servers/{server}/rate', [TrackerExtendedController::class, 'rateServer'])->name('tracker.server.rate');
 });
 
-Route::get('/api/tracker/rankings', [TrackerExtendedController::class, 'apiRankings'])->name('tracker.api.rankings');
-Route::get('/api/tracker/clans', [TrackerExtendedController::class, 'apiClans'])->name('tracker.api.clans');
 
 // ===== Tracker Claims =====
 use App\Http\Controllers\Frontend\TrackerClaimController;
@@ -443,4 +433,10 @@ Route::prefix('forum')->name('forum.')->group(function () {
         Route::delete('/thread/{thread}/delete', [ForumController::class, 'deleteThread'])->name('delete-thread');
     });
 });
+
+// Legacy Tracker API redirects — forward old URLs to /api/v1/tracker/
+Route::get('/api/tracker/{any}', function ($any) {
+    return redirect('/api/v1/tracker/' . $any . (request()->getQueryString() ? '?' . request()->getQueryString() : ''), 301);
+})->where('any', '.*');
+
 

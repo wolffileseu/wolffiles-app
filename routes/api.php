@@ -96,3 +96,18 @@ Route::middleware(\App\Http\Middleware\ValidateClanApiKey::class)
         Route::post("/match",         [\App\Http\Controllers\Api\V1\ClanController::class, "postMatch"]);
         Route::post("/recruitment",   [\App\Http\Controllers\Api\V1\ClanController::class, "postRecruitment"]);
     });
+
+// Tracker API (public)
+Route::prefix('v1/tracker')->group(function () {
+    Route::get('/servers',         [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServers'])->name('tracker.api.servers');
+    Route::get('/servers/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopServers'])->name('tracker.api.top-servers');
+    Route::get('/stats',           [\App\Http\Controllers\Frontend\TrackerController::class, 'apiStats'])->name('tracker.api.stats');
+    Route::get('/online',          [\App\Http\Controllers\Frontend\TrackerController::class, 'apiOnline'])->name('tracker.api.online');
+    Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
+    Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
+    Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
+    Route::get('/maps/{mapName}',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiMapStats'])->name('tracker.api.map-stats');
+    Route::get('/rankings',        [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'apiRankings'])->name('tracker.api.rankings');
+    Route::get('/clans',           [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'apiClans'])->name('tracker.api.clans');
+});
+
