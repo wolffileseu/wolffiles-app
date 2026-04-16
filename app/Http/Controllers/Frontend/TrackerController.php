@@ -427,4 +427,94 @@ class TrackerController extends Controller
             'map_file_slug' => \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? null,
         ]);
     }
+
+    /**
+     * API: Player profile by ID
+     */
+    public function apiPlayer($id)
+    {
+        $player = \App\Models\Tracker\TrackerPlayer::findOrFail($id);
+        $recentSessions = $player->sessions()
+            ->with('server:id,hostname_clean,ip,port')
+            ->orderByDesc('started_at')
+            ->limit(5)
+            ->get()
+            ->map(fn($s) => [
+                'server' => $s->server?->hostname_clean,
+                'map' => $s->map_name,
+                'duration' => $s->duration_minutes . 'm',
+                'kills' => $s->kills,
+                'deaths' => $s->deaths,
+                'started_at' => $s->started_at?->toIso8601String(),
+            ]);
+
+        return response()->json([
+            'id' => $player->id,
+            'name' => $player->name_clean,
+            'country' => $player->country_code,
+            'elo' => $player->elo_rating,
+            'elo_peak' => $player->elo_peak,
+            'kills' => $player->total_kills,
+            'deaths' => $player->total_deaths,
+            'kd' => $player->kd_ratio,
+            'total_xp' => $player->total_xp,
+            'play_time_hours' => round($player->total_play_time_minutes / 60, 1),
+            'total_sessions' => $player->total_sessions,
+            'first_seen' => $player->first_seen_at?->toIso8601String(),
+            'last_seen' => $player->last_seen_at?->toIso8601String(),
+            'recent_sessions' => $recentSessions,
+            'url' => route('tracker.player.show', $player),
+        ]);
+    }
+
+    /**
+     * API: Global online count
+     */
+    public function apiOnline()
+    {
+        return response()->json([
+            'players_online' => \App\Models\Tracker\TrackerServer::where('is_online', true)->sum('current_players'),
+            'servers_online' => \App\Models\Tracker\TrackerServer::where('is_online', true)->count(),
+        ]);
+    }
+
+    /**
+     * API: Map stats — which servers currently play this map + history
+     */
+    public function apiMapStats($mapName)
+    {
+        $serversNow = \App\Models\Tracker\TrackerServer::with('game')
+            ->where('is_online', true)
+            ->where('current_map', $mapName)
+            ->orderByDesc('current_players')
+            ->get()
+            ->map(fn($s) => [
+                'id' => $s->id,
+                'name' => $s->hostname_clean,
+                'ip' => $s->ip,
+                'port' => $s->port,
+                'game' => $s->game->short_name,
+                'players' => $s->current_players,
+                'max_players' => $s->max_players,
+                'country' => $s->country_code,
+                'mod' => $s->mod_name,
+                'connect' => 'et://' . $s->ip . ':' . $s->port,
+                'url' => route('tracker.server.show', $s),
+            ]);
+
+        $stats = \App\Models\Tracker\TrackerServerMapStat::where('map_name', $mapName)
+            ->selectRaw('SUM(times_played) as total_played, SUM(total_time_minutes) as total_minutes, AVG(avg_players) as avg_players, MAX(peak_players) as peak_players, MAX(last_played_at) as last_played_at')
+            ->first();
+
+        return response()->json([
+            'map_name' => $mapName,
+            'servers_playing_now' => $serversNow->count(),
+            'servers' => $serversNow,
+            'total_times_played' => (int) ($stats->total_played ?? 0),
+            'avg_players' => round($stats->avg_players ?? 0, 1),
+            'peak_players' => (int) ($stats->peak_players ?? 0),
+            'last_played_at' => $stats->last_played_at ?? null,
+        ]);
+    }
+
 }

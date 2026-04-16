@@ -228,6 +228,9 @@ Route::get('/api/tracker/stats', [TrackerController::class, 'apiStats'])->name('
 Route::get('/api/tracker/servers/top', [TrackerController::class, 'apiTopServers'])->name('tracker.api.top-servers');
 Route::get('/api/tracker/players/top', [TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
 Route::get('/api/tracker/players/search', [TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
+Route::get('/api/tracker/players/{id}', [TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
+Route::get('/api/tracker/online', [TrackerController::class, 'apiOnline'])->name('tracker.api.online');
+Route::get('/api/tracker/maps/{mapName}', [TrackerController::class, 'apiMapStats'])->name('tracker.api.map-stats');
 Route::post('/players/{player}/claim', [TrackerController::class, 'claimPlayer'])->middleware('auth')->name('tracker.player.claim');
 Route::post('/players/{player}/unclaim', [TrackerController::class, 'unclaimPlayer'])->middleware('auth')->name('tracker.player.unclaim');
 
