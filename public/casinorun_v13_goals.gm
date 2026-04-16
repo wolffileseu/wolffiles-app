@@ -1,0 +1,18 @@
+global _MG =
+{
+	CAPPOINT_Alli =
+	{
+		GoalType = "CapPoint",
+		MinRadius = 32,
+		Position = Vec3(1852.433, 0.531, 65.125),
+		TagName = "",
+	},
+	CAPPOINT_Axis =
+	{
+		GoalType = "CapPoint",
+		MinRadius = 32,
+		Position = Vec3(-1854.337, 1.800, 65.201),
+		TagName = "",
+	},
+	Version = 1,
+};

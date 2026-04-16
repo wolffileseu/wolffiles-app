@@ -1,0 +1,50 @@
+//==========================================================================================
+//
+//	q3dm7_et.gm
+//
+//	Who  	When		What
+//------------------------------------------------------------------------------------------
+//	ETPlayer	25 June 2025	Initial Script
+//
+//==========================================================================================
+//
+
+global Map =
+{
+	Debug = 0, // please set to zero before distributing your script
+
+};
+
+global OnMapLoad = function()
+{
+	// Register callback functions
+
+	//~Util.DisableGoal( ".*", true ); // all but routes
+	//~SetAvailableMapGoals( TEAM.AXIS, true, "ATTACK_.*" );
+	//~SetAvailableMapGoals( TEAM.ALLIES, true, "ATTACK_.*" );
+
+	// Max users per goal
+	Util.SetMaxUsers( 1, "ATTACK_.*" );
+
+	// Camp times
+	SetMapGoalProperties( "ATTACK_.*", {MinCampTime=2, MaxCampTime=5} );
+
+
+	Util.MapDebugPrint( "Omni-bot map script for " + GetMapName() + " executed." );
+};
+
+global OnBotJoin = function( bot )
+{
+	// Uncomment for shootable breakables
+	//~bot.TargetBreakableDist = 90.0;
+	// Only set MaxViewDistance on maps with limited sight (e.g. fog)
+	//~bot.MaxViewDistance = 2400;
+};
+
+global InitializeRoutes = function()
+{
+	MapRoutes =
+	{
+	};
+	Util.Routes(MapRoutes);
+};
