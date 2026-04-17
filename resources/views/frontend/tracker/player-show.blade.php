@@ -46,16 +46,17 @@
             <div class="text-gray-400 text-xs">{{ __('messages.play_time') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
+            {{-- total_kills column currently stores XP (see TrackerPlayer model) --}}
             <div class="text-2xl font-bold text-green-400">{{ number_format($player->total_kills) }}</div>
             <div class="text-gray-400 text-xs">{{ __('messages.total_xp') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-red-400">{{ number_format($player->total_deaths) }}</div>
-            <div class="text-gray-400 text-xs">{{ __('messages.deaths') }}</div>
+            <div class="text-2xl font-bold text-cyan-400">{{ number_format($player->xp_per_hour) }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.xp_per_hour') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-amber-400">{{ $player->kd_ratio }}</div>
-            <div class="text-gray-400 text-xs">{{ __('messages.kd_ratio') }}</div>
+            <div class="text-2xl font-bold text-purple-400">{{ number_format($player->avg_xp_per_session) }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.avg_xp_session') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-blue-400">{{ number_format($player->total_sessions) }}</div>

@@ -760,4 +760,6 @@ return [
     'map_server_activity_auto_refresh' => 'Elke 30s vernieuwd',
     'map_server_activity_currently_playing' => 'Wordt nu gespeeld',
     'map_server_activity_recently_played' => 'Onlangs gespeeld',
+    'xp_per_hour' => 'XP/uur',
+    'avg_xp_session' => 'Gem. XP/sessie',
 ];

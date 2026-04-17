@@ -760,4 +760,6 @@ return [
     'map_server_activity_auto_refresh' => 'Aktualisiert alle 30s',
     'map_server_activity_currently_playing' => 'Wird gerade gespielt',
     'map_server_activity_recently_played' => 'Zuletzt gespielt',
+    'xp_per_hour' => 'XP/Stunde',
+    'avg_xp_session' => 'Ø XP/Session',
 ];

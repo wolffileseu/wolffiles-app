@@ -54,9 +54,55 @@ class TrackerPlayer extends Model
     public function scopeActive($query) { return $query->where('status', 'active'); }
     public function scopeTopElo($query) { return $query->orderByDesc('elo_rating'); }
 
+    /**
+     * K/D ratio. Currently returns 0.0 because ETLegacy's sv_tracker does NOT
+     * report per-player kills or deaths to us — `total_kills` actually
+     * accumulates XP deltas (see PlayerTrackingService::153) and
+     * `total_deaths` is never populated. Will return a real value once the
+     * ETLegacy fork ships sv_tracker2 with proper game-log parsing.
+     *
+     * @deprecated Kept only for BC with old controllers / rankings views.
+     */
     public function getKdRatioAttribute(): float
     {
-        return $this->total_deaths > 0 ? round($this->total_kills / $this->total_deaths, 2) : $this->total_kills;
+        if ($this->total_deaths <= 0 || $this->total_kills <= 0) {
+            return 0.0;
+        }
+        return round($this->total_kills / $this->total_deaths, 2);
+    }
+
+    /**
+     * XP earned per hour of play time.
+     * NOTE: `total_kills` column currently stores XP due to sv_tracker limitations.
+     */
+    public function getXpPerHourAttribute(): int
+    {
+        if ($this->total_play_time_minutes <= 0) {
+            return 0;
+        }
+        return (int) round($this->total_kills / ($this->total_play_time_minutes / 60));
+    }
+
+    /**
+     * Average XP earned per session.
+     */
+    public function getAvgXpPerSessionAttribute(): int
+    {
+        if ($this->total_sessions <= 0) {
+            return 0;
+        }
+        return (int) round($this->total_kills / $this->total_sessions);
+    }
+
+    /**
+     * Average session length in minutes.
+     */
+    public function getAvgSessionMinutesAttribute(): int
+    {
+        if ($this->total_sessions <= 0) {
+            return 0;
+        }
+        return (int) round($this->total_play_time_minutes / $this->total_sessions);
     }
 
     public function getPlayTimeFormattedAttribute(): string
