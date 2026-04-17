@@ -31,5 +31,9 @@ class Setting extends Model
                 'group' => $group,
             ]
         );
+
+        if (str_starts_with($key, 'wallpaper_')) {
+            app(\App\Services\WallpaperService::class)->flushCache();
+        }
     }
 }

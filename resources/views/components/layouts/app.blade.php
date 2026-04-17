@@ -23,7 +23,11 @@
     {{-- Preload critical font if used --}}
     <meta name="theme-color" content="#1f2937">
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col">
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col relative">
+
+    {{-- Wallpaper Background (auto-detects current route area) --}}
+    <x-wallpaper-background />
+
 
     {{-- Load header menu --}}
     @php
