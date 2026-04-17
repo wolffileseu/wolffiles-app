@@ -1,5 +1,5 @@
 name:  Feature Request
-description: Neuen Vorschlag oder Feature-Wunsch für Wolffiles einreichen
+description: Neuen Vorschlag für Wolffiles einreichen / Submit a new feature request for Wolffiles
 title: "[Feature]: "
 labels: ["enhancement", "needs-triage"]
 body:
@@ -7,31 +7,52 @@ body:
     attributes:
       value: |
         Danke, dass du ein Feature für **Wolffiles.eu** vorschlägst! 
+        *Thanks for suggesting a feature for **Wolffiles.eu**!*
+
         Bitte fülle die Felder so vollständig wie möglich aus – das hilft enorm bei der Umsetzung.
+        *Please fill out the fields as completely as possible — it helps a lot with implementation.*
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Vorab-Check / Preflight checklist
+      options:
+        - label: Ich habe offene und geschlossene Issues nach einem ähnlichen Feature durchsucht. / I have searched open and closed issues for a similar feature.
+          required: true
+        - label: Mir ist bewusst, dass nicht jedes Feature umgesetzt werden kann. / I understand that not every feature can be implemented.
+          required: true
 
   - type: textarea
     id: problem
     attributes:
-      label: Welches Problem löst dieses Feature?
-      description: Beschreibe das Problem oder den Anwendungsfall, den dieses Feature adressiert.
-      placeholder: "Aktuell ist es schwierig / nicht möglich..."
+      label: Welches Problem löst dieses Feature? / What problem does this feature solve?
+      description: |
+        DE: Beschreibe das Problem oder den Anwendungsfall, den dieses Feature adressiert.
+        EN: Describe the problem or use case this feature addresses.
+      placeholder: |
+        DE: Aktuell ist es schwierig / nicht möglich …
+        EN: Currently it's difficult / not possible to …
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: Vorgeschlagene Lösung
-      description: Beschreibe, wie das Feature funktionieren soll – aus User-Sicht.
-      placeholder: "Es wäre super, wenn..."
+      label: Vorgeschlagene Lösung / Proposed solution
+      description: |
+        DE: Beschreibe, wie das Feature funktionieren soll – aus User-Sicht.
+        EN: Describe how the feature should work — from a user's perspective.
+      placeholder: |
+        DE: Es wäre super, wenn …
+        EN: It would be great if …
     validations:
       required: true
 
   - type: dropdown
     id: area
     attributes:
-      label: Betroffener Bereich
-      description: Mehrfachauswahl möglich
+      label: Betroffener Bereich / Affected area
+      description: Mehrfachauswahl möglich / Multiple selection possible
       multiple: true
       options:
         - Server Tracker / ELO / Stats
@@ -40,40 +61,46 @@ body:
         - Wiki / Tutorials
         - Discord Bot
         - Telegram Bot
-        - Spielserver / Pterodactyl
-        - User Account / GDPR / Privacy
-        - Suche / Mistral / Qdrant
+        - Spielserver / Game Server / Pterodactyl
+        - User Account / Login / GDPR / Privacy
+        - Suche / Search / Mistral / Qdrant
         - Wolffiles Uploader (Windows App)
         - Admin Panel (Filament)
         - API (/api/v1)
         - BSP Map Viewer / Omni-Bot Browser
-        - Übersetzungen / i18n
-        - Sonstiges
+        - Übersetzungen / Translations / i18n
+        - Sonstiges / Other
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternativen / Workarounds
-      description: Hast du andere Ansätze in Betracht gezogen? Gibt es aktuell einen Workaround?
-      placeholder: "Alternativ wäre auch denkbar..."
+      label: Alternativen / Workarounds / Alternatives & workarounds
+      description: |
+        DE: Hast du andere Ansätze in Betracht gezogen? Gibt es aktuell einen Workaround?
+        EN: Have you considered other approaches? Is there a current workaround?
+      placeholder: |
+        DE: Alternativ wäre auch denkbar …
+        EN: An alternative could also be …
 
   - type: textarea
     id: mockups
     attributes:
-      label: Screenshots / Mockups / Beispiele
-      description: Optional – Bilder, Skizzen, Links zu vergleichbaren Features auf anderen Seiten (drag & drop für Bilder).
+      label: Screenshots / Mockups / Beispiele / Examples
+      description: |
+        DE: Optional – Bilder, Skizzen, Links zu vergleichbaren Features auf anderen Seiten (drag & drop für Bilder).
+        EN: Optional — images, sketches, links to similar features on other sites (drag & drop for images).
 
   - type: dropdown
     id: priority
     attributes:
-      label: Wichtigkeit (subjektiv)
+      label: Wichtigkeit (subjektiv) / Importance (subjective)
       options:
-        - Nice-to-have
-        - Hilfreich
-        - Wichtig
-        - Kritisch / Blocker
+        -  Nice-to-have
+        -  Hilfreich / Helpful
+        -  Wichtig / Important
+        -  Kritisch / Blocker / Critical / Blocker
       default: 0
     validations:
       required: true
@@ -81,15 +108,7 @@ body:
   - type: textarea
     id: context
     attributes:
-      label: Zusätzlicher Kontext
-      description: Alles weitere, was hilfreich sein könnte.
-
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Vorab-Check
-      options:
-        - label: Ich habe offene und geschlossene Issues nach einem ähnlichen Feature durchsucht.
-          required: true
-        - label: Mir ist bewusst, dass nicht jedes Feature umgesetzt werden kann.
-          required: true
+      label: Zusätzlicher Kontext / Additional context
+      description: |
+        DE: Alles weitere, was hilfreich sein könnte.
+        EN: Anything else that might be helpful.
