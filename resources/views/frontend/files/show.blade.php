@@ -34,6 +34,8 @@
 
             <h1 class="text-3xl font-bold text-white mb-4">{{ $file->display_title }}</h1>
 
+            <livewire:frontend.map-server-activity :file="$file" />
+
             {{-- 3D Map Preview Button --}}
             @if($file->bsp_path)
                 <div class="mb-6" x-data="{ bspOpen: false }">

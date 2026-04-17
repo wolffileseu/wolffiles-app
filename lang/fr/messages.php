@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Tapez le mot suivant pour confirmer:',
     'type_delete_to_confirm' => 'Veuillez taper LOESCHEN pour confirmer.',
     'delete_account_confirm' => 'Oui, supprimer mon compte',
+    'map_server_activity_title' => 'Activité du serveur',
+    'map_server_activity_auto_refresh' => 'Actualisation toutes les 30s',
+    'map_server_activity_currently_playing' => 'En cours de jeu',
+    'map_server_activity_recently_played' => 'Joué récemment',
 ];

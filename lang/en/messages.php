@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Type the following word to confirm:',
     'type_delete_to_confirm' => 'Please type LOESCHEN to confirm.',
     'delete_account_confirm' => 'Yes, delete my account',
+    'map_server_activity_title' => 'Server Activity',
+    'map_server_activity_auto_refresh' => 'Refreshes every 30s',
+    'map_server_activity_currently_playing' => 'Currently playing',
+    'map_server_activity_recently_played' => 'Recently played',
 ];

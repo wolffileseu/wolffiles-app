@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Typ het volgende woord ter bevestiging:',
     'type_delete_to_confirm' => 'Typ LOESCHEN ter bevestiging.',
     'delete_account_confirm' => 'Ja, mijn account verwijderen',
+    'map_server_activity_title' => 'Serveractiviteit',
+    'map_server_activity_auto_refresh' => 'Elke 30s vernieuwd',
+    'map_server_activity_currently_playing' => 'Wordt nu gespeeld',
+    'map_server_activity_recently_played' => 'Onlangs gespeeld',
 ];

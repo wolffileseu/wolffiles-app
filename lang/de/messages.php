@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Tippe zur Bestaetigung das Wort:',
     'type_delete_to_confirm' => 'Bitte tippe LOESCHEN zur Bestaetigung.',
     'delete_account_confirm' => 'Ja, Account loeschen',
+    'map_server_activity_title' => 'Server-Aktivität',
+    'map_server_activity_auto_refresh' => 'Aktualisiert alle 30s',
+    'map_server_activity_currently_playing' => 'Wird gerade gespielt',
+    'map_server_activity_recently_played' => 'Zuletzt gespielt',
 ];

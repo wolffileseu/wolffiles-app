@@ -100,6 +100,7 @@ class File extends Model
     public function downloads(): HasMany { return $this->hasMany(Download::class); }
     public function downloadLogs(): HasMany { return $this->hasMany(Download::class); }
     public function favorites(): HasMany { return $this->hasMany(Favorite::class); }
+    public function trackerMaps(): \Illuminate\Database\Eloquent\Relations\HasMany { return $this->hasMany(\App\Models\Tracker\TrackerMap::class); }
     public function reports(): MorphMany { return $this->morphMany(Report::class, 'reportable'); }
 
     // Scopes

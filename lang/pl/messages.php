@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Wpisz ponizsze slowo, aby potwierdzic:',
     'type_delete_to_confirm' => 'Wpisz LOESCHEN aby potwierdzic.',
     'delete_account_confirm' => 'Tak, usun moje konto',
+    'map_server_activity_title' => 'Aktywność serwerów',
+    'map_server_activity_auto_refresh' => 'Odświeżane co 30s',
+    'map_server_activity_currently_playing' => 'Aktualnie grane',
+    'map_server_activity_recently_played' => 'Niedawno grane',
 ];

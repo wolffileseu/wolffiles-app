@@ -756,4 +756,8 @@ return [
     'confirm_delete_instruction' => 'Onaylamak icin asagidaki kelimeyi yazin:',
     'type_delete_to_confirm' => 'Onaylamak icin LOESCHEN yazin.',
     'delete_account_confirm' => 'Evet, hesabimi sil',
+    'map_server_activity_title' => 'Sunucu Etkinliği',
+    'map_server_activity_auto_refresh' => '30 saniyede bir yenilenir',
+    'map_server_activity_currently_playing' => 'Şu anda oynanıyor',
+    'map_server_activity_recently_played' => 'Son zamanlarda oynandı',
 ];
