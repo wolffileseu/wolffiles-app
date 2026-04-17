@@ -116,6 +116,7 @@ php artisan schedule:work
 - **Blade**: Komponenten in `resources/views/components/`, sprechende Namen
 
 **Vor jedem Commit / Before each commit:**
+
 ```bash
 # PHP Syntax Check
 find app -name "*.php" -exec php -l {} \;
@@ -133,3 +134,60 @@ php artisan test
 
 Wir nutzen lose [Conventional Commits](https://www.conventionalcommits.org/):
 *We loosely follow Conventional Commits:*
+
+```
+feat: Neues Feature
+fix: Bugfix
+docs: Doku-Änderung
+style: Code-Stil (Formatierung, kein Logikchange)
+refactor: Refactoring ohne Verhaltens-Änderung
+perf: Performance-Verbesserung
+test: Tests
+chore: Build, Dependencies, Tooling
+```
+
+**Beispiele:**
+
+```
+feat(tracker): add player favorite system
+fix(uploader): correct multipart boundary header
+docs(readme): update installation steps
+refactor(api): extract tracker logic into service class
+```
+
+Sprache: **Englisch bevorzugt** für Commits, aber Deutsch ist auch ok.
+*Language: **English preferred** for commits, but German is also fine.*
+
+---
+
+##  Pull Request Workflow
+
+1. **Klein halten** – ein PR = ein Thema. Lieber mehrere kleine als ein großer.
+2. **PR Template** vollständig ausfüllen
+3. **CI muss grün sein** (PHP-Syntax, PHPStan, Composer Audit)
+4. **Verknüpftes Issue** erwähnen (`Closes #123`)
+5. Bei UI-Änderungen: **Screenshots/GIFs** beilegen
+6. Bei DB-Änderungen: **Migration** + Test mit `migrate:rollback`
+7. Bei neuen Strings: **Übersetzungen** in allen 6 Sprachen ergänzen (siehe unten)
+
+---
+
+##  Übersetzungen / Translations
+
+Wolffiles unterstützt **6 Sprachen**: DE, EN, FR, NL, PL, TR.
+*Wolffiles supports 6 languages: DE, EN, FR, NL, PL, TR.*
+
+- Übersetzungen liegen in `lang/{locale}/messages.php`
+- Bei neuen Strings: in **allen** 6 Sprachen ergänzen
+- Im Filament Admin gibt es einen **Translation Manager** mit `syncAll`-Funktion
+- **Niemals** Lang-Files komplett überschreiben → nur fehlende Keys additiv einfügen
+
+---
+
+##  Fragen?
+
+-  Discord: https://discord.com/invite/wzkRyWWuxP
+-  Kontakt: https://wolffiles.eu/contact
+
+Danke fürs Mithelfen! 
+*Thanks for contributing!*
