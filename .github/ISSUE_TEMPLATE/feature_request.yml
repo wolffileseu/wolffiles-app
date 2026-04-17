@@ -1,0 +1,95 @@
+name:  Feature Request
+description: Neuen Vorschlag oder Feature-Wunsch für Wolffiles einreichen
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du ein Feature für **Wolffiles.eu** vorschlägst! 
+        Bitte fülle die Felder so vollständig wie möglich aus – das hilft enorm bei der Umsetzung.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem löst dieses Feature?
+      description: Beschreibe das Problem oder den Anwendungsfall, den dieses Feature adressiert.
+      placeholder: "Aktuell ist es schwierig / nicht möglich..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Vorgeschlagene Lösung
+      description: Beschreibe, wie das Feature funktionieren soll – aus User-Sicht.
+      placeholder: "Es wäre super, wenn..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Betroffener Bereich
+      description: Mehrfachauswahl möglich
+      multiple: true
+      options:
+        - Server Tracker / ELO / Stats
+        - Files / Downloads / Uploads
+        - Forum
+        - Wiki / Tutorials
+        - Discord Bot
+        - Telegram Bot
+        - Spielserver / Pterodactyl
+        - User Account / GDPR / Privacy
+        - Suche / Mistral / Qdrant
+        - Wolffiles Uploader (Windows App)
+        - Admin Panel (Filament)
+        - API (/api/v1)
+        - BSP Map Viewer / Omni-Bot Browser
+        - Übersetzungen / i18n
+        - Sonstiges
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativen / Workarounds
+      description: Hast du andere Ansätze in Betracht gezogen? Gibt es aktuell einen Workaround?
+      placeholder: "Alternativ wäre auch denkbar..."
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Screenshots / Mockups / Beispiele
+      description: Optional – Bilder, Skizzen, Links zu vergleichbaren Features auf anderen Seiten (drag & drop für Bilder).
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Wichtigkeit (subjektiv)
+      options:
+        - Nice-to-have
+        - Hilfreich
+        - Wichtig
+        - Kritisch / Blocker
+      default: 0
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Zusätzlicher Kontext
+      description: Alles weitere, was hilfreich sein könnte.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Vorab-Check
+      options:
+        - label: Ich habe offene und geschlossene Issues nach einem ähnlichen Feature durchsucht.
+          required: true
+        - label: Mir ist bewusst, dass nicht jedes Feature umgesetzt werden kann.
+          required: true
