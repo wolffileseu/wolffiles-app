@@ -9,3 +9,8 @@ public/hot
 
 .env.plesk
 database/database.sqlite
+
+# Omni-Bot waypoint files (uploaded by users, not source code)
+public/*.gm
+public/*.way
+public/*_goals.gm

@@ -130,6 +130,9 @@
                         <td class="px-4 py-2.5">
                             <a href="{{ route('tracker.server.show', $server) }}" class="text-amber-400 hover:text-amber-300">
                                 {!! $server->hostname_html ?: e($server->hostname_clean ?: $server->full_address) !!}
+                                @if($server->is_enhanced_tracker)
+                                    <x-tracker-enhanced-badge class="ml-1 align-middle" />
+                                @endif
                             </a>
                             @if($server->needs_password)
                                 <span class="text-yellow-500 ml-1" title="{{ __('messages.password_required') }}">🔒</span>

@@ -7,6 +7,9 @@
         <p class="text-gray-400 mt-1">{{ __('messages.tracker_subtitle') }}</p>
     </div>
 
+    {{-- Enhanced Tracker Banner (for admins) --}}
+    <x-tracker-enhanced-banner />
+
     {{-- Stats Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div class="bg-gray-800 rounded-lg p-4 text-center">

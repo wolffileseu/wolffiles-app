@@ -135,7 +135,7 @@ class MatchLifecycleHandler extends AbstractHandler
             // If end timestamp is somehow earlier than start (rapid events,
             // millisecond precision issues on round-trip through MySQL),
             // pin ended to started + 1ms to ensure ended > started strictly.
-            $endedAt = $startedAt->copy()->addMilliseconds(1);
+            $endedAt = $startedAt->copy()->addMilliseconds(10);
         }
 
         // Millisecond-accurate duration via timestamp floats

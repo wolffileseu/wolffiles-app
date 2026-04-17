@@ -84,17 +84,42 @@ class ServerLifecycleHandler extends AbstractHandler
             return $event->server_id;
         }
 
-        // Prefer the enhanced_source_ip (exact sender match) if any server claims it,
-        // then fall back to the regular ip column from the Server Poller.
+        // Multi-stage matching. Each stage is a stricter match than the next.
+        //
+        // Stage 1: Admin explicitly marked a server with this IP as the enhanced
+        //          source — always wins.
         $server = DB::table('tracker_servers')
-            ->where(function ($query) use ($event) {
-                $query->where('enhanced_source_ip', $event->source_ip)
-                    ->orWhere('ip', $event->source_ip);
-            })
+            ->where('enhanced_source_ip', $event->source_ip)
             ->where('enhanced_disabled', false)
-            ->orderByDesc('enhanced_source_ip')   // prefer exact-IP match if multiple
             ->first(['id']);
+        if ($server !== null) {
+            return (int) $server->id;
+        }
 
+        // Stage 2: Match on IP AND port — ETLegacy sends OOB packets from the
+        //          game port (sv_port), so source_port typically equals the
+        //          gameserver's public port. This disambiguates multi-server
+        //          hosts that share a single IP.
+        if ($event->source_port !== null) {
+            $server = DB::table('tracker_servers')
+                ->where('ip', $event->source_ip)
+                ->where('port', $event->source_port)
+                ->where('enhanced_disabled', false)
+                ->first(['id']);
+            if ($server !== null) {
+                return (int) $server->id;
+            }
+        }
+
+        // Stage 3: Fall back to IP-only match. Only safe when exactly one
+        //          server runs on the IP (common for small hosters). If
+        //          multiple servers share the IP, we pick the lowest id
+        //          deterministically so the assignment at least stays stable.
+        $server = DB::table('tracker_servers')
+            ->where('ip', $event->source_ip)
+            ->where('enhanced_disabled', false)
+            ->orderBy('id')
+            ->first(['id']);
         if ($server !== null) {
             return (int) $server->id;
         }

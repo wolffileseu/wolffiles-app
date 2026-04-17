@@ -8,7 +8,15 @@
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
                 <div class="flex items-center gap-3">
-                    <h1 class="text-2xl font-bold text-white">{!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}</h1>
+                    <h1 class="text-2xl font-bold text-white flex items-center gap-2 flex-wrap">
+                        <span>{!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}</span>
+                        @if($player->has_enhanced_data)
+                            <x-tracker-enhanced-badge size="md" />
+                        @endif
+                        @if($player->is_bot)
+                            <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-500/20 text-gray-300 border border-gray-400/30 uppercase tracking-wider font-semibold">Bot</span>
+                        @endif
+                    </h1>
                     @if($player->active_clan)
                         <span class="bg-gray-700 px-2 py-0.5 rounded text-sm text-gray-300">{{ $player->active_clan->tag }}</span>
                     @endif
@@ -262,5 +270,156 @@
 
         </div>
     </div>
+
+{{-- Enhanced Tracker Section --}}
+@if($player->has_enhanced_data)
+<div class="mt-8 space-y-6">
+    {{-- Status Box --}}
+    <div class="bg-gray-800 rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700 flex items-center justify-between flex-wrap gap-2">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span>{{ __('Enhanced Tracker') }}</span>
+                <x-tracker-enhanced-badge size="sm" />
+            </h2>
+            @if($enhancedMatchesCount > 0)
+                <span class="text-xs text-gray-400">
+                    {{ $enhancedMatchesCount }} {{ __('matches recorded') }}
+                </span>
+            @endif
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">{{ __('First Enhanced') }}</div>
+                <div class="mt-1 text-sm text-gray-200">
+                    @if($player->enhanced_first_seen_at)
+                        <span title="{{ $player->enhanced_first_seen_at }}">
+                            {{ \Carbon\Carbon::parse($player->enhanced_first_seen_at)->diffForHumans() }}
+                        </span>
+                    @else
+                        <span class="text-gray-500">—</span>
+                    @endif
+                </div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Last Seen (Enhanced)') }}</div>
+                <div class="mt-1 text-sm text-gray-200">
+                    @if($player->enhanced_last_seen_at)
+                        <span title="{{ $player->enhanced_last_seen_at }}">
+                            {{ \Carbon\Carbon::parse($player->enhanced_last_seen_at)->diffForHumans() }}
+                        </span>
+                    @else
+                        <span class="text-gray-500">—</span>
+                    @endif
+                </div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Enhanced Matches') }}</div>
+                <div class="mt-1 text-lg font-semibold text-emerald-400">{{ $enhancedMatchesCount }}</div>
+            </div>
+            <div>
+                <div class="text-xs text-gray-500 uppercase tracking-wider">{{ __('Account Type') }}</div>
+                <div class="mt-1 text-sm text-gray-200">
+                    @if($player->is_bot)
+                        <span class="inline-flex items-center gap-1 text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            {{ __('Bot') }}
+                        </span>
+                    @else
+                        <span class="text-emerald-400">{{ __('Human Player') }}</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="px-6 py-3 bg-gray-900/40 border-t border-gray-700/50">
+            <p class="text-xs text-gray-400 flex items-start gap-2">
+                <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ __('Detailed weapon stats (K/D, accuracy, headshots) will appear here once the Enhanced Tracker weapon-stats module goes live.') }}</span>
+            </p>
+        </div>
+    </div>
+
+    {{-- Match History --}}
+    @if($enhancedMatches->count() > 0)
+    <div class="bg-gray-800 rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>{{ __('Recent Enhanced Matches') }}</span>
+            </h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-3 text-left">{{ __('Map') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Server') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('Started') }}</th>
+                        <th class="px-4 py-3 text-right">{{ __('Duration') }}</th>
+                        <th class="px-4 py-3 text-left">{{ __('End') }}</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700/50">
+                    @foreach($enhancedMatches as $m)
+                    <tr class="hover:bg-gray-700/20 transition">
+                        <td class="px-4 py-3 font-medium text-gray-200">{{ $m->map_name }}</td>
+                        <td class="px-4 py-3">
+                            <a href="{{ route('tracker.server.show', $m->server_id) }}" class="text-amber-400 hover:text-amber-300 text-xs">
+                                {!! $m->hostname_html ?: e($m->hostname_clean ?: 'Server #'.$m->server_id) !!}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-gray-400 font-mono text-xs" title="{{ $m->started_at }}">
+                            {{ \Carbon\Carbon::parse($m->started_at)->diffForHumans() }}
+                        </td>
+                        <td class="px-4 py-3 text-right text-gray-300 font-mono text-xs">
+                            @if(is_null($m->ended_at))
+                                <span class="inline-flex items-center gap-1 text-emerald-400">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    {{ __('In progress') }}
+                                </span>
+                            @else
+                                @php
+                                    $d = (int) $m->duration_seconds;
+                                    $mm = intdiv($d, 60);
+                                    $ss = $d % 60;
+                                @endphp
+                                {{ $mm }}m {{ str_pad($ss, 2, '0', STR_PAD_LEFT) }}s
+                            @endif
+                        </td>
+                        <td class="px-4 py-3">
+                            @if($m->end_reason)
+                                @php
+                                    $colors = [
+                                        'mapend' => 'bg-blue-500/20 text-blue-300',
+                                        'mapchange' => 'bg-purple-500/20 text-purple-300',
+                                        'maprestart' => 'bg-yellow-500/20 text-yellow-300',
+                                        'timeout' => 'bg-gray-500/20 text-gray-300',
+                                    ];
+                                    $c = $colors[$m->end_reason] ?? 'bg-gray-500/20 text-gray-300';
+                                @endphp
+                                <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold {{ $c }}">
+                                    {{ $m->end_reason }}
+                                </span>
+                            @else
+                                <span class="text-gray-500">—</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+</div>
+@endif
 </div>
 </x-layouts.app>

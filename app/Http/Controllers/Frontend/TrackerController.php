@@ -154,7 +154,24 @@ class TrackerController extends Controller
             ->limit(10)
             ->get();
 
-        return view('frontend.tracker.server-show', compact('server', 'activeSessions', 'history', 'topMaps'));
+        // Enhanced Tracker: recent matches (only if server reports via sv_tracker2)
+        $recentMatches = collect();
+        if ($server->is_enhanced_tracker) {
+            $recentMatches = \DB::table('tracker_matches')
+                ->where('server_id', $server->id)
+                // Hide sub-30s maprestart fragments, keep real matches + open ones
+                ->where(function ($q) {
+                    $q->whereNull('ended_at')
+                      ->orWhere('duration_seconds', '>=', 30);
+                })
+                ->orderByDesc('started_at')
+                ->limit(15)
+                ->get();
+        }
+
+        return view('frontend.tracker.server-show', compact(
+            'server', 'activeSessions', 'history', 'topMaps', 'recentMatches'
+        ));
     }
 
     /**
@@ -231,7 +248,56 @@ class TrackerController extends Controller
             ->limit(10)
             ->get();
 
-        return view('frontend.tracker.player-show', compact('player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps'));
+        // Enhanced Tracker: matches on servers where this player had enhanced sessions
+        $enhancedMatches = collect();
+        $enhancedMatchesCount = 0;
+        if ($player->has_enhanced_data && $player->enhanced_first_seen_at) {
+            // Find all servers where the player was tracked via enhanced
+            $enhancedServerIds = \DB::table('tracker_player_sessions')
+                ->where('player_id', $player->id)
+                ->where('started_at', '>=', $player->enhanced_first_seen_at)
+                ->distinct()
+                ->pluck('server_id');
+
+            if ($enhancedServerIds->isNotEmpty()) {
+                $enhancedMatchesCount = \DB::table('tracker_matches')
+                    ->whereIn('server_id', $enhancedServerIds)
+                    ->where('started_at', '>=', $player->enhanced_first_seen_at)
+                    ->where(function ($q) {
+                        $q->whereNull('ended_at')
+                          ->orWhere('duration_seconds', '>=', 30);
+                    })
+                    ->count();
+
+                $enhancedMatches = \DB::table('tracker_matches')
+                    ->join('tracker_servers', 'tracker_matches.server_id', '=', 'tracker_servers.id')
+                    ->whereIn('tracker_matches.server_id', $enhancedServerIds)
+                    ->where('tracker_matches.started_at', '>=', $player->enhanced_first_seen_at)
+                    ->where(function ($q) {
+                        $q->whereNull('tracker_matches.ended_at')
+                          ->orWhere('tracker_matches.duration_seconds', '>=', 30);
+                    })
+                    ->orderByDesc('tracker_matches.started_at')
+                    ->limit(10)
+                    ->select(
+                        'tracker_matches.id',
+                        'tracker_matches.map_name',
+                        'tracker_matches.started_at',
+                        'tracker_matches.ended_at',
+                        'tracker_matches.duration_seconds',
+                        'tracker_matches.end_reason',
+                        'tracker_servers.id as server_id',
+                        'tracker_servers.hostname_clean',
+                        'tracker_servers.hostname_html'
+                    )
+                    ->get();
+            }
+        }
+
+        return view('frontend.tracker.player-show', compact(
+            'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
+            'enhancedMatches', 'enhancedMatchesCount'
+        ));
     }
 
     /**

@@ -12,7 +12,12 @@
             <div>
                 <div class="flex items-center gap-3">
                     <span class="inline-block w-3 h-3 rounded-full" :class="isOnline ? 'bg-green-500' : 'bg-red-500'"></span>
-                    <h1 class="text-2xl font-bold text-white">{!! $server->hostname_html ?: e($server->hostname_clean ?: $server->full_address) !!}</h1>
+                    <h1 class="text-2xl font-bold text-white flex items-center gap-2 flex-wrap">
+                        <span>{!! $server->hostname_html ?: e($server->hostname_clean ?: $server->full_address) !!}</span>
+                        @if($server->is_enhanced_tracker)
+                            <x-tracker-enhanced-badge size="md" />
+                        @endif
+                    </h1>
                 </div>
                 <div class="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
                     <span>{{ $server->ip }}:{{ $server->port }}</span>
@@ -220,6 +225,87 @@ function playerChart() {
     }
 }
 </script>
+@endif
+
+
+{{-- Enhanced Matches Section (only when server has sv_tracker2 active) --}}
+@if($server->is_enhanced_tracker && $recentMatches->count() > 0)
+<div class="max-w-7xl mx-auto px-4">
+<div class="mt-8 bg-gray-800 rounded-lg overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-700 flex items-center justify-between flex-wrap gap-2">
+        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            <span>{{ __('Recent Matches') }}</span>
+            <x-tracker-enhanced-badge size="sm" />
+        </h2>
+        <span class="text-xs text-gray-400">
+            {{ number_format($server->enhanced_event_count ?? 0) }} {{ __('events received') }}
+        </span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="px-4 py-3 text-left">#</th>
+                    <th class="px-4 py-3 text-left">{{ __('Map') }}</th>
+                    <th class="px-4 py-3 text-left">{{ __('Started') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Duration') }}</th>
+                    <th class="px-4 py-3 text-left">{{ __('End') }}</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700/50">
+                @foreach($recentMatches as $match)
+                <tr class="hover:bg-gray-700/20 transition">
+                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">#{{ $match->id }}</td>
+                    <td class="px-4 py-3">
+                        <span class="font-medium text-gray-200">{{ $match->map_name }}</span>
+                    </td>
+                    <td class="px-4 py-3 text-gray-400 font-mono text-xs" title="{{ $match->started_at }}">
+                        {{ \Carbon\Carbon::parse($match->started_at)->diffForHumans() }}
+                    </td>
+                    <td class="px-4 py-3 text-right text-gray-300 font-mono text-xs">
+                        @if(is_null($match->ended_at))
+                            <span class="inline-flex items-center gap-1 text-emerald-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                {{ __('In progress') }}
+                            </span>
+                        @else
+                            @php
+                                $d = (int) $match->duration_seconds;
+                                $m = intdiv($d, 60);
+                                $s = $d % 60;
+                            @endphp
+                            {{ $m }}m {{ str_pad($s, 2, '0', STR_PAD_LEFT) }}s
+                        @endif
+                    </td>
+                    <td class="px-4 py-3">
+                        @php
+                            $reasonColors = [
+                                'mapend' => 'bg-blue-500/20 text-blue-300',
+                                'mapchange' => 'bg-purple-500/20 text-purple-300',
+                                'maprestart' => 'bg-yellow-500/20 text-yellow-300',
+                                'timeout' => 'bg-gray-500/20 text-gray-300',
+                            ];
+                            $reasonColor = $reasonColors[$match->end_reason ?? ''] ?? 'bg-gray-500/20 text-gray-300';
+                        @endphp
+                        @if($match->end_reason)
+                            <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold {{ $reasonColor }}">
+                                {{ $match->end_reason }}
+                            </span>
+                        @else
+                            <span class="text-gray-500">—</span>
+                        @endif
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
 @endif
 
 <script>
