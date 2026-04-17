@@ -20,6 +20,19 @@ class WallpaperService
         'tracker.'     => 'tracker',
         'wiki.'        => 'wiki',
         'forum.'       => 'forum',
+        'posts.'       => 'news',
+        'lua.'         => 'lua',
+        'search'       => 'search',
+        'tutorials.'   => 'tutorials',
+        'tools.'       => 'tools',
+        'pages.'       => 'pages',
+        'donate'       => 'donate',
+        'statistics'   => 'statistics',
+        'fastdl.'      => 'fastdl',
+        'profile.'     => 'profile',
+        'demos.'       => 'demos',
+        'hosting.'     => 'hosting',
+        'contact'      => 'contact',
     ];
 
     public function allActive(): Collection
@@ -82,13 +95,13 @@ class WallpaperService
     {
         $routeName = optional(request()->route())->getName() ?? '';
         if ($routeName === '') {
-            return null;
+            return 'other';
         }
         foreach (self::ROUTE_AREA_MAP as $prefix => $area) {
             if ($routeName === $prefix || str_starts_with($routeName, $prefix)) {
                 return $area;
             }
         }
-        return null;
+        return 'other';
     }
 }

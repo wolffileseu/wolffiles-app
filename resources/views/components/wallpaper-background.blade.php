@@ -18,8 +18,8 @@
                 }
              }">
             <template x-for="(wp, idx) in wallpapers" :key="wp.id">
-                <div class="absolute inset-0 bg-cover bg-center transition-opacity ease-in-out"
-                     style="transition-duration: 1500ms;"
+                <div class="absolute inset-0 transition-opacity ease-in-out"
+                     style="transition-duration: 1500ms; background-size: cover; background-position: center; background-repeat: no-repeat;"
                      :style="`
                         background-image: url(${wp.url});
                         filter: ${wp.overlay_blur > 0 ? 'blur(' + wp.overlay_blur + 'px)' : 'none'};
@@ -27,7 +27,6 @@
                         opacity: ${idx === current ? 1 : 0};
                      `"></div>
             </template>
-            {{-- Overlay (uses current wallpaper's overlay settings) --}}
             <div class="absolute inset-0 transition-colors duration-1000"
                  :style="`background-color: ${wallpapers[current].overlay_color}; opacity: ${wallpapers[current].overlay_opacity / 100};`"></div>
         </div>
@@ -35,8 +34,8 @@
         {{-- Single wallpaper (or random pick) --}}
         @php $wp = $data['wallpapers'][0]; @endphp
         <div class="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-            <div class="absolute inset-0 bg-cover bg-center"
-                 style="background-image: url('{{ $wp['url'] }}');@if($wp['overlay_blur'] > 0) filter: blur({{ $wp['overlay_blur'] }}px); transform: scale(1.05);@endif"></div>
+            <div class="absolute inset-0"
+                 style="background-image: url('{{ $wp['url'] }}'); background-size: cover; background-position: center; background-repeat: no-repeat;@if($wp['overlay_blur'] > 0) filter: blur({{ $wp['overlay_blur'] }}px); transform: scale(1.05);@endif"></div>
             <div class="absolute inset-0"
                  style="background-color: {{ $wp['overlay_color'] }}; opacity: {{ $wp['overlay_opacity'] / 100 }};"></div>
         </div>
