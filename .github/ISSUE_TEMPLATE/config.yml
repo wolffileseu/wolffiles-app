@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name:  Discord Community
+    url: https://discord.com/invite/wzkRyWWuxP
+    about: Für Fragen, Hilfe oder Diskussionen / For questions, help or discussions
+  - name:  Wiki & Tutorials
+    url: https://wolffiles.eu/wiki
+    about: Schau erst hier nach, vielleicht ist deine Frage schon beantwortet / Check here first, your question might already be answered
+  - name:  Kontaktformular / Contact form
+    url: https://wolffiles.eu/contact
+    about: Für nicht-öffentliche Anliegen (DSGVO, Datenschutz, etc.) / For non-public matters (GDPR, privacy, etc.)
