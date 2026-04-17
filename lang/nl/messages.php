@@ -762,4 +762,12 @@ return [
     'map_server_activity_recently_played' => 'Onlangs gespeeld',
     'xp_per_hour' => 'XP/uur',
     'avg_xp_session' => 'Gem. XP/sessie',
+    'longest_streak' => 'Langste reeks',
+    'current_streak' => 'Huidige reeks',
+    'distinct_maps' => 'Maps gespeeld',
+    'peak_activity' => 'Piekactiviteit',
+    'activity_heatmap' => 'Activiteits-heatmap',
+    'active_days' => 'actieve dagen',
+    'less' => 'minder',
+    'more' => 'meer',
 ];

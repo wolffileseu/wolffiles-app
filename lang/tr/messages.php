@@ -762,4 +762,12 @@ return [
     'map_server_activity_recently_played' => 'Son zamanlarda oynandı',
     'xp_per_hour' => 'XP/Saat',
     'avg_xp_session' => 'Ort. XP/Oturum',
+    'longest_streak' => 'En Uzun Seri',
+    'current_streak' => 'Mevcut Seri',
+    'distinct_maps' => 'Oynanan Haritalar',
+    'peak_activity' => 'Zirve Aktivite',
+    'activity_heatmap' => 'Aktivite Haritası',
+    'active_days' => 'aktif gün',
+    'less' => 'az',
+    'more' => 'çok',
 ];

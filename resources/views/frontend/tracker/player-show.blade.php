@@ -64,6 +64,98 @@
         </div>
     </div>
 
+
+    {{-- Phase 2: Extended Activity Stats --}}
+    @php
+        $act = $player->activity_stats;
+        $dayNames = [];
+        for ($i = 0; $i < 7; $i++) {
+            $dayNames[$i] = \Carbon\Carbon::now()
+                ->startOfWeek(\Carbon\Carbon::MONDAY)
+                ->addDays($i)
+                ->locale(app()->getLocale())
+                ->shortDayName;
+        }
+        $peakLabel = $act['peak']['count'] > 0
+            ? $dayNames[$act['peak']['dow']] . ', ' . sprintf('%02d:00', $act['peak']['hour'])
+            : '—';
+    @endphp
+
+    {{-- Second stats row --}}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-emerald-400">{{ $act['streaks']['longest'] }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.longest_streak') }}</div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold {{ $act['streaks']['current'] > 0 ? 'text-orange-400' : 'text-gray-500' }}">{{ $act['streaks']['current'] }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.current_streak') }}</div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-pink-400">{{ number_format($act['distinct_maps']) }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.distinct_maps') }}</div>
+        </div>
+        <div class="bg-gray-800 rounded-lg p-4 text-center">
+            <div class="text-2xl font-bold text-yellow-400">{{ $peakLabel }}</div>
+            <div class="text-gray-400 text-xs">{{ __('messages.peak_activity') }}</div>
+        </div>
+    </div>
+
+    {{-- Activity Heatmap --}}
+    @if($act['peak']['count'] > 0)
+    <div class="bg-gray-800 rounded-lg p-4 mb-6">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-semibold text-white">{{ __('messages.activity_heatmap') }}</h2>
+            <span class="text-xs text-gray-500">{{ $act['active_days'] }} {{ __('messages.active_days') }}</span>
+        </div>
+        <div class="overflow-x-auto">
+            <div class="inline-block">
+                {{-- Hour labels row --}}
+                <div class="flex items-center gap-0.5 mb-1">
+                    <div class="w-10"></div>
+                    @for ($h = 0; $h < 24; $h++)
+                        <div class="w-3 text-[9px] text-gray-500 text-center">
+                            {{ $h % 6 === 0 ? $h : '' }}
+                        </div>
+                    @endfor
+                </div>
+                {{-- Grid rows --}}
+                @foreach ($act['heatmap'] as $dow => $hours)
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                        <div class="w-10 text-[11px] text-gray-400 pr-2 text-right">{{ $dayNames[$dow] }}</div>
+                        @foreach ($hours as $hr => $count)
+                            @php
+                                $intensity = $act['peak']['count'] > 0 ? ($count / $act['peak']['count']) : 0;
+                                if ($count === 0) {
+                                    $bg = 'rgb(17, 24, 39)';
+                                } else {
+                                    $alpha = 0.25 + $intensity * 0.75;
+                                    $bg = 'rgba(251, 191, 36, ' . number_format($alpha, 2) . ')';
+                                }
+                            @endphp
+                            <div
+                                class="w-3 h-3 rounded-sm border border-gray-900/50"
+                                style="background: {{ $bg }};"
+                                title="{{ $dayNames[$dow] }} {{ sprintf('%02d:00', $hr) }} — {{ $count }} {{ __('messages.sessions') }}"
+                            ></div>
+                        @endforeach
+                    </div>
+                @endforeach
+                {{-- Legend --}}
+                <div class="flex items-center gap-2 mt-3 text-[10px] text-gray-500">
+                    <span>{{ __('messages.less') }}</span>
+                    <div class="w-3 h-3 rounded-sm" style="background: rgb(17, 24, 39);"></div>
+                    <div class="w-3 h-3 rounded-sm" style="background: rgba(251, 191, 36, 0.35);"></div>
+                    <div class="w-3 h-3 rounded-sm" style="background: rgba(251, 191, 36, 0.6);"></div>
+                    <div class="w-3 h-3 rounded-sm" style="background: rgba(251, 191, 36, 0.85);"></div>
+                    <div class="w-3 h-3 rounded-sm" style="background: rgba(251, 191, 36, 1);"></div>
+                    <span>{{ __('messages.more') }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Left --}}
         <div class="lg:col-span-2 space-y-6">

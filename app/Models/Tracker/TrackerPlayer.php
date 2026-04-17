@@ -124,4 +124,97 @@ class TrackerPlayer extends Model
             $q->whereNull('expires_at')->orWhere('expires_at', '>', now());
         })->exists();
     }
+
+    private ?array $activityStatsCache = null;
+
+    /**
+     * Computes activity stats from the session log: heatmap (7x24),
+     * peak hour/day, longest + current streak, distinct maps.
+     * Memoized per instance.
+     */
+    public function getActivityStatsAttribute(): array
+    {
+        if ($this->activityStatsCache !== null) {
+            return $this->activityStatsCache;
+        }
+
+        // --- Heatmap: sessions grouped by (day_of_week, hour) ---
+        // MySQL DAYOFWEEK: 1=Sun..7=Sat. Shift so 0=Mon..6=Sun.
+        $heatmapRows = \DB::table('tracker_player_sessions')
+            ->where('player_id', $this->id)
+            ->whereNotNull('started_at')
+            ->selectRaw('((DAYOFWEEK(started_at) + 5) % 7) AS dow, HOUR(started_at) AS hr, COUNT(*) AS c')
+            ->groupBy('dow', 'hr')
+            ->get();
+
+        $grid = array_fill(0, 7, array_fill(0, 24, 0));
+        $peakDow = 0; $peakHr = 0; $peakCount = 0;
+        foreach ($heatmapRows as $r) {
+            $grid[(int)$r->dow][(int)$r->hr] = (int)$r->c;
+            if ((int)$r->c > $peakCount) {
+                $peakCount = (int)$r->c;
+                $peakDow = (int)$r->dow;
+                $peakHr = (int)$r->hr;
+            }
+        }
+
+        // --- Streaks: distinct play-days, ordered ---
+        $days = \DB::table('tracker_player_sessions')
+            ->where('player_id', $this->id)
+            ->whereNotNull('started_at')
+            ->selectRaw('DATE(started_at) AS day')
+            ->distinct()
+            ->orderBy('day')
+            ->pluck('day')
+            ->toArray();
+
+        $longest = 0; $current = 0; $prev = null;
+        foreach ($days as $day) {
+            if ($prev !== null) {
+                $diff = (strtotime($day) - strtotime($prev)) / 86400;
+                $current = ($diff == 1) ? $current + 1 : 1;
+            } else {
+                $current = 1;
+            }
+            if ($current > $longest) {
+                $longest = $current;
+            }
+            $prev = $day;
+        }
+
+        // Current streak: only counts if last play-day was today or yesterday
+        $currentStreak = 0;
+        if (!empty($days)) {
+            $lastTs = strtotime(end($days));
+            $today = strtotime(date('Y-m-d'));
+            $daysSince = ($today - $lastTs) / 86400;
+            if ($daysSince <= 1) {
+                $currentStreak = $current;
+            }
+        }
+
+        // --- Distinct maps played ---
+        $distinctMaps = \DB::table('tracker_player_sessions')
+            ->where('player_id', $this->id)
+            ->whereNotNull('map_name')
+            ->where('map_name', '!=', '')
+            ->distinct('map_name')
+            ->count('map_name');
+
+        return $this->activityStatsCache = [
+            'heatmap' => $grid,
+            'peak' => [
+                'dow' => $peakDow,
+                'hour' => $peakHr,
+                'count' => $peakCount,
+            ],
+            'streaks' => [
+                'longest' => $longest,
+                'current' => $currentStreak,
+            ],
+            'distinct_maps' => $distinctMaps,
+            'active_days' => count($days),
+        ];
+    }
+
 }

@@ -762,4 +762,12 @@ return [
     'map_server_activity_recently_played' => 'Joué récemment',
     'xp_per_hour' => 'XP/Heure',
     'avg_xp_session' => 'XP moy./session',
+    'longest_streak' => 'Série la plus longue',
+    'current_streak' => 'Série actuelle',
+    'distinct_maps' => 'Cartes jouées',
+    'peak_activity' => 'Heure de pointe',
+    'activity_heatmap' => 'Carte thermique d\'activité',
+    'active_days' => 'jours actifs',
+    'less' => 'moins',
+    'more' => 'plus',
 ];
