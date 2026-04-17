@@ -1,0 +1,185 @@
+name: 🐛 Bug Report
+description: Einen Fehler melden / Report a bug
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du dir die Zeit nimmst, einen Bug zu melden! 🐺
+        *Thanks for taking the time to report a bug!*
+
+        Bitte fülle die Felder so vollständig wie möglich aus – das hilft enorm bei der Fehlersuche.
+        *Please fill out the fields as completely as possible — it helps a lot with debugging.*
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Vorab-Check / Preflight checklist
+      options:
+        - label: Ich habe in den offenen und geschlossenen Issues nach diesem Bug gesucht. / I have searched open and closed issues for this bug.
+          required: true
+        - label: Ich habe einen Hard-Refresh (Strg+F5) gemacht und es erneut versucht. / I have done a hard refresh (Ctrl+F5) and tried again.
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Beschreibung des Bugs / Bug description
+      description: Was passiert? Was ist das Problem? / What happens? What's the problem?
+      placeholder: |
+        DE: Beim Klick auf … passiert …
+        EN: When clicking on … the following happens …
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Reproduzieren / Steps to reproduce
+      description: Genaue Schritte, damit der Fehler nachgestellt werden kann. / Exact steps so the bug can be reproduced.
+      placeholder: |
+        1. Gehe zu / Go to '...'
+        2. Klicke auf / Click on '...'
+        3. Scrolle zu / Scroll down to '...'
+        4. Sieh den Fehler / See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Erwartetes Verhalten / Expected behavior
+      description: Was hättest du stattdessen erwartet? / What did you expect to happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Tatsächliches Verhalten / Actual behavior
+      description: Was passiert tatsächlich? Fehlermeldung? / What actually happens? Error message?
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots / Videos
+      description: Optional – zieh Bilder oder kurze Videos einfach hier rein. / Optional — just drag images or short videos in here.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Betroffener Bereich / Affected area
+      description: Mehrfachauswahl möglich / Multiple selection possible
+      multiple: true
+      options:
+        - Server Tracker / ELO / Stats
+        - Files / Downloads / Uploads
+        - Forum
+        - Wiki / Tutorials
+        - Discord Bot
+        - Telegram Bot
+        - Spielserver / Game Server / Pterodactyl
+        - User Account / Login / GDPR / Privacy
+        - Suche / Search / Mistral / Qdrant
+        - Wolffiles Uploader (Windows App)
+        - Admin Panel (Filament)
+        - API (/api/v1)
+        - BSP Map Viewer / Omni-Bot Browser
+        - Übersetzungen / Translations / i18n
+        - Sonstiges / Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Schweregrad / Severity
+      options:
+        - 🔴 Kritisch – nichts geht mehr / Critical — completely broken
+        - 🟠 Hoch – wichtige Funktion betroffen / High — important feature affected
+        - 🟡 Mittel – nervig, aber umgehbar / Medium — annoying but workaround exists
+        - 🟢 Niedrig – kosmetisch / Low — cosmetic
+      default: 2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Wie oft tritt der Fehler auf? / How often does it occur?
+      options:
+        - Immer / Always
+        - Häufig / Often
+        - Manchmal / Sometimes
+        - Einmalig / Once
+        - Unbekannt / Unknown
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: Betroffene URL / Affected URL
+      description: Falls zutreffend / If applicable
+      placeholder: "https://wolffiles.eu/..."
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Gerät / Device
+      options:
+        - Desktop
+        - Laptop
+        - Tablet
+        - Smartphone
+        - Andere / Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Opera
+        - Brave
+        - Andere / Other
+        - Nicht zutreffend / Not applicable
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Betriebssystem / Operating system
+      placeholder: "z. B. Windows 11, macOS 14, Ubuntu 24.04, Android 14, iOS 17"
+
+  - type: input
+    id: browser_version
+    attributes:
+      label: Browser-Version / Browser version
+      placeholder: "z. B. Chrome 131.0.6778.86 — siehe / see chrome://version oder about:version"
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser-Konsole / Browser console
+      description: |
+        DE: Falls möglich, öffne die Entwicklertools (F12) → Tab "Konsole" und füge Fehlermeldungen hier ein.
+        EN: If possible, open Developer Tools (F12) → "Console" tab and paste any error messages here.
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Zusätzlicher Kontext / Additional context
+      description: |
+        DE: Alles weitere, was helfen könnte – wann hat es angefangen, hängt es mit einer bestimmten Aktion zusammen, etc.
+        EN: Anything else that might help — when did it start, is it related to a specific action, etc.
