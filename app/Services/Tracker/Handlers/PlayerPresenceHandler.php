@@ -67,7 +67,24 @@ class PlayerPresenceHandler extends AbstractHandler
         $isBot = $this->nameLooksLikeBot($parsed['name']);
         $now = $event->received_at;
 
-        DB::transaction(function () use ($realGuidHash, $pollerHash, $isBot, $now, $parsed) {
+        // Skip bots entirely — their stats are not tracked.
+        //
+        // Rationale: Omnibot uses per-slot GUIDs (OMNIBOT07... for slot 7)
+        // which collide across bots sharing a slot over time. Tracking them
+        // would produce confusing cross-linked player rows. Since bot stats
+        // are programmed behaviour and not of ranking interest, we drop
+        // them at the handler boundary.
+        if ($isBot) {
+            Log::debug('PlayerPresenceHandler: skipping bot connect', [
+                'slot' => $parsed['slot'],
+                'name' => $parsed['name'],
+            ]);
+            return;
+        }
+
+        // Resolve or create the player, then record slot occupancy so that
+        // WeaponStatsHandler can look up "who is on slot X" during ws packets.
+        $playerId = DB::transaction(function () use ($realGuidHash, $pollerHash, $isBot, $now, $parsed) {
             // Stage 1: already-linked Enhanced player
             $player = DB::table('tracker_players')
                 ->where('real_guid_hash', $realGuidHash)
@@ -75,7 +92,7 @@ class PlayerPresenceHandler extends AbstractHandler
 
             if ($player !== null) {
                 $this->updateExisting($player, $realGuidHash, $isBot, $now);
-                return;
+                return (int) $player->id;
             }
 
             // Stage 2: Poller match by name-clean hash
@@ -90,14 +107,14 @@ class PlayerPresenceHandler extends AbstractHandler
                     'player_id' => $player->id,
                     'real_guid_hash_prefix' => substr($realGuidHash, 0, 8),
                 ]);
-                return;
+                return (int) $player->id;
             }
 
             // Stage 3: no match, create fresh row
             // Still NO name/name_clean/name_html writes (Decision A).
             // But we do seed guid_hash = pollerHash so if the Poller ever sees
             // this player under the same clean-name, a future lookup collapses.
-            DB::table('tracker_players')->insert([
+            $newId = DB::table('tracker_players')->insertGetId([
                 'guid_hash' => $pollerHash,
                 'real_guid_hash' => $realGuidHash,
                 'name' => '',
@@ -112,7 +129,27 @@ class PlayerPresenceHandler extends AbstractHandler
                 'created_at' => $now,
                 'updated_at' => $now,
             ]);
+            return (int) $newId;
         });
+
+        // Record slot occupancy. Close any stale row on the same (server, slot)
+        // first (in case a disconnect was missed) so only one row is open.
+        $nowMs = $now->format('Y-m-d H:i:s.v');
+        DB::table('tracker_server_slots')
+            ->where('server_id', $serverId)
+            ->where('slot', $parsed['slot'])
+            ->whereNull('disconnected_at')
+            ->update(['disconnected_at' => $nowMs, 'updated_at' => $nowMs]);
+
+        DB::table('tracker_server_slots')->insert([
+            'server_id' => $serverId,
+            'slot' => $parsed['slot'],
+            'player_id' => $playerId,
+            'connected_at' => $nowMs,
+            'disconnected_at' => null,
+            'created_at' => $nowMs,
+            'updated_at' => $nowMs,
+        ]);
     }
 
     /**
@@ -142,14 +179,33 @@ class PlayerPresenceHandler extends AbstractHandler
 
     private function handleDisconnect(TrackerRawEvent $event, int $serverId): void
     {
-        // Disconnect carries only a slot — no way to attribute without in-memory
-        // slot→player state. We just log for debugging.
-        // Weapon stats before disconnect are captured via ws packets, so the
-        // match stats are already preserved.
-        Log::debug('Tracker disconnect', [
-            'server_id' => $serverId,
-            'payload' => $event->payload,
-        ]);
+        // Parse "disconnect <slot>"
+        if (!preg_match('/^disconnect\s+(\d+)\s*$/', $event->payload, $m)) {
+            Log::debug('Tracker disconnect: malformed', ['payload' => $event->payload]);
+            return;
+        }
+        $slot = (int) $m[1];
+
+        $nowMs = $event->received_at->format('Y-m-d H:i:s.v');
+
+        // Close the currently-open slot row. There should only ever be one
+        // open at a time per (server, slot) — but update() handles zero and
+        // many equally well without erroring.
+        $affected = DB::table('tracker_server_slots')
+            ->where('server_id', $serverId)
+            ->where('slot', $slot)
+            ->whereNull('disconnected_at')
+            ->update([
+                'disconnected_at' => $nowMs,
+                'updated_at' => $nowMs,
+            ]);
+
+        if ($affected === 0) {
+            Log::debug('Tracker disconnect: no open slot row to close', [
+                'server_id' => $serverId,
+                'slot' => $slot,
+            ]);
+        }
     }
 
     /**
