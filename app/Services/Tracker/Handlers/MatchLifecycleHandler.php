@@ -59,13 +59,15 @@ class MatchLifecycleHandler extends AbstractHandler
             // Close any currently-open match for this server
             $this->closeOpenMatch($serverId, $event->received_at, 'mapchange');
 
-            // Open a new match
+            // Open a new match (use formatted string to preserve milliseconds —
+            // Carbon objects in insert() get coerced to Y-m-d H:i:s without .v)
+            $startedAtMs = $event->received_at->format('Y-m-d H:i:s.v');
             DB::table('tracker_matches')->insert([
                 'server_id' => $serverId,
                 'map_name' => $mapName,
-                'started_at' => $event->received_at,
-                'created_at' => $event->received_at,
-                'updated_at' => $event->received_at,
+                'started_at' => $startedAtMs,
+                'created_at' => $startedAtMs,
+                'updated_at' => $startedAtMs,
             ]);
         });
 
@@ -94,12 +96,13 @@ class MatchLifecycleHandler extends AbstractHandler
 
             // ...then open a fresh match on the same map (if we know it).
             if ($openMatch !== null) {
+                $startedAtMs = $event->received_at->format('Y-m-d H:i:s.v');
                 DB::table('tracker_matches')->insert([
                     'server_id' => $serverId,
                     'map_name' => $openMatch->map_name,
-                    'started_at' => $event->received_at,
-                    'created_at' => $event->received_at,
-                    'updated_at' => $event->received_at,
+                    'started_at' => $startedAtMs,
+                    'created_at' => $startedAtMs,
+                    'updated_at' => $startedAtMs,
                 ]);
             }
         });
