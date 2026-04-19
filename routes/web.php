@@ -351,6 +351,8 @@ use App\Http\Controllers\Frontend\TrackerExtendedController;
 
 Route::get('/tracker/map', [TrackerExtendedController::class, 'worldMap'])->name('tracker.map');
 Route::get('/tracker/rankings', [TrackerExtendedController::class, 'rankings'])->name('tracker.rankings');
+Route::get('/tracker/rankings/servers', [TrackerExtendedController::class, 'serverRankings'])->name('tracker.rankings.servers');
+Route::get('/tracker/rankings/players', [TrackerExtendedController::class, 'playerRankings'])->name('tracker.rankings.players');
 Route::get('/tracker/clans', [TrackerExtendedController::class, 'clans'])->name('tracker.clans');
 Route::get('/tracker/clans/{clan}', [TrackerExtendedController::class, 'clanShow'])->name('tracker.clan.show');
 Route::get('/tracker/compare', [TrackerExtendedController::class, 'playerCompare'])->name('tracker.compare');

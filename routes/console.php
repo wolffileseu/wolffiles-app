@@ -53,7 +53,7 @@ Schedule::command('servers:sync-status')->hourly();
 Schedule::command('omnibot:sync --pull')->everySixHours();
 
 // Rebuild server rankings every 10 minutes (materialized 30d avg_players snapshot)
-Schedule::command('tracker:rebuild-rankings -q')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('tracker:rebuild-rankings-30d')->everyThirtyMinutes()->withoutOverlapping()->runInBackground();
 
 // Rebuild top-players snapshot every 30 minutes (very stable cumulative XP ranks)
 Schedule::command('tracker:rebuild-top-players -q')->everyThirtyMinutes()->withoutOverlapping();

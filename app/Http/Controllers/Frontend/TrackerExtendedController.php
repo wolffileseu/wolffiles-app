@@ -44,15 +44,152 @@ class TrackerExtendedController extends Controller
     }
 
     // ── Rankings ──
-    public function rankings(Request $request, RankingService $rankingService)
+    // Game family mapping for ET/RtCW ranking tabs
+    private const GAME_FAMILY_ET = [1, 2, 3, 4, 5];
+    private const GAME_FAMILY_RTCW = [6, 7, 8, 9, 10];
+
+    /**
+     * Rankings landing page - teasers per game family.
+     */
+    public function rankings()
     {
-        $period = $request->get('period', 'alltime');
-        if (!in_array($period, ['daily','weekly','monthly','alltime'])) $period = 'alltime';
+        $data = [];
+        foreach (['et', 'rtcw'] as $fam) {
+            $data[$fam]['servers'] = DB::table('tracker_server_rankings as r')
+                ->join('tracker_servers as s', 's.id', '=', 'r.server_id')
+                ->where('r.game_family', $fam)
+                ->orderBy('r.rank')
+                ->limit(5)
+                ->get([
+                    'r.rank', 'r.avg_players_30d', 'r.peak_players_30d',
+                    's.id as server_id', 's.hostname_clean', 's.country',
+                ]);
 
-        $rankings = $rankingService->getLeaderboard($period, 50);
-        $top3 = $rankings->getCollection()->take(3);
+            $data[$fam]['players'] = DB::table('tracker_player_rankings_30d as r')
+                ->join('tracker_players as p', 'p.id', '=', 'r.player_id')
+                ->where('r.game_family', $fam)
+                ->orderBy('r.rank')
+                ->limit(5)
+                ->get([
+                    'r.rank', 'r.playtime_minutes_30d', 'r.elo_rating',
+                    'p.id as player_id', 'p.name_clean', 'p.name_html', 'p.country_code',
+                ]);
+        }
 
-        return view('frontend.tracker.rankings', compact('rankings', 'period', 'top3'));
+        $lastComputed = DB::table('tracker_server_rankings')->max('computed_at');
+
+        return view('frontend.tracker.rankings', compact('data', 'lastComputed'));
+    }
+
+    /**
+     * Detailed server rankings with ET/RtCW tabs and sortable columns.
+     */
+    public function serverRankings(Request $request)
+    {
+        $game = $request->get('game') === 'rtcw' ? 'rtcw' : 'et';
+
+        $sortable = [
+            'rank'           => 'r.rank',
+            'hostname'       => 's.hostname_clean',
+            'avg_players'    => 'r.avg_players_30d',
+            'peak_players'   => 'r.peak_players_30d',
+            'playtime'       => 'r.total_playtime_minutes_30d',
+            'unique_players' => 'r.unique_players_30d',
+            'uptime'         => '(r.online_polls_30d / GREATEST(r.total_polls_30d, 1))',
+        ];
+
+        $sort = $request->get('sort', 'rank');
+        if (! array_key_exists($sort, $sortable)) {
+            $sort = 'rank';
+        }
+
+        $requestedDir = $request->get('dir');
+        if (in_array($requestedDir, ['asc', 'desc'], true)) {
+            $dir = $requestedDir;
+        } else {
+            $dir = in_array($sort, ['rank', 'hostname'], true) ? 'asc' : 'desc';
+        }
+
+        $query = DB::table('tracker_server_rankings as r')
+            ->join('tracker_servers as s', 's.id', '=', 'r.server_id')
+            ->where('r.game_family', $game)
+            ->select([
+                'r.rank', 'r.avg_players_30d', 'r.peak_players_30d',
+                'r.total_playtime_minutes_30d', 'r.unique_players_30d',
+                'r.total_polls_30d', 'r.online_polls_30d',
+                's.id as server_id', 's.hostname_clean', 's.country',
+                's.current_players', 's.max_players', 's.is_online',
+            ]);
+
+        if ($sort === 'uptime') {
+            $query->orderByRaw($sortable['uptime'] . ' ' . $dir);
+        } else {
+            $query->orderBy($sortable[$sort], $dir);
+        }
+
+        if ($sort !== 'rank') {
+            $query->orderBy('r.rank', 'asc');
+        }
+
+        $rankings = $query->paginate(50)->withQueryString();
+        $lastComputed = DB::table('tracker_server_rankings')->max('computed_at');
+
+        return view('frontend.tracker.rankings-servers', compact('rankings', 'game', 'sort', 'dir', 'lastComputed'));
+    }
+
+    /**
+     * Detailed player rankings with ET/RtCW tabs and sortable columns.
+     */
+    public function playerRankings(Request $request)
+    {
+        $game = $request->get('game') === 'rtcw' ? 'rtcw' : 'et';
+
+        $sortable = [
+            'rank'           => 'r.rank',
+            'name'           => 'p.name_clean',
+            'playtime'       => 'r.playtime_minutes_30d',
+            'sessions'       => 'r.sessions_count_30d',
+            'unique_servers' => 'r.unique_servers_30d',
+            'unique_maps'    => 'r.unique_maps_30d',
+            'elo'            => 'r.elo_rating',
+        ];
+
+        $sort = $request->get('sort', 'rank');
+        if (! array_key_exists($sort, $sortable)) {
+            $sort = 'rank';
+        }
+
+        $requestedDir = $request->get('dir');
+        if (in_array($requestedDir, ['asc', 'desc'], true)) {
+            $dir = $requestedDir;
+        } else {
+            $dir = in_array($sort, ['rank', 'name'], true) ? 'asc' : 'desc';
+        }
+
+        $query = DB::table('tracker_player_rankings_30d as r')
+            ->join('tracker_players as p', 'p.id', '=', 'r.player_id')
+            ->where('r.game_family', $game)
+            ->select([
+                'r.rank', 'r.playtime_minutes_30d', 'r.sessions_count_30d',
+                'r.unique_servers_30d', 'r.unique_maps_30d', 'r.elo_rating',
+                'p.id as player_id', 'p.name_clean', 'p.name_html', 'p.country_code',
+            ]);
+
+        if ($sort === 'elo') {
+            // Push NULL elo to the end
+            $query->orderByRaw('r.elo_rating IS NULL, r.elo_rating ' . $dir);
+        } else {
+            $query->orderBy($sortable[$sort], $dir);
+        }
+
+        if ($sort !== 'rank') {
+            $query->orderBy('r.rank', 'asc');
+        }
+
+        $rankings = $query->paginate(50)->withQueryString();
+        $lastComputed = DB::table('tracker_player_rankings_30d')->max('computed_at');
+
+        return view('frontend.tracker.rankings-players', compact('rankings', 'game', 'sort', 'dir', 'lastComputed'));
     }
 
     // ── Clans ──
