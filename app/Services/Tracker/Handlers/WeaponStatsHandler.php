@@ -104,9 +104,98 @@ class WeaponStatsHandler extends AbstractHandler
         }
 
         DB::transaction(function () use ($event, $parsed, $match, $playerId, $serverId) {
+            // ORDER MATTERS: Lifetime delta must be computed from the OLD
+            // per-match snapshot BEFORE we overwrite it with the new values.
+            $this->updateLifetimeWeaponStats($match->id, $playerId, $parsed, $event->received_at);
             $this->writeMatchWeaponSnapshots($match->id, $playerId, $parsed, $event->received_at);
             $this->writeMatchPlayerStats($match->id, $serverId, $playerId, $parsed, $event->received_at);
         });
+    }
+
+    /**
+     * Update cumulative lifetime weapon stats in tracker_player_weapon_stats.
+     *
+     * The ws-packet contains cumulative values for the CURRENT match. To
+     * keep player-lifetime totals correct we compute a delta against the
+     * last snapshot we wrote for this (match, player, weapon) combo.
+     *
+     * Delta rules:
+     *   1. If a previous snapshot exists and new values are >= old values
+     *      -> delta = new - old (normal growth within same match)
+     *   2. Else (no prior snapshot OR new < old)
+     *      -> delta = new values themselves
+     *         (new match, or a maprestart reset the game-side counters)
+     *
+     * Rule 2 is also the safe fallback for missed packets.
+     *
+     * MUST be called BEFORE writeMatchWeaponSnapshots(), which overwrites
+     * the snapshot we read here.
+     */
+    private function updateLifetimeWeaponStats(int $matchId, int $playerId, array $parsed, \Illuminate\Support\Carbon $receivedAt): void
+    {
+        $nowMs = $receivedAt->format('Y-m-d H:i:s.v');
+
+        foreach ($parsed['weapons'] as $weaponBit => $w) {
+            // Read the previous per-match snapshot (before we overwrite it).
+            $previous = DB::table('tracker_match_player_weapon_stats')
+                ->where('match_id', $matchId)
+                ->where('player_id', $playerId)
+                ->where('weapon_bit', $weaponBit)
+                ->first(['hits', 'atts', 'kills', 'deaths', 'headshots']);
+
+            // Compute delta. We use 'hits' as the growth-direction sentinel
+            // (in ET it monotonically increases within a match).
+            if ($previous !== null && $previous->hits <= $w['hits']) {
+                $deltaHits      = $w['hits']      - $previous->hits;
+                $deltaAtts      = $w['atts']      - $previous->atts;
+                $deltaKills     = $w['kills']     - $previous->kills;
+                $deltaDeaths    = $w['deaths']    - $previous->deaths;
+                $deltaHeadshots = $w['headshots'] - $previous->headshots;
+            } else {
+                // No prior snapshot OR values regressed -> treat as fresh growth.
+                $deltaHits      = $w['hits'];
+                $deltaAtts      = $w['atts'];
+                $deltaKills     = $w['kills'];
+                $deltaDeaths    = $w['deaths'];
+                $deltaHeadshots = $w['headshots'];
+            }
+
+            // Skip if this packet added nothing (duplicate or idle).
+            if ($deltaHits === 0 && $deltaAtts === 0 && $deltaKills === 0
+                && $deltaDeaths === 0 && $deltaHeadshots === 0) {
+                continue;
+            }
+
+            // Upsert into lifetime totals. Using a raw statement here for atomic
+            // accuracy_bp computation — MySQL's ON DUPLICATE KEY UPDATE lets us
+            // reference both the existing column and the incoming VALUES().
+            DB::statement(
+                'INSERT INTO tracker_player_weapon_stats
+                    (player_id, weapon_bit,
+                     total_hits, total_atts, total_kills, total_deaths, total_headshots,
+                     accuracy_bp, first_seen_at, last_updated_at, created_at, updated_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?)
+                 ON DUPLICATE KEY UPDATE
+                    total_hits      = total_hits      + VALUES(total_hits),
+                    total_atts      = total_atts      + VALUES(total_atts),
+                    total_kills     = total_kills     + VALUES(total_kills),
+                    total_deaths    = total_deaths    + VALUES(total_deaths),
+                    total_headshots = total_headshots + VALUES(total_headshots),
+                    accuracy_bp     = IF(
+                        (total_atts + VALUES(total_atts)) > 0,
+                        FLOOR((total_hits + VALUES(total_hits)) * 10000 /
+                              (total_atts + VALUES(total_atts))),
+                        0
+                    ),
+                    last_updated_at = VALUES(last_updated_at),
+                    updated_at      = VALUES(updated_at)',
+                [
+                    $playerId, $weaponBit,
+                    $deltaHits, $deltaAtts, $deltaKills, $deltaDeaths, $deltaHeadshots,
+                    $nowMs, $nowMs, $nowMs, $nowMs,
+                ]
+            );
+        }
     }
 
     /**
