@@ -108,6 +108,13 @@ Route::prefix('v1/tracker')->group(function () {
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
     Route::get('/maps/{mapName}',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiMapStats'])->name('tracker.api.map-stats');
     Route::get('/rankings',        [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'apiRankings'])->name('tracker.api.rankings');
+
+    // Per-server detail endpoints (backed by materialized snapshot tables)
+    Route::get('/servers/{id}',              [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServerDetail'])->whereNumber('id')->name('tracker.api.server-detail');
+    Route::get('/servers/{id}/rank',         [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServerRank'])->whereNumber('id')->name('tracker.api.server-rank');
+    Route::get('/servers/{id}/top-players',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServerTopPlayers'])->whereNumber('id')->name('tracker.api.server-top-players');
+    Route::get('/servers/{id}/online',       [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServerOnline'])->whereNumber('id')->name('tracker.api.server-online');
+    Route::get('/servers/{id}/history',      [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServerHistory'])->whereNumber('id')->name('tracker.api.server-history');
     Route::get('/clans',           [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'apiClans'])->name('tracker.api.clans');
 });
 

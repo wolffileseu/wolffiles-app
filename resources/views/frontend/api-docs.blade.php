@@ -1,4 +1,9 @@
 <x-layouts.app :title="__('messages.api_title')">
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {{-- Header --}}
@@ -64,7 +69,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'search' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'search'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'search'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_search_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -99,7 +104,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'latest' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'latest'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'latest'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_latest_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -132,7 +137,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'random' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'random'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'random'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_random_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -164,7 +169,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'top' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'top'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'top'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_top_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -197,7 +202,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'trending' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'trending'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'trending'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_trending_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -229,7 +234,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'featured' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'featured'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'featured'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_featured_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_example_request') }}</h4>
@@ -255,7 +260,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'show' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'show'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'show'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_show_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_path_params') }}</h4>
@@ -297,7 +302,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'stats' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'stats'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'stats'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_stats_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_example_request') }}</h4>
@@ -325,7 +330,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'wiki' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'wiki'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'wiki'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_wiki_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -357,7 +362,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tutorials' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tutorials'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tutorials'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">{{ __('messages.api_tutorials_desc') }}</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">{{ __('messages.api_parameters') }}</h4>
@@ -379,7 +384,6 @@
                 </div>
             </div>
 
-        </div>
 
 
             {{-- Section: Tracker --}}
@@ -396,7 +400,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-online' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-online'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-online'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns the current number of players and servers online across all tracked games.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
@@ -422,7 +426,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-stats' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-stats'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-stats'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns server and player counts broken down by game (ET 2.60b, ETL, RtCW, etc.).</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
@@ -448,7 +452,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-servers' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-servers'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-servers'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns all currently online servers, sorted by player count. Filter by game slug.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -480,7 +484,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-servers-top' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-servers-top'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-servers-top'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns the most populated servers currently online. Max 25.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -512,7 +516,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-maps' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-maps'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-maps'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns all servers currently playing the given map, plus historical stats (times played, peak players, avg players).</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Path Parameter</h4>
@@ -544,7 +548,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-players-search' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-players-search'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-players-search'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Search tracked players by name. Minimum 2 characters required.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -576,7 +580,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-players-top' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-players-top'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-players-top'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns top players sorted by ELO, kills, playtime, or K/D ratio. Max 25.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -609,7 +613,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-player' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-player'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-player'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns full profile for a tracked player including ELO, stats, and last 5 sessions.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Path Parameter</h4>
@@ -641,7 +645,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-rankings' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-rankings'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-rankings'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns paginated player rankings for a given period.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -674,7 +678,7 @@
                     </div>
                     <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-clans' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                 </button>
-                <div x-show="openEndpoint === 'tracker-clans'" x-collapse class="border-t border-gray-700 p-5 space-y-4">
+                <div x-show="openEndpoint === 'tracker-clans'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
                     <p class="text-gray-400 text-sm">Returns active clans sorted by member count. Optionally search by tag or name.</p>
                     <div>
                         <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
@@ -745,6 +749,142 @@ await interaction.reply({ embeds: [embed] });</code></pre>
             </div>
         </div>
 
+            {{-- GET /tracker/servers/{id} --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-server-detail' ? null : 'tracker-server-detail'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/{id}</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Full server detail with banner URLs</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-server-detail' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-server-detail'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns full server details including IP, map, players, and banner/embed URLs ready for use.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/270</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/270', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers/{id}/rank --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-server-rank' ? null : 'tracker-server-rank'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/{id}/rank</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Server ranking position (30d avg)</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-server-rank' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-server-rank'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns the server's rank within its game (based on 30-day average player count). Snapshot refreshes every 10 minutes.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/270/rank</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/270/rank', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers/{id}/top-players --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-server-top-players' ? null : 'tracker-server-top-players'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/{id}/top-players</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Top 8 all-time players</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-server-top-players' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-server-top-players'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns the top 8 all-time players on this server, ranked by cumulative XP. Snapshot refreshes every 30 minutes.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/270/top-players</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/270/top-players', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers/{id}/online --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-server-online' ? null : 'tracker-server-online'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/{id}/online</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Current online players on server</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-server-online' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-server-online'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns the list of players currently online on this server with team, score, and session details.</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/270/online</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/270/online', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
+            {{-- GET /tracker/servers/{id}/history --}}
+            <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                <button @click="openEndpoint = openEndpoint === 'tracker-server-history' ? null : 'tracker-server-history'"
+                    class="w-full flex items-center justify-between p-4 hover:bg-gray-700/50 transition">
+                    <div class="flex items-center gap-3">
+                        <span class="bg-green-500/20 text-green-400 px-2.5 py-0.5 rounded text-xs font-mono font-bold">GET</span>
+                        <code class="text-white text-sm">/tracker/servers/{id}/history</code>
+                        <span class="text-gray-500 text-sm hidden sm:inline">— Time-series poll data</span>
+                    </div>
+                    <svg class="w-5 h-5 text-gray-400 transition-transform duration-200" :class="openEndpoint === 'tracker-server-history' ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div x-show="openEndpoint === 'tracker-server-history'" x-collapse x-cloak class="border-t border-gray-700 p-5 space-y-4">
+                    <p class="text-gray-400 text-sm">Returns historical player-count samples for charting. Default last 24 hours, max 168 hours (1 week).</p>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Parameters</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 text-sm space-y-2">
+                            <div class="flex gap-3 items-start"><code class="text-amber-400 w-24 shrink-0">hours</code><span class="text-gray-300">Lookback window in hours (default: 24, max: 168) <span class="text-gray-500 text-xs">(optional)</span></span></div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Example Request</h4>
+                        <div class="bg-gray-900 rounded-lg p-3 overflow-x-auto">
+                            <code class="text-green-400 text-sm">GET https://wolffiles.eu/api/v1/tracker/servers/270/history?hours=24</code>
+                        </div>
+                    </div>
+                    <button onclick="testEndpoint('/api/v1/tracker/servers/270/history?hours=24', this)"
+                        class="px-4 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs transition font-medium">
+                        ▶ Try it
+                    </button>
+                </div>
+            </div>
+
         {{-- Try It Response Area --}}
         <div id="api-response-area" style="display:none" class="mt-6">
             <div class="bg-gray-800 rounded-xl border border-amber-600/50 p-6">
@@ -790,4 +930,5 @@ await interaction.reply({ embeds: [embed] });</code></pre>
             .finally(() => { btn.disabled = false; btn.textContent = orig; });
     }
     </script>
+    </div>
 </x-layouts.app>

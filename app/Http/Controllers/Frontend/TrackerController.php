@@ -789,4 +789,157 @@ class TrackerController extends Controller
 
         return $groups;
     }
+
+    /**
+     * GET /api/v1/tracker/servers/{id}
+     * Full server detail with banner/embed URLs.
+     */
+    public function apiServerDetail(int $id)
+    {
+        $s = \App\Models\Tracker\TrackerServer::find($id);
+        if (!$s) {
+            return response()->json(['error' => 'server_not_found'], 404);
+        }
+
+        return response()->json([
+            'id'              => $s->id,
+            'game_id'         => $s->game_id,
+            'hostname'        => $s->hostname,
+            'hostname_clean'  => $s->hostname_clean,
+            'hostname_html'   => $s->hostname_html,
+            'ip'              => $s->ip,
+            'port'            => (int) $s->port,
+            'country_code'    => $s->country_code,
+            'city'            => $s->city,
+            'current_map'     => $s->current_map,
+            'current_players' => (int) $s->current_players,
+            'max_players'     => (int) $s->max_players,
+            'gametype'        => $s->gametype,
+            'mod_name'        => $s->mod_name,
+            'is_online'       => (bool) $s->is_online,
+            'needs_password'  => (bool) $s->needs_password,
+            'last_poll_at'    => $s->last_poll_at,
+            'banner_url'      => url("/tracker/server/{$s->id}/banner.png"),
+            'embed_url'       => url("/tracker/server/{$s->id}/embed"),
+        ]);
+    }
+
+    /**
+     * GET /api/v1/tracker/servers/{id}/rank
+     * Materialized ranking position within the same game (30d avg players).
+     */
+    public function apiServerRank(int $id)
+    {
+        $row = \DB::table('tracker_server_rankings')
+            ->where('server_id', $id)
+            ->first(['server_id', 'game_id', 'rank', 'total_in_game', 'avg_players_30d', 'polls_counted', 'computed_at']);
+
+        if (!$row) {
+            return response()->json(['error' => 'not_ranked', 'reason' => 'insufficient_data_or_snapshot_pending'], 404);
+        }
+
+        return response()->json([
+            'server_id'       => (int) $row->server_id,
+            'game_id'         => (int) $row->game_id,
+            'rank'            => (int) $row->rank,
+            'total_in_game'   => (int) $row->total_in_game,
+            'avg_players_30d' => (float) $row->avg_players_30d,
+            'polls_counted'   => (int) $row->polls_counted,
+            'computed_at'     => $row->computed_at,
+        ]);
+    }
+
+    /**
+     * GET /api/v1/tracker/servers/{id}/top-players
+     * Materialized top-8 all-time players by cumulative XP.
+     */
+    public function apiServerTopPlayers(int $id)
+    {
+        $rows = \DB::table('tracker_server_top_players')
+            ->where('server_id', $id)
+            ->orderBy('rank')
+            ->get(['rank', 'player_id', 'name_clean', 'name_html', 'total_xp', 'total_minutes', 'computed_at']);
+
+        return response()->json([
+            'server_id' => $id,
+            'count'     => $rows->count(),
+            'players'   => $rows->map(fn ($p) => [
+                'rank'          => (int) $p->rank,
+                'player_id'     => (int) $p->player_id,
+                'name'          => $p->name_clean,
+                'name_html'     => $p->name_html,
+                'total_xp'      => (int) $p->total_xp,
+                'total_minutes' => (int) $p->total_minutes,
+            ])->values(),
+            'computed_at' => optional($rows->first())->computed_at,
+        ]);
+    }
+
+    /**
+     * GET /api/v1/tracker/servers/{id}/online
+     * Current online players on this server (open sessions).
+     */
+    public function apiServerOnline(int $id)
+    {
+        $rows = \DB::table('tracker_player_sessions')
+            ->where('tracker_player_sessions.server_id', $id)
+            ->whereNull('tracker_player_sessions.ended_at')
+            ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
+            ->orderBy('tracker_player_sessions.started_at')
+            ->select([
+                'tracker_players.id as player_id',
+                'tracker_players.name_clean',
+                'tracker_players.name_html',
+                'tracker_players.country_code',
+                'tracker_player_sessions.score',
+                'tracker_player_sessions.team',
+                'tracker_player_sessions.map_name',
+                'tracker_player_sessions.started_at',
+            ])
+            ->get();
+
+        return response()->json([
+            'server_id' => $id,
+            'count'     => $rows->count(),
+            'players'   => $rows->map(fn ($p) => [
+                'player_id'    => (int) $p->player_id,
+                'name'         => $p->name_clean,
+                'name_html'    => $p->name_html,
+                'country_code' => $p->country_code,
+                'score'        => (int) $p->score,
+                'team'         => $p->team,
+                'map'          => $p->map_name,
+                'started_at'   => $p->started_at,
+            ])->values(),
+        ]);
+    }
+
+    /**
+     * GET /api/v1/tracker/servers/{id}/history?hours=24
+     * Time-series poll data (up to 168h = 1 week).
+     */
+    public function apiServerHistory(int $id, \Illuminate\Http\Request $request)
+    {
+        $hours = max(1, min(168, (int) $request->query('hours', 24)));
+
+        $points = \DB::table('tracker_server_history')
+            ->where('server_id', $id)
+            ->where('polled_at', '>=', now()->subHours($hours))
+            ->orderBy('polled_at')
+            ->get(['polled_at', 'players', 'max_players', 'map', 'gametype']);
+
+        return response()->json([
+            'server_id' => $id,
+            'hours'     => $hours,
+            'count'     => $points->count(),
+            'points'    => $points->map(fn ($p) => [
+                'polled_at'   => $p->polled_at,
+                'players'     => (int) $p->players,
+                'max_players' => (int) $p->max_players,
+                'map'         => $p->map,
+                'gametype'    => $p->gametype,
+            ])->values(),
+        ]);
+    }
+
 }

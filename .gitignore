@@ -14,3 +14,5 @@ database/database.sqlite
 public/*.gm
 public/*.way
 public/*_goals.gm
+storage/app/*.pk3
+storage/app/stock-maps/
