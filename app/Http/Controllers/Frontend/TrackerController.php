@@ -404,13 +404,91 @@ class TrackerController extends Controller
             }
         }
 
+        // XP Skills breakdown: aggregate per-skill XP from raw_skills JSON.
+        // ET Legacy has 7 skill categories (index 0-6). Each match records
+        // current + delta per active skill. We take MAX(current) as the
+        // player's highest reached level, SUM(delta) as the XP earned on
+        // Enhanced Tracker servers. Level thresholds: 20 / 50 / 90 / 140 XP.
+        $xpSkills = [];
+        if ($player->has_enhanced_data) {
+            $rawSkillsRows = \DB::table('tracker_player_match_stats')
+                ->where('player_id', $player->id)
+                ->whereNotNull('raw_skills')
+                ->where('raw_skills', '!=', '')
+                ->pluck('raw_skills');
+
+            $perSkill = [];
+            foreach ($rawSkillsRows as $json) {
+                $decoded = json_decode($json, true);
+                if (!is_array($decoded) || !isset($decoded['skills']) || !is_array($decoded['skills'])) {
+                    continue;
+                }
+                foreach ($decoded['skills'] as $idx => $data) {
+                    $idx = (int) $idx;
+                    if (!isset($perSkill[$idx])) {
+                        $perSkill[$idx] = ['max_current' => 0, 'total_delta' => 0];
+                    }
+                    if (is_array($data)) {
+                        $cur = (int) ($data['current'] ?? 0);
+                        $del = (int) ($data['delta'] ?? 0);
+                    } else {
+                        $cur = (int) $data;
+                        $del = 0;
+                    }
+                    if ($cur > $perSkill[$idx]['max_current']) {
+                        $perSkill[$idx]['max_current'] = $cur;
+                    }
+                    $perSkill[$idx]['total_delta'] += $del;
+                }
+            }
+
+            $skillMeta = [
+                0 => ['name' => 'Battle Sense',              'color' => 'violet'],
+                1 => ['name' => 'Explosives & Construction', 'color' => 'amber'],
+                2 => ['name' => 'First Aid',                 'color' => 'rose'],
+                3 => ['name' => 'Signals',                   'color' => 'yellow'],
+                4 => ['name' => 'Light Weapons',             'color' => 'sky'],
+                5 => ['name' => 'Heavy Weapons',             'color' => 'red'],
+                6 => ['name' => 'Covert Ops',                'color' => 'emerald'],
+            ];
+            $thresholds = [20, 50, 90, 140];
+
+            foreach ($skillMeta as $idx => $meta) {
+                $cur   = $perSkill[$idx]['max_current'] ?? 0;
+                $delta = $perSkill[$idx]['total_delta'] ?? 0;
+                $level = 0;
+                foreach ($thresholds as $t) {
+                    if ($cur >= $t) { $level++; }
+                }
+                $prev = $level > 0 ? $thresholds[$level - 1] : 0;
+                $next = $thresholds[$level] ?? null;
+                if ($next !== null) {
+                    $progress = ($cur - $prev) / max(1, ($next - $prev)) * 100;
+                    $progress = max(0.0, min(100.0, (float) $progress));
+                } else {
+                    $progress = 100.0;
+                }
+                $xpSkills[$idx] = [
+                    'index'          => $idx,
+                    'name'           => $meta['name'],
+                    'color'          => $meta['color'],
+                    'current'        => $cur,
+                    'delta'          => $delta,
+                    'level'          => $level,
+                    'progress'       => $progress,
+                    'prev_threshold' => $prev,
+                    'next_threshold' => $next,
+                ];
+            }
+        }
+
         return view('frontend.tracker.player-show', compact(
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
             'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
             'lifetimeWeapons',
-            'playerTimeline'));
+            'playerTimeline', 'xpSkills'));
     }
 
     /**

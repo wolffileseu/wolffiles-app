@@ -471,6 +471,61 @@
         @endif
     </div>
 
+    {{-- XP Skills Card --}}
+    @if(!empty($xpSkills))
+    <div class="bg-gray-800 rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-700 flex items-baseline justify-between flex-wrap gap-2">
+            <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                {{ __('XP Skills') }}
+            </h3>
+            <span class="text-xs text-gray-500">{{ __('highest level reached per skill') }}</span>
+        </div>
+        <div class="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            @foreach($xpSkills as $skill)
+                @php
+                    $c = $skill['color'];
+                    $dotClass  = 'bg-'.$c.'-500';
+                    $barClass  = 'bg-gradient-to-r from-'.$c.'-600 to-'.$c.'-400';
+                    $lvlClass  = $skill['level'] > 0 ? 'text-'.$c.'-400' : 'text-gray-600';
+                @endphp
+                <div class="bg-gray-900/40 rounded-lg p-3 hover:bg-gray-900/60 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-2 h-8 rounded-full {{ $dotClass }} flex-shrink-0"></div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-gray-200 truncate">{{ __($skill['name']) }}</div>
+                            <div class="text-xs text-gray-500">
+                                {{ $skill['current'] }} XP
+                                @if($skill['delta'] > 0)
+                                    <span class="text-emerald-400 ml-1">+{{ $skill['delta'] }}</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex-shrink-0 text-right">
+                            <div class="text-[10px] text-gray-500 uppercase tracking-wider leading-none">{{ __('Level') }}</div>
+                            <div class="text-xl font-bold leading-tight {{ $lvlClass }}">{{ $skill['level'] }}</div>
+                        </div>
+                    </div>
+                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-full {{ $barClass }} rounded-full transition-all"
+                             style="width: {{ number_format($skill['progress'], 1) }}%"></div>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-gray-600 mt-1">
+                        <span>{{ $skill['prev_threshold'] }}</span>
+                        @if($skill['next_threshold'])
+                            <span>{{ $skill['next_threshold'] }} XP</span>
+                        @else
+                            <span class="text-amber-400 font-semibold">MAX</span>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     {{-- Match History --}}
     @if(!empty($playerTimeline))
     <div class="bg-gray-800 rounded-lg overflow-hidden">
