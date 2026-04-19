@@ -76,7 +76,7 @@ class BannerController extends Controller
         $cacheKey = "banner:server:{$server->id}:embed:html:w{$width}:v2";
         $html = Cache::remember(
             $cacheKey,
-            now()->addSeconds(60),
+            now()->addSeconds(120),
             function () use ($server, $opts) {
                 $data = (new ServerEmbedDataService())->collect($server);
                 return view('frontend.tracker.partials.server-embed', [
@@ -89,7 +89,6 @@ class BannerController extends Controller
         return response($html, 200, [
             'Content-Type'    => 'text/html; charset=utf-8',
             'Cache-Control'   => 'public, max-age=30, stale-while-revalidate=300, s-maxage=60',
-            'X-Frame-Options' => 'ALLOWALL',
         ]);
     }
 }

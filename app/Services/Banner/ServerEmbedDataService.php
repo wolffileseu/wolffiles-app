@@ -50,34 +50,17 @@ class ServerEmbedDataService
      */
     private function computeRank(TrackerServer $s): array
     {
-        // Cache the full ranking per game_id for 10 minutes.
-        // All servers of the same game share this cache entry — one expensive
-        // query per game every 10 min instead of per-server every request.
-        $rankings = Cache::remember(
-            "banner:ranking:game:{$s->game_id}:v1",
-            now()->addMinutes(10),
-            function () use ($s) {
-                return DB::table('tracker_server_history')
-                    ->join('tracker_servers', 'tracker_servers.id', '=', 'tracker_server_history.server_id')
-                    ->where('tracker_servers.game_id', $s->game_id)
-                    ->where('polled_at', '>=', now()->subDays(30))
-                    ->select('server_id', DB::raw('AVG(players) as avg_p'))
-                    ->groupBy('server_id')
-                    ->havingRaw('COUNT(*) > 10')
-                    ->orderByDesc('avg_p')
-                    ->pluck('avg_p', 'server_id')
-                    ->toArray();
-            }
-        );
+        // Read from the materialized ranking snapshot (tracker:rebuild-rankings).
+        // Single indexed lookup — ~1ms. If the snapshot hasn't been computed yet
+        // (fresh install / after migration), returns nulls — view handles that.
+        $row = DB::table('tracker_server_rankings')
+            ->where('server_id', $s->id)
+            ->first(['rank', 'total_in_game']);
 
-        $pos = 1;
-        foreach ($rankings as $sid => $_) {
-            if ((int) $sid === $s->id) {
-                return ['position' => $pos, 'total' => count($rankings)];
-            }
-            $pos++;
-        }
-        return ['position' => null, 'total' => count($rankings)];
+        return [
+            'position' => $row?->rank,
+            'total'    => $row?->total_in_game ?? 0,
+        ];
     }
 
     /**
@@ -119,26 +102,18 @@ class ServerEmbedDataService
      */
     private function topPlayers(TrackerServer $s): array
     {
-        return DB::table('tracker_player_sessions')
+        // Read from materialized snapshot (tracker:rebuild-top-players).
+        // Single indexed lookup — ~0.5ms, no aggregation at request time.
+        return DB::table('tracker_server_top_players')
             ->where('server_id', $s->id)
-            ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
-            ->groupBy('tracker_players.id', 'tracker_players.name_clean', 'tracker_players.name_html')
-            ->select(
-                'tracker_players.id',
-                'tracker_players.name_clean',
-                'tracker_players.name_html',
-                DB::raw('SUM(tracker_player_sessions.xp) as total_xp'),
-                DB::raw('SUM(tracker_player_sessions.duration_minutes) as total_min'),
-            )
-            ->orderByDesc('total_xp')
-            ->limit(8)
-            ->get()
+            ->orderBy('rank')
+            ->get(['player_id', 'name_clean', 'name_html', 'total_xp', 'total_minutes'])
             ->map(fn ($p) => [
-                'id'     => $p->id,
-                'name'   => $p->name_clean,
-                'html'   => $p->name_html,
-                'xp'     => (int) $p->total_xp,
-                'min'    => (int) $p->total_min,
+                'id'   => $p->player_id,
+                'name' => $p->name_clean,
+                'html' => $p->name_html,
+                'xp'   => (int) $p->total_xp,
+                'min'  => (int) $p->total_minutes,
             ])
             ->values()
             ->all();
