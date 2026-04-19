@@ -294,9 +294,62 @@ class TrackerController extends Controller
             }
         }
 
+        // Enhanced Tracker: weapon stats from the player's most recent match
+        // (where we have ws-packet data). Shows the weapon breakdown in the
+        // Enhanced section — what did they use, how accurate, headshot rate.
+        $latestMatch = null;
+        $latestMatchStats = null;
+        $latestMatchWeapons = collect();
+        if ($player->has_enhanced_data) {
+            $latestMatchStats = \DB::table('tracker_player_match_stats')
+                ->where('player_id', $player->id)
+                ->orderByDesc('match_id')
+                ->first();
+
+            if ($latestMatchStats !== null) {
+                $latestMatch = \DB::table('tracker_matches')
+                    ->where('id', $latestMatchStats->match_id)
+                    ->first();
+
+                $latestMatchWeapons = \DB::table('tracker_match_player_weapon_stats')
+                    ->where('match_id', $latestMatchStats->match_id)
+                    ->where('player_id', $player->id)
+                    ->orderByDesc('kills')
+                    ->orderByDesc('atts')
+                    ->get();
+            }
+        }
+
+        // Enhanced Rating overview: current (from most recent match with a rating)
+        // and peak (max across all matches).
+        $enhancedRating = null;
+        $enhancedRatingPeak = null;
+        $enhancedRatingMatches = 0;
+        if ($player->has_enhanced_data) {
+            $ratingStats = \DB::table('tracker_player_match_stats')
+                ->where('player_id', $player->id)
+                ->whereNotNull('skill_rating')
+                ->selectRaw('MAX(skill_rating) as peak, COUNT(*) as cnt')
+                ->first();
+
+            if ($ratingStats && $ratingStats->cnt > 0) {
+                $enhancedRatingPeak = (float) $ratingStats->peak;
+                $enhancedRatingMatches = (int) $ratingStats->cnt;
+
+                $current = \DB::table('tracker_player_match_stats')
+                    ->where('player_id', $player->id)
+                    ->whereNotNull('skill_rating')
+                    ->orderByDesc('match_id')
+                    ->value('skill_rating');
+                $enhancedRating = $current !== null ? (float) $current : null;
+            }
+        }
+
         return view('frontend.tracker.player-show', compact(
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
-            'enhancedMatches', 'enhancedMatchesCount'
+            'enhancedMatches', 'enhancedMatchesCount',
+            'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
+            'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingMatches'
         ));
     }
 

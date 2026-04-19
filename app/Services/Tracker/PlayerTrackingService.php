@@ -144,20 +144,27 @@ class PlayerTrackingService
 
     /**
      * Update an active session with new snapshot data.
+     *
+     * Note: ET's getstatus protocol only sends "score ping name" per player —
+     * no kills, deaths, or XP are transmitted. What Quake3-based servers call
+     * "score" is treated here as XP-equivalent (in vanilla ET they are the
+     * same metric; in mods score may be an XP-multiplier variant).
+     *
+     * We do NOT attempt to derive kills from score-diffs — that was a legacy
+     * behaviour that produced millions of bogus "kills" on XP-mod servers.
+     * For real kill/death/accuracy data, the Enhanced Tracker (ws-packets)
+     * is required.
      */
     public function updateSession(TrackerPlayerSession $session, array $playerData): void
     {
         $score = $playerData['score'] ?? 0;
-        $previousScore = $session->score;
 
-        // Calculate kills/deaths from score changes (approximate)
-        $scoreDiff = $score - $previousScore;
-        if ($scoreDiff > 0) {
-            $session->increment('kills', $scoreDiff);
-        }
-
+        // Score from getstatus == XP in vanilla ET (same underlying counter).
+        // On XP-multiplier mod servers this may inflate, but it's the best
+        // signal we get from the standard Quake3 query protocol.
         $session->update([
             'score' => $score,
+            'xp' => $score,
             'duration_minutes' => (int)$session->started_at->diffInMinutes(now()),
         ]);
     }

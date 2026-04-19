@@ -55,43 +55,46 @@ class TrackerPlayer extends Model
     public function scopeTopElo($query) { return $query->orderByDesc('elo_rating'); }
 
     /**
-     * K/D ratio. Currently returns 0.0 because ETLegacy's sv_tracker does NOT
-     * report per-player kills or deaths to us — `total_kills` actually
-     * accumulates XP deltas (see PlayerTrackingService::153) and
-     * `total_deaths` is never populated. Will return a real value once the
-     * ETLegacy fork ships sv_tracker2 with proper game-log parsing.
+     * K/D ratio from the Poller pipeline — always 0.0.
      *
-     * @deprecated Kept only for BC with old controllers / rankings views.
+     * Quake3's getstatus protocol sends "score ping name" per player — no
+     * kills or deaths. Real K/D data is only available through the Enhanced
+     * Tracker (ws-packets from sv_tracker2). See the Enhanced Tracker
+     * section of a player profile for real per-match K/D.
+     *
+     * Kept as an accessor returning 0.0 so legacy views/rankings that
+     * reference $player->kd_ratio don't break.
+     *
+     * @deprecated Poller cannot compute K/D — use Enhanced Tracker instead.
      */
     public function getKdRatioAttribute(): float
     {
-        if ($this->total_deaths <= 0 || $this->total_kills <= 0) {
-            return 0.0;
-        }
-        return round($this->total_kills / $this->total_deaths, 2);
+        return 0.0;
     }
 
     /**
      * XP earned per hour of play time.
-     * NOTE: `total_kills` column currently stores XP due to sv_tracker limitations.
+     *
+     * Uses total_xp, which is populated from the Quake3 getstatus score field
+     * (in vanilla ET, score == XP; mod servers may inflate this metric).
      */
     public function getXpPerHourAttribute(): int
     {
         if ($this->total_play_time_minutes <= 0) {
             return 0;
         }
-        return (int) round($this->total_kills / ($this->total_play_time_minutes / 60));
+        return (int) round($this->total_xp / ($this->total_play_time_minutes / 60));
     }
 
     /**
-     * Average XP earned per session.
+     * Average XP earned per session. Uses total_xp (populated from score).
      */
     public function getAvgXpPerSessionAttribute(): int
     {
         if ($this->total_sessions <= 0) {
             return 0;
         }
-        return (int) round($this->total_kills / $this->total_sessions);
+        return (int) round($this->total_xp / $this->total_sessions);
     }
 
     /**

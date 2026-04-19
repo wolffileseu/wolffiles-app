@@ -31,7 +31,21 @@
             </div>
             <div class="text-right">
                 <div class="text-3xl font-bold text-amber-400">{{ number_format($player->elo_rating) }}</div>
-                <div class="text-gray-400 text-sm">ELO Rating ({{ __('messages.elo_peak') }}: {{ number_format($player->elo_peak) }})</div>
+                <div class="text-gray-400 text-sm" title="{{ __('Session-based ELO rating from the legacy Poller system (default: 1000)') }}">ELO Rating ({{ __('messages.elo_peak') }}: {{ number_format($player->elo_peak) }})</div>
+
+                @if($enhancedRating !== null)
+                    <div class="mt-3 pt-3 border-t border-gray-700/50">
+                        <div class="text-2xl font-bold text-emerald-400">{{ number_format($enhancedRating, 2) }}</div>
+                        <div class="text-gray-400 text-sm" title="{{ __('Per-match skill rating from Enhanced Tracker ws-packets (TrueSkill-based mu - 3*sigma)') }}">
+                            {{ __('Enhanced Rating') }}
+                            @if($enhancedRatingPeak !== null && $enhancedRatingPeak != $enhancedRating)
+                                <span class="text-xs">({{ __('messages.elo_peak') }}: {{ number_format($enhancedRatingPeak, 2) }})</span>
+                            @endif
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ $enhancedRatingMatches }} {{ __('rated matches') }}</div>
+                    </div>
+                @endif
+
                 @auth
                 <div class="mt-2">
                 @if(!$player->claimed_by_user_id)
@@ -54,8 +68,9 @@
             <div class="text-gray-400 text-xs">{{ __('messages.play_time') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
-            {{-- total_kills column currently stores XP (see TrackerPlayer model) --}}
-            <div class="text-2xl font-bold text-green-400">{{ number_format($player->total_kills) }}</div>
+            {{-- Total XP — now properly stored in total_xp after the Poller fix
+                 (previously total_kills held this value due to a legacy misuse). --}}
+            <div class="text-2xl font-bold text-green-400">{{ number_format($player->total_xp) }}</div>
             <div class="text-gray-400 text-xs">{{ __('messages.total_xp') }}</div>
         </div>
         <div class="bg-gray-800 rounded-lg p-4 text-center">
@@ -335,14 +350,101 @@
                 </div>
             </div>
         </div>
-        <div class="px-6 py-3 bg-gray-900/40 border-t border-gray-700/50">
-            <p class="text-xs text-gray-400 flex items-start gap-2">
-                <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
-                <span>{{ __('Detailed weapon stats (K/D, accuracy, headshots) will appear here once the Enhanced Tracker weapon-stats module goes live.') }}</span>
-            </p>
-        </div>
+        @if($latestMatchWeapons->isNotEmpty())
+            <div class="px-6 py-5 border-t border-gray-700/50 bg-gray-900/30">
+                <div class="flex items-baseline justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-200">
+                        {{ __('Weapon Breakdown') }}
+                    </h3>
+                    @if($latestMatch)
+                        <span class="text-xs text-gray-500">
+                            {{ __('last match') }}: <span class="text-gray-300">{{ $latestMatch->map_name }}</span>
+                        </span>
+                    @endif
+                </div>
+
+                @if($latestMatchStats)
+                    {{-- Aggregate stats line --}}
+                    <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs mb-4 pb-4 border-b border-gray-800">
+                        @php $classCfg = config('tracker-classes.'.($latestMatchStats->class ?? -1)); @endphp
+                        @if($classCfg)
+                            <div class="flex items-center gap-2">
+                                <img src="/img/tracker/classes/{{ $classCfg['icon'] }}"
+                                     alt="{{ $classCfg['name'] }}"
+                                     class="w-6 h-6 object-contain"
+                                     loading="lazy">
+                                <span class="font-semibold" style="color: {{ $classCfg['color'] }}">{{ $classCfg['name'] }}</span>
+                            </div>
+                        @endif
+                        <div>
+                            <span class="text-gray-500">{{ __('K/D') }}:</span>
+                            <span class="text-gray-200 font-semibold ml-1">{{ $latestMatchStats->kills }}/{{ $latestMatchStats->deaths }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">{{ __('Headshots') }}:</span>
+                            <span class="text-gray-200 font-semibold ml-1">{{ $latestMatchStats->headshots }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">{{ __('Accuracy') }}:</span>
+                            <span class="text-emerald-400 font-semibold ml-1">{{ number_format($latestMatchStats->accuracy_pct, 2) }}%</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">{{ __('Damage') }}:</span>
+                            <span class="text-gray-200 font-semibold ml-1">{{ number_format($latestMatchStats->damage_given) }}</span>
+                            <span class="text-gray-500">↑ / {{ number_format($latestMatchStats->damage_received) }} ↓</span>
+                        </div>
+                        @if($latestMatchStats->time_played_pct !== null)
+                            <div>
+                                <span class="text-gray-500">{{ __('Time played') }}:</span>
+                                <span class="text-gray-200 font-semibold ml-1">{{ number_format($latestMatchStats->time_played_pct, 1) }}%</span>
+                            </div>
+                        @endif
+                        @if($latestMatchStats->skill_rating !== null)
+                            <div>
+                                <span class="text-gray-500">{{ __('Rating') }}:</span>
+                                <span class="text-gray-200 font-semibold ml-1">{{ number_format($latestMatchStats->skill_rating, 2) }}</span>
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                {{-- Per-weapon grid --}}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    @foreach($latestMatchWeapons as $w)
+                        @php $cfg = config('tracker-weapons.'.$w->weapon_bit); @endphp
+                        @if($cfg)
+                        <div class="flex items-center gap-3 bg-gray-800/60 rounded-lg p-2.5 hover:bg-gray-800 transition">
+                            <img src="/img/tracker/weapons/{{ $cfg['icon'] }}"
+                                 alt="{{ $cfg['name'] }}"
+                                 class="w-10 h-10 object-contain flex-shrink-0"
+                                 loading="lazy">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-sm font-medium text-gray-200 truncate">{{ $cfg['name'] }}</div>
+                                <div class="text-xs text-gray-400 flex flex-wrap gap-x-2">
+                                    <span>{{ $w->kills }}K/{{ $w->deaths }}D</span>
+                                    @if($w->headshots > 0)
+                                        <span class="text-amber-400" title="{{ __('Headshots') }}">🎯 {{ $w->headshots }}</span>
+                                    @endif
+                                    @if($w->atts > 0)
+                                        <span class="text-emerald-400">{{ number_format($w->accuracy_bp / 100, 1) }}%</span>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+        @else
+            <div class="px-6 py-3 bg-gray-900/40 border-t border-gray-700/50">
+                <p class="text-xs text-gray-400 flex items-start gap-2">
+                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ __('No weapon stats yet for this player. Play on an Enhanced Tracker enabled server to see detailed weapon breakdown.') }}</span>
+                </p>
+            </div>
+        @endif
     </div>
 
     {{-- Match History --}}
