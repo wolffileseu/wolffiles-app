@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'vertical_banner' => 'Baner pionowy',
+    'vertical_banner_help' => 'Do pasków bocznych, blogów i stron HTML. Dopasowuje się do szerokości.',
     'accept' => 'Zaakceptuj wszystkie',
     'active_servers' => 'Aktywne serwery',
     'active_servers_desc' => 'Servery z graczami online',
@@ -115,6 +117,7 @@ return [
     'contact_sent' => 'Wiadomość wysłana pomyślnie! Skontaktujemy się z Tobą wkrótce.',
     'cookie_text' => 'Używamy plików cookie, aby zapewnić najlepszą jakość korzystania z naszej strony internetowej. Kontynuując przeglądanie strony, wyrażasz zgodę na używanie przez nas plików cookie.',
     'copied' => 'Skopiowano',
+    'copy' => 'Kopiuj',
     'copy_link' => 'Kopiuj link',
     'copyright_issue' => 'Kwestie praw autorskich',
     'cost_domain' => 'Domena & SSL',
@@ -150,6 +153,7 @@ return [
     'delete_account' => 'Usuń konto',
     'description' => 'Opis',
     'detailed_rating' => 'Szczegółowa ocena',
+    'direct_link' => 'Bezpośredni link',
     'directories_updated' => 'Katalogi zaktualizowane',
     'discard' => 'Odrzuć',
     'display_name' => 'Nazwa wyświetlana',
@@ -175,6 +179,7 @@ return [
     'elo_rating' => 'Ranking ELO',
     'email' => 'Email',
     'email_hint' => 'Nie można zmienić.',
+    'embed_banner' => 'Osadź baner',
     'embed_code' => 'Kod do osadzenia',
     'error_404_quote' => 'Zołnierzu, zgubiłeś drogę! Natychamist wracaj do bazy!',
     'error_404_text' => 'Szukana strona nie istnieje lub została przeniesiona',

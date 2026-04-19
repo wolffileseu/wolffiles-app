@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'vertical_banner' => 'Vertikales Banner',
+    'vertical_banner_help' => 'Für Sidebars, Blogs und HTML-Seiten. Passt sich automatisch an die angegebene Breite an.',
     'accept' => 'Alle akzeptieren',
     'active_servers' => 'Aktive Server',
     'active_servers_desc' => 'Server mit Spielern gerade jetzt',
@@ -115,6 +117,7 @@ return [
     'contact_sent' => 'Nachricht erfolgreich gesendet! Wir melden uns bald bei dir.',
     'cookie_text' => 'Wir verwenden Cookies, um die beste Erfahrung auf unserer Website zu gewährleisten. Durch weiteres Surfen stimmst du der Verwendung von Cookies zu.',
     'copied' => 'Kopiert',
+    'copy' => 'Kopieren',
     'copy_link' => 'Link kopieren',
     'copyright_issue' => 'Urheberrechtsproblem',
     'cost_domain' => '[TODO:de] Domain & SSL',
@@ -150,6 +153,7 @@ return [
     'delete_account' => 'Konto löschen',
     'description' => '[TODO:de] Description',
     'detailed_rating' => '[TODO:de] Detailed Rating',
+    'direct_link' => 'Direkt-Link',
     'directories_updated' => '[TODO:de] Directories updated',
     'discard' => 'Verwerfen',
     'display_name' => 'Anzeigename',
@@ -175,6 +179,7 @@ return [
     'elo_rating' => '[TODO:de] ELO Rating',
     'email' => 'E-Mail',
     'email_hint' => 'Kann nicht geändert werden.',
+    'embed_banner' => 'Banner einbetten',
     'embed_code' => 'Embed-Code',
     'error_404_quote' => 'Soldat, du hast dich verlaufen! Zurück zur Basis, sofort!',
     'error_404_text' => 'Die Seite die du suchst existiert nicht oder wurde verlegt.',

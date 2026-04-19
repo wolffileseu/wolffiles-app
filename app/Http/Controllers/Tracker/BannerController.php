@@ -70,20 +70,25 @@ class BannerController extends Controller
             'width'          => $width,
         ];
 
-        $data = Cache::remember(
-            "banner:server:{$server->id}:embed:v1",
-            now()->addSeconds(30),
-            fn () => (new ServerEmbedDataService())->collect($server)
+        // Cache the fully rendered HTML (60s) — saves both the data queries
+        // AND the Blade rendering on every iframe load. Cache key includes
+        // width so different embed sizes don't collide.
+        $cacheKey = "banner:server:{$server->id}:embed:html:w{$width}:v2";
+        $html = Cache::remember(
+            $cacheKey,
+            now()->addSeconds(60),
+            function () use ($server, $opts) {
+                $data = (new ServerEmbedDataService())->collect($server);
+                return view('frontend.tracker.partials.server-embed', [
+                    'd'    => $data,
+                    'opts' => $opts,
+                ])->render();
+            }
         );
-
-        $html = view('frontend.tracker.partials.server-embed', [
-            'd'    => $data,
-            'opts' => $opts,
-        ])->render();
 
         return response($html, 200, [
             'Content-Type'    => 'text/html; charset=utf-8',
-            'Cache-Control'   => 'public, max-age=30, stale-while-revalidate=60',
+            'Cache-Control'   => 'public, max-age=30, stale-while-revalidate=300, s-maxage=60',
             'X-Frame-Options' => 'ALLOWALL',
         ]);
     }

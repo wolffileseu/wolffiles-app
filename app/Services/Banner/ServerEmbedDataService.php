@@ -1,0 +1,186 @@
+<?php
+
+namespace App\Services\Banner;
+
+use App\Models\Tracker\TrackerServer;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Aggregates all server data needed by the vertical embed banner.
+ * Single place that knows how to compute rank, fetch players, top players,
+ * and hydrate map/history data. Cached at caller.
+ */
+class ServerEmbedDataService
+{
+    public function collect(TrackerServer $server): array
+    {
+        return [
+            'server'          => $this->serverBasics($server),
+            'rank'            => $this->computeRank($server),
+            'current_players' => $this->currentPlayers($server),
+            'top_players'     => $this->topPlayers($server),
+            'map_thumb'       => $this->mapThumbPath($server->current_map),
+            'history'         => $this->playerHistory24h($server),
+        ];
+    }
+
+    private function serverBasics(TrackerServer $s): array
+    {
+        return [
+            'id'              => $s->id,
+            'hostname'        => $s->hostname,
+            'hostname_html'   => $s->hostname_html,
+            'hostname_clean'  => $s->hostname_clean,
+            'ip'              => $s->ip,
+            'port'            => $s->port,
+            'country_code'    => $s->country_code,
+            'current_players' => (int) $s->current_players,
+            'max_players'     => (int) $s->max_players,
+            'current_map'     => $s->current_map,
+            'gametype'        => $s->gametype,
+            'mod_name'        => $s->mod_name,
+            'is_online'       => (bool) $s->is_online,
+            'last_poll_at'    => $s->last_poll_at,
+        ];
+    }
+
+    /**
+     * Rank by 30-day avg players within the same game. Requires >=10 polls.
+     */
+    private function computeRank(TrackerServer $s): array
+    {
+        // Cache the full ranking per game_id for 10 minutes.
+        // All servers of the same game share this cache entry — one expensive
+        // query per game every 10 min instead of per-server every request.
+        $rankings = Cache::remember(
+            "banner:ranking:game:{$s->game_id}:v1",
+            now()->addMinutes(10),
+            function () use ($s) {
+                return DB::table('tracker_server_history')
+                    ->join('tracker_servers', 'tracker_servers.id', '=', 'tracker_server_history.server_id')
+                    ->where('tracker_servers.game_id', $s->game_id)
+                    ->where('polled_at', '>=', now()->subDays(30))
+                    ->select('server_id', DB::raw('AVG(players) as avg_p'))
+                    ->groupBy('server_id')
+                    ->havingRaw('COUNT(*) > 10')
+                    ->orderByDesc('avg_p')
+                    ->pluck('avg_p', 'server_id')
+                    ->toArray();
+            }
+        );
+
+        $pos = 1;
+        foreach ($rankings as $sid => $_) {
+            if ((int) $sid === $s->id) {
+                return ['position' => $pos, 'total' => count($rankings)];
+            }
+            $pos++;
+        }
+        return ['position' => null, 'total' => count($rankings)];
+    }
+
+    /**
+     * Players currently on the server (sessions with no ended_at).
+     * Sorted by score desc, limit 8.
+     */
+    private function currentPlayers(TrackerServer $s): array
+    {
+        return DB::table('tracker_player_sessions')
+            ->where('server_id', $s->id)
+            ->whereNull('ended_at')
+            ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
+            ->select(
+                'tracker_players.id',
+                'tracker_players.name_clean',
+                'tracker_players.name_html',
+                'tracker_player_sessions.score',
+                'tracker_player_sessions.team',
+                'tracker_player_sessions.started_at',
+            )
+            ->orderBy('tracker_player_sessions.started_at')
+            ->limit(8)
+            ->get()
+            ->map(fn ($p) => [
+                'id'     => $p->id,
+                'name'   => $p->name_clean,
+                'html'   => $p->name_html,
+                'score'  => (int) $p->score,
+                'team'   => $p->team,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Top 8 all-time players on this server by accumulated XP.
+     * NOTE: intentionally uses SUM(xp) from sessions, not kills
+     * (known data issue with session.kills field).
+     */
+    private function topPlayers(TrackerServer $s): array
+    {
+        return DB::table('tracker_player_sessions')
+            ->where('server_id', $s->id)
+            ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
+            ->groupBy('tracker_players.id', 'tracker_players.name_clean', 'tracker_players.name_html')
+            ->select(
+                'tracker_players.id',
+                'tracker_players.name_clean',
+                'tracker_players.name_html',
+                DB::raw('SUM(tracker_player_sessions.xp) as total_xp'),
+                DB::raw('SUM(tracker_player_sessions.duration_minutes) as total_min'),
+            )
+            ->orderByDesc('total_xp')
+            ->limit(8)
+            ->get()
+            ->map(fn ($p) => [
+                'id'     => $p->id,
+                'name'   => $p->name_clean,
+                'html'   => $p->name_html,
+                'xp'     => (int) $p->total_xp,
+                'min'    => (int) $p->total_min,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Resolves current_map to a public path to its thumbnail,
+     * or null if none exists (view shows placeholder).
+     */
+    private function mapThumbPath(?string $mapName): ?string
+    {
+        if (!$mapName) {
+            return null;
+        }
+        $safe = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $mapName);
+        $path = public_path("images/map-thumbs/{$safe}.jpg");
+        if (is_file($path)) {
+            return asset("images/map-thumbs/{$safe}.jpg");
+        }
+        $png = public_path("images/map-thumbs/{$safe}.png");
+        if (is_file($png)) {
+            return asset("images/map-thumbs/{$safe}.png");
+        }
+        return null;
+    }
+
+    /**
+     * Player count history (last 24h, downsampled to ≤48 points).
+     */
+    private function playerHistory24h(TrackerServer $s): array
+    {
+        $points = DB::table('tracker_server_history')
+            ->where('server_id', $s->id)
+            ->where('polled_at', '>=', now()->subHours(24))
+            ->orderBy('polled_at')
+            ->pluck('players')
+            ->toArray();
+
+        if (count($points) > 48) {
+            $chunks = array_chunk($points, (int) ceil(count($points) / 48));
+            $points = array_map(fn ($c) => (int) round(array_sum($c) / count($c)), $chunks);
+        }
+        return array_map('intval', $points);
+    }
+}

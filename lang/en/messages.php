@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'vertical_banner' => 'Vertical Banner',
+    'vertical_banner_help' => 'For sidebars, blogs and HTML pages. Adapts to the width you specify.',
     'accept' => 'Accept all',
     'active_servers' => 'Active Servers',
     'active_servers_desc' => 'Servers with players right now',
@@ -115,6 +117,7 @@ return [
     'contact_sent' => 'Nachricht erfolgreich gesendet! Wir melden uns bald bei dir.',
     'cookie_text' => 'Wir verwenden Cookies, um die beste Erfahrung auf unserer Website zu gewährleisten. Durch weiteres Surfen stimmst du der Verwendung von Cookies zu.',
     'copied' => 'Kopiert',
+    'copy' => 'Copy',
     'copy_link' => 'Link kopieren',
     'copyright_issue' => 'Urheberrechtsproblem',
     'cost_domain' => 'Domain & SSL',
@@ -150,6 +153,7 @@ return [
     'delete_account' => 'Delete Account',
     'description' => 'Description',
     'detailed_rating' => 'Detailed Rating',
+    'direct_link' => 'Direct link',
     'directories_updated' => 'Directories updated',
     'discard' => 'Discard',
     'display_name' => 'Display Name',
@@ -175,6 +179,7 @@ return [
     'elo_rating' => 'ELO Rating',
     'email' => 'E-Mail',
     'email_hint' => 'Cannot be changed.',
+    'embed_banner' => 'Embed banner',
     'embed_code' => 'Embed-Code',
     'error_404_quote' => 'Soldat, du hast dich verlaufen! Zurück zur Basis, sofort!',
     'error_404_text' => 'Die Seite die du suchst existiert nicht oder wurde verlegt.',

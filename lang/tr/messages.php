@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'vertical_banner' => 'Dikey afiş',
+    'vertical_banner_help' => 'Kenar çubukları, bloglar ve HTML sayfaları için. Belirtilen genişliğe uyar.',
     'accept' => '[TODO:tr] Accept All',
     'active_servers' => '[TODO:tr] Active Servers',
     'active_servers_desc' => '[TODO:tr] Servers with players right now',
@@ -115,6 +117,7 @@ return [
     'contact_sent' => '[TODO:tr] Message sent successfully! We\'ll get back to you soon.',
     'cookie_text' => '[TODO:tr] We use cookies to ensure the best experience on our website. By continuing to browse, you agree to our use of cookies.',
     'copied' => '[TODO:tr] Copied',
+    'copy' => 'Kopyala',
     'copy_link' => '[TODO:tr] Copy Link',
     'copyright_issue' => '[TODO:tr] Copyright Issue',
     'cost_domain' => '[TODO:tr] Domain & SSL',
@@ -150,6 +153,7 @@ return [
     'delete_account' => 'Hesabı sil',
     'description' => '[TODO:tr] Description',
     'detailed_rating' => '[TODO:tr] Detailed Rating',
+    'direct_link' => 'Doğrudan bağlantı',
     'directories_updated' => '[TODO:tr] Directories updated',
     'discard' => 'Vazgeç',
     'display_name' => 'Görünen ad',
@@ -175,6 +179,7 @@ return [
     'elo_rating' => '[TODO:tr] ELO Rating',
     'email' => '[TODO:tr] Email',
     'email_hint' => 'Değiştirilemez.',
+    'embed_banner' => 'Afişi göm',
     'embed_code' => '[TODO:tr] Embed Code',
     'error_404_quote' => '[TODO:tr] Soldier, you\'ve lost your way! Get back to base, immediately!',
     'error_404_text' => '[TODO:tr] The page you\'re looking for doesn\'t exist or has been moved.',

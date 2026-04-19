@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'vertical_banner' => 'Verticale banner',
+    'vertical_banner_help' => 'Voor zijbalken, blogs en HTML-pagina\'s. Past zich aan de opgegeven breedte aan.',
     'accept' => '[TODO:nl] Accept All',
     'active_servers' => '[TODO:nl] Active Servers',
     'active_servers_desc' => '[TODO:nl] Servers with players right now',
@@ -115,6 +117,7 @@ return [
     'contact_sent' => '[TODO:nl] Message sent successfully! We\'ll get back to you soon.',
     'cookie_text' => '[TODO:nl] We use cookies to ensure the best experience on our website. By continuing to browse, you agree to our use of cookies.',
     'copied' => '[TODO:nl] Copied',
+    'copy' => 'Kopiëren',
     'copy_link' => '[TODO:nl] Copy Link',
     'copyright_issue' => '[TODO:nl] Copyright Issue',
     'cost_domain' => '[TODO:nl] Domain & SSL',
@@ -150,6 +153,7 @@ return [
     'delete_account' => 'Account verwijderen',
     'description' => '[TODO:nl] Description',
     'detailed_rating' => '[TODO:nl] Detailed Rating',
+    'direct_link' => 'Directe link',
     'directories_updated' => '[TODO:nl] Directories updated',
     'discard' => 'Verwerpen',
     'display_name' => 'Weergavenaam',
@@ -175,6 +179,7 @@ return [
     'elo_rating' => '[TODO:nl] ELO Rating',
     'email' => '[TODO:nl] Email',
     'email_hint' => 'Kan niet worden gewijzigd.',
+    'embed_banner' => 'Banner insluiten',
     'embed_code' => '[TODO:nl] Embed Code',
     'error_404_quote' => '[TODO:nl] Soldier, you\'ve lost your way! Get back to base, immediately!',
     'error_404_text' => '[TODO:nl] The page you\'re looking for doesn\'t exist or has been moved.',

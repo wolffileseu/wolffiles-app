@@ -186,6 +186,11 @@
             @endif
 
         </div>
+
+    {{-- Banner embed box (full grid width) --}}
+    <div class="lg:col-span-3">
+        @include('frontend.tracker.partials.server-banner-embed')
+    </div>
     </div>
 
 </div>
@@ -341,4 +346,5 @@ function serverLive() {
     }
 }
 </script>
+
 </x-layouts.app>

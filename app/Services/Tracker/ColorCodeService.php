@@ -96,4 +96,75 @@ class ColorCodeService
     {
         return self::$colorMap[strtolower($code)] ?? null;
     }
+
+    /**
+     * Convert hex color (#RRGGBB) to [r, g, b] int tuple.
+     *
+     * @return array{0:int,1:int,2:int}
+     */
+    public static function hexToRgb(string $hex): array
+    {
+        $hex = ltrim($hex, '#');
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+        ];
+    }
+
+    /**
+     * Get RGB tuple for a color code character (0-9, a-z, etc.), or null if unknown.
+     *
+     * @return array{0:int,1:int,2:int}|null
+     */
+    public static function getRgb(string $code): ?array
+    {
+        $code = strtolower($code);
+        if (!isset(self::$colorMap[$code])) {
+            return null;
+        }
+        return self::hexToRgb(self::$colorMap[$code]);
+    }
+
+    /**
+     * Parse ET-color-coded text into segments with RGB colors.
+     * Intended for image renderers (banners, avatars) that need RGB tuples
+     * rather than HTML. Unknown ^X codes are swallowed silently (matches toHtml behavior).
+     *
+     * @param array{0:int,1:int,2:int} $defaultColor Starting color (default white).
+     * @return list<array{text:string, color:array{0:int,1:int,2:int}}>
+     */
+    public static function toSegments(string $text, array $defaultColor = [255, 255, 255]): array
+    {
+        $segments = [];
+        $current  = $defaultColor;
+        $buffer   = '';
+        $len      = strlen($text);
+
+        for ($i = 0; $i < $len; $i++) {
+            if ($text[$i] === '^' && $i + 1 < $len) {
+                $code = strtolower($text[$i + 1]);
+                if (isset(self::$colorMap[$code])) {
+                    if ($buffer !== '') {
+                        $segments[] = ['text' => $buffer, 'color' => $current];
+                        $buffer = '';
+                    }
+                    $current = self::hexToRgb(self::$colorMap[$code]);
+                    $i++;
+                    continue;
+                }
+                // Unknown ^X code — swallow both chars (matches toHtml behavior)
+                $i++;
+                continue;
+            }
+            $buffer .= $text[$i];
+        }
+
+        if ($buffer !== '') {
+            $segments[] = ['text' => $buffer, 'color' => $current];
+        }
+
+        return $segments;
+    }
+
 }
