@@ -320,21 +320,47 @@ class TrackerController extends Controller
             }
         }
 
-        // Enhanced Rating overview: current (from most recent match with a rating)
-        // and peak (max across all matches).
+        // Enhanced Rating overview:
+        //   - current: skill_rating of the most recent rated match
+        //   - peak:    highest single-match rating ever
+        //   - weighted avg: mean across all rated matches,
+        //       weighted by (time_played_pct * match_duration_seconds).
+        //     Short/warmup matches contribute little; long/full-participation
+        //     matches contribute proportionally more.
+        //
+        // Why a fallback of 300s for duration: matches still in progress have
+        // duration_seconds = 0. We don't want those dropped entirely, but we
+        // also don't want them weighted as if they were the average length.
+        // 300s (5 min) is a conservative "assumed partial match" weight.
         $enhancedRating = null;
         $enhancedRatingPeak = null;
+        $enhancedRatingAvg = null;
         $enhancedRatingMatches = 0;
         if ($player->has_enhanced_data) {
-            $ratingStats = \DB::table('tracker_player_match_stats')
-                ->where('player_id', $player->id)
-                ->whereNotNull('skill_rating')
-                ->selectRaw('MAX(skill_rating) as peak, COUNT(*) as cnt')
-                ->first();
+            $ratingStats = \DB::selectOne(
+                'SELECT
+                    MAX(ms.skill_rating) AS peak,
+                    COUNT(*) AS cnt,
+                    SUM(ms.skill_rating
+                        * COALESCE(ms.time_played_pct, 100)
+                        * GREATEST(COALESCE(m.duration_seconds, 0), 300))
+                      /
+                    SUM(COALESCE(ms.time_played_pct, 100)
+                        * GREATEST(COALESCE(m.duration_seconds, 0), 300))
+                      AS weighted
+                 FROM tracker_player_match_stats ms
+                 JOIN tracker_matches m ON m.id = ms.match_id
+                 WHERE ms.player_id = ?
+                   AND ms.skill_rating IS NOT NULL',
+                [$player->id]
+            );
 
-            if ($ratingStats && $ratingStats->cnt > 0) {
+            if ($ratingStats && (int) $ratingStats->cnt > 0) {
                 $enhancedRatingPeak = (float) $ratingStats->peak;
                 $enhancedRatingMatches = (int) $ratingStats->cnt;
+                $enhancedRatingAvg = $ratingStats->weighted !== null
+                    ? (float) $ratingStats->weighted
+                    : null;
 
                 $current = \DB::table('tracker_player_match_stats')
                     ->where('player_id', $player->id)
@@ -349,7 +375,7 @@ class TrackerController extends Controller
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
-            'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingMatches'
+            'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches'
         ));
     }
 

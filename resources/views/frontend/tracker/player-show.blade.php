@@ -38,11 +38,20 @@
                         <div class="text-2xl font-bold text-emerald-400">{{ number_format($enhancedRating, 2) }}</div>
                         <div class="text-gray-400 text-sm" title="{{ __('Per-match skill rating from Enhanced Tracker ws-packets (TrueSkill-based mu - 3*sigma)') }}">
                             {{ __('Enhanced Rating') }}
+                        </div>
+                        <div class="text-xs text-gray-500 mt-0.5 space-x-2">
+                            <span>{{ $enhancedRatingMatches }} {{ __('rated matches') }}</span>
+                            @if($enhancedRatingAvg !== null && $enhancedRatingMatches > 1)
+                                <span>·</span>
+                                <span title="{{ __('Weighted average across all rated matches (weight = time_played × match duration).') }}">
+                                    {{ __('avg') }}: <span class="text-gray-300">{{ number_format($enhancedRatingAvg, 2) }}</span>
+                                </span>
+                            @endif
                             @if($enhancedRatingPeak !== null && $enhancedRatingPeak != $enhancedRating)
-                                <span class="text-xs">({{ __('messages.elo_peak') }}: {{ number_format($enhancedRatingPeak, 2) }})</span>
+                                <span>·</span>
+                                <span>{{ __('peak') }}: <span class="text-gray-300">{{ number_format($enhancedRatingPeak, 2) }}</span></span>
                             @endif
                         </div>
-                        <div class="text-xs text-gray-500 mt-0.5">{{ $enhancedRatingMatches }} {{ __('rated matches') }}</div>
                     </div>
                 @endif
 
