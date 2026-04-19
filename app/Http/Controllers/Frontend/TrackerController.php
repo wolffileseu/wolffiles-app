@@ -215,6 +215,9 @@ class TrackerController extends Controller
     {
         $player->load(['aliases', 'clanMemberships.clan']);
 
+        // Activity timeline — built below when we have enhanced data.
+        $playerTimeline = [];
+
         // Refresh ELO if stale (> 24h old or never computed).
         // Bots are excluded from ELO entirely — they never get a rating.
         // Score-less servers (trickjump/fun) produce NULL on purpose.
@@ -264,6 +267,10 @@ class TrackerController extends Controller
         // Enhanced Tracker: matches on servers where this player had enhanced sessions
         $enhancedMatches = collect();
         $enhancedMatchesCount = 0;
+        if ($player->has_enhanced_data) {
+            $playerTimeline = $this->buildPlayerTimeline($player->id, 20);
+        }
+
         if ($player->has_enhanced_data && $player->enhanced_first_seen_at) {
             // Find all servers where the player was tracked via enhanced
             $enhancedServerIds = \DB::table('tracker_player_sessions')
@@ -402,8 +409,8 @@ class TrackerController extends Controller
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
             'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
-            'lifetimeWeapons'
-        ));
+            'lifetimeWeapons',
+            'playerTimeline'));
     }
 
     /**
@@ -688,5 +695,98 @@ class TrackerController extends Controller
             'last_played_at' => $stats->last_played_at ?? null,
         ]);
     }
+    /**
+     * Build a grouped activity timeline for a player's enhanced-tracker matches.
+     *
+     * Consecutive matches with the same (server_id, map_name) are collapsed
+     * into a single timeline entry. Useful because manual map_restart events
+     * create many short matches that would otherwise clutter the UI — a
+     * kerkyra session with 10 restarts becomes one "kerkyra · 10 rounds"
+     * entry rather than ten repetitive rows.
+     *
+     * Each entry aggregates kills/deaths/headshots/damage/duration across
+     * the group and carries the latest skill rating (for the jump-in value)
+     * and the class taken during the session. match_ids are kept for
+     * drill-down navigation later.
+     *
+     * Returns at most $limit timeline entries, newest first.
+     */
+    private function buildPlayerTimeline(int $playerId, int $limit = 20): array
+    {
+        // Pull more raw matches than $limit — many collapse into fewer groups.
+        $matches = \DB::table('tracker_player_match_stats as ms')
+            ->join('tracker_matches as m', 'm.id', '=', 'ms.match_id')
+            ->leftJoin('tracker_servers as s', 's.id', '=', 'm.server_id')
+            ->where('ms.player_id', $playerId)
+            ->orderByDesc('m.started_at')
+            ->limit($limit * 15)
+            ->select([
+                'm.id as match_id',
+                'm.server_id',
+                'm.map_name',
+                'm.started_at',
+                'm.ended_at',
+                'm.duration_seconds',
+                'ms.kills', 'ms.deaths', 'ms.headshots', 'ms.class',
+                'ms.skill_rating', 'ms.skill_rating_delta',
+                'ms.time_played_pct',
+                'ms.damage_given', 'ms.damage_received',
+                's.hostname_clean as server_name',
+                's.hostname_html as server_html',
+            ])
+            ->get();
 
+        $groups = [];
+        $currentGroup = null;
+
+        foreach ($matches as $m) {
+            $key = $m->server_id . ':' . $m->map_name;
+
+            if ($currentGroup === null || $currentGroup['key'] !== $key) {
+                if ($currentGroup !== null) {
+                    $groups[] = $currentGroup;
+                    if (count($groups) >= $limit) {
+                        $currentGroup = null;
+                        break;
+                    }
+                }
+                $currentGroup = [
+                    'key' => $key,
+                    'server_id' => $m->server_id,
+                    'server_name' => $m->server_name,
+                    'server_html' => $m->server_html,
+                    'map_name' => $m->map_name,
+                    'ended_at' => $m->ended_at,
+                    'started_at' => $m->started_at,
+                    'match_count' => 0,
+                    'total_kills' => 0,
+                    'total_deaths' => 0,
+                    'total_headshots' => 0,
+                    'total_duration' => 0,
+                    'total_damage_given' => 0,
+                    'total_damage_received' => 0,
+                    'latest_rating' => $m->skill_rating !== null ? (float) $m->skill_rating : null,
+                    'latest_rating_delta' => $m->skill_rating_delta !== null ? (float) $m->skill_rating_delta : null,
+                    'class' => $m->class,
+                    'match_ids' => [],
+                ];
+            }
+
+            $currentGroup['match_count']++;
+            $currentGroup['total_kills'] += (int) $m->kills;
+            $currentGroup['total_deaths'] += (int) $m->deaths;
+            $currentGroup['total_headshots'] += (int) $m->headshots;
+            $currentGroup['total_duration'] += (int) ($m->duration_seconds ?? 0);
+            $currentGroup['total_damage_given'] += (int) $m->damage_given;
+            $currentGroup['total_damage_received'] += (int) $m->damage_received;
+            $currentGroup['started_at'] = $m->started_at;
+            $currentGroup['match_ids'][] = $m->match_id;
+        }
+
+        if ($currentGroup !== null && count($groups) < $limit) {
+            $groups[] = $currentGroup;
+        }
+
+        return $groups;
+    }
 }

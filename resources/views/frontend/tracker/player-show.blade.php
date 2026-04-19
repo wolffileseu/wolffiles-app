@@ -467,79 +467,115 @@
     </div>
 
     {{-- Match History --}}
-    @if($enhancedMatches->count() > 0)
+    @if(!empty($playerTimeline))
     <div class="bg-gray-800 rounded-lg overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-700">
+        <div class="px-6 py-4 border-b border-gray-700 flex items-baseline justify-between">
             <h2 class="text-lg font-semibold text-white flex items-center gap-2">
                 <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
-                <span>{{ __('Recent Enhanced Matches') }}</span>
+                <span>{{ __('Activity Timeline') }}</span>
             </h2>
+            <span class="text-xs text-gray-500">
+                {{ $enhancedMatchesCount }} {{ __('enhanced matches total') }}
+            </span>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-                <thead class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wider">
-                    <tr>
-                        <th class="px-4 py-3 text-left">{{ __('Map') }}</th>
-                        <th class="px-4 py-3 text-left">{{ __('Server') }}</th>
-                        <th class="px-4 py-3 text-left">{{ __('Started') }}</th>
-                        <th class="px-4 py-3 text-right">{{ __('Duration') }}</th>
-                        <th class="px-4 py-3 text-left">{{ __('End') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-700/50">
-                    @foreach($enhancedMatches as $m)
-                    <tr class="hover:bg-gray-700/20 transition">
-                        <td class="px-4 py-3 font-medium text-gray-200">{{ $m->map_name }}</td>
-                        <td class="px-4 py-3">
-                            <a href="{{ route('tracker.server.show', $m->server_id) }}" class="text-amber-400 hover:text-amber-300 text-xs">
-                                {!! $m->hostname_html ?: e($m->hostname_clean ?: 'Server #'.$m->server_id) !!}
-                            </a>
-                        </td>
-                        <td class="px-4 py-3 text-gray-400 font-mono text-xs" title="{{ $m->started_at }}">
-                            {{ \Carbon\Carbon::parse($m->started_at)->diffForHumans() }}
-                        </td>
-                        <td class="px-4 py-3 text-right text-gray-300 font-mono text-xs">
-                            @if(is_null($m->ended_at))
-                                <span class="inline-flex items-center gap-1 text-emerald-400">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                    {{ __('In progress') }}
+        <div class="divide-y divide-gray-700/50">
+            @foreach($playerTimeline as $entry)
+                @php
+                    $classCfg = config('tracker-classes.'.$entry['class']);
+                    $durationMin = intdiv($entry['total_duration'], 60);
+                    $ratingDelta = $entry['latest_rating_delta'] ?? 0;
+                    $ratingClass = $ratingDelta > 0.01 ? 'text-emerald-400' : ($ratingDelta < -0.01 ? 'text-rose-400' : 'text-gray-400');
+                    $hasAction = $entry['total_kills'] > 0 || $entry['total_deaths'] > 0;
+                @endphp
+                <div class="px-6 py-4 hover:bg-gray-700/20 transition">
+                    <div class="flex items-start gap-4">
+                        {{-- Class icon column --}}
+                        <div class="flex-shrink-0 w-12 flex flex-col items-center pt-1">
+                            @if($classCfg)
+                                <img src="/img/tracker/classes/{{ $classCfg['icon'] }}"
+                                     alt="{{ $classCfg['name'] }}"
+                                     title="{{ $classCfg['name'] }}"
+                                     class="w-10 h-10 object-contain opacity-90"
+                                     loading="lazy">
+                                <span class="text-[10px] font-medium mt-1 {{ $classCfg['color_class'] ?? 'text-gray-400' }}">
+                                    {{ $classCfg['name'] }}
                                 </span>
                             @else
-                                @php
-                                    $d = (int) $m->duration_seconds;
-                                    $mm = intdiv($d, 60);
-                                    $ss = $d % 60;
-                                @endphp
-                                {{ $mm }}m {{ str_pad($ss, 2, '0', STR_PAD_LEFT) }}s
+                                <div class="w-10 h-10 rounded bg-gray-700/50"></div>
                             @endif
-                        </td>
-                        <td class="px-4 py-3">
-                            @if($m->end_reason)
-                                @php
-                                    $colors = [
-                                        'mapend' => 'bg-blue-500/20 text-blue-300',
-                                        'mapchange' => 'bg-purple-500/20 text-purple-300',
-                                        'maprestart' => 'bg-yellow-500/20 text-yellow-300',
-                                        'timeout' => 'bg-gray-500/20 text-gray-300',
-                                    ];
-                                    $c = $colors[$m->end_reason] ?? 'bg-gray-500/20 text-gray-300';
-                                @endphp
-                                <span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold {{ $c }}">
-                                    {{ $m->end_reason }}
+                        </div>
+
+                        {{-- Main content --}}
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-baseline justify-between gap-2 mb-1">
+                                <h3 class="text-base font-semibold text-gray-100 truncate">
+                                    🗺️ {{ $entry['map_name'] }}
+                                    @if($entry['match_count'] > 1)
+                                        <span class="text-xs text-gray-500 font-normal ml-2">
+                                            · {{ $entry['match_count'] }} {{ __('rounds') }}
+                                        </span>
+                                    @endif
+                                </h3>
+                                <span class="text-xs text-gray-500 flex-shrink-0" title="{{ $entry['ended_at'] ?? $entry['started_at'] }}">
+                                    {{ \Carbon\Carbon::parse($entry['ended_at'] ?? $entry['started_at'])->diffForHumans() }}
                                 </span>
+                            </div>
+
+                            <div class="text-xs text-gray-400 mb-2">
+                                @if($entry['server_id'])
+                                    <a href="{{ route('tracker.server.show', $entry['server_id']) }}" class="text-amber-400 hover:text-amber-300">
+                                        {!! $entry['server_html'] ?: e($entry['server_name'] ?: 'Server #'.$entry['server_id']) !!}
+                                    </a>
+                                @endif
+                                @if($durationMin > 0)
+                                    <span class="text-gray-600 mx-1">·</span>
+                                    <span>{{ $durationMin }}m {{ __('played') }}</span>
+                                @endif
+                            </div>
+
+                            @if($hasAction)
+                                <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                                    <span class="text-gray-300" title="{{ __('Kills / Deaths') }}">
+                                        <span class="text-emerald-400 font-semibold">{{ $entry['total_kills'] }}</span>K /
+                                        <span class="text-rose-400 font-semibold">{{ $entry['total_deaths'] }}</span>D
+                                    </span>
+
+                                    @if($entry['total_headshots'] > 0)
+                                        <span class="text-amber-400" title="{{ __('Headshots') }}">
+                                            🎯 {{ $entry['total_headshots'] }}
+                                        </span>
+                                    @endif
+
+                                    @if($entry['total_damage_given'] > 0 || $entry['total_damage_received'] > 0)
+                                        <span class="text-gray-400" title="{{ __('Damage given / received') }}">
+                                            💥 <span class="text-emerald-400">{{ number_format($entry['total_damage_given']) }}</span>↑ /
+                                            <span class="text-rose-400">{{ number_format($entry['total_damage_received']) }}</span>↓
+                                        </span>
+                                    @endif
+
+                                    @if($entry['latest_rating'] !== null)
+                                        <span class="ml-auto {{ $ratingClass }} font-mono text-xs">
+                                            ⭐ {{ number_format($entry['latest_rating'], 2) }}
+                                            @if(abs($ratingDelta) > 0.01)
+                                                ({{ $ratingDelta > 0 ? '+' : '' }}{{ number_format($ratingDelta, 2) }})
+                                            @endif
+                                        </span>
+                                    @endif
+                                </div>
                             @else
-                                <span class="text-gray-500">—</span>
+                                <div class="text-xs text-gray-500 italic">
+                                    {{ __('No scoring activity (warmup/spectator)') }}
+                                </div>
                             @endif
-                        </td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
         </div>
     </div>
-    @endif
+@endif
 </div>
 @endif
 </div>
