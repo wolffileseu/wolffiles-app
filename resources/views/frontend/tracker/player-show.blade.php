@@ -30,8 +30,20 @@
                 </div>
             </div>
             <div class="text-right">
-                <div class="text-3xl font-bold text-amber-400">{{ number_format($player->elo_rating) }}</div>
-                <div class="text-gray-400 text-sm" title="{{ __('Session-based ELO rating from the legacy Poller system (default: 1000)') }}">ELO Rating ({{ __('messages.elo_peak') }}: {{ number_format($player->elo_peak) }})</div>
+                @if($player->elo_rating !== null)
+                    <div class="text-3xl font-bold text-amber-400">{{ number_format($player->elo_rating) }}</div>
+                    <div class="text-gray-400 text-sm" title="{{ __('Classic Percentile ELO from Poller data (XP/min rate mapped to a 0-2000 range, median = 1000). Recomputed daily and on profile view if stale.') }}">
+                        {{ __('ELO Rating') }}
+                        @if($player->elo_peak !== null && $player->elo_peak != $player->elo_rating)
+                            <span class="text-xs">({{ __('messages.elo_peak') }}: {{ number_format($player->elo_peak) }})</span>
+                        @endif
+                    </div>
+                @else
+                    <div class="text-3xl font-bold text-gray-600">—</div>
+                    <div class="text-gray-500 text-sm" title="{{ __('A player needs at least 60 minutes of total playtime and some XP to receive an ELO rating.') }}">
+                        {{ __('Unrated') }}
+                    </div>
+                @endif
 
                 @if($enhancedRating !== null)
                     <div class="mt-3 pt-3 border-t border-gray-700/50">

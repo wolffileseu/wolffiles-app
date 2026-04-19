@@ -215,6 +215,19 @@ class TrackerController extends Controller
     {
         $player->load(['aliases', 'clanMemberships.clan']);
 
+        // Refresh ELO if stale (> 24h old or never computed).
+        // Bots are excluded from ELO entirely — they never get a rating.
+        // Score-less servers (trickjump/fun) produce NULL on purpose.
+        if (!$player->is_bot) {
+            $stale = $player->elo_updated_at === null
+                || \Carbon\Carbon::parse($player->elo_updated_at)->lt(now()->subDay());
+            if ($stale) {
+                app(\App\Services\Tracker\EloService::class)
+                    ->calculateForPlayer($player->id);
+                $player->refresh();
+            }
+        }
+
         // Recent sessions
         $sessions = $player->sessions()
             ->with(['server.game'])
