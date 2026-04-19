@@ -359,17 +359,15 @@
                 </div>
             </div>
         </div>
-        @if($latestMatchWeapons->isNotEmpty())
+        @if($lifetimeWeapons->isNotEmpty())
             <div class="px-6 py-5 border-t border-gray-700/50 bg-gray-900/30">
                 <div class="flex items-baseline justify-between mb-3">
                     <h3 class="text-sm font-semibold text-gray-200">
                         {{ __('Weapon Breakdown') }}
                     </h3>
-                    @if($latestMatch)
-                        <span class="text-xs text-gray-500">
-                            {{ __('last match') }}: <span class="text-gray-300">{{ $latestMatch->map_name }}</span>
-                        </span>
-                    @endif
+                    <span class="text-xs text-gray-500">
+                        {{ __('lifetime across :count matches', ['count' => $enhancedMatchesCount]) }}
+                    </span>
                 </div>
 
                 @if($latestMatchStats)
@@ -417,9 +415,9 @@
                     </div>
                 @endif
 
-                {{-- Per-weapon grid --}}
+                {{-- Per-weapon grid (lifetime totals across all enhanced matches) --}}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    @foreach($latestMatchWeapons as $w)
+                    @foreach($lifetimeWeapons as $w)
                         @php $cfg = config('tracker-weapons.'.$w->weapon_bit); @endphp
                         @if($cfg)
                         <div class="flex items-center gap-3 bg-gray-800/60 rounded-lg p-2.5 hover:bg-gray-800 transition">
@@ -430,12 +428,12 @@
                             <div class="flex-1 min-w-0">
                                 <div class="text-sm font-medium text-gray-200 truncate">{{ $cfg['name'] }}</div>
                                 <div class="text-xs text-gray-400 flex flex-wrap gap-x-2">
-                                    <span>{{ $w->kills }}K/{{ $w->deaths }}D</span>
-                                    @if($w->headshots > 0)
-                                        <span class="text-amber-400" title="{{ __('Headshots') }}">🎯 {{ $w->headshots }}</span>
+                                    <span>{{ $w->total_kills }}K/{{ $w->total_deaths }}D</span>
+                                    @if($w->total_headshots > 0)
+                                        <span class="text-amber-400" title="{{ __('Headshots') }}">🎯 {{ $w->total_headshots }}</span>
                                     @endif
-                                    @if($w->atts > 0)
-                                        <span class="text-emerald-400">{{ number_format($w->accuracy_bp / 100, 1) }}%</span>
+                                    @if($w->total_atts > 0)
+                                        <span class="text-emerald-400">{{ number_format(min(10000, $w->accuracy_bp) / 100, 1) }}%</span>
                                     @endif
                                 </div>
                             </div>

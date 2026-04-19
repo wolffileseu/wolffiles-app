@@ -320,6 +320,19 @@ class TrackerController extends Controller
             }
         }
 
+        // Lifetime per-weapon totals (cumulative across ALL matches the
+        // player has ever played on Enhanced Tracker servers). This is the
+        // main weapon-profile — shows true skill with each weapon across
+        // everything, not just the latest match.
+        $lifetimeWeapons = collect();
+        if ($player->has_enhanced_data) {
+            $lifetimeWeapons = \DB::table('tracker_player_weapon_stats')
+                ->where('player_id', $player->id)
+                ->orderByDesc('total_kills')
+                ->orderByDesc('total_atts')
+                ->get();
+        }
+
         // Enhanced Rating overview:
         //   - current: skill_rating of the most recent rated match
         //   - peak:    highest single-match rating ever
@@ -375,7 +388,8 @@ class TrackerController extends Controller
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
-            'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches'
+            'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
+            'lifetimeWeapons'
         ));
     }
 
