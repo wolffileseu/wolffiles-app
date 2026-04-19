@@ -1,6 +1,6 @@
 # 🐺 Wolffiles.eu
 
-![CI](https://github.com/wolffileseu/wolffiles-app/actions/workflows/check.yml/badge.svg)
+[![CI](https://github.com/wolffileseu/wolffiles-app/actions/workflows/check.yml/badge.svg)](https://github.com/wolffileseu/wolffiles-app/actions/workflows/check.yml/badge.svg)
 
 The ultimate community platform for classic Wolfenstein games — **Enemy Territory** and **Return to Castle Wolfenstein**.
 
@@ -13,100 +13,143 @@ Wolffiles.eu is a comprehensive file repository and gaming hub serving the ET/Rt
 ## ✨ Features
 
 ### 📁 File Repository
-- Massive archive of maps, mods, skins, sounds, utilities and full game versions
-- Support for ET, RtCW, ET Legacy, ETe, True Combat Elite, ET Quake Wars and more
-- Automated file analysis with PK3/ZIP content extraction
-- Screenshot generation and BSP map metadata parsing
-- Download tracking with statistics and trending content
-- File approval workflow with auto-approve for trusted uploaders
+
+* Massive archive of maps, mods, skins, sounds, utilities and full game versions
+* Support for ET, RtCW, ET Legacy, ETe, True Combat Elite, ET Quake Wars and more
+* Automated file analysis with PK3/ZIP content extraction
+* Screenshot generation and BSP map metadata parsing
+* Download tracking with statistics and trending content
+* File approval workflow with auto-approve for trusted uploaders
 
 ### 🗺️ 3D Map Viewer
-- Interactive BSP map preview directly in the browser
-- Powered by a custom WebGL-based Quake 3 BSP renderer
-- View map geometry, textures and layout before downloading
+
+* Interactive BSP map preview directly in the browser
+* Powered by a custom WebGL-based Quake 3 BSP renderer
+* View map geometry, textures and layout before downloading
 
 ### 🤖 Omni-Bot Waypoint Browser
-- Browse waypoints for **1,040+ ET maps** and **120+ RtCW maps**
-- Automated GitHub synchronization to keep waypoints up to date
-- Direct download of waypoint files for bot navigation
+
+* Browse waypoints for **1,040+ ET maps** and **120+ RtCW maps**
+* Automated GitHub synchronization to keep waypoints up to date
+* Direct download of waypoint files for bot navigation
 
 ### 📡 Server Tracker
-- Live game server tracking with real-time player counts
-- ELO-based ranking system for competitive players
-- Player session tracking with aliases and statistics
-- Clan detection and clan pages
-- Server history, map statistics and peak player tracking
-- Master server polling for ET and RtCW
+
+* Live game server tracking with real-time player counts
+* ELO-based ranking system for competitive players
+* Player session tracking with aliases and statistics
+* Clan detection and clan pages
+* Server history, map statistics and peak player tracking
+* Master server polling for ET and RtCW
+* 30-day rolling server rankings (materialized snapshot, refreshed every 10 min)
+* Public tracker API with 10 endpoints under `/api/v1/tracker/`
+
+### 🎨 Server Banners & Embeds
+
+* **Dynamic PNG signatures** at `/tracker/server/{id}/banner.png` (560×95)
+  * Trackbase-style layout with live 24h player graph
+  * ET color code rendering (`^1`..`^9`, extended `^a`..`^z` including mod-specific codes)
+  * Country flag, IP/port, current map, status
+* **Vertical HTML embeds** at `/tracker/server/{id}/embed` (iframe-friendly)
+  * Map screenshot, online players list, all-time top 8 players, rank
+  * Responsive width via `?w=` query parameter
+  * Embeddable on any third-party site (X-Frame-Options whitelist)
+* **Copy-ready snippets** on each server page: Direct URL, HTML, BBCode, Markdown, iframe
+* **Automatic map thumbnail extraction** from uploaded `.pk3`/`.zip` archives
+  * Pulls inner `.pk3` from zip containers automatically
+  * Converts TGA/JPG/PNG levelshots to 320×180 JPEG
+  * Fallback strategy for maps where `levelshots/{mapname}` doesn't match exactly
+  * Plus a separate command for extracting vanilla ET stock-map thumbnails from `pak0.pk3`
+* Cold-start TTFB under 150 ms thanks to materialized rankings and cached rendered HTML
 
 ### 🎬 ETTV Streaming
-- ETTV slot management integrated with Pterodactyl
-- Live match streaming for Enemy Territory
-- Event scheduling and management
+
+* ETTV slot management integrated with Pterodactyl
+* Live match streaming for Enemy Territory
+* Event scheduling and management
 
 ### 🎥 Demo Browser
-- Upload and browse game demos
-- Categorized demo archive with metadata
+
+* Upload and browse game demos
+* Categorized demo archive with metadata
 
 ### 🌐 FastDL Hosting
-- Fast download server for game files
-- Clan-specific FastDL directories
-- Automated PK3 extraction from ZIP archives
-- Game-specific directory management
+
+* Fast download server for game files
+* Clan-specific FastDL directories
+* Automated PK3 extraction from ZIP archives
+* Game-specific directory management
 
 ### 🖥️ Game Server Hosting
-- Hosted game servers via Pterodactyl panel integration
-- Server products with slot-based pricing
-- Automated provisioning, suspension and termination
-- Invoice management and payment tracking via PayPal
-- Server backup management
+
+* Hosted game servers via Pterodactyl panel integration
+* Server products with slot-based pricing
+* Automated provisioning, suspension and termination
+* Invoice management and payment tracking via PayPal
+* Server backup management
 
 ### 💰 Donations
-- Community donation system with progress tracking
-- Donation statistics and contributor recognition
+
+* Community donation system with progress tracking
+* Donation statistics and contributor recognition
 
 ### 📰 News & Content
-- Blog posts with multilingual support (DE, EN, FR, NL, PL, TR)
-- Static pages with content management
-- Wiki system with articles, categories and revision history
-- Tutorial system with step-by-step guides and voting
+
+* Blog posts with multilingual support (DE, EN, FR, NL, PL, TR)
+* Static pages with content management
+* Wiki system with articles, categories and revision history
+* Tutorial system with step-by-step guides and voting
 
 ### 🗳️ Community Features
-- User profiles with activity tracking and badges
-- Comment system with notifications
-- Poll system for community decisions
-- Contact form with spam protection
-- Achievement and badge system
+
+* User profiles with activity tracking and badges
+* Comment system with notifications
+* Poll system for community decisions
+* Contact form with spam protection
+* Achievement and badge system
 
 ### 📱 Social Media & Notifications
-- Telegram bot integration with interactive commands
-- Discord webhook notifications
-- Automated social media broadcasting for new content
-- Multi-channel notification system
+
+* Telegram bot integration with interactive commands
+* Discord webhook notifications
+* Automated social media broadcasting for new content
+* Multi-channel notification system
 
 ### 🔍 SEO & Discovery
-- JSON-LD structured data for search engines
-- Sitemap generation
-- robots.txt management
-- llms.txt for AI discoverability
+
+* JSON-LD structured data for search engines
+* Sitemap generation
+* robots.txt management
+* llms.txt for AI discoverability
 
 ### 🛠️ Admin Panel
-- Full Filament admin dashboard
-- Resource management for all content types
-- Activity logging and moderation tools
-- Telegram settings and social media channel management
-- Statistics widgets and overview dashboards
+
+* Full Filament admin dashboard
+* Resource management for all content types
+* Activity logging and moderation tools
+* Telegram settings and social media channel management
+* Statistics widgets and overview dashboards
+
+### 🔐 GDPR & Privacy
+
+* User data export (ZIP with full JSON archive)
+* Account deletion with upload anonymization
+* Privacy settings page per user
+* CNPD Luxembourg compliance
 
 ## 🏗️ Tech Stack
 
 | Layer | Technology |
-|---|---|
+| --- | --- |
 | **Framework** | Laravel 12 (PHP 8.3) |
 | **Admin Panel** | Filament 3 |
 | **Frontend** | Blade, Alpine.js, Tailwind CSS |
 | **Database** | MySQL/MariaDB |
 | **Storage** | Hetzner Object Storage (S3) |
-| **Server** | Hetzner Dedicated, Plesk |
+| **Search** | Mistral embeddings + Qdrant vector DB |
+| **Server** | Hetzner Dedicated (AlmaLinux 9), Plesk |
 | **Game Servers** | Pterodactyl Panel |
+| **Image Processing** | GD + Imagick (TGA, levelshot extraction) |
 | **CI/CD** | GitHub Actions |
 | **Backups** | Automated daily/weekly to Synology NAS |
 
@@ -132,18 +175,26 @@ php artisan migrate --seed
 php artisan serve
 ```
 
+### Scheduled Jobs
+
+Cron entries managed via Laravel's scheduler (`php artisan schedule:run` every minute):
+
+* `tracker:rebuild-rankings` — every 10 minutes (30-day server avg snapshot)
+* `tracker:rebuild-top-players` — every 30 minutes (per-server top-8 all-time)
+* `banner:extract-levelshots --tracker-only` — weekly (new map uploads)
+
 ## 📊 Quality
 
-- **PHPStan** static analysis on every push
-- **Security audits** via Composer
-- **PHP syntax checks** automated in CI
-- **Laravel config validation** in pipeline
+* **PHPStan** static analysis on every push
+* **Security audits** via Composer
+* **PHP syntax checks** automated in CI
+* **Laravel config validation** in pipeline
 
 ## 🌍 Community
 
-- 🌐 [wolffiles.eu](https://wolffiles.eu)
-- 💬 [Discord](https://discord.com/invite/wzkRyWWuxP)
-- 📱 [Telegram Bot](https://t.me/+toCHcabu-MZhYzE8)
+* 🌐 [wolffiles.eu](https://wolffiles.eu)
+* 💬 [Discord](https://discord.com/invite/wzkRyWWuxP)
+* 📱 [Telegram Bot](https://t.me/+toCHcabu-MZhYzE8)
 
 ---
 
