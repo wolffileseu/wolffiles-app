@@ -439,4 +439,13 @@ Route::get('/api/tracker/{any}', function ($any) {
     return redirect('/api/v1/tracker/' . $any . (request()->getQueryString() ? '?' . request()->getQueryString() : ''), 301);
 })->where('any', '.*');
 
+// Tracker banners (PNG signatures for forums/Discord)
+Route::get('/tracker/server/{server}/banner.png', [\App\Http\Controllers\Tracker\BannerController::class, 'server'])
+    ->name('tracker.server.banner');
 
+Route::get('/tracker/player/{player}/banner.png', [\App\Http\Controllers\Tracker\BannerController::class, 'player'])
+    ->name('tracker.player.banner');
+
+// Vertical HTML embed banner (iframe)
+Route::get('/tracker/server/{server}/embed', [\App\Http\Controllers\Tracker\BannerController::class, 'serverEmbed'])
+    ->name('tracker.server.embed');

@@ -305,6 +305,11 @@
             @endif
 
         </div>
+
+        {{-- Full-width: Banner Embed --}}
+        <div class="lg:col-span-3">
+            @include('frontend.tracker.partials.player-banner-embed')
+        </div>
     </div>
 
 {{-- Enhanced Tracker Section --}}
