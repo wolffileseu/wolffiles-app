@@ -451,3 +451,5 @@ Route::get('/tracker/player/{player}/banner.png', [\App\Http\Controllers\Tracker
 // Vertical HTML embed banner (iframe)
 Route::get('/tracker/server/{server}/embed', [\App\Http\Controllers\Tracker\BannerController::class, 'serverEmbed'])
     ->name('tracker.server.embed');
+Route::get('/tracker/player/{player}/embed', [\App\Http\Controllers\Tracker\BannerController::class, 'playerEmbed'])
+    ->name('tracker.player.embed');

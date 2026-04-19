@@ -8,8 +8,12 @@ use Illuminate\Support\Facades\Schema;
 
 class PlayerBannerRenderer extends BannerRenderer
 {
-    public function __construct(protected TrackerPlayer $player)
+    /** @var int 1-4, which info is shown on Row 3 right side */
+    protected int $variant;
+
+    public function __construct(protected TrackerPlayer $player, int $variant = 1)
     {
+        $this->variant = max(1, min(4, $variant));
         parent::__construct(560, 95);
     }
 
@@ -40,9 +44,23 @@ class PlayerBannerRenderer extends BannerRenderer
         // Row 2
         $this->text('RANK:',     4,   57, 7, $c, $f);
         $this->text('ELO:',      180, 57, 7, $c, $f);
-        // Row 3
+        // Row 3 left (always)
         $this->text('PLAYTIME:', 4,   80, 7, $c, $f);
-        $this->text('FAV SRV:',  180, 80, 7, $c, $f);
+
+        // Row 3 right — depends on variant
+        switch ($this->variant) {
+            case 2:
+                $this->text('FAV SRV:', 180, 80, 7, $c, $f);
+                break;
+            case 3:
+                $this->text('NOW ON:',  180, 80, 7, $c, $f);
+                break;
+            case 4:
+                $this->text('FAV:',     180, 74, 6, $c, $f);
+                $this->text('NOW:',     180, 87, 6, $c, $f);
+                break;
+            // case 1: no right-side label
+        }
     }
 
     protected function drawValues(): void
@@ -101,20 +119,39 @@ class PlayerBannerRenderer extends BannerRenderer
             $this->text("peak {$peak}", 220 + $eloW + 6, 59, 6, $muted, self::FONT_CONDENSED_BOLD);
         }
 
-        // ===== Row 3: Playtime + Fav Server =====
+        // ===== Row 3: Playtime (always) + variant-specific right side =====
         $mins  = (int) ($p->total_play_time_minutes ?? 0);
         $hours = (int) round($mins / 60);
         $this->text("{$hours}h", 80, 80, 8, $white, self::FONT_BOLD);
 
-        $fav = $this->favoriteServer();
-        if ($fav) {
-            $this->coloredText(
-                $fav,
-                235, 80, 8, self::FONT_BOLD,
-                maxWidth: 190   // reserved right-side area x=435+ for graph/fallback
-            );
+        switch ($this->variant) {
+            case 1:
+                // No right-side content
+                break;
+            case 2:
+                $this->drawRightValue($this->favoriteServer(), 235, 80, 8, 190);
+                break;
+            case 3:
+                $this->drawRightValue($this->currentServer(), 235, 80, 8, 190);
+                break;
+            case 4:
+                // Stacked: FAV on top, NOW below (smaller font, tighter)
+                $this->drawRightValue($this->favoriteServer(), 215, 74, 7, 210);
+                $this->drawRightValue($this->currentServer(),  215, 87, 7, 210);
+                break;
+        }
+    }
+
+    /**
+     * Draw a hostname value with dash fallback. Uses coloredText so
+     * ET color codes in server names render properly.
+     */
+    protected function drawRightValue(?string $value, int $x, int $y, int $size, int $maxWidth): void
+    {
+        if ($value !== null && $value !== '') {
+            $this->coloredText($value, $x, $y, $size, self::FONT_BOLD, maxWidth: $maxWidth);
         } else {
-            $this->text('-', 235, 80, 8, $muted, self::FONT_BOLD);
+            $this->text('-', $x, $y, $size, self::THEME['value_muted'], self::FONT_BOLD);
         }
     }
 
@@ -184,23 +221,24 @@ class PlayerBannerRenderer extends BannerRenderer
             ->exists();
     }
 
-    /** @return array{rank:int,total:int}|null */
+    /**
+     * Returns the player's best 30-day playtime rank across game families (et/rtcw).
+     * Same source as /tracker/rankings/players. Null if no 30d activity.
+     *
+     * @return array{rank:int,total:int}|null
+     */
     protected function computeRank(): ?array
     {
-        if ($this->player->elo_rating === null) {
+        $row = DB::table('tracker_player_rankings_30d')
+            ->where('player_id', $this->player->id)
+            ->orderBy('rank')
+            ->first(['rank', 'total_in_game']);
+
+        if ($row === null) {
             return null;
         }
-        $rank = DB::table('tracker_players')
-            ->where('is_bot', 0)
-            ->whereNotNull('elo_rating')
-            ->where('elo_rating', '>', $this->player->elo_rating)
-            ->count() + 1;
-        $total = DB::table('tracker_players')
-            ->where('is_bot', 0)
-            ->whereNotNull('elo_rating')
-            ->count();
 
-        return ['rank' => $rank, 'total' => $total];
+        return ['rank' => (int) $row->rank, 'total' => (int) $row->total_in_game];
     }
 
     protected function favoriteServer(): ?string
@@ -213,6 +251,23 @@ class PlayerBannerRenderer extends BannerRenderer
             ->groupBy('s.server_id', 'srv.hostname')
             ->orderByDesc('total_min')
             ->first();
+
+        return $row?->hostname;
+    }
+
+    /**
+     * The server the player is currently connected to (ended_at IS NULL).
+     * Returns null if the player is offline.
+     */
+    protected function currentServer(): ?string
+    {
+        $row = DB::table('tracker_player_sessions as s')
+            ->leftJoin('tracker_servers as srv', 'srv.id', '=', 's.server_id')
+            ->where('s.player_id', $this->player->id)
+            ->whereNull('s.ended_at')
+            ->whereNotNull('srv.hostname')
+            ->orderByDesc('s.started_at')
+            ->first(['srv.hostname']);
 
         return $row?->hostname;
     }

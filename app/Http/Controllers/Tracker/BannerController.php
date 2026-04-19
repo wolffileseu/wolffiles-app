@@ -39,12 +39,14 @@ class BannerController extends Controller
     /**
      * Dynamic PNG banner for a tracker player (forum signature style).
      */
-    public function player(TrackerPlayer $player): Response
+    public function player(TrackerPlayer $player, \Illuminate\Http\Request $request): Response
     {
+        $variant = max(1, min(4, (int) $request->query('variant', 1)));
+
         $encoded = Cache::remember(
-            "banner:player:{$player->id}:v1",
+            "banner:player:{$player->id}:v2:variant{$variant}",
             now()->addSeconds(30),
-            fn () => base64_encode((new PlayerBannerRenderer($player))->render())
+            fn () => base64_encode((new PlayerBannerRenderer($player, $variant))->render())
         );
         $png = base64_decode($encoded);
 
@@ -91,4 +93,34 @@ class BannerController extends Controller
             'Cache-Control'   => 'public, max-age=30, stale-while-revalidate=300, s-maxage=60',
         ]);
     }
+
+    /**
+     * Vertical HTML embed banner for a player (iframe-friendly).
+     * Supports ?variant=1-4 (matches PNG banner variants) and ?w=200-600.
+     */
+    public function playerEmbed(\App\Models\Tracker\TrackerPlayer $player, \Illuminate\Http\Request $request): \Illuminate\Http\Response
+    {
+        $width   = max(200, min(600, (int) $request->query('w', 240)));
+        $variant = max(1, min(4, (int) $request->query('variant', 1)));
+
+        $cacheKey = "banner:player:{$player->id}:embed:html:w{$width}:variant{$variant}:v1";
+        $html = Cache::remember(
+            $cacheKey,
+            now()->addSeconds(120),
+            function () use ($player, $width, $variant) {
+                $data = (new \App\Services\Banner\PlayerEmbedDataService())->collect($player);
+                return view('frontend.tracker.partials.player-embed', [
+                    'd'       => $data,
+                    'width'   => $width,
+                    'variant' => $variant,
+                ])->render();
+            }
+        );
+
+        return response($html, 200, [
+            'Content-Type'  => 'text/html; charset=utf-8',
+            'Cache-Control' => 'public, max-age=30, stale-while-revalidate=300, s-maxage=60',
+        ]);
+    }
+
 }
