@@ -29,6 +29,7 @@ Schedule::command('tracker:poll-servers')->everyThirtySeconds()->withoutOverlapp
 // Cleanup ghost/spam servers daily
 Schedule::command('tracker:health-check')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('tracker:cleanup-servers --days-never-online=1')->dailyAt('03:00');
+Schedule::command('tracker:calculate-elo')->dailyAt('02:30')->withoutOverlapping();
 
 // Sync maps with Wolffiles downloads
 Schedule::command('tracker:sync-maps')->hourly();
