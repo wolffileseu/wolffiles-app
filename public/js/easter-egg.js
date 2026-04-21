@@ -14,13 +14,15 @@
     // =========================================================================
 
     const CONFIG = {
-        // Konami Code Sequenz
+        // Konami Code Sequenz — layout-unabhängig
+        // Pfeiltasten via event.key (gleich auf allen Layouts)
+        // Buchstaben via event.key.toUpperCase() (logischer Buchstabe, nicht physische Position)
         konamiSequence: [
             'ArrowUp', 'ArrowUp',
             'ArrowDown', 'ArrowDown',
             'ArrowLeft', 'ArrowRight',
             'ArrowLeft', 'ArrowRight',
-            'KeyB', 'KeyA'
+            'B', 'A'
         ],
 
         // Timing (ms)
@@ -48,13 +50,38 @@
         document.addEventListener('keydown', handleKeyDown);
     }
 
+    /**
+     * Normalisiert event.key zu layout-unabhängigem Wert:
+     * - Pfeiltasten → 'ArrowUp' / 'ArrowDown' / 'ArrowLeft' / 'ArrowRight'
+     * - Buchstaben  → Uppercase (z.B. 'A' statt 'a')
+     * - Alles andere → null (wird ignoriert, bricht Sequenz aber nicht direkt ab)
+     */
+    function normalizeKey(event) {
+        const key = event.key;
+        if (!key) return null;
+
+        if (key.startsWith('Arrow')) {
+            return key;
+        }
+
+        // Einzelner Buchstabe (a-z, A-Z)
+        if (key.length === 1 && /^[a-zA-Z]$/.test(key)) {
+            return key.toUpperCase();
+        }
+
+        return null;
+    }
+
     function handleKeyDown(event) {
         // Ignoriere wenn User in einem Input-Feld tippt
         const tag = event.target.tagName.toLowerCase();
         if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
         if (event.target.isContentEditable) return;
 
-        inputSequence.push(event.code);
+        const normalized = normalizeKey(event);
+        if (normalized === null) return; // Taste ignorieren, Sequenz bleibt bestehen
+
+        inputSequence.push(normalized);
 
         // Reset nach 3 Sekunden Inaktivität
         clearTimeout(sequenceTimeout);
