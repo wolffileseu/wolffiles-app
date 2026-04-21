@@ -695,14 +695,13 @@ class TrackerController extends Controller
     {
         $server->load('game');
 
-        // Load active sessions with player in a single query
+        // ---- Real human players: from tracker_player_sessions + snapshots ----
         $sessions = $server->sessions()
             ->whereNull('ended_at')
             ->with('player:id,name_clean,name_html,country,country_code')
             ->orderByDesc('score')
             ->get();
 
-        // Fetch latest ping + team per session from snapshots (one query)
         $sessionIds = $sessions->pluck('id')->all();
         $latestPings = [];
         $latestTeams = [];
@@ -718,16 +717,64 @@ class TrackerController extends Controller
             }
         }
 
-        $activeSessions = $sessions->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
+        $humanPlayers = $sessions->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
             'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
             'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
             'country_code' => $s->player?->country_code,
             'country'      => $s->player?->country,
-            'score'        => $s->score,
+            'score'        => (int) $s->score,
             'ping'         => $latestPings[$s->id] ?? null,
             'team'         => $latestTeams[$s->id] ?? null,
             'duration'     => $s->duration_minutes . 'm',
-        ]);
+            'is_bot'       => false,
+        ])->all();
+
+        // ---- Bots: pulled live from the server, cached 60s to avoid UDP-spamming ----
+        // Bots don't get tracked in the DB (generic names, no aliases, no statistics).
+        // We poll the server on page load (cached) to show a live list of who's bot-fighting.
+        $botPlayers = \Illuminate\Support\Facades\Cache::remember(
+            "tracker:live_bots:{$server->id}",
+            now()->addSeconds(60),
+            function () use ($server) {
+                try {
+                    $q = app(\App\Services\Tracker\ServerQueryService::class);
+                    $data = $q->queryServer($server->ip, $server->port);
+                    if ($data === null || empty($data['players'])) {
+                        return [];
+                    }
+
+                    $bots = [];
+                    foreach ($data['players'] as $p) {
+                        $ping = (int) ($p['ping'] ?? 0);
+                        if ($ping !== 0) continue; // not a bot
+
+                        $rawName = (string) ($p['name'] ?? 'Bot');
+                        $clean = \App\Services\Tracker\ColorCodeService::toClean($rawName);
+                        $html  = \App\Services\Tracker\ColorCodeService::toHtml($rawName);
+
+                        $bots[] = [
+                            'player_name'  => $html ?: e($clean),
+                            'player_url'   => null,           // bots don't get profile pages
+                            'country_code' => null,           // bots don't have countries
+                            'country'      => null,
+                            'score'        => (int) ($p['score'] ?? 0),
+                            'ping'         => 0,              // render as "BOT" badge in UI
+                            'team'         => $p['team'] ?? null,
+                            'duration'     => '-',
+                            'is_bot'       => true,
+                        ];
+                    }
+                    return $bots;
+                } catch (\Throwable $e) {
+                    // If live poll fails, just show humans (no bots)
+                    return [];
+                }
+            }
+        );
+
+        // Merge humans + bots, sort by score desc for display
+        $allPlayers = array_merge($humanPlayers, $botPlayers);
+        usort($allPlayers, fn($a, $b) => ($b['score'] ?? 0) <=> ($a['score'] ?? 0));
 
         return response()->json([
             'is_online' => $server->is_online,
@@ -735,7 +782,7 @@ class TrackerController extends Controller
             'max_players' => $server->max_players,
             'current_map' => $server->current_map,
             'gametype' => $server->gametype,
-            'players' => $activeSessions,
+            'players' => $allPlayers,
             'last_seen' => $server->last_seen_at?->diffForHumans(),
             'map_file_slug' => \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? null,
         ]);

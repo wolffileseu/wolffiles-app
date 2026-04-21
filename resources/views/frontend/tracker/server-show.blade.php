@@ -35,6 +35,11 @@
                         </span>
                     @endif
                 </div>
+
+                {{-- Server Properties (Bots, FF, Antilag, Balanced Teams, Heavy Weapons, Anticheat, OS) --}}
+                <div class="mt-3">
+                    <x-server-properties :server="$server" size="md" />
+                </div>
             </div>
             <div class="text-right">
                 <div class="text-3xl font-bold" :class="currentPlayers > 0 ? 'text-green-400' : 'text-gray-500'">
@@ -126,11 +131,17 @@
                             </td>
                             <td class="px-4 py-2 text-center text-gray-300" x-text="p.score"></td>
                             <td class="px-4 py-2 text-center text-xs">
-                                <template x-if="p.ping !== null">
+                                <template x-if="p.is_bot">
+                                    <span class="inline-flex items-center gap-1 text-orange-400 font-semibold" title="Bot">
+                                        <img src="/images/server-properties/filter_bots.png" class="w-3.5 h-3.5" style="image-rendering: pixelated;" alt="Bot">
+                                        BOT
+                                    </span>
+                                </template>
+                                <template x-if="!p.is_bot && p.ping !== null">
                                     <span :class="p.ping < 50 ? 'text-green-400' : (p.ping < 100 ? 'text-yellow-400' : 'text-red-400')"
                                           x-text="p.ping + 'ms'"></span>
                                 </template>
-                                <template x-if="p.ping === null || p.ping === undefined">
+                                <template x-if="!p.is_bot && (p.ping === null || p.ping === undefined)">
                                     <span class="text-gray-600">-</span>
                                 </template>
                             </td>

@@ -186,8 +186,8 @@
             <table class="w-full text-sm">
                 <thead class="text-gray-400 text-left bg-gray-900/50">
                     <tr>
-                        <th class="px-4 py-3 w-8"></th>
-                        <th class="px-4 py-3">
+                        <th class="pl-4 pr-1 py-3 w-8"></th>
+                        <th class="pl-1 pr-4 py-3">
                             <a href="{{ $sortLink('game') }}" class="hover:text-white">{{ __('messages.game') }}{!! $sortIcon('game') !!}</a>
                         </th>
                         <th class="px-4 py-3">
@@ -202,10 +202,11 @@
                         <th class="px-4 py-3 text-center">
                             <a href="{{ $sortLink('players') }}" class="hover:text-white">{{ __('messages.players') }}{!! $sortIcon('players') !!}</a>
                         </th>
-                        <th class="px-4 py-3">
+                        <th class="px-4 py-3 text-center">
                             <a href="{{ $sortLink('mod') }}" class="hover:text-white">{{ __('messages.mod') }}{!! $sortIcon('mod') !!}</a>
                         </th>
-                        <th class="px-4 py-3">
+                        <th class="px-4 py-3 text-center" title="Server Properties">Info</th>
+                        <th class="px-4 py-3 text-center">
                             <a href="{{ $sortLink('country') }}" class="hover:text-white">{{ __('messages.country') }}{!! $sortIcon('country') !!}</a>
                         </th>
                         <th class="px-4 py-3 text-right">
@@ -216,11 +217,11 @@
                 <tbody class="divide-y divide-gray-700/50">
                     @forelse($servers as $server)
                     <tr class="hover:bg-gray-750 transition {{ !$server->is_online ? 'opacity-40' : '' }}">
-                        <td class="px-4 py-2.5">
+                        <td class="pl-4 pr-1 py-2.5">
                             <span class="inline-block w-2.5 h-2.5 rounded-full {{ $server->is_online ? 'bg-green-500' : 'bg-red-500' }}"
                                   title="{{ $server->is_online ? __('messages.online') : __('messages.offline') }}"></span>
                         </td>
-                        <td class="px-4 py-2.5">
+                        <td class="pl-1 pr-4 py-2.5">
                             <span class="inline-block px-2 py-0.5 rounded text-xs font-medium text-white" style="background-color: {{ $server->game->color }}">
                                 {{ $server->game->short_name }}
                             </span>
@@ -251,10 +252,13 @@
                                 <span class="text-gray-600">-</span>
                             @endif
                         </td>
-                        <td class="px-4 py-2.5"><x-mod-icon :mod="$server->mod_name" size="sm" /></td>
-                        <td class="px-4 py-2.5 text-gray-400">
+                        <td class="px-4 py-2.5 text-center"><x-mod-icon :mod="$server->mod_name" size="sm" /></td>
+                        <td class="px-4 py-2.5">
+                            <x-server-properties :server="$server" size="xs" />
+                        </td>
+                        <td class="px-4 py-2.5 text-gray-400 text-center">
                             @if($server->country_code)
-                                <x-country-flag :code="$server->country_code" :country="$server->country" /> {{ strtoupper($server->country_code) }}
+                                <x-country-flag :code="$server->country_code" :country="$server->country" />
                             @endif
                         </td>
                         <td class="px-4 py-2.5 text-right">
@@ -271,7 +275,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="9" class="px-4 py-12 text-center text-gray-500">{{ __('messages.no_servers_found') }}</td>
+                        <td colspan="10" class="px-4 py-12 text-center text-gray-500">{{ __('messages.no_servers_found') }}</td>
                     </tr>
                     @endforelse
                 </tbody>

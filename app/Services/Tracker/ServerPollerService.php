@@ -90,7 +90,7 @@ class ServerPollerService
         $password = (bool)($settings['g_needpass'] ?? $settings['needpass'] ?? 0);
         $pure = isset($settings['sv_pure']) ? (bool)$settings['sv_pure'] : $server->sv_pure;
         $punkbuster = isset($settings['sv_punkbuster']) ? (bool)$settings['sv_punkbuster'] : $server->punkbuster;
-        $os = $settings['sv_os'] ?? $settings['sys_cpustring'] ?? $server->os;
+        $os = $settings['sv_os'] ?? $settings['sys_cpustring'] ?? $settings['mod_build'] ?? $settings['version'] ?? $server->os;
 
         // Auto-detect game type for protocol 84 (ET 2.60b vs ETL)
         if ($server->game && (int)$server->game->protocol_version === 84) {
@@ -104,28 +104,68 @@ class ServerPollerService
             }
         }
 
-        // Filter out bots (ping 0 is usually a bot)
+        // Count humans vs bots (bots report ping 0 in getstatus)
         $realPlayers = array_filter($players, fn($p) => ($p['ping'] ?? 0) > 0);
+        $botPlayers  = array_filter($players, fn($p) => ($p['ping'] ?? 0) === 0);
+
+        // Prefer explicit omnibot_playing setting when available, fallback to count of ping=0 entries
+        $botCount = isset($settings['omnibot_playing'])
+            ? (int) $settings['omnibot_playing']
+            : count($botPlayers);
+
+        // current_players = humans + bots (matches how other trackers display it)
+        $totalPlayers = count($realPlayers) + $botCount;
 
         $privateSlots = isset($settings['sv_privateClients']) ? (int) $settings['sv_privateClients'] : null;
         $latencyMs = isset($data['latency_ms']) ? (int) $data['latency_ms'] : null;
+
+        // Server property flags from getstatus settings
+        // g_friendlyFire is a bitfield on ETL; any non-zero value means FF is active
+        $friendlyFire = isset($settings['g_friendlyFire'])
+            ? ((int) $settings['g_friendlyFire']) > 0
+            : null;
+        $antilag = isset($settings['g_antilag']) ? (bool) (int) $settings['g_antilag'] : null;
+        $balancedTeams = isset($settings['g_balancedteams']) ? (bool) (int) $settings['g_balancedteams'] : null;
+        $heavyWeaponRestriction = isset($settings['g_heavyWeaponRestriction'])
+            ? max(0, min(255, (int) $settings['g_heavyWeaponRestriction']))
+            : null;
+
+        // Anticheat detection based on well-known mod/tracker flags
+        $anticheat = null;
+        if (!empty($settings['sv_antiCheat']) && (int) $settings['sv_antiCheat'] > 0) {
+            $anticheat = 'SilEnT AC';
+        } elseif (!empty($settings['sv_NxAC'])) {
+            $anticheat = 'NxAC';
+        } elseif (!empty($settings['etns_version'])) {
+            $anticheat = 'ETNS';
+        }
+
+        // g_oss bitfield: bit 0=Windows (1), bit 1=Mac (2), bit 2=Linux (4)
+        $osSupport = isset($settings['g_oss']) ? ((int) $settings['g_oss']) & 0b111 : null;
 
         $server->update([
             'hostname' => $hostname,
             'hostname_clean' => ColorCodeService::toClean($hostname),
             'hostname_html' => ColorCodeService::toHtml($hostname),
             'current_map' => $map,
-            'current_players' => count($realPlayers),
+            'current_players' => $totalPlayers,
             'max_players' => $maxPlayers,
             'private_slots' => $privateSlots,
+            'bot_count' => $botCount,
             'gametype' => $gametype,
             'mod_name' => $modName,
             'mod_version' => $modVersion,
             'game_id' => $server->game_id,
             'needs_password' => $password,
+            'friendly_fire' => $friendlyFire,
+            'antilag' => $antilag,
+            'balanced_teams' => $balancedTeams,
+            'heavy_weapon_restriction' => $heavyWeaponRestriction,
+            'anticheat' => $anticheat,
             'sv_pure' => $pure,
             'punkbuster' => $punkbuster,
             'os' => $os,
+            'os_support' => $osSupport,
             'latency_ms' => $latencyMs,
             'is_online' => true,
             'last_seen_at' => now(),
@@ -138,7 +178,7 @@ class ServerPollerService
         $this->updateServerSettings($server, $settings);
 
         // Update map stats
-        $this->updateMapStats($server, $map, count($realPlayers));
+        $this->updateMapStats($server, $map, $totalPlayers);
 
         // Self-heal: fetch geo info if this server never got one
         $this->ensureGeoInfo($server);

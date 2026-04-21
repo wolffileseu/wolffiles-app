@@ -37,13 +37,11 @@
 @endphp
 
 @if($hasIcon)
-    <span class="inline-flex items-center gap-1.5" title="{{ $displayName }}">
-        <img src="{{ asset('images/mods/' . $iconFile . '.png') }}"
-             alt="{{ $displayName }}"
-             class="{{ $sizeClass }} inline-block align-middle"
-             loading="lazy">
-        <span class="text-gray-400 text-xs">{{ $displayName }}</span>
-    </span>
+    <img src="{{ asset('images/mods/' . $iconFile . '.png') }}"
+         alt="{{ $displayName }}"
+         title="{{ $displayName }}"
+         class="{{ $sizeClass }} inline-block align-middle"
+         loading="lazy">
 @elseif($clean !== '')
     <span class="text-gray-400 text-xs">{{ $displayName }}</span>
 @else
