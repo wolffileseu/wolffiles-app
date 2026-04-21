@@ -258,7 +258,7 @@ return [
     'forum_unpin' => 'Unpin',
     'forum_views' => 'Views',
     'forum_write_reply' => 'Write a reply',
-    'game' => 'Spiel',
+    'game' => 'Game',
     'general_question' => 'Allgemeine Frage',
     'hall_of_fame' => 'Hall of Fame',
     'has_players' => 'Has Players',
@@ -775,4 +775,14 @@ return [
     'active_days' => 'active days',
     'less' => 'less',
     'more' => 'more',
+    // Live Server Stats (Issue #5)
+    'map_live_stats_title' => 'Live Server Stats',
+    'map_live_stats_total_plays' => 'Total Plays',
+    'map_live_stats_active_servers' => 'Active Servers',
+    'map_live_stats_peak_players' => 'Peak Players',
+    'map_live_stats_last_played' => 'Last played',
+    'map_live_stats_top_servers' => 'Top Servers',
+    'map_live_stats_unnamed_server' => 'Unnamed Server',
+    'map_live_stats_plays_short' => 'plays',
+
 ];

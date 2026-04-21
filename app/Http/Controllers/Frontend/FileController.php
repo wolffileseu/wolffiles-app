@@ -77,7 +77,74 @@ class FileController extends Controller
         $isFavorited = auth()->check() ? $file->favorites()->where('user_id', auth()->id())->exists() : false;
         $seo = SeoService::forFile($file);
         $jsonLd = ['type' => 'file', 'file' => $file];
-        return view('frontend.files.show', compact('file', 'related', 'userRating', 'isFavorited', 'seo', 'jsonLd'));
+
+        // Live-Server-Stats for this map (Issue #5)
+        // Cached 10 min — stats change slowly + page gets heavy traffic
+        $mapLiveStats = $this->getMapLiveStats($file);
+
+        return view('frontend.files.show', compact(
+            'file', 'related', 'userRating', 'isFavorited', 'seo', 'jsonLd', 'mapLiveStats'
+        ));
+    }
+
+    /**
+     * Aggregate live-server play statistics for a file's map_name.
+     * Returns null when the file has no map_name or no tracker data exists.
+     *
+     * @return array{total_plays:int,active_servers:int,peak_players:int,last_played_at:?\Carbon\Carbon,top_servers:\Illuminate\Support\Collection}|null
+     */
+    private function getMapLiveStats(File $file): ?array
+    {
+        $mapName = trim((string) $file->map_name);
+        if ($mapName === '') {
+            return null;
+        }
+
+        return \Illuminate\Support\Facades\Cache::remember(
+            "map-live-stats:{$mapName}",
+            now()->addMinutes(10),
+            function () use ($mapName) {
+                $agg = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats')
+                    ->where('map_name', $mapName)
+                    ->selectRaw('
+                        COALESCE(SUM(times_played), 0) as total_plays,
+                        COUNT(DISTINCT server_id) as active_servers,
+                        COALESCE(MAX(peak_players), 0) as peak_players,
+                        MAX(last_played_at) as last_played_at
+                    ')
+                    ->first();
+
+                // No tracker data for this map at all? Return null so the widget hides.
+                if (!$agg || (int) $agg->total_plays === 0) {
+                    return null;
+                }
+
+                // Top 5 servers for this map (most plays first)
+                $topServers = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats as sms')
+                    ->join('tracker_servers as s', 's.id', '=', 'sms.server_id')
+                    ->where('sms.map_name', $mapName)
+                    ->where('s.status', 'online')
+                    ->orderByDesc('sms.times_played')
+                    ->limit(5)
+                    ->get([
+                        's.id as server_id',
+                        's.hostname_clean',
+                        's.country_code',
+                        's.current_players',
+                        's.max_players',
+                        'sms.times_played',
+                        'sms.last_played_at',
+                    ]);
+
+                return [
+                    'total_plays'    => (int) $agg->total_plays,
+                    'active_servers' => (int) $agg->active_servers,
+                    'peak_players'   => (int) $agg->peak_players,
+                    'last_played_at' => $agg->last_played_at ? \Carbon\Carbon::parse($agg->last_played_at) : null,
+                    'top_servers'    => $topServers,
+                ];
+            }
+        );
     }
     public function download(File $file)
     {

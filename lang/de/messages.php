@@ -775,4 +775,14 @@ return [
     'active_days' => 'aktive Tage',
     'less' => 'weniger',
     'more' => 'mehr',
+    // Live Server Stats (Issue #5)
+    'map_live_stats_title' => 'Live-Server-Stats',
+    'map_live_stats_total_plays' => 'Gesamt gespielt',
+    'map_live_stats_active_servers' => 'Aktive Server',
+    'map_live_stats_peak_players' => 'Peak-Spieler',
+    'map_live_stats_last_played' => 'Zuletzt gespielt',
+    'map_live_stats_top_servers' => 'Top Server',
+    'map_live_stats_unnamed_server' => 'Unbenannter Server',
+    'map_live_stats_plays_short' => 'mal',
+
 ];
