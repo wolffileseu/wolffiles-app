@@ -8,41 +8,66 @@ use Illuminate\Http\Request;
 
 class CampaignCreatorController extends Controller
 {
+    /**
+     * Hardcoded stock maps (ET + RtCW) — always available, no PK3 download needed.
+     * Sending these inline (instead of loading all 3,400+ maps from DB) keeps the
+     * page payload at ~20KB instead of 505KB.
+     * Custom maps are loaded on-demand via searchMaps().
+     */
+    private const STOCK_MAPS = [
+        ['mapname' => 'battery',      'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'oasis',        'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'fueldump',     'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'goldrush',     'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'railgun',      'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'radar',        'pk3' => 'pak0.pk3', 'game' => 'ET'],
+        ['mapname' => 'mp_beach',     'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_sub',       'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'beach',        'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'assault',      'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'village',      'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'destruction',  'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'chateau',      'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'depot',        'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'tram',         'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'ice',          'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'base',         'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_castle',    'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_depot',     'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_village',   'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_assault',   'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_dam',       'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+        ['mapname' => 'mp_rocket',    'pk3' => 'pak0.pk3', 'game' => 'RtCW'],
+    ];
+
     public function index()
     {
-        $maps = File::query()
+        $stockMaps = collect(self::STOCK_MAPS)->map(fn ($m) => [
+            'id'       => null,
+            'mapname'  => $m['mapname'],
+            'pk3'      => $m['pk3'],
+            'title'    => ucfirst($m['mapname']),
+            'slug'     => null,
+            'game'     => $m['game'],
+            'is_stock' => true,
+        ])->values();
+
+        // Fast COUNT(*) — no rows loaded
+        $mapCount = File::query()
             ->whereNotNull('map_name')
             ->where('map_name', '!=', '')
             ->where('status', 'approved')
-            ->select('id', 'title', 'map_name', 'file_name', 'slug', 'game')
-            ->orderBy('map_name')
-            ->get()
-            ->map(function ($file) {
-                $cleanMapName = $this->stripColorCodes($file->map_name);
-                return [
-                    'id'       => $file->id,
-                    'mapname'  => $cleanMapName,
-                    'pk3'      => $this->guessPk3Name($file->file_name, $cleanMapName),
-                    'title'    => $file->title,
-                    'slug'     => $file->slug,
-                    'game'     => $file->game ?? 'ET',
-                    'is_stock' => $this->isStockMap($cleanMapName),
-                ];
-            })
-            ->filter(fn ($m) => !empty($m['mapname']))
-            ->unique('mapname')
-            ->sortBy(fn ($map) => ($map['is_stock'] ? '0' : '1') . strtolower($map['mapname']))
-            ->values();
+            ->count();
 
-        $games = $maps->pluck('game')->unique()->filter()->sort()->values();
+        $games = collect(['ET', 'RtCW', 'ETFortress', 'ET-Domination'])->values();
 
         return view('frontend.tools.campaign-creator', [
-            'maps'     => $maps,
-            'mapCount' => $maps->count(),
+            'maps'     => $stockMaps,
+            'mapCount' => $mapCount,
             'games'    => $games,
             'seo'      => [
                 'title'       => __('messages.cc_seo_title'),
-                'description' => __('messages.cc_seo_description', ['count' => $maps->count()]),
+                'description' => __('messages.cc_seo_description', ['count' => $mapCount]),
                 'canonical'   => route('tools.campaign-creator'),
             ],
         ]);
@@ -50,22 +75,24 @@ class CampaignCreatorController extends Controller
 
     public function searchMaps(Request $request)
     {
-        $query = $request->input('q', '');
+        $query = trim((string) $request->input('q', ''));
+
+        if (mb_strlen($query) < 2) {
+            return response()->json([]);
+        }
 
         $maps = File::query()
             ->whereNotNull('map_name')
             ->where('map_name', '!=', '')
             ->where('status', 'approved')
-            ->when($query, function ($q) use ($query) {
-                $q->where(function ($q2) use ($query) {
-                    $q2->where('map_name', 'LIKE', "%{$query}%")
-                       ->orWhere('title', 'LIKE', "%{$query}%")
-                       ->orWhere('file_name', 'LIKE', "%{$query}%");
-                });
+            ->where(function ($q) use ($query) {
+                $q->where('map_name', 'LIKE', "%{$query}%")
+                  ->orWhere('title', 'LIKE', "%{$query}%")
+                  ->orWhere('file_name', 'LIKE', "%{$query}%");
             })
             ->select('id', 'title', 'map_name', 'file_name', 'slug', 'game')
             ->orderBy('map_name')
-            ->limit(100)
+            ->limit(50)
             ->get()
             ->map(function ($file) {
                 $cleanMapName = $this->stripColorCodes($file->map_name);
@@ -101,11 +128,6 @@ class CampaignCreatorController extends Controller
 
     private function isStockMap(string $mapName): bool
     {
-        return in_array(strtolower($mapName), [
-            'battery', 'oasis', 'fueldump', 'goldrush', 'railgun', 'radar',
-            'mp_beach', 'mp_sub', 'beach', 'assault', 'village', 'destruction',
-            'chateau', 'depot', 'tram', 'ice', 'base', 'mp_castle', 'mp_depot',
-            'mp_village', 'mp_assault', 'mp_dam', 'mp_rocket',
-        ]);
+        return in_array(strtolower($mapName), array_column(self::STOCK_MAPS, 'mapname'), true);
     }
 }
