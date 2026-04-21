@@ -518,13 +518,24 @@ class TrackerController extends Controller
             }
         }
 
+        // Prestige level — MAX across all matches. Prestige is a post-max-XP
+        // reset mechanic in some ET mods (ETJump, NoQuarter). 0 = no prestige,
+        // higher values mean the player has reset their XP at MAX level N times.
+        $prestigeLevel = 0;
+        if ($player->has_enhanced_data) {
+            $prestigeLevel = (int) \DB::table('tracker_player_match_stats')
+                ->where('player_id', $player->id)
+                ->max('prestige');
+        }
+
         return view('frontend.tracker.player-show', compact(
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
             'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
             'lifetimeWeapons',
-            'playerTimeline', 'xpSkills'));
+            'playerTimeline', 'xpSkills',
+            'prestigeLevel'));
     }
 
     /**

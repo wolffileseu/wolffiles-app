@@ -16,6 +16,12 @@
                         @if($player->is_bot)
                             <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-500/20 text-gray-300 border border-gray-400/30 uppercase tracking-wider font-semibold">Bot</span>
                         @endif
+                        @if(!empty($prestigeLevel) && $prestigeLevel > 0)
+                            <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider font-bold"
+                                  title="{{ __('Prestige level :n', ['n' => $prestigeLevel]) }}">
+                                ⭐ P{{ $prestigeLevel }}
+                            </span>
+                        @endif
                     </h1>
                     @if($player->active_clan)
                         <span class="bg-gray-700 px-2 py-0.5 rounded text-sm text-gray-300">{{ $player->active_clan->tag }}</span>
@@ -376,6 +382,69 @@
                 </div>
             </div>
         </div>
+        {{-- ELO Trend Chart (SVG sparkline — renders only if we have >1 history point) --}}
+        @if(!empty($eloHistory) && $eloHistory->count() > 1)
+        @php
+            $eh = $eloHistory->pluck('elo_after')->map(fn($v) => (float) $v)->all();
+            $ehMax = max($eh); $ehMin = min($eh);
+            $ehRange = max($ehMax - $ehMin, 1.0);
+            $chartW = 900; $chartH = 160; $padTop = 20; $padBottom = 20; $padX = 10;
+            $usableH = $chartH - $padTop - $padBottom;
+            $usableW = $chartW - (2 * $padX);
+            $step = $usableW / max(count($eh) - 1, 1);
+            $coords = [];
+            foreach ($eh as $i => $v) {
+                $coords[] = [
+                    round($padX + ($i * $step), 2),
+                    round($chartH - $padBottom - (($v - $ehMin) / $ehRange) * $usableH, 2),
+                ];
+            }
+            $linePath = '';
+            foreach ($coords as $i => [$x, $y]) {
+                $linePath .= ($i === 0 ? 'M' : ' L') . "$x,$y";
+            }
+            $fillPath = 'M' . $coords[0][0] . ',' . $chartH . ' L' . $coords[0][0] . ',' . $coords[0][1];
+            foreach (array_slice($coords, 1) as [$x, $y]) {
+                $fillPath .= " L$x,$y";
+            }
+            $fillPath .= ' L' . end($coords)[0] . ',' . $chartH . ' Z';
+            $ehFirst = $eh[0]; $ehLast = end($eh);
+            $ehChange = $ehLast - $ehFirst;
+            $ehChangeColor = $ehChange >= 0 ? 'text-emerald-400' : 'text-rose-400';
+            $ehChangeSign = $ehChange >= 0 ? '+' : '';
+        @endphp
+        <div class="px-6 py-5 border-t border-gray-700/50 bg-gray-900/30">
+            <div class="flex items-baseline justify-between mb-3 flex-wrap gap-2">
+                <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    {{ __('ELO Trend') }}
+                </h3>
+                <div class="text-xs">
+                    <span class="text-gray-500">{{ number_format($ehFirst, 0) }}</span>
+                    <span class="text-gray-600 mx-1">→</span>
+                    <span class="text-gray-200 font-semibold">{{ number_format($ehLast, 0) }}</span>
+                    <span class="{{ $ehChangeColor }} font-semibold ml-2">{{ $ehChangeSign }}{{ number_format($ehChange, 0) }}</span>
+                    <span class="text-gray-600 ml-2">{{ $eloHistory->count() }} {{ __('matches') }}</span>
+                </div>
+            </div>
+            <svg viewBox="0 0 {{ $chartW }} {{ $chartH }}" class="w-full h-32 sm:h-40" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="eloGrad_{{ $player->id }}" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.45"/>
+                        <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.02"/>
+                    </linearGradient>
+                </defs>
+                <path d="{{ $fillPath }}" fill="url(#eloGrad_{{ $player->id }})"/>
+                <path d="{{ $linePath }}" fill="none" stroke="#f59e0b" stroke-width="2"
+                      stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+                <text x="{{ $padX }}" y="12" fill="#6b7280" font-size="10" font-family="monospace">{{ number_format($ehMax, 0) }}</text>
+                <text x="{{ $padX }}" y="{{ $chartH - 4 }}" fill="#6b7280" font-size="10" font-family="monospace">{{ number_format($ehMin, 0) }}</text>
+            </svg>
+        </div>
+        @endif
+
         @if($lifetimeWeapons->isNotEmpty())
             <div class="px-6 py-5 border-t border-gray-700/50 bg-gray-900/30">
                 <div class="flex items-baseline justify-between mb-3">
@@ -430,6 +499,89 @@
                             </div>
                         @endif
                     </div>
+                @endif
+
+                {{-- Extended Combat Stats (Teamplay, Support, Misfires) --}}
+                @if($latestMatchStats && (
+                    ($latestMatchStats->team_damage_given ?? 0) > 0 ||
+                    ($latestMatchStats->team_damage_received ?? 0) > 0 ||
+                    ($latestMatchStats->gibs ?? 0) > 0 ||
+                    ($latestMatchStats->kill_assists ?? 0) > 0 ||
+                    ($latestMatchStats->team_kills ?? 0) > 0 ||
+                    ($latestMatchStats->team_gibs ?? 0) > 0 ||
+                    ($latestMatchStats->self_kills ?? 0) > 0 ||
+                    ($latestMatchStats->suicides ?? 0) > 0 ||
+                    ($latestMatchStats->revives_given ?? 0) > 0 ||
+                    ($latestMatchStats->revives_received ?? 0) > 0 ||
+                    ($latestMatchStats->objectives_taken ?? 0) > 0
+                ))
+                <div class="mb-4 bg-gray-900/30 rounded-lg p-4">
+                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                        {{ __('Extended Combat') }}
+                        <span class="text-gray-600 font-normal normal-case">({{ __('latest match') }})</span>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 text-xs">
+                        @if(($latestMatchStats->team_damage_given ?? 0) > 0 || ($latestMatchStats->team_damage_received ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Team DMG') }}</div>
+                            <div class="mt-0.5">
+                                <span class="text-rose-400 font-semibold">{{ number_format($latestMatchStats->team_damage_given ?? 0) }}</span><span class="text-gray-600">↑ / </span><span class="text-gray-400">{{ number_format($latestMatchStats->team_damage_received ?? 0) }}</span><span class="text-gray-600">↓</span>
+                            </div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->revives_given ?? 0) > 0 || ($latestMatchStats->revives_received ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Revives') }}</div>
+                            <div class="mt-0.5">
+                                <span class="text-emerald-400 font-semibold">{{ number_format($latestMatchStats->revives_given ?? 0) }}</span><span class="text-gray-600">↑ / </span><span class="text-gray-400">{{ number_format($latestMatchStats->revives_received ?? 0) }}</span><span class="text-gray-600">↓</span>
+                            </div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->objectives_taken ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">🎯 {{ __('Objectives') }}</div>
+                            <div class="mt-0.5 text-amber-400 font-bold">{{ number_format($latestMatchStats->objectives_taken ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->kill_assists ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Assists') }}</div>
+                            <div class="mt-0.5 text-gray-200 font-semibold">{{ number_format($latestMatchStats->kill_assists ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->gibs ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Gibs') }}</div>
+                            <div class="mt-0.5 text-gray-200 font-semibold">{{ number_format($latestMatchStats->gibs ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->team_kills ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">⚠️ {{ __('Team Kills') }}</div>
+                            <div class="mt-0.5 text-rose-400 font-semibold">{{ number_format($latestMatchStats->team_kills ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->team_gibs ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">⚠️ {{ __('Team Gibs') }}</div>
+                            <div class="mt-0.5 text-rose-400 font-semibold">{{ number_format($latestMatchStats->team_gibs ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->self_kills ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Self Kills') }}</div>
+                            <div class="mt-0.5 text-gray-300 font-semibold">{{ number_format($latestMatchStats->self_kills ?? 0) }}</div>
+                        </div>
+                        @endif
+                        @if(($latestMatchStats->suicides ?? 0) > 0)
+                        <div class="bg-gray-800/60 rounded p-2">
+                            <div class="text-gray-500 uppercase tracking-wide text-[10px]">{{ __('Suicides') }}</div>
+                            <div class="mt-0.5 text-gray-300 font-semibold">{{ number_format($latestMatchStats->suicides ?? 0) }}</div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
                 {{-- Per-weapon grid (lifetime totals across all enhanced matches) --}}
