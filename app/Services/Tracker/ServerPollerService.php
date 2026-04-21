@@ -81,8 +81,8 @@ class ServerPollerService
         $settings = $data['settings'] ?? [];
         $players = $data['players'] ?? [];
 
-        $hostname = $settings['sv_hostname'] ?? $settings['hostname'] ?? $server->hostname;
-        $map = $settings['mapname'] ?? $server->current_map;
+        $hostname = $this->toUtf8((string) ($settings['sv_hostname'] ?? $settings['hostname'] ?? $server->hostname ?? ''));
+        $map = $this->toUtf8((string) ($settings['mapname'] ?? $server->current_map ?? ''));
         $maxPlayers = (int)($settings['sv_maxclients'] ?? $settings['maxclients'] ?? $server->max_players);
         $gametype = $settings['g_gametype'] ?? $settings['gametype'] ?? $server->gametype;
         $modName = $settings['gamename'] ?? $settings['fs_game'] ?? $server->mod_name;
@@ -107,6 +107,9 @@ class ServerPollerService
         // Filter out bots (ping 0 is usually a bot)
         $realPlayers = array_filter($players, fn($p) => ($p['ping'] ?? 0) > 0);
 
+        $privateSlots = isset($settings['sv_privateClients']) ? (int) $settings['sv_privateClients'] : null;
+        $latencyMs = isset($data['latency_ms']) ? (int) $data['latency_ms'] : null;
+
         $server->update([
             'hostname' => $hostname,
             'hostname_clean' => ColorCodeService::toClean($hostname),
@@ -114,6 +117,7 @@ class ServerPollerService
             'current_map' => $map,
             'current_players' => count($realPlayers),
             'max_players' => $maxPlayers,
+            'private_slots' => $privateSlots,
             'gametype' => $gametype,
             'mod_name' => $modName,
             'mod_version' => $modVersion,
@@ -122,6 +126,7 @@ class ServerPollerService
             'sv_pure' => $pure,
             'punkbuster' => $punkbuster,
             'os' => $os,
+            'latency_ms' => $latencyMs,
             'is_online' => true,
             'last_seen_at' => now(),
             'last_poll_at' => now(),
@@ -170,10 +175,27 @@ class ServerPollerService
     {
         foreach ($settings as $key => $value) {
             TrackerServerSetting::updateOrCreate(
-                ['server_id' => $server->id, 'key' => $key],
-                ['value' => $value, 'updated_at' => now()]
+                ['server_id' => $server->id, 'key' => $this->toUtf8((string) $key)],
+                ['value' => $this->toUtf8((string) $value), 'updated_at' => now()]
             );
         }
+    }
+
+    /**
+     * Normalize game-server strings to valid UTF-8.
+     *
+     * ET/RtCW engines emit cvar values in Latin-1 / Windows-1252 by default.
+     * MySQL utf8mb4 columns reject raw bytes like \xFC (u-umlaut), so we
+     * convert any non-UTF-8 input before persisting to avoid
+     * SQLSTATE[22007] "Incorrect string value" errors.
+     */
+    private function toUtf8(string $value): string
+    {
+        if ($value === '' || mb_check_encoding($value, 'UTF-8')) {
+            return $value;
+        }
+
+        return mb_convert_encoding($value, 'UTF-8', 'Windows-1252, ISO-8859-1');
     }
 
     /**
