@@ -1,4 +1,28 @@
 <x-layouts.app :title="__('messages.server_browser')">
+@php
+    // Sort helper for header links (toggle asc/desc on re-click)
+    $currentSort = request('sort', 'players');
+    $currentDir  = request('dir', 'desc');
+    $sortLink = function(string $col) use ($currentSort, $currentDir) {
+        $dir = ($currentSort === $col && $currentDir === 'desc') ? 'asc' : 'desc';
+        return route('tracker.servers', array_merge(request()->all(), ['sort' => $col, 'dir' => $dir, 'page' => null]));
+    };
+    $sortIcon = function(string $col) use ($currentSort, $currentDir) {
+        if ($currentSort !== $col) return '';
+        return $currentDir === 'asc' ? ' ▲' : ' ▼';
+    };
+
+    // Parse current multi-filters from URL (supports comma-strings and arrays)
+    $parseMulti = function($val) {
+        if (is_array($val)) return array_filter($val, fn($v) => $v !== '' && $v !== null);
+        if ($val === null || $val === '') return [];
+        return array_filter(array_map('trim', explode(',', (string) $val)), fn($v) => $v !== '');
+    };
+    $selCountries = $parseMulti(request('country'));
+    $selMods      = $parseMulti(request('mod'));
+    $selGametypes = $parseMulti(request('gametype'));
+@endphp
+
 <div class="max-w-7xl mx-auto px-4 py-8">
 
     <div class="flex flex-wrap items-center justify-between mb-6">
@@ -9,27 +33,45 @@
         <a href="{{ route('tracker.index') }}" class="text-amber-400 hover:text-amber-300">{!! __('messages.back_to_tracker') !!}</a>
     </div>
 
-    {{-- Game Tabs --}}
+    {{-- Game Tabs (multi-select: click toggles) --}}
+    @php
+        $selGames = $parseMulti(request('game'));
+    @endphp
     <div class="flex flex-wrap gap-2 mb-6">
-        <a href="{{ route('tracker.servers', request()->except('game', 'page')) }}"
-           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {{ !request('game') ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+        <a href="{{ route('tracker.servers', request()->except(['game', 'page'])) }}"
+           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {{ empty($selGames) ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
             {{ __('messages.all_servers') }}
         </a>
         @foreach($games as $game)
-        <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['game' => $game->slug])) }}"
-           class="px-3 py-1.5 rounded-lg text-sm font-medium transition {{ request('game') === $game->slug ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}"
-           style="border-left: 3px solid {{ $game->color }}">
-            {{ $game->short_name }}
-        </a>
+            @php
+                $isSelected = in_array($game->slug, $selGames);
+                // Toggle: if selected, remove from list; if not selected, add
+                $newGames = $isSelected
+                    ? array_values(array_diff($selGames, [$game->slug]))
+                    : array_merge($selGames, [$game->slug]);
+                $newParams = array_merge(request()->except(['game', 'page']), [
+                    'game' => empty($newGames) ? null : implode(',', $newGames),
+                ]);
+            @endphp
+            <a href="{{ route('tracker.servers', $newParams) }}"
+               class="px-3 py-1.5 rounded-lg text-sm font-medium transition {{ $isSelected ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}"
+               style="border-left: 3px solid {{ $game->color }}"
+               title="{{ $isSelected ? 'Klick zum Abwählen' : 'Klick zum Hinzufügen' }}">
+                @if($isSelected)<span class="mr-1">✓</span>@endif{{ $game->short_name }}
+            </a>
         @endforeach
     </div>
 
     {{-- Filters --}}
-    <div x-data="{ filtersOpen: false }" class="mb-6">
+    <div x-data="{ filtersOpen: {{ (!empty($selCountries) || !empty($selMods) || !empty($selGametypes) || request('map')) ? 'true' : 'false' }} }" class="mb-6">
         <div class="flex flex-wrap gap-3 items-center">
             <form method="GET" action="{{ route('tracker.servers') }}" class="flex-1 min-w-[200px]">
                 @foreach(request()->except(['search', 'page']) as $key => $value)
-                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @if(is_array($value))
+                        <input type="hidden" name="{{ $key }}" value="{{ implode(',', $value) }}">
+                    @else
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endif
                 @endforeach
                 <input type="text" name="search" value="{{ request('search') }}"
                        placeholder="{{ __('messages.search_server') }}"
@@ -45,6 +87,9 @@
             </a>
             <button @click="filtersOpen = !filtersOpen" class="px-3 py-2 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition">
                 {{ __('messages.more_filters') }}
+                @if(count($selCountries) + count($selMods) + count($selGametypes) > 0)
+                    <span class="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">{{ count($selCountries) + count($selMods) + count($selGametypes) }}</span>
+                @endif
             </button>
             <button id="autoRefreshBtn" onclick="toggleAutoRefresh(this)"
                 class="px-3 py-2 rounded-lg text-sm text-white transition bg-green-600">
@@ -53,38 +98,83 @@
         </div>
 
         <div x-show="filtersOpen" x-collapse class="mt-3 bg-gray-800 rounded-lg p-4">
-            <form method="GET" action="{{ route('tracker.servers') }}" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                @if(request('game')) <input type="hidden" name="game" value="{{ request('game') }}"> @endif
-                @if(request('online')) <input type="hidden" name="online" value="1"> @endif
-                @if(request('players')) <input type="hidden" name="players" value="1"> @endif
+            <form method="GET" action="{{ route('tracker.servers') }}" id="filterForm">
+                {{-- Preserve unrelated filters --}}
+                @if(request('game'))   <input type="hidden" name="game"   value="{{ request('game') }}">   @endif
+                @if(request('online')) <input type="hidden" name="online" value="1">                       @endif
+                @if(request('players'))<input type="hidden" name="players" value="1">                      @endif
                 @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
-                <div>
-                    <label class="text-gray-400 text-xs">{{ __('messages.country') }}</label>
-                    <select name="country" class="w-full bg-gray-700 border-gray-600 rounded text-sm text-white mt-1">
-                        <option value="">{{ __('messages.all_countries') }}</option>
-                        @foreach($countries as $c)
-                            <option value="{{ $c->country_code }}" {{ request('country') === $c->country_code ? 'selected' : '' }}>{{ $c->country }} ({{ $c->country_code }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="text-gray-400 text-xs">{{ __('messages.map') }}</label>
+                @if(request('sort'))   <input type="hidden" name="sort"   value="{{ request('sort') }}">   @endif
+                @if(request('dir'))    <input type="hidden" name="dir"    value="{{ request('dir') }}">    @endif
+
+                {{-- Map search (stays as text) --}}
+                <div class="mb-4">
+                    <label class="text-gray-400 text-xs block mb-1">{{ __('messages.map') }}</label>
                     <input type="text" name="map" value="{{ request('map') }}" placeholder="e.g. oasis"
-                           class="w-full bg-gray-700 border-gray-600 rounded text-sm text-white mt-1 px-3 py-1.5">
+                           class="w-full bg-gray-700 border-gray-600 rounded text-sm text-white px-3 py-1.5">
                 </div>
-                <div>
-                    <label class="text-gray-400 text-xs">{{ __('messages.mod') }}</label>
-                    <select name="mod" class="w-full bg-gray-700 border-gray-600 rounded text-sm text-white mt-1">
-                        <option value="">{{ __('messages.all_mods') }}</option>
-                        @foreach($mods as $mod)
-                            <option value="{{ $mod }}" {{ request('mod') === $mod ? 'selected' : '' }}>{{ $mod }}</option>
-                        @endforeach
-                    </select>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {{-- Countries (multi) --}}
+                    <div>
+                        <label class="text-gray-400 text-xs block mb-2">{{ __('messages.country') }}
+                            @if(count($selCountries)) <span class="text-amber-400">({{ count($selCountries) }})</span> @endif
+                        </label>
+                        <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
+                            @foreach($countries as $c)
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                    <input type="checkbox" name="country_multi[]" value="{{ $c->country_code }}"
+                                           {{ in_array($c->country_code, $selCountries) ? 'checked' : '' }}
+                                           class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
+                                    <span>{{ $c->country }} ({{ $c->country_code }})</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Mods (multi) --}}
+                    <div>
+                        <label class="text-gray-400 text-xs block mb-2">{{ __('messages.mod') }}
+                            @if(count($selMods)) <span class="text-amber-400">({{ count($selMods) }})</span> @endif
+                        </label>
+                        <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
+                            @foreach($mods as $mod)
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                    <input type="checkbox" name="mod_multi[]" value="{{ $mod }}"
+                                           {{ in_array($mod, $selMods) ? 'checked' : '' }}
+                                           class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
+                                    <span>{{ $mod }}</span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Gametypes (multi) --}}
+                    <div>
+                        <label class="text-gray-400 text-xs block mb-2">Gametype
+                            @if(count($selGametypes)) <span class="text-amber-400">({{ count($selGametypes) }})</span> @endif
+                        </label>
+                        <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
+                            @foreach($gametypes as $gt)
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                    <input type="checkbox" name="gametype_multi[]" value="{{ $gt }}"
+                                           {{ in_array($gt, $selGametypes) ? 'checked' : '' }}
+                                           class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
+                                    <span>{{ \App\Services\Tracker\GametypeService::label($gt) }} <span class="text-gray-500">({{ $gt }})</span></span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-end">
-                    <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white rounded px-4 py-1.5 text-sm font-medium transition">
+
+                <div class="flex gap-2 mt-4">
+                    <button type="submit" class="bg-amber-600 hover:bg-amber-500 text-white rounded px-4 py-1.5 text-sm font-medium transition">
                         {{ __('messages.apply_filters') }}
                     </button>
+                    <a href="{{ route('tracker.servers', request()->only(['game','online','players','search'])) }}"
+                       class="bg-gray-700 hover:bg-gray-600 text-gray-300 rounded px-4 py-1.5 text-sm font-medium transition">
+                        Reset
+                    </a>
                 </div>
             </form>
         </div>
@@ -98,20 +188,28 @@
                     <tr>
                         <th class="px-4 py-3 w-8"></th>
                         <th class="px-4 py-3">
-                            <a href="{{ route('tracker.servers', array_merge(request()->all(), ['sort' => 'game'])) }}" class="hover:text-white">{{ __('messages.game') }}</a>
+                            <a href="{{ $sortLink('game') }}" class="hover:text-white">{{ __('messages.game') }}{!! $sortIcon('game') !!}</a>
                         </th>
                         <th class="px-4 py-3">
-                            <a href="{{ route('tracker.servers', array_merge(request()->all(), ['sort' => 'name'])) }}" class="hover:text-white">{{ __('messages.server_name') }}</a>
+                            <a href="{{ $sortLink('name') }}" class="hover:text-white">{{ __('messages.server_name') }}{!! $sortIcon('name') !!}</a>
                         </th>
                         <th class="px-4 py-3">
-                            <a href="{{ route('tracker.servers', array_merge(request()->all(), ['sort' => 'map'])) }}" class="hover:text-white">{{ __('messages.map') }}</a>
+                            <a href="{{ $sortLink('map') }}" class="hover:text-white">{{ __('messages.map') }}{!! $sortIcon('map') !!}</a>
+                        </th>
+                        <th class="px-4 py-3">
+                            <a href="{{ $sortLink('gametype') }}" class="hover:text-white">Gametype{!! $sortIcon('gametype') !!}</a>
                         </th>
                         <th class="px-4 py-3 text-center">
-                            <a href="{{ route('tracker.servers', array_merge(request()->all(), ['sort' => 'players'])) }}" class="hover:text-white">{{ __('messages.players') }}</a>
+                            <a href="{{ $sortLink('players') }}" class="hover:text-white">{{ __('messages.players') }}{!! $sortIcon('players') !!}</a>
                         </th>
-                        <th class="px-4 py-3">{{ __('messages.mod') }}</th>
                         <th class="px-4 py-3">
-                            <a href="{{ route('tracker.servers', array_merge(request()->all(), ['sort' => 'country'])) }}" class="hover:text-white">{{ __('messages.country') }}</a>
+                            <a href="{{ $sortLink('mod') }}" class="hover:text-white">{{ __('messages.mod') }}{!! $sortIcon('mod') !!}</a>
+                        </th>
+                        <th class="px-4 py-3">
+                            <a href="{{ $sortLink('country') }}" class="hover:text-white">{{ __('messages.country') }}{!! $sortIcon('country') !!}</a>
+                        </th>
+                        <th class="px-4 py-3 text-right">
+                            <a href="{{ $sortLink('ping') }}" class="hover:text-white">Ping{!! $sortIcon('ping') !!}</a>
                         </th>
                     </tr>
                 </thead>
@@ -139,27 +237,41 @@
                             @endif
                         </td>
                         <td class="px-4 py-2.5"><x-map-link :map="$server->current_map" /></td>
+                        <td class="px-4 py-2.5 text-gray-400 text-xs">{{ \App\Services\Tracker\GametypeService::label($server->gametype, $server->game_id) }}</td>
                         <td class="px-4 py-2.5 text-center">
                             @if($server->is_online)
                                 @php
                                     $pct = $server->max_players > 0 ? ($server->current_players / $server->max_players) * 100 : 0;
                                     $color = $pct > 80 ? 'text-red-400' : ($pct > 50 ? 'text-yellow-400' : ($server->current_players > 0 ? 'text-green-400' : 'text-gray-500'));
                                 @endphp
-                                <span class="font-medium {{ $color }}">{{ $server->current_players }}/{{ $server->max_players }}</span>
+                                <span class="font-medium {{ $color }}">
+                                    {{ $server->current_players }}@if($server->private_slots)<span class="text-gray-500 text-xs"> +{{ $server->private_slots }}</span>@endif/{{ $server->max_players }}
+                                </span>
                             @else
                                 <span class="text-gray-600">-</span>
                             @endif
                         </td>
-                        <td class="px-4 py-2.5 text-gray-400 text-xs">{{ $server->mod_name ?: '-' }}</td>
+                        <td class="px-4 py-2.5"><x-mod-icon :mod="$server->mod_name" size="sm" /></td>
                         <td class="px-4 py-2.5 text-gray-400">
                             @if($server->country_code)
                                 <x-country-flag :code="$server->country_code" :country="$server->country" /> {{ strtoupper($server->country_code) }}
                             @endif
                         </td>
+                        <td class="px-4 py-2.5 text-right">
+                            @if($server->is_online && $server->latency_ms !== null)
+                                @php
+                                    $p = (int) $server->latency_ms;
+                                    $pc = $p < 50 ? 'text-green-400' : ($p < 100 ? 'text-yellow-400' : 'text-red-400');
+                                @endphp
+                                <span class="{{ $pc }} font-medium text-xs">{{ $p }}ms</span>
+                            @else
+                                <span class="text-gray-600 text-xs">-</span>
+                            @endif
+                        </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-12 text-center text-gray-500">{{ __('messages.no_servers_found') }}</td>
+                        <td colspan="9" class="px-4 py-12 text-center text-gray-500">{{ __('messages.no_servers_found') }}</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -169,11 +281,35 @@
 
     <div class="mt-4">{{ $servers->links() }}</div>
 </div>
+
+{{-- Convert multi-checkboxes to comma-string on submit (keeps URLs clean) --}}
+<script>
+document.getElementById('filterForm')?.addEventListener('submit', function(e) {
+    const form = e.target;
+    ['country', 'mod', 'gametype'].forEach(field => {
+        const checked = form.querySelectorAll(`input[name="${field}_multi[]"]:checked`);
+        const values = Array.from(checked).map(el => el.value);
+        // Remove any existing hidden input for this field
+        form.querySelectorAll(`input[type="hidden"][name="${field}"]`).forEach(el => el.remove());
+        if (values.length > 0) {
+            const hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = field;
+            hidden.value = values.join(',');
+            form.appendChild(hidden);
+        }
+        // Disable the checkbox inputs so they don't go into URL as country_multi[]
+        checked.forEach(el => el.disabled = true);
+        form.querySelectorAll(`input[name="${field}_multi[]"]`).forEach(el => el.disabled = true);
+    });
+});
+</script>
+
 {{-- Auto-Refresh --}}
 <script>
     let refreshTimer;
     let refreshEnabled = localStorage.getItem("tracker_autorefresh") !== "false";
-    
+
     function toggleAutoRefresh(btn) {
         refreshEnabled = !refreshEnabled;
         localStorage.setItem("tracker_autorefresh", refreshEnabled);
@@ -184,7 +320,7 @@
             clearTimeout(refreshTimer);
         }
     }
-    
+
     function updateRefreshButton(btn) {
         if (refreshEnabled) {
             btn.classList.remove("bg-gray-700");
@@ -196,14 +332,14 @@
             btn.textContent = "Auto-Refresh: OFF";
         }
     }
-    
+
     function startRefresh() {
         if (!refreshEnabled) return;
         refreshTimer = setTimeout(() => {
             window.location.reload();
         }, 30000);
     }
-    
+
     document.addEventListener("DOMContentLoaded", function() {
         const btn = document.getElementById("autoRefreshBtn");
         if (btn) updateRefreshButton(btn);

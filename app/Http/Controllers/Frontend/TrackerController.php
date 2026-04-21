@@ -46,11 +46,24 @@ class TrackerController extends Controller
 
         $query = TrackerServer::active()->with('game');
 
-        // Game filter
-        if ($request->filled('game')) {
-            $game = TrackerGame::where('slug', $request->game)->first();
-            if ($game) {
-                $query->where('game_id', $game->id);
+        // Helper: parse ?key=A, ?key=A,B, or ?key[]=A&key[]=B into a clean array
+        $asArray = function ($value) {
+            if (is_array($value)) {
+                return array_values(array_filter($value, fn($v) => $v !== '' && $v !== null));
+            }
+            if ($value === null || $value === '') {
+                return [];
+            }
+            // Support comma-separated values: "DE,FR" -> ["DE", "FR"]
+            return array_values(array_filter(array_map('trim', explode(',', (string) $value)), fn($v) => $v !== ''));
+        };
+
+        // Game filter (multi)
+        $gameSlugs = $asArray($request->input('game'));
+        if (!empty($gameSlugs)) {
+            $gameIds = TrackerGame::whereIn('slug', $gameSlugs)->pluck('id');
+            if ($gameIds->isNotEmpty()) {
+                $query->whereIn('game_id', $gameIds);
             }
         }
 
@@ -64,19 +77,27 @@ class TrackerController extends Controller
             $query->where('current_players', '>', 0);
         }
 
-        // Country filter
-        if ($request->filled('country')) {
-            $query->where('country_code', $request->country);
+        // Country filter (multi)
+        $countryCodes = $asArray($request->input('country'));
+        if (!empty($countryCodes)) {
+            $query->whereIn('country_code', $countryCodes);
         }
 
-        // Map filter
+        // Map filter (substring)
         if ($request->filled('map')) {
             $query->where('current_map', 'like', '%' . $request->map . '%');
         }
 
-        // Mod filter
-        if ($request->filled('mod')) {
-            $query->where('mod_name', 'like', '%' . $request->mod . '%');
+        // Mod filter (multi)
+        $mods = $asArray($request->input('mod'));
+        if (!empty($mods)) {
+            $query->whereIn('mod_name', $mods);
+        }
+
+        // Gametype filter (multi) — values in DB are strings like "2", "3", "war"
+        $gametypes = $asArray($request->input('gametype'));
+        if (!empty($gametypes)) {
+            $query->whereIn('gametype', $gametypes);
         }
 
         // Search
@@ -96,12 +117,17 @@ class TrackerController extends Controller
 
         // Sort
         $sort = $request->get('sort', 'players');
+        $dir  = $request->get('dir', 'desc') === 'asc' ? 'asc' : 'desc';
         $query = match($sort) {
-            'name' => $query->orderBy('hostname_clean'),
-            'map' => $query->orderBy('current_map'),
-            'country' => $query->orderBy('country_code'),
-            'game' => $query->orderBy('game_id'),
-            default => $query->orderByDesc('current_players'),
+            'name'     => $query->orderBy('hostname_clean', $dir),
+            'map'      => $query->orderBy('current_map', $dir),
+            'country'  => $query->orderBy('country_code', $dir),
+            'game'     => $query->orderBy('game_id', $dir),
+            'mod'      => $query->orderBy('mod_name', $dir),
+            'gametype' => $query->orderBy('gametype', $dir),
+            'ping'     => $query->orderByRaw('latency_ms IS NULL, latency_ms ' . $dir),
+            'players'  => $query->orderBy('current_players', $dir),
+            default    => $query->orderByDesc('current_players'),
         };
 
         // Secondary sort: online first
@@ -126,7 +152,16 @@ class TrackerController extends Controller
             ->orderBy('mod_name')
             ->pluck('mod_name');
 
-        return view('frontend.tracker.servers', compact('servers', 'games', 'countries', 'mods'));
+        // Distinct gametypes from DB for filter checkboxes
+        $gametypes = TrackerServer::active()
+            ->whereNotNull('gametype')
+            ->where('gametype', '!=', '')
+            ->select('gametype')
+            ->distinct()
+            ->orderBy('gametype')
+            ->pluck('gametype');
+
+        return view('frontend.tracker.servers', compact('servers', 'games', 'countries', 'mods', 'gametypes'));
     }
 
     /**
@@ -660,18 +695,39 @@ class TrackerController extends Controller
     {
         $server->load('game');
 
-        $activeSessions = $server->sessions()
+        // Load active sessions with player in a single query
+        $sessions = $server->sessions()
             ->whereNull('ended_at')
-            ->with('player')
-            ->get()
-            ->sortByDesc('score')
-            ->values()
-            ->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
-                'player_name' => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
-                'player_url' => $s->player ? route('tracker.player.show', $s->player) : null,
-                'score' => $s->score,
-                'duration' => $s->duration_minutes . 'm',
-            ]);
+            ->with('player:id,name_clean,name_html,country,country_code')
+            ->orderByDesc('score')
+            ->get();
+
+        // Fetch latest ping + team per session from snapshots (one query)
+        $sessionIds = $sessions->pluck('id')->all();
+        $latestPings = [];
+        $latestTeams = [];
+        if (!empty($sessionIds)) {
+            $latestRows = \DB::table('tracker_player_snapshots as s')
+                ->select('s.session_id', 's.ping', 's.team')
+                ->whereIn('s.session_id', $sessionIds)
+                ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE session_id = s.session_id)')
+                ->get();
+            foreach ($latestRows as $r) {
+                $latestPings[$r->session_id] = $r->ping;
+                $latestTeams[$r->session_id] = $r->team;
+            }
+        }
+
+        $activeSessions = $sessions->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
+            'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
+            'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
+            'country_code' => $s->player?->country_code,
+            'country'      => $s->player?->country,
+            'score'        => $s->score,
+            'ping'         => $latestPings[$s->id] ?? null,
+            'team'         => $latestTeams[$s->id] ?? null,
+            'duration'     => $s->duration_minutes . 'm',
+        ]);
 
         return response()->json([
             'is_online' => $server->is_online,

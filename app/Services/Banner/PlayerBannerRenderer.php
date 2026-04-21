@@ -56,8 +56,8 @@ class PlayerBannerRenderer extends BannerRenderer
                 $this->text('NOW ON:',  180, 80, 7, $c, $f);
                 break;
             case 4:
-                $this->text('FAV:',     180, 74, 6, $c, $f);
-                $this->text('NOW:',     180, 87, 6, $c, $f);
+                $this->text('FAV:',     180, 70, 6, $c, $f);
+                $this->text('NOW:',     180, 81, 6, $c, $f);
                 break;
             // case 1: no right-side label
         }
@@ -136,8 +136,8 @@ class PlayerBannerRenderer extends BannerRenderer
                 break;
             case 4:
                 // Stacked: FAV on top, NOW below (smaller font, tighter)
-                $this->drawRightValue($this->favoriteServer(), 215, 74, 7, 210);
-                $this->drawRightValue($this->currentServer(),  215, 87, 7, 210);
+                $this->drawRightValue($this->favoriteServer(), 215, 70, 7, 210);
+                $this->drawRightValue($this->currentServer(),  215, 81, 7, 210);
                 break;
         }
     }

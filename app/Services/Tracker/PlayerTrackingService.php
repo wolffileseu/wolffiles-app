@@ -268,10 +268,10 @@ class PlayerTrackingService
     {
         // Some mods include team info in player data
         if (isset($playerData['team'])) {
-            return match((int)$playerData['team']) {
-                1 => 'axis',
-                2 => 'allies',
-                3 => 'spectator',
+            return match($playerData['team']) {
+                'axis', 1 => 'axis',
+                'allies', 2 => 'allies',
+                'spectator', 3 => 'spectator',
                 default => null,
             };
         }

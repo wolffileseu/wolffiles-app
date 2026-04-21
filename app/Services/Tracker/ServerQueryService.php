@@ -24,9 +24,13 @@ class ServerQueryService
         $packet = "\xFF\xFF\xFF\xFFgetstatus\n";
 
         for ($attempt = 0; $attempt <= $this->retries; $attempt++) {
+            $startTime = microtime(true);
             $response = $this->sendUdp($ip, $port, $packet);
             if ($response !== null) {
-                return $this->parseStatusResponse($response);
+                $latencyMs = (int) round((microtime(true) - $startTime) * 1000);
+                $result = $this->parseStatusResponse($response);
+                $result['latency_ms'] = $latencyMs;
+                return $result;
             }
         }
 
@@ -92,6 +96,24 @@ class ServerQueryService
             $player = $this->parsePlayerLine($line);
             if ($player !== null) {
                 $players[] = $player;
+            }
+        }
+
+        // Map teams from the \P\ field (ET Legacy + many mods)
+        // Each char is a slot: '-'=empty, '1'=Axis, '2'=Allies, '3'=Spectator
+        // Non-dash chars correspond in order to the player lines.
+        if (!empty($settings['P']) && !empty($players)) {
+            $teamMap = ['1' => 'axis', '2' => 'allies', '3' => 'spectator'];
+            $pIndex = 0;
+            $pStr = (string) $settings['P'];
+            $pLen = strlen($pStr);
+            for ($pos = 0; $pos < $pLen && $pIndex < count($players); $pos++) {
+                $ch = $pStr[$pos];
+                if ($ch === '-') continue;
+                if (isset($teamMap[$ch])) {
+                    $players[$pIndex]['team'] = $teamMap[$ch];
+                }
+                $pIndex++;
             }
         }
 

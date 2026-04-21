@@ -37,6 +37,7 @@ class TrackerServer extends Model
         'is_online', 'is_manually_added', 'added_by', 'status',
         'total_players_tracked', 'total_unique_players', 'uptime_percentage',
         'last_seen_at', 'first_seen_at', 'last_poll_at', 'next_poll_at', 'poll_failures',
+        'latency_ms', 'private_slots',
     ];
 
     protected function casts(): array

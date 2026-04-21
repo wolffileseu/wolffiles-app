@@ -22,13 +22,26 @@
                 <div class="flex flex-wrap gap-4 mt-3 text-sm text-gray-400">
                     <span>{{ $server->ip }}:{{ $server->port }}</span>
                     <span style="border-left: 3px solid {{ $server->game->color }}" class="pl-2">{{ $server->game->short_name }}</span>
-                    @if($server->mod_name)<span>{{ $server->mod_name }} {{ $server->mod_version }}</span>@endif
+                    @if($server->mod_name)<span class="inline-flex items-center gap-1"><x-mod-icon :mod="$server->mod_name" size="xs" />@if($server->mod_version)<span class="text-gray-500 text-xs">{{ $server->mod_version }}</span>@endif</span>@endif
                     @if($server->country_code)<x-country-flag :code="$server->country_code" :country="$server->country" /> {{ $server->country }}@endif
+                    @if($server->latency_ms !== null)
+                        @php
+                            $ping = (int) $server->latency_ms;
+                            $pingColor = $ping < 50 ? 'text-green-400' : ($ping < 100 ? 'text-yellow-400' : 'text-red-400');
+                        @endphp
+                        <span class="flex items-center gap-1" title="Ping from tracker in Falkenstein, DE">
+                            <svg class="w-3 h-3 {{ $pingColor }}" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+                            <span class="{{ $pingColor }} font-medium">{{ $ping }}ms</span>
+                        </span>
+                    @endif
                 </div>
             </div>
             <div class="text-right">
                 <div class="text-3xl font-bold" :class="currentPlayers > 0 ? 'text-green-400' : 'text-gray-500'">
-                    <span x-text="currentPlayers + '/' + maxPlayers">{{ $server->current_players }}/{{ $server->max_players }}</span>
+                    <span x-text="currentPlayers + ($privateSlots ? '+' + $privateSlots : '') + '/' + maxPlayers"
+                          x-data="{ $privateSlots: {{ (int) ($server->private_slots ?? 0) }} }">
+                        {{ $server->current_players }}@if($server->private_slots) +{{ $server->private_slots }}@endif/{{ $server->max_players }}
+                    </span>
                 </div>
                 <div class="text-gray-400 text-sm">{{ __('messages.players') }}</div>
                 @if($server->is_online)
@@ -62,7 +75,7 @@
                 <div class="text-2xl font-medium mt-2">
                     <template x-if="currentMapSlug"><a :href="'/files/' + currentMapSlug" class="text-amber-400 hover:text-amber-300" x-text="currentMap"></a></template><template x-if="currentMapSlug === ''"><span class="text-gray-300" x-text="currentMap"></span></template>
                 </div>
-                <div class="text-gray-400 text-sm mt-1" x-text="gametype || 'Unknown gametype'">{{ $server->gametype ?? 'Unknown gametype' }}</div>
+                <div class="text-gray-400 text-sm mt-1">{{ \App\Services\Tracker\GametypeService::label($server->gametype, $server->game_id) }}</div>
             </div>
 
             {{-- Current Players --}}
@@ -74,23 +87,59 @@
                 <table class="w-full text-sm">
                     <thead class="text-gray-400 text-left bg-gray-900/50">
                         <tr>
+                            <th class="px-4 py-2 w-6"></th>
                             <th class="px-4 py-2">{{ __('messages.players') }}</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.score') }}</th>
+                            <th class="px-4 py-2 text-center">Ping</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.duration') }}</th>
                         </tr>
                     </thead>
+                    <template x-for="group in [
+                        {key: 'allies', label: 'Allies', color: 'text-blue-400', bg: 'bg-blue-900/30'},
+                        {key: 'axis', label: 'Axis', color: 'text-red-400', bg: 'bg-red-900/30'},
+                        {key: 'spectator', label: 'Spectators', color: 'text-gray-400', bg: 'bg-gray-700/30'},
+                        {key: null, label: 'Unknown', color: 'text-gray-500', bg: 'bg-gray-800/30'}
+                    ]" :key="group.key || 'unknown'">
+                    <template x-if="players.filter(p => (p.team || null) === group.key).length > 0">
                     <tbody class="divide-y divide-gray-700/50">
-                        <template x-for="p in players" :key="p.player_name">
+                        <tr :class="group.bg">
+                            <td :colspan="5" class="px-4 py-1.5">
+                                <span class="font-semibold text-xs uppercase tracking-wider" :class="group.color"
+                                      x-text="group.label + ' (' + players.filter(p => (p.team || null) === group.key).length + ')'"></span>
+                            </td>
+                        </tr>
+                        <template x-for="p in players.filter(p => (p.team || null) === group.key)" :key="p.player_name">
                         <tr class="hover:bg-gray-750">
+                            <td class="px-4 py-2">
+                                <template x-if="p.country_code">
+                                    <img :src="'https://flagcdn.com/20x15/' + p.country_code.toLowerCase() + '.png'"
+                                         :alt="p.country"
+                                         :title="p.country"
+                                         class="inline-block align-middle"
+                                         width="20" height="15"
+                                         loading="lazy">
+                                </template>
+                            </td>
                             <td class="px-4 py-2">
                                 <a x-show="p.player_url" :href="p.player_url" class="text-amber-400 hover:text-amber-300" x-html="p.player_name"></a>
                                 <span x-show="!p.player_url" class="text-gray-400" x-html="p.player_name"></span>
                             </td>
                             <td class="px-4 py-2 text-center text-gray-300" x-text="p.score"></td>
+                            <td class="px-4 py-2 text-center text-xs">
+                                <template x-if="p.ping !== null">
+                                    <span :class="p.ping < 50 ? 'text-green-400' : (p.ping < 100 ? 'text-yellow-400' : 'text-red-400')"
+                                          x-text="p.ping + 'ms'"></span>
+                                </template>
+                                <template x-if="p.ping === null || p.ping === undefined">
+                                    <span class="text-gray-600">-</span>
+                                </template>
+                            </td>
                             <td class="px-4 py-2 text-center text-gray-400" x-text="p.duration"></td>
                         </tr>
                         </template>
                     </tbody>
+                    </template>
+                    </template>
                 </table>
                 </template>
                 <template x-if="players.length === 0">
@@ -128,7 +177,12 @@
                     @if($server->mod_name)
                     <div class="flex justify-between">
                         <dt class="text-gray-400">{{ __('messages.mod') }}</dt>
-                        <dd class="text-gray-200">{{ $server->mod_name }}</dd>
+                        <dd class="text-gray-200">
+                            <span class="inline-flex items-center gap-1.5">
+                                <x-mod-icon :mod="$server->mod_name" size="sm" />
+                                @if($server->mod_version)<span class="text-gray-500 text-xs">{{ $server->mod_version }}</span>@endif
+                            </span>
+                        </dd>
                     </div>
                     @endif
                     <div class="flex justify-between">
