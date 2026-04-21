@@ -250,7 +250,7 @@
     @include('components.cookie-consent')
 
     {{-- Easter Egg --}}
-    <script src="{{ asset('js/easter-egg.js') }}" defer></script>
+    <script src="{{ asset('js/easter-egg.js') }}?v={{ filemtime(public_path('js/easter-egg.js')) }}" defer></script>
 
     {{-- Scripts --}}
     @stack('scripts')
