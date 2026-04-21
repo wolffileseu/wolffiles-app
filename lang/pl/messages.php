@@ -775,4 +775,23 @@ return [
     'active_days' => 'aktywnych dni',
     'less' => 'mniej',
     'more' => 'więcej',
+
+    // === Server-property tooltips and labels (tracker) ===
+    'tracker_info_column' => 'Info',
+    'tracker_bot_badge' => 'BOT',
+    'tracker_humans_plus_bots' => ':humans graczy + :bots botów',
+    'tracker_human_plus_bots' => ':humans gracz + :bots botów',
+    'tracker_prop_bots' => 'Boty grają (:count)',
+    'tracker_prop_password' => 'Serwer chroniony hasłem',
+    'tracker_prop_friendly_fire' => 'Friendly Fire włączony',
+    'tracker_prop_antilag' => 'Antilag włączony',
+    'tracker_prop_balanced_teams' => 'Wymuszone zbalansowane drużyny',
+    'tracker_prop_heavy_weapons' => 'Ograniczenie ciężkiej broni: :pct%',
+    'tracker_prop_punkbuster' => 'PunkBuster włączony',
+    'tracker_prop_anticheat' => 'Anticheat :ac',
+    'tracker_prop_os_linux' => 'Serwer działa pod Linux',
+    'tracker_prop_os_windows' => 'Serwer działa pod Windows',
+    'tracker_prop_os_mac' => 'Serwer działa pod Mac',
+    'tracker_connect' => 'Połącz',
+    'tracker_ping_from' => 'Ping od trackera w Falkenstein, DE',
 ];

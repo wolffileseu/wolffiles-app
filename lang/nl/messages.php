@@ -775,4 +775,23 @@ return [
     'active_days' => 'actieve dagen',
     'less' => 'minder',
     'more' => 'meer',
+
+    // === Server-property tooltips and labels (tracker) ===
+    'tracker_info_column' => 'Info',
+    'tracker_bot_badge' => 'BOT',
+    'tracker_humans_plus_bots' => ':humans spelers + :bots bots',
+    'tracker_human_plus_bots' => ':humans speler + :bots bots',
+    'tracker_prop_bots' => 'Bots meespelen (:count)',
+    'tracker_prop_password' => 'Server is met wachtwoord beveiligd',
+    'tracker_prop_friendly_fire' => 'Friendly Fire actief',
+    'tracker_prop_antilag' => 'Antilag actief',
+    'tracker_prop_balanced_teams' => 'Gelijke teams afgedwongen',
+    'tracker_prop_heavy_weapons' => 'Zware wapen beperking: :pct%',
+    'tracker_prop_punkbuster' => 'PunkBuster actief',
+    'tracker_prop_anticheat' => ':ac Anticheat',
+    'tracker_prop_os_linux' => 'Server draait op Linux',
+    'tracker_prop_os_windows' => 'Server draait op Windows',
+    'tracker_prop_os_mac' => 'Server draait op Mac',
+    'tracker_connect' => 'Verbinden',
+    'tracker_ping_from' => 'Ping van tracker in Falkenstein, DE',
 ];

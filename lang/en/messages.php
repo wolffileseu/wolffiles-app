@@ -785,4 +785,23 @@ return [
     'map_live_stats_unnamed_server' => 'Unnamed Server',
     'map_live_stats_plays_short' => 'plays',
 
+
+    // === Server-property tooltips and labels (tracker) ===
+    'tracker_info_column' => 'Info',
+    'tracker_bot_badge' => 'BOT',
+    'tracker_humans_plus_bots' => ':humans players + :bots bots',
+    'tracker_human_plus_bots' => ':humans player + :bots bots',
+    'tracker_prop_bots' => 'Bots playing (:count)',
+    'tracker_prop_password' => 'Server is password-protected',
+    'tracker_prop_friendly_fire' => 'Friendly Fire enabled',
+    'tracker_prop_antilag' => 'Antilag enabled',
+    'tracker_prop_balanced_teams' => 'Balanced Teams enforced',
+    'tracker_prop_heavy_weapons' => 'Heavy Weapon Restriction: :pct%',
+    'tracker_prop_punkbuster' => 'PunkBuster enabled',
+    'tracker_prop_anticheat' => ':ac Anticheat',
+    'tracker_prop_os_linux' => 'Server runs on Linux',
+    'tracker_prop_os_windows' => 'Server runs on Windows',
+    'tracker_prop_os_mac' => 'Server runs on Mac',
+    'tracker_connect' => 'Connect',
+    'tracker_ping_from' => 'Ping from tracker in Falkenstein, DE',
 ];

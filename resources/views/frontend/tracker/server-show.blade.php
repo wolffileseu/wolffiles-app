@@ -29,7 +29,7 @@
                             $ping = (int) $server->latency_ms;
                             $pingColor = $ping < 50 ? 'text-green-400' : ($ping < 100 ? 'text-yellow-400' : 'text-red-400');
                         @endphp
-                        <span class="flex items-center gap-1" title="Ping from tracker in Falkenstein, DE">
+                        <span class="flex items-center gap-1" title="{{ __('messages.tracker_ping_from') }}">
                             <svg class="w-3 h-3 {{ $pingColor }}" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
                             <span class="{{ $pingColor }} font-medium">{{ $ping }}ms</span>
                         </span>
@@ -49,9 +49,13 @@
                     </span>
                 </div>
                 <div class="text-gray-400 text-sm">{{ __('messages.players') }}</div>
+                @if(($server->bot_count ?? 0) > 0)
+                    @php $humans = max(0, (int) $server->current_players - (int) $server->bot_count); @endphp
+                    <div class="text-gray-500 text-xs mt-0.5">{{ __($humans === 1 ? 'messages.tracker_human_plus_bots' : 'messages.tracker_humans_plus_bots', ['humans' => $humans, 'bots' => $server->bot_count]) }}</div>
+                @endif
                 @if($server->is_online)
                     <a href="{{ $server->connect_url }}" class="mt-2 inline-block bg-amber-600 hover:bg-amber-500 text-white px-4 py-1.5 rounded text-sm font-medium transition">
-                        Connect
+                        {{ __('messages.tracker_connect') }}
                     </a>
                 @endif
                 @auth

@@ -27,10 +27,11 @@ class TrackerController extends Controller
             'players_total' => TrackerPlayer::count(),
         ];
 
+        // "Top Servers" shows real human activity, so filter + sort by humans only
         $topServers = TrackerServer::where('is_online', true)
-            ->where('current_players', '>', 0)
+            ->whereRaw('(current_players - COALESCE(bot_count, 0)) > 0')
             ->with('game')
-            ->orderByDesc('current_players')
+            ->orderByRaw('(current_players - COALESCE(bot_count, 0)) DESC')
             ->limit(10)
             ->get();
 
@@ -126,8 +127,8 @@ class TrackerController extends Controller
             'mod'      => $query->orderBy('mod_name', $dir),
             'gametype' => $query->orderBy('gametype', $dir),
             'ping'     => $query->orderByRaw('latency_ms IS NULL, latency_ms ' . $dir),
-            'players'  => $query->orderBy('current_players', $dir),
-            default    => $query->orderByDesc('current_players'),
+            'players'  => $query->orderByRaw('(current_players - COALESCE(bot_count, 0)) ' . $dir),
+            default    => $query->orderByRaw('(current_players - COALESCE(bot_count, 0)) DESC'),
         };
 
         // Secondary sort: online first

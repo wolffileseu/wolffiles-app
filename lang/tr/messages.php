@@ -775,4 +775,23 @@ return [
     'active_days' => 'aktif gün',
     'less' => 'az',
     'more' => 'çok',
+
+    // === Server-property tooltips and labels (tracker) ===
+    'tracker_info_column' => 'Bilgi',
+    'tracker_bot_badge' => 'BOT',
+    'tracker_humans_plus_bots' => ':humans oyuncu + :bots bot',
+    'tracker_human_plus_bots' => ':humans oyuncu + :bots bot',
+    'tracker_prop_bots' => 'Botlar oynuyor (:count)',
+    'tracker_prop_password' => 'Sunucu parola korumalı',
+    'tracker_prop_friendly_fire' => 'Friendly Fire aktif',
+    'tracker_prop_antilag' => 'Antilag aktif',
+    'tracker_prop_balanced_teams' => 'Dengeli takımlar zorunlu',
+    'tracker_prop_heavy_weapons' => 'Ağır silah kısıtlaması: :pct%',
+    'tracker_prop_punkbuster' => 'PunkBuster aktif',
+    'tracker_prop_anticheat' => ':ac Anticheat',
+    'tracker_prop_os_linux' => 'Sunucu Linux üzerinde çalışıyor',
+    'tracker_prop_os_windows' => 'Sunucu Windows üzerinde çalışıyor',
+    'tracker_prop_os_mac' => 'Sunucu Mac üzerinde çalışıyor',
+    'tracker_connect' => 'Bağlan',
+    'tracker_ping_from' => 'Tracker Ping Falkenstein, DE',
 ];

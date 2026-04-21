@@ -205,7 +205,7 @@
                         <th class="px-4 py-3 text-center">
                             <a href="{{ $sortLink('mod') }}" class="hover:text-white">{{ __('messages.mod') }}{!! $sortIcon('mod') !!}</a>
                         </th>
-                        <th class="px-4 py-3 text-center" title="Server Properties">Info</th>
+                        <th class="px-4 py-3 text-center">{{ __('messages.tracker_info_column') }}</th>
                         <th class="px-4 py-3 text-center">
                             <a href="{{ $sortLink('country') }}" class="hover:text-white">{{ __('messages.country') }}{!! $sortIcon('country') !!}</a>
                         </th>
@@ -242,11 +242,13 @@
                         <td class="px-4 py-2.5 text-center">
                             @if($server->is_online)
                                 @php
-                                    $pct = $server->max_players > 0 ? ($server->current_players / $server->max_players) * 100 : 0;
-                                    $color = $pct > 80 ? 'text-red-400' : ($pct > 50 ? 'text-yellow-400' : ($server->current_players > 0 ? 'text-green-400' : 'text-gray-500'));
+                                    // Server list shows HUMAN players only (no bots), so users see real activity
+                                    $humans = max(0, (int) $server->current_players - (int) ($server->bot_count ?? 0));
+                                    $pct = $server->max_players > 0 ? ($humans / $server->max_players) * 100 : 0;
+                                    $color = $pct > 80 ? 'text-red-400' : ($pct > 50 ? 'text-yellow-400' : ($humans > 0 ? 'text-green-400' : 'text-gray-500'));
                                 @endphp
-                                <span class="font-medium {{ $color }}">
-                                    {{ $server->current_players }}@if($server->private_slots)<span class="text-gray-500 text-xs"> +{{ $server->private_slots }}</span>@endif/{{ $server->max_players }}
+                                <span class="font-medium {{ $color }}" @if(($server->bot_count ?? 0) > 0) title="{{ __($humans === 1 ? 'messages.tracker_human_plus_bots' : 'messages.tracker_humans_plus_bots', ['humans' => $humans, 'bots' => $server->bot_count]) }}" @endif>
+                                    {{ $humans }}@if($server->private_slots)<span class="text-gray-500 text-xs"> +{{ $server->private_slots }}</span>@endif/{{ $server->max_players }}
                                 </span>
                             @else
                                 <span class="text-gray-600">-</span>

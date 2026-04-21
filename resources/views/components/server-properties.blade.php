@@ -20,49 +20,49 @@
     if (($server->bot_count ?? 0) > 0) {
         $properties[] = [
             'icon'    => 'filter_bots.png',
-            'tooltip' => 'Bots spielen mit (' . (int) $server->bot_count . ')',
+            'tooltip' => __('messages.tracker_prop_bots', ['count' => (int) $server->bot_count]),
         ];
     }
 
     if (!empty($server->needs_password)) {
         $properties[] = [
             'icon'    => 'filter_pass.png',
-            'tooltip' => 'Server ist passwortgeschützt',
+            'tooltip' => __('messages.tracker_prop_password'),
         ];
     }
 
     if (!empty($server->friendly_fire)) {
         $properties[] = [
             'icon'    => 'filter_ff.png',
-            'tooltip' => 'Friendly Fire aktiv',
+            'tooltip' => __('messages.tracker_prop_friendly_fire'),
         ];
     }
 
     if (!empty($server->antilag)) {
         $properties[] = [
             'icon'    => 'filter_antilag.png',
-            'tooltip' => 'Antilag aktiv',
+            'tooltip' => __('messages.tracker_prop_antilag'),
         ];
     }
 
     if (!empty($server->balanced_teams)) {
         $properties[] = [
             'icon'    => 'filter_balance.png',
-            'tooltip' => 'Balanced Teams erzwungen',
+            'tooltip' => __('messages.tracker_prop_balanced_teams'),
         ];
     }
 
     if (($server->heavy_weapon_restriction ?? 0) > 0) {
         $properties[] = [
             'icon'    => 'filter_weap.png',
-            'tooltip' => 'Heavy Weapon Restriction: ' . (int) $server->heavy_weapon_restriction . '%',
+            'tooltip' => __('messages.tracker_prop_heavy_weapons', ['pct' => (int) $server->heavy_weapon_restriction]),
         ];
     }
 
     if (!empty($server->punkbuster)) {
         $properties[] = [
             'icon'    => 'filter_pb.png',
-            'tooltip' => 'PunkBuster aktiv',
+            'tooltip' => __('messages.tracker_prop_punkbuster'),
         ];
     }
 
@@ -75,7 +75,7 @@
         };
         $properties[] = [
             'icon'    => $acIcon,
-            'tooltip' => $server->anticheat . ' Anticheat',
+            'tooltip' => __('messages.tracker_prop_anticheat', ['ac' => $server->anticheat]),
         ];
     }
 
@@ -83,11 +83,11 @@
     if (!empty($server->os)) {
         $osLower = strtolower($server->os);
         if (str_contains($osLower, 'linux')) {
-            $properties[] = ['icon' => 'filter_linux.png', 'tooltip' => 'Server läuft auf Linux'];
+            $properties[] = ['icon' => 'filter_linux.png', 'tooltip' => __('messages.tracker_prop_os_linux')];
         } elseif (str_contains($osLower, 'win') || str_contains($osLower, 'nt')) {
-            $properties[] = ['icon' => 'filter_win.png', 'tooltip' => 'Server läuft auf Windows'];
+            $properties[] = ['icon' => 'filter_win.png', 'tooltip' => __('messages.tracker_prop_os_windows')];
         } elseif (str_contains($osLower, 'mac') || str_contains($osLower, 'darwin') || str_contains($osLower, 'osx')) {
-            $properties[] = ['icon' => 'filter_mac.png', 'tooltip' => 'Server läuft auf Mac'];
+            $properties[] = ['icon' => 'filter_mac.png', 'tooltip' => __('messages.tracker_prop_os_mac')];
         }
     }
 @endphp
