@@ -233,7 +233,7 @@ function playerChart() {
 @endif
 
 
-{{-- Enhanced Matches Section (only when server has sv_tracker2 active) --}}
+{{-- Enhanced Matches Section (only when server has sv_tracker active) --}}
 @if($server->is_enhanced_tracker && $recentMatches->count() > 0)
 <div class="max-w-7xl mx-auto px-4">
 <div class="mt-8 bg-gray-800 rounded-lg overflow-hidden">
