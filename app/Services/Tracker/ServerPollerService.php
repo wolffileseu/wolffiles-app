@@ -3,6 +3,7 @@
 namespace App\Services\Tracker;
 
 use App\Models\Tracker\TrackerServer;
+use App\Services\Tracker\GeoIpService;
 use App\Models\Tracker\TrackerServerHistory;
 use App\Models\Tracker\TrackerServerSetting;
 use Illuminate\Support\Facades\DB;
@@ -133,6 +134,33 @@ class ServerPollerService
 
         // Update map stats
         $this->updateMapStats($server, $map, count($realPlayers));
+
+        // Self-heal: fetch geo info if this server never got one
+        $this->ensureGeoInfo($server);
+    }
+
+    /**
+     * If the server has no country_code yet, fetch geo info once.
+     * Respects cache + rate limits via GeoIpService.
+     */
+    private function ensureGeoInfo(TrackerServer $server): void
+    {
+        if (!empty($server->country_code)) {
+            return;
+        }
+
+        $geo = GeoIpService::lookup($server->ip);
+        if ($geo === null) {
+            return;
+        }
+
+        $server->update([
+            'country' => $geo['country'] ?? null,
+            'country_code' => $geo['country_code'] ?? null,
+            'city' => $geo['city'] ?? null,
+            'latitude' => $geo['latitude'] ?? null,
+            'longitude' => $geo['longitude'] ?? null,
+        ]);
     }
 
     /**
@@ -192,10 +220,15 @@ class ServerPollerService
 
     /**
      * Handle an offline/unreachable server.
+     *
+     * Polling interval is now based on server maturity so established servers
+     * are still checked frequently and come back online automatically once
+     * they reply to getstatus again.
      */
     private function handleOffline(TrackerServer $server): void
     {
         $server->increment('poll_failures');
+        $server->refresh();
 
         // Mark offline after 3 consecutive failures
         if ($server->poll_failures >= 3) {
@@ -203,13 +236,41 @@ class ServerPollerService
                 'is_online' => false,
                 'current_players' => 0,
                 'last_poll_at' => now(),
-                'next_poll_at' => now()->addSeconds(300),
+                'next_poll_at' => now()->addSeconds($this->offlinePollInterval($server)),
             ]);
 
             // End all active sessions on this server
             $this->playerTracker->endServerSessions($server);
         } else {
-            $server->update(['last_poll_at' => now(), 'next_poll_at' => now()->addSeconds(300)]);
+            $server->update([
+                'last_poll_at' => now(),
+                'next_poll_at' => now()->addSeconds($this->offlinePollInterval($server)),
+            ]);
         }
+    }
+
+    /**
+     * Offline polling interval in seconds, based on server maturity.
+     *
+     * - Established + enhanced tracker active: 2 min (very likely a real server)
+     * - Established (>=1 day, was online):     3 min
+     * - Probation (<1 day, was online once):   10 min
+     * - Never verified online:                 30 min
+     */
+    private function offlinePollInterval(TrackerServer $server): int
+    {
+        $hasRecentEnhanced = $server->is_enhanced_tracker
+            && !$server->enhanced_disabled
+            && $server->enhanced_last_event_at
+            && $server->enhanced_last_event_at->greaterThanOrEqualTo(now()->subHour());
+
+        $established = $server->last_seen_at
+            && $server->first_seen_at
+            && $server->first_seen_at->lessThanOrEqualTo(now()->subDay());
+
+        if ($established && $hasRecentEnhanced) return 120;
+        if ($established)                      return 180;
+        if ($server->last_seen_at)             return 600;
+        return 1800;
     }
 }

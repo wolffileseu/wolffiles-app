@@ -16,6 +16,7 @@
         "league/flysystem-aws-s3-v3": "^3.31",
         "mews/purifier": "^3.4",
         "plesk/ext-laravel-integration": "*",
+        "predis/predis": "^3.4",
         "spatie/laravel-permission": "^6.0",
         "spatie/laravel-sluggable": "^3.0"
     },
