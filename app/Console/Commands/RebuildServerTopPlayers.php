@@ -33,6 +33,8 @@ class RebuildServerTopPlayers extends Command
         $totalInserted = 0;
 
         foreach ($serverIds as $serverId) {
+            // Count playtime including currently-live sessions
+            // (ended_at IS NULL means still playing → calculate from started_at to now)
             $top = DB::table('tracker_player_sessions')
                 ->where('server_id', $serverId)
                 ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
@@ -41,10 +43,17 @@ class RebuildServerTopPlayers extends Command
                     'tracker_players.id as player_id',
                     'tracker_players.name_clean',
                     'tracker_players.name_html',
-                    DB::raw('SUM(tracker_player_sessions.xp) as total_xp'),
-                    DB::raw('SUM(tracker_player_sessions.duration_minutes) as total_min'),
+                    DB::raw('SUM(COALESCE(tracker_player_sessions.xp, 0)) as total_xp'),
+                    DB::raw('SUM(CASE
+                        WHEN tracker_player_sessions.ended_at IS NULL
+                        THEN GREATEST(TIMESTAMPDIFF(MINUTE, tracker_player_sessions.started_at, NOW()), 0)
+                        ELSE COALESCE(tracker_player_sessions.duration_minutes, 0)
+                    END) as total_min'),
                 )
+                // Primary: XP (when Enhanced Tracker is active)
+                // Secondary: total playtime (fallback for servers without XP tracking)
                 ->orderByDesc('total_xp')
+                ->orderByDesc('total_min')
                 ->limit(8)
                 ->get();
 

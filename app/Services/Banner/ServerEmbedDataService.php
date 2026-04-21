@@ -69,19 +69,25 @@ class ServerEmbedDataService
      */
     private function currentPlayers(TrackerServer $s): array
     {
-        return DB::table('tracker_player_sessions')
-            ->where('server_id', $s->id)
-            ->whereNull('ended_at')
-            ->join('tracker_players', 'tracker_players.id', '=', 'tracker_player_sessions.player_id')
+        // Subquery: pick the team from the latest snapshot per session
+        $latestTeamSub = DB::table('tracker_player_snapshots as snap')
+            ->select('snap.session_id', 'snap.team')
+            ->whereRaw('snap.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE session_id = snap.session_id)');
+
+        return DB::table('tracker_player_sessions as sess')
+            ->where('sess.server_id', $s->id)
+            ->whereNull('sess.ended_at')
+            ->join('tracker_players', 'tracker_players.id', '=', 'sess.player_id')
+            ->leftJoinSub($latestTeamSub, 'latest_snap', 'latest_snap.session_id', '=', 'sess.id')
             ->select(
                 'tracker_players.id',
                 'tracker_players.name_clean',
                 'tracker_players.name_html',
-                'tracker_player_sessions.score',
-                'tracker_player_sessions.team',
-                'tracker_player_sessions.started_at',
+                'sess.score',
+                DB::raw('COALESCE(latest_snap.team, sess.team) as team'),
+                'sess.started_at',
             )
-            ->orderBy('tracker_player_sessions.started_at')
+            ->orderBy('sess.started_at')
             ->limit(8)
             ->get()
             ->map(fn ($p) => [

@@ -75,10 +75,10 @@ class BannerController extends Controller
         // Cache the fully rendered HTML (60s) — saves both the data queries
         // AND the Blade rendering on every iframe load. Cache key includes
         // width so different embed sizes don't collide.
-        $cacheKey = "banner:server:{$server->id}:embed:html:w{$width}:v2";
+        $cacheKey = "banner:server:{$server->id}:embed:html:w{$width}:v3";
         $html = Cache::remember(
             $cacheKey,
-            now()->addSeconds(120),
+            now()->addSeconds(30),
             function () use ($server, $opts) {
                 $data = (new ServerEmbedDataService())->collect($server);
                 return view('frontend.tracker.partials.server-embed', [
@@ -90,7 +90,7 @@ class BannerController extends Controller
 
         return response($html, 200, [
             'Content-Type'    => 'text/html; charset=utf-8',
-            'Cache-Control'   => 'public, max-age=30, stale-while-revalidate=300, s-maxage=60',
+            'Cache-Control'   => 'public, max-age=15, stale-while-revalidate=60, s-maxage=30',
         ]);
     }
 

@@ -157,15 +157,19 @@ class PlayerTrackingService
      */
     public function updateSession(TrackerPlayerSession $session, array $playerData): void
     {
-        $score = $playerData['score'] ?? 0;
+        $currentScore = (int) ($playerData['score'] ?? 0);
 
-        // Score from getstatus == XP in vanilla ET (same underlying counter).
-        // On XP-multiplier mod servers this may inflate, but it's the best
-        // signal we get from the standard Quake3 query protocol.
+        // ET resets score to 0 on map change / intermission.
+        // Keep the MAX score observed during this session so we don't lose it.
+        $bestScore = max($currentScore, (int) $session->score);
+
+        // Carbon 3 returns a float from diffInMinutes — floor it.
+        $duration = max(0, (int) floor($session->started_at->diffInMinutes(now())));
+
         $session->update([
-            'score' => $score,
-            'xp' => $score,
-            'duration_minutes' => (int)$session->started_at->diffInMinutes(now()),
+            'score' => $bestScore,
+            'xp'    => $bestScore,
+            'duration_minutes' => $duration,
         ]);
     }
 
