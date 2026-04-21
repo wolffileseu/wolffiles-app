@@ -29,7 +29,15 @@ Schedule::command('tracker:poll-servers')->everyThirtySeconds()->withoutOverlapp
 // Cleanup ghost/spam servers daily
 Schedule::command('tracker:health-check')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('tracker:cleanup-servers --days-never-online=1')->dailyAt('03:00');
+Schedule::command('tracker:cleanup-sessions')->everyTenMinutes()->withoutOverlapping();
+Schedule::command('tracker:cleanup-matches')->hourly()->withoutOverlapping();
 Schedule::command('tracker:calculate-elo')->dailyAt('02:30')->withoutOverlapping();
+
+// Rankings: daily/weekly/monthly/alltime — runs after ELO is calculated
+Schedule::command('tracker:calculate-rankings --period=daily')->dailyAt('02:45')->withoutOverlapping();
+Schedule::command('tracker:calculate-rankings --period=weekly')->weeklyOn(1, '03:00')->withoutOverlapping();
+Schedule::command('tracker:calculate-rankings --period=monthly')->monthlyOn(1, '03:15')->withoutOverlapping();
+Schedule::command('tracker:calculate-rankings --period=alltime')->dailyAt('03:30')->withoutOverlapping();
 
 // Sync maps with Wolffiles downloads
 Schedule::command('tracker:sync-maps')->hourly();

@@ -1,6 +1,6 @@
 === Offline Tracker Servers ===
-Generated: 2026-04-21 18:20:09
-Offline: 1183 / 1623 servers
+Generated: 2026-04-21 20:20:09
+Offline: 1186 / 1623 servers
 
 === Kritisch (100+ fehlgeschlagene Polls — wahrscheinlich dauerhaft offline) ===
 Count: 1179
@@ -8,499 +8,499 @@ Count: 1179
 #32782   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:42692
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 15:40:51 (3 weeks ago)
 
 #31762   Ana's GTVd ETTVoD #18
     IP:        176.9.42.71:18017
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 04:32:02 (4 weeks ago)
 
 #32793   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:35808
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 17:37:39 (3 weeks ago)
 
 #33049   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:20119
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 21:06:32 (3 weeks ago)
 
 #33056   TESTET:Legacy Original Maps Only
     IP:        217.182.198.231:27963
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-04-17 09:29:03 (4 days ago)
 
 #33059   Pappaliiga.fi PappaCup #4
     IP:        204.168.201.28:27964
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-29 10:28:27 (3 weeks ago)
 
 #33060   Pappaliiga.fi PappaCup #3
     IP:        204.168.201.28:27963
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-29 10:28:27 (3 weeks ago)
 
 #32038   MFWOBJ(TEST)
     IP:        37.114.36.43:27963
     Game:      RtCW 1.3
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 23:24:59 (3 weeks ago)
 
 #32806   ET: Legacy Host
     IP:        88.193.142.85:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 20:08:38 (3 weeks ago)
 
 #32807   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:14701
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 18:38:36 (3 weeks ago)
 
 #33063   Pappaliiga.fi PappaCup #2
     IP:        204.168.201.28:27962
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-29 10:28:27 (3 weeks ago)
 
 #33064   Pappaliiga.fi PappaCup #1
     IP:        204.168.201.28:27961
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-29 10:28:27 (3 weeks ago)
 
 #32809   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:26444
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 20:08:46 (3 weeks ago)
 
 #32812   ET:L-Public Server
     IP:        79.219.72.8:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 15:07:46 (3 weeks ago)
 
 #33069   BMWFreak | OG PUBLIC
     IP:        217.120.52.90:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 23:06:33 (3 weeks ago)
 
 #32815   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:32185
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 21:41:08 (3 weeks ago)
 
 #31792   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:29705
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 08:39:34 (4 weeks ago)
 
 #32818   euro.rtcw.eu - server 1
     IP:        139.162.160.215:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 01:55:22 (3 weeks ago)
 
 #31808   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:27628
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 11:41:01 (4 weeks ago)
 
 #32834   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:32485
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 06:12:06 (3 weeks ago)
 
 #32837   us.rtcw.eu - server 1
     IP:        45.79.150.80:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 02:28:33 (3 weeks ago)
 
 #31817   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:25159
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 17:04:01 (4 weeks ago)
 
 #32842   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:40463
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32843   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:11103
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32844   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:40942
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32845   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:22279
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32846   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:15151
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32847   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:10176
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:37 (3 weeks ago)
 
 #32849   [SpecOps] Poland | Polska Jednostka Taktyczna
     IP:        51.68.150.221:32698
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:41 (3 weeks ago)
 
 #32852   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:30387
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 03:28:49 (3 weeks ago)
 
 #31833   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:27007
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 18:57:29 (4 weeks ago)
 
 #31836   beer's|Linuxtest!
     IP:        37.114.36.28:27960
     Game:      RtCW 1.3
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 18:04:42 (4 weeks ago)
 
 #31837   ~~~~NQ...
     IP:        94.21.144.62:27963
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-28 18:47:48 (3 weeks ago)
 
 #31838   ~~~~N!tmod... 
     IP:        94.21.144.62:27968
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 23:08:48 (3 weeks ago)
 
 #31839   ~~~~ETJump...
     IP:        94.21.144.62:27964
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-28 18:47:48 (3 weeks ago)
 
 #31840   ~~~~Silent... 
     IP:        94.21.144.62:27966
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-28 18:47:48 (3 weeks ago)
 
 #31841   ~~~~ETProTJ...
     IP:        94.21.144.62:27962
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-28 18:47:48 (3 weeks ago)
 
 #31842   ~~~~NoDownload...
     IP:        94.21.144.62:27960
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-28 18:47:48 (3 weeks ago)
 
 #31843   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:30777
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 21:19:56 (4 weeks ago)
 
 #31844   Objective!
     IP:        37.114.36.61:27960
     Game:      RtCW 1.0-1.1
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 20:15:05 (3 weeks ago)
 
 #32358   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:31347
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 08:23:30 (3 weeks ago)
 
 #31848   euro.rtcw.eu - server 1
     IP:        172.239.239.36:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 23:45:16 (4 weeks ago)
 
 #32360   My ET Legacy Server
     IP:        5.189.169.64:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-04-01 05:32:39 (2 weeks ago)
 
 #31854   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:42132
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 05:54:11 (4 weeks ago)
 
 #32367   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:41895
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 14:37:55 (3 weeks ago)
 
 #31858   MastersOfWarOBJ
     IP:        37.114.36.43:27961
     Game:      RtCW 1.0-1.1
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 20:43:08 (3 weeks ago)
 
 #31859   MastersOfWarDM
     IP:        37.114.36.43:27960
     Game:      RtCW 1.0-1.1
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 20:43:08 (3 weeks ago)
 
 #31862   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:26167
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:19:58 (4 weeks ago)
 
 #31863   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:18022
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:19:58 (4 weeks ago)
 
 #31864   [PL] Wilki Wojny | Polski Serwer ET
     IP:        51.68.150.221:14188
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:19:58 (4 weeks ago)
 
 #31609   Baroga ETPub Server
     IP:        86.121.226.241:27961
     Game:      ETL
-    Failures:  274
-    Last seen: 2026-03-24 18:57:04 (3 weeks ago)
+    Failures:  275
+    Last seen: 2026-03-24 18:57:04 (4 weeks ago)
 
 #31865   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:28866
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:19:58 (4 weeks ago)
 
 #31866   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:26210
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:19:58 (4 weeks ago)
 
 #31868   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:41868
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:20:02 (4 weeks ago)
 
 #31873   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:23098
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:20:19 (4 weeks ago)
 
 #31875   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:35234
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 03:20:23 (4 weeks ago)
 
 #31620   us.rtcw.eu - server 1
     IP:        66.228.35.221:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-23 13:12:55 (4 weeks ago)
 
 #32145   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:21904
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 07:50:54 (4 weeks ago)
 
 #32406   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:33517
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 16:57:08 (3 weeks ago)
 
 #32153   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:10292
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 10:20:35 (4 weeks ago)
 
 #31904   Prata-Play
     IP:        200.80.186.61:16822
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 04:46:26 (4 weeks ago)
 
 #32417   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:18032
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 18:49:21 (3 weeks ago)
 
 #32167   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:20553
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 17:03:45 (4 weeks ago)
 
 #32424   Objective!
     IP:        37.114.36.57:27960
     Game:      RtCW 1.0-1.1
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-31 23:11:58 (2 weeks ago)
 
 #32681   zMotan
     IP:        5.14.80.122:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 04:16:50 (3 weeks ago)
 
 #32427   euro.rtcw.eu - server 1
     IP:        139.162.178.28:27960
     Game:      RtCW 1.4x
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 00:32:37 (3 weeks ago)
 
 #32439   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:22600
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 06:20:50 (3 weeks ago)
 
 #32697   TheOfficialGamerClub - ET Degeneracy
     IP:        134.255.10.143:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 18:01:12 (3 weeks ago)
 
 #32187   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:24563
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 18:00:01 (4 weeks ago)
 
 #32446   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:31157
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:42 (3 weeks ago)
 
 #32191   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:13182
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-24 21:43:25 (3 weeks ago)
 
 #32447   * POLSKIE POLE BITWY *
     IP:        51.68.150.221:16993
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:42 (3 weeks ago)
 
 #32448   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:42168
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:42 (3 weeks ago)
 
 #32449   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:30963
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:42 (3 weeks ago)
 
 #32450   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:13115
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:42 (3 weeks ago)
 
 #32196   Tammilanit Vihollisreviiri:Perintö!
     IP:        135.181.101.65:27960
     Game:      ETL
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-31 21:16:08 (2 weeks ago)
 
 #32197   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:10028
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-25 05:49:04 (3 weeks ago)
 
 #32453   Oddzial Cieni | Stealth & Tactics
     IP:        51.68.150.221:10222
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:50 (3 weeks ago)
 
 #32454   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:29650
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:21:50 (3 weeks ago)
 
 #32458   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:37609
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 03:22:02 (3 weeks ago)
 
 #32728   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:19824
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 09:34:02 (3 weeks ago)
 
 #32757   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:31229
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-26 11:24:07 (3 weeks ago)
 
 #33015   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:30567
     Game:      ET 2.60b
-    Failures:  274
+    Failures:  275
     Last seen: 2026-03-27 11:08:12 (3 weeks ago)
 
 #31236   LinuxGSM
@@ -573,7 +573,7 @@ Count: 1179
     IP:        135.148.73.111:27940
     Game:      ETL
     Failures:  265
-    Last seen: 2026-04-21 03:15:31 (15 hours ago)
+    Last seen: 2026-04-21 03:15:31 (17 hours ago)
 
 #31296   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:28507
@@ -881,6 +881,216 @@ Count: 1179
     Failures:  255
     Last seen: 2026-03-19 03:28:04 (1 month ago)
 
+#33298   us.rtcw.eu - server 1
+    IP:        97.107.134.209:27960
+    Game:      RtCW 1.4x
+    Failures:  255
+    Last seen: 2026-03-28 04:39:04 (3 weeks ago)
+
+#33073   euro.rtcw.eu - server 1
+    IP:        172.105.94.91:27960
+    Game:      RtCW 1.4x
+    Failures:  255
+    Last seen: 2026-03-27 22:06:42 (3 weeks ago)
+
+#33082   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:21103
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-27 22:07:15 (3 weeks ago)
+
+#33086   FlufyBuny's RTCW Server
+    IP:        75.192.179.71:27963
+    Game:      RtCW 1.4x
+    Failures:  255
+    Last seen: 2026-03-27 23:07:39 (3 weeks ago)
+
+#33089   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18178
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 07:20:29 (3 weeks ago)
+
+#33099   .:: POLSKIE PIEKIELKO ::. [XP]
+    IP:        51.68.150.221:18699
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
+
+#33100   Kompania Szarzy Wilcy | Polski Serwer ET
+    IP:        51.68.150.221:23306
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
+
+#33101   >> SZARA PIECHOTA <<
+    IP:        51.68.150.221:40249
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
+
+#33102   [PL] Front Wschodni | Real Combat Server
+    IP:        51.68.150.221:11494
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
+
+#33105   * OGNISTY MLYN * [XP SAVE] *
+    IP:        51.68.150.221:42214
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:20:03 (3 weeks ago)
+
+#33107   >> POLSKA DYWIZJA <<
+    IP:        51.68.150.221:35938
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:20:07 (3 weeks ago)
+
+#33108   * OGNISTY MLYN * [XP SAVE] *
+    IP:        51.68.150.221:19216
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:20:07 (3 weeks ago)
+
+#33113   >> POLSKA DYWIZJA <<
+    IP:        51.68.150.221:29666
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 03:20:24 (3 weeks ago)
+
+#33382   FlufyBuny's RTCW Server
+    IP:        75.192.134.204:27963
+    Game:      RtCW 1.0-1.1
+    Failures:  255
+    Last seen: 2026-03-29 19:50:51 (3 weeks ago)
+
+#33648            .EA#Jaymod#XPS
+    IP:        94.27.219.95:27961
+    Game:      ET 2.55
+    Failures:  255
+    Last seen: 2026-04-05 04:29:34 (2 weeks ago)
+
+#33649            .EA#Trickjump
+    IP:        94.27.219.95:30001
+    Game:      ET 2.55
+    Failures:  255
+    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
+
+#33650            .EA#Hide&Seek
+    IP:        94.27.219.95:40001
+    Game:      ET 2.55
+    Failures:  255
+    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
+
+#33396   Clan Atomic
+    IP:        67.168.132.21:27961
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 12:57:58 (3 weeks ago)
+
+#33652            .EA#Jaymod#XPS
+    IP:        94.27.219.95:27960
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
+
+#33653            .EA#Trickjump
+    IP:        94.27.219.95:30000
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
+
+#33654            .EA#Hide&Seek
+    IP:        94.27.219.95:40000
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
+
+#33399   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18026
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 08:58:04 (3 weeks ago)
+
+#33658   General Mayhem's ET
+    IP:        63.226.108.35:27960
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-12 20:12:37 (1 week ago)
+
+#33403   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:26457
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 13:26:28 (3 weeks ago)
+
+#33437   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:41060
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 18:15:42 (3 weeks ago)
+
+#33456   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:22968
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 20:16:21 (3 weeks ago)
+
+#33463   ~~~~ETProTJ...
+    IP:        212.40.90.203:27962
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33464   ~~~~NQ...
+    IP:        212.40.90.203:27963
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33465   ~~~~Silent... 
+    IP:        212.40.90.203:27966
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33466   ~~~~ETJump...
+    IP:        212.40.90.203:27964
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33467   ~~~~N!tmod... 
+    IP:        212.40.90.203:27968
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-02 02:21:55 (2 weeks ago)
+
+#33468   ~~~~STARWARS...
+    IP:        212.40.90.203:27967
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33469   ~~~~LegaJay...
+    IP:        212.40.90.203:27965
+    Game:      ETL
+    Failures:  255
+    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+
+#33474   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:16442
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 21:18:04 (3 weeks ago)
+
+#33477   euro.rtcw.eu - server 1
+    IP:        172.105.84.185:27960
+    Game:      RtCW 1.0-1.1
+    Failures:  255
+    Last seen: 2026-03-28 21:49:15 (3 weeks ago)
+
 #30409   ~~~~Silent... 
     IP:        62.165.239.230:27966
     Game:      ET 2.60b
@@ -917,11 +1127,29 @@ Count: 1179
     Failures:  255
     Last seen: 2026-03-23 18:31:09 (4 weeks ago)
 
+#33488   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:21597
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-28 22:21:04 (3 weeks ago)
+
 #30419   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:29592
     Game:      ET 2.60b
     Failures:  255
     Last seen: 2026-03-18 20:06:42 (1 month ago)
+
+#33491   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:41756
+    Game:      ET 2.60b
+    Failures:  255
+    Last seen: 2026-03-29 13:51:59 (3 weeks ago)
+
+#33493   ET:Legacy-Ozmosis
+    IP:        76.179.187.153:27960
+    Game:      ETL
+    Failures:  255
+    Last seen: 2026-03-30 02:14:40 (3 weeks ago)
 
 #30422   us.rtcw.eu - server 1
     IP:        45.79.189.131:27960
@@ -1139,233 +1367,233 @@ Count: 1179
     Failures:  254
     Last seen: 2026-03-20 03:42:00 (1 month ago)
 
-#33298   us.rtcw.eu - server 1
-    IP:        97.107.134.209:27960
-    Game:      RtCW 1.4x
-    Failures:  250
-    Last seen: 2026-03-28 04:39:04 (3 weeks ago)
-
-#33073   euro.rtcw.eu - server 1
-    IP:        172.105.94.91:27960
-    Game:      RtCW 1.4x
-    Failures:  250
-    Last seen: 2026-03-27 22:06:42 (3 weeks ago)
-
-#33082   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:21103
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-27 22:07:15 (3 weeks ago)
-
-#33086   FlufyBuny's RTCW Server
-    IP:        75.192.179.71:27963
-    Game:      RtCW 1.4x
-    Failures:  250
-    Last seen: 2026-03-27 23:07:39 (3 weeks ago)
-
-#33089   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18178
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 07:20:29 (3 weeks ago)
-
-#33099   .:: POLSKIE PIEKIELKO ::. [XP]
-    IP:        51.68.150.221:18699
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
-
-#33100   Kompania Szarzy Wilcy | Polski Serwer ET
-    IP:        51.68.150.221:23306
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
-
-#33101   >> SZARA PIECHOTA <<
-    IP:        51.68.150.221:40249
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
-
-#33102   [PL] Front Wschodni | Real Combat Server
-    IP:        51.68.150.221:11494
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:19:55 (3 weeks ago)
-
-#33105   * OGNISTY MLYN * [XP SAVE] *
-    IP:        51.68.150.221:42214
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:20:03 (3 weeks ago)
-
-#33107   >> POLSKA DYWIZJA <<
-    IP:        51.68.150.221:35938
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:20:07 (3 weeks ago)
-
-#33108   * OGNISTY MLYN * [XP SAVE] *
-    IP:        51.68.150.221:19216
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:20:07 (3 weeks ago)
-
-#33113   >> POLSKA DYWIZJA <<
-    IP:        51.68.150.221:29666
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 03:20:24 (3 weeks ago)
-
-#33382   FlufyBuny's RTCW Server
-    IP:        75.192.134.204:27963
-    Game:      RtCW 1.0-1.1
-    Failures:  250
-    Last seen: 2026-03-29 19:50:51 (3 weeks ago)
-
-#33648            .EA#Jaymod#XPS
-    IP:        94.27.219.95:27961
-    Game:      ET 2.55
-    Failures:  250
-    Last seen: 2026-04-05 04:29:34 (2 weeks ago)
-
-#33649            .EA#Trickjump
-    IP:        94.27.219.95:30001
+#33661            .EA#N!tmod#XPS
+    IP:        94.27.219.95:27981
     Game:      ET 2.55
     Failures:  250
     Last seen: 2026-04-05 04:29:35 (2 weeks ago)
 
-#33650            .EA#Hide&Seek
-    IP:        94.27.219.95:40001
-    Game:      ET 2.55
-    Failures:  250
-    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
-
-#33396   Clan Atomic
-    IP:        67.168.132.21:27961
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 12:57:58 (3 weeks ago)
-
-#33652            .EA#Jaymod#XPS
-    IP:        94.27.219.95:27960
+#33662            .EA#N!tmod#XPS
+    IP:        94.27.219.95:27980
     Game:      ET 2.60b
     Failures:  250
     Last seen: 2026-04-05 04:29:35 (2 weeks ago)
 
-#33653            .EA#Trickjump
-    IP:        94.27.219.95:30000
+#33666            EA#Scrim#2.6b
+    IP:        94.27.219.95:25000
     Game:      ET 2.60b
     Failures:  250
     Last seen: 2026-04-05 04:29:35 (2 weeks ago)
 
-#33654            .EA#Hide&Seek
-    IP:        94.27.219.95:40000
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
-
-#33399   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18026
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 08:58:04 (3 weeks ago)
-
-#33658   General Mayhem's ET
-    IP:        63.226.108.35:27960
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-12 20:12:37 (1 week ago)
-
-#33403   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:26457
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 13:26:28 (3 weeks ago)
-
-#33437   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:41060
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 18:15:42 (3 weeks ago)
-
-#33456   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:22968
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-28 20:16:21 (3 weeks ago)
-
-#33463   ~~~~ETProTJ...
-    IP:        212.40.90.203:27962
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
-
-#33464   ~~~~NQ...
-    IP:        212.40.90.203:27963
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
-
-#33465   ~~~~Silent... 
-    IP:        212.40.90.203:27966
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
-
-#33466   ~~~~ETJump...
-    IP:        212.40.90.203:27964
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
-
-#33467   ~~~~N!tmod... 
-    IP:        212.40.90.203:27968
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-02 02:21:55 (2 weeks ago)
-
-#33468   ~~~~STARWARS...
-    IP:        212.40.90.203:27967
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
-
-#33469   ~~~~LegaJay...
-    IP:        212.40.90.203:27965
+#33672   Hemlord No Bots Competive
+    IP:        5.231.107.37:27960
     Game:      ETL
     Failures:  250
-    Last seen: 2026-04-04 21:04:46 (2 weeks ago)
+    Last seen: 2026-03-30 00:56:07 (3 weeks ago)
 
-#33474   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:16442
+#33678             BOBOT
+    IP:        31.37.19.118:27950
     Game:      ET 2.60b
     Failures:  250
-    Last seen: 2026-03-28 21:18:04 (3 weeks ago)
+    Last seen: 2026-03-29 11:19:04 (3 weeks ago)
 
-#33477   euro.rtcw.eu - server 1
-    IP:        172.105.84.185:27960
-    Game:      RtCW 1.0-1.1
-    Failures:  250
-    Last seen: 2026-03-28 21:49:15 (3 weeks ago)
-
-#33488   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:21597
+#33691   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:20918
     Game:      ET 2.60b
     Failures:  250
-    Last seen: 2026-03-28 22:21:04 (3 weeks ago)
+    Last seen: 2026-03-29 18:13:51 (3 weeks ago)
 
-#33491   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:41756
-    Game:      ET 2.60b
-    Failures:  250
-    Last seen: 2026-03-29 13:51:59 (3 weeks ago)
-
-#33493   ET:Legacy-Ozmosis
-    IP:        76.179.187.153:27960
+#33702   Kimi|AHK ETLTV#2
+    IP:        130.61.155.213:27961
     Game:      ETL
     Failures:  250
-    Last seen: 2026-03-30 02:14:40 (3 weeks ago)
+    Last seen: 2026-03-29 22:58:36 (3 weeks ago)
+
+#33703   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:21115
+    Game:      ET 2.60b
+    Failures:  250
+    Last seen: 2026-03-29 22:29:38 (3 weeks ago)
+
+#33705   euro.rtcw.eu - server 1
+    IP:        172.104.155.6:27960
+    Game:      RtCW 1.4x
+    Failures:  249
+    Last seen: 2026-03-29 23:58:33 (3 weeks ago)
+
+#33713   Pekyho server
+    IP:        89.221.216.144:27960
+    Game:      ETL
+    Failures:  249
+    Last seen: 2026-03-29 22:01:12 (3 weeks ago)
+
+#33714   FlufyBuny's RTCW Server
+    IP:        75.192.182.76:27963
+    Game:      RtCW 1.4x
+    Failures:  249
+    Last seen: 2026-04-08 02:14:03 (1 week ago)
+
+#33719   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:16201
+    Game:      ET 2.60b
+    Failures:  249
+    Last seen: 2026-03-30 06:27:40 (3 weeks ago)
+
+#34048   Asgard Home
+    IP:        79.255.13.28:27960
+    Game:      ETL
+    Failures:  248
+    Last seen: 2026-03-30 19:51:31 (3 weeks ago)
+
+#34063   DS clan server
+    IP:        84.192.167.24:27960
+    Game:      ETL
+    Failures:  248
+    Last seen: 2026-03-31 00:16:33 (3 weeks ago)
+
+#34065   euro.rtcw.eu - server 1
+    IP:        172.104.238.150:27960
+    Game:      RtCW 1.3
+    Failures:  248
+    Last seen: 2026-03-31 01:16:45 (3 weeks ago)
+
+#34069   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:38428
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-31 06:40:21 (3 weeks ago)
+
+#34176   BRASIL ET: Legacy Host
+    IP:        187.108.217.26:27002
+    Game:      ETL
+    Failures:  248
+    Last seen: 2026-04-01 05:58:48 (2 weeks ago)
+
+#34196   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:23513
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-31 10:31:44 (3 weeks ago)
+
+#34233   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:28606
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-31 11:55:16 (3 weeks ago)
+
+#34241   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:13417
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-31 20:44:58 (2 weeks ago)
+
+#33733   ET: Legacy Osmosis
+    IP:        75.135.120.93:27960
+    Game:      ETL
+    Failures:  248
+    Last seen: 2026-03-30 03:57:53 (3 weeks ago)
+
+#33738   [PL] Wilki Wojny | Polski Serwer ET
+    IP:        51.68.150.221:11972
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
+
+#33739   Brygada Pustynna | Polska Taktyka i Walka
+    IP:        51.68.150.221:30925
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
+
+#33740   * OGNISTY MLYN * [XP SAVE] *
+    IP:        51.68.150.221:28487
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
+
+#33741   Legion Orla | Polski Realistic Server
+    IP:        51.68.150.221:17604
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
+
+#34258   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:10713
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-04-01 06:25:03 (2 weeks ago)
+
+#33750   [PL] Front Wschodni | Real Combat Server
+    IP:        51.68.150.221:31269
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:38 (3 weeks ago)
+
+#34262   [PL] Front Wschodni | Real Combat Server
+    IP:        51.68.150.221:24759
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
+
+#34263   >> POLSKA DYWIZJA <<
+    IP:        51.68.150.221:22731
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
+
+#34264   * POLSKIE POLE BITWY *
+    IP:        51.68.150.221:30285
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
+
+#33753   >> SZARA PIECHOTA <<
+    IP:        51.68.150.221:40674
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:46 (3 weeks ago)
+
+#34265   [SpecOps] Poland | Polska Jednostka Taktyczna
+    IP:        51.68.150.221:15503
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
+
+#33754   Legion Orla | Polski Realistic Server
+    IP:        51.68.150.221:38478
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 03:58:46 (3 weeks ago)
+
+#33755   Operacja Wisla | Polski Serwer Wojskowy
+    IP:        51.68.150.221:24264
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 12:39:36 (3 weeks ago)
+
+#34019   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:24270
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 08:31:28 (3 weeks ago)
+
+#34022   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:29608
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 09:49:46 (3 weeks ago)
+
+#34029   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18124
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 11:37:16 (3 weeks ago)
+
+#34045   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:19556
+    Game:      ET 2.60b
+    Failures:  248
+    Last seen: 2026-03-30 21:17:25 (3 weeks ago)
 
 #30055   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:28315
@@ -1631,107 +1859,11 @@ Count: 1179
     Failures:  246
     Last seen: 2026-03-17 03:42:23 (1 month ago)
 
-#33661            .EA#N!tmod#XPS
-    IP:        94.27.219.95:27981
-    Game:      ET 2.55
-    Failures:  245
-    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
-
-#33662            .EA#N!tmod#XPS
-    IP:        94.27.219.95:27980
-    Game:      ET 2.60b
-    Failures:  245
-    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
-
-#33666            EA#Scrim#2.6b
-    IP:        94.27.219.95:25000
-    Game:      ET 2.60b
-    Failures:  245
-    Last seen: 2026-04-05 04:29:35 (2 weeks ago)
-
-#33672   Hemlord No Bots Competive
-    IP:        5.231.107.37:27960
-    Game:      ETL
-    Failures:  245
-    Last seen: 2026-03-30 00:56:07 (3 weeks ago)
-
-#33678             BOBOT
-    IP:        31.37.19.118:27950
-    Game:      ET 2.60b
-    Failures:  245
-    Last seen: 2026-03-29 11:19:04 (3 weeks ago)
-
-#33691   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:20918
-    Game:      ET 2.60b
-    Failures:  245
-    Last seen: 2026-03-29 18:13:51 (3 weeks ago)
-
-#33702   Kimi|AHK ETLTV#2
-    IP:        130.61.155.213:27961
-    Game:      ETL
-    Failures:  245
-    Last seen: 2026-03-29 22:58:36 (3 weeks ago)
-
-#33703   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:21115
-    Game:      ET 2.60b
-    Failures:  245
-    Last seen: 2026-03-29 22:29:38 (3 weeks ago)
-
-#33705   euro.rtcw.eu - server 1
-    IP:        172.104.155.6:27960
-    Game:      RtCW 1.4x
-    Failures:  244
-    Last seen: 2026-03-29 23:58:33 (3 weeks ago)
-
-#33713   Pekyho server
-    IP:        89.221.216.144:27960
-    Game:      ETL
-    Failures:  244
-    Last seen: 2026-03-29 22:01:12 (3 weeks ago)
-
-#33714   FlufyBuny's RTCW Server
-    IP:        75.192.182.76:27963
-    Game:      RtCW 1.4x
-    Failures:  244
-    Last seen: 2026-04-08 02:14:03 (1 week ago)
-
-#33719   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:16201
-    Game:      ET 2.60b
-    Failures:  244
-    Last seen: 2026-03-30 06:27:40 (3 weeks ago)
-
-#34048   Asgard Home
-    IP:        79.255.13.28:27960
-    Game:      ETL
-    Failures:  243
-    Last seen: 2026-03-30 19:51:31 (3 weeks ago)
-
 #29706    <ES3>OMNIBOTSERVER
     IP:        173.186.165.38:27960
     Game:      RtCW 1.4x
     Failures:  243
     Last seen: 2026-03-16 03:33:21 (1 month ago)
-
-#34063   DS clan server
-    IP:        84.192.167.24:27960
-    Game:      ETL
-    Failures:  243
-    Last seen: 2026-03-31 00:16:33 (3 weeks ago)
-
-#34065   euro.rtcw.eu - server 1
-    IP:        172.104.238.150:27960
-    Game:      RtCW 1.3
-    Failures:  243
-    Last seen: 2026-03-31 01:16:45 (3 weeks ago)
-
-#34069   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:38428
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-31 06:40:21 (3 weeks ago)
 
 #29519   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:32991
@@ -1781,12 +1913,6 @@ Count: 1179
     Failures:  243
     Last seen: 2026-03-16 12:31:41 (1 month ago)
 
-#34176   BRASIL ET: Legacy Host
-    IP:        187.108.217.26:27002
-    Game:      ETL
-    Failures:  243
-    Last seen: 2026-04-01 05:58:48 (2 weeks ago)
-
 #29834   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:34388
     Game:      ET 2.60b
@@ -1816,12 +1942,6 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  243
     Last seen: 2026-03-16 19:45:55 (1 month ago)
-
-#34196   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:23513
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-31 10:31:44 (3 weeks ago)
 
 #29849   ~~~~ETProTJ...
     IP:        62.165.239.230:27962
@@ -1877,12 +1997,6 @@ Count: 1179
     Failures:  243
     Last seen: 2026-03-16 22:39:45 (1 month ago)
 
-#34233   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:28606
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-31 11:55:16 (3 weeks ago)
-
 #29885   ET:L-Public Server
     IP:        84.148.234.184:27960
     Game:      ETL
@@ -1894,120 +2008,6 @@ Count: 1179
     Game:      ETL
     Failures:  243
     Last seen: 2026-03-30 01:31:01 (3 weeks ago)
-
-#34241   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:13417
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-31 20:44:58 (2 weeks ago)
-
-#33733   ET: Legacy Osmosis
-    IP:        75.135.120.93:27960
-    Game:      ETL
-    Failures:  243
-    Last seen: 2026-03-30 03:57:53 (3 weeks ago)
-
-#33738   [PL] Wilki Wojny | Polski Serwer ET
-    IP:        51.68.150.221:11972
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
-
-#33739   Brygada Pustynna | Polska Taktyka i Walka
-    IP:        51.68.150.221:30925
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
-
-#33740   * OGNISTY MLYN * [XP SAVE] *
-    IP:        51.68.150.221:28487
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
-
-#33741   Legion Orla | Polski Realistic Server
-    IP:        51.68.150.221:17604
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:05 (3 weeks ago)
-
-#34258   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:10713
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-04-01 06:25:03 (2 weeks ago)
-
-#33750   [PL] Front Wschodni | Real Combat Server
-    IP:        51.68.150.221:31269
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:38 (3 weeks ago)
-
-#34262   [PL] Front Wschodni | Real Combat Server
-    IP:        51.68.150.221:24759
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
-
-#34263   >> POLSKA DYWIZJA <<
-    IP:        51.68.150.221:22731
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
-
-#34264   * POLSKIE POLE BITWY *
-    IP:        51.68.150.221:30285
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
-
-#33753   >> SZARA PIECHOTA <<
-    IP:        51.68.150.221:40674
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:46 (3 weeks ago)
-
-#34265   [SpecOps] Poland | Polska Jednostka Taktyczna
-    IP:        51.68.150.221:15503
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-04-01 03:25:03 (2 weeks ago)
-
-#33754   Legion Orla | Polski Realistic Server
-    IP:        51.68.150.221:38478
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 03:58:46 (3 weeks ago)
-
-#33755   Operacja Wisla | Polski Serwer Wojskowy
-    IP:        51.68.150.221:24264
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 12:39:36 (3 weeks ago)
-
-#34019   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:24270
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 08:31:28 (3 weeks ago)
-
-#34022   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:29608
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 09:49:46 (3 weeks ago)
-
-#34029   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18124
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 11:37:16 (3 weeks ago)
-
-#34045   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:19556
-    Game:      ET 2.60b
-    Failures:  243
-    Last seen: 2026-03-30 21:17:25 (3 weeks ago)
 
 #29511   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:15862
@@ -2585,17 +2585,143 @@ Count: 1179
     Failures:  230
     Last seen: 2026-03-13 03:30:20 (1 month ago)
 
+#34560   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:40088
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 21:28:35 (2 weeks ago)
+
+#34561   (HBC)TESTBASKET LEGACY
+    IP:        78.129.185.48:27965
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-01 13:20:32 (2 weeks ago)
+
 #28674   2tFu's|PlayGround!
     IP:        37.114.36.60:27960
     Game:      RtCW 1.0-1.1
     Failures:  225
     Last seen: 2026-03-25 21:39:58 (3 weeks ago)
 
+#35590   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:33484
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 14:41:06 (2 weeks ago)
+
+#35599   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:15514
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 16:28:20 (2 weeks ago)
+
+#35603   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:12172
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 20:31:35 (2 weeks ago)
+
+#35608   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42133
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 22:49:00 (2 weeks ago)
+
+#35100   ETLHost
+    IP:        178.255.175.152:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-04 00:14:57 (2 weeks ago)
+
+#35613   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18974
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 07:07:53 (2 weeks ago)
+
+#34334   = Wv Test=
+    IP:        37.114.36.66:27961
+    Game:      RtCW 1.0-1.1
+    Failures:  225
+    Last seen: 2026-04-03 00:39:14 (2 weeks ago)
+
+#35102   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42725
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 07:14:09 (2 weeks ago)
+
+#34592   euro.rtcw.eu - server 1
+    IP:        139.162.177.74:27960
+    Game:      RtCW 1.4x
+    Failures:  225
+    Last seen: 2026-04-02 01:50:56 (2 weeks ago)
+
+#35104   ~~~[=G!X=]SniperJaymod
+    IP:        108.93.119.194:27960
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 02:06:17 (2 weeks ago)
+
+#35617   euro.rtcw.eu - server 1
+    IP:        139.162.142.229:27960
+    Game:      RtCW 1.4x
+    Failures:  225
+    Last seen: 2026-04-06 01:08:31 (2 weeks ago)
+
+#34597   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:11862
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-02 06:36:36 (2 weeks ago)
+
 #28248   TheOfficialGamerClub - ET Degeneracy
     IP:        188.36.164.192:27960
     Game:      ETL
     Failures:  225
     Last seen: 2026-03-13 18:29:27 (1 month ago)
+
+#35223   1944 RCTWLegacy
+    IP:        184.187.83.157:27961
+    Game:      RtCW 1.0-1.1
+    Failures:  225
+    Last seen: 2026-04-04 21:00:25 (2 weeks ago)
+
+#34712   G.O.D
+    IP:        97.181.183.219:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-03 03:22:13 (2 weeks ago)
+
+#35996   =|POLSKA|VODKA|silEnt|XPSAVE|=
+    IP:        51.68.150.221:38508
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:51:35 (2 weeks ago)
+
+#35229   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42506
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 12:27:43 (2 weeks ago)
+
+#34722   [iii]ET:Legacy
+    IP:        69.169.170.81:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-03 06:49:03 (2 weeks ago)
+
+#34726   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:22918
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-02 11:06:07 (2 weeks ago)
+
+#35241   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:26848
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 13:46:34 (2 weeks ago)
 
 #28332   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:28892
@@ -2621,11 +2747,23 @@ Count: 1179
     Failures:  225
     Last seen: 2026-03-12 03:19:06 (1 month ago)
 
+#34735   ET:L-Public Server
+    IP:        93.198.54.54:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-02 15:38:54 (2 weeks ago)
+
 #28338   [SpecOps] Poland | Polska Jednostka Taktyczna
     IP:        51.68.150.221:39462
     Game:      ET 2.60b
     Failures:  225
     Last seen: 2026-03-12 03:19:14 (1 month ago)
+
+#35251   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:23446
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 19:10:23 (2 weeks ago)
 
 #28340   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:12675
@@ -2633,11 +2771,95 @@ Count: 1179
     Failures:  225
     Last seen: 2026-03-12 03:19:18 (1 month ago)
 
+#35765   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:30573
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 08:32:08 (2 weeks ago)
+
 #28342   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:23889
     Game:      ET 2.60b
     Failures:  225
     Last seen: 2026-03-12 03:19:23 (1 month ago)
+
+#35769   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:35708
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 10:37:31 (2 weeks ago)
+
+#35259   Ana's GTVd ETTVoD #43
+    IP:        176.9.42.71:18042
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 18:15:52 (2 weeks ago)
+
+#35775   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:34631
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 13:35:56 (2 weeks ago)
+
+#35264   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:22716
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-04 22:28:02 (2 weeks ago)
+
+#35269   ~~~~NQ...
+    IP:        212.40.90.248:27963
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35270   ~~~~Silent... 
+    IP:        212.40.90.248:27966
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35782   euro.rtcw.eu - server 1
+    IP:        172.104.147.54:27960
+    Game:      RtCW 1.4x
+    Failures:  225
+    Last seen: 2026-04-06 22:54:22 (2 weeks ago)
+
+#35271   ~~~~N!tmod... 
+    IP:        212.40.90.248:27968
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35272   ~~~~ETJump...
+    IP:        212.40.90.248:27964
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35273   ~~~~ETProTJ...
+    IP:        212.40.90.248:27962
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35274   ~~~~LegaJay...
+    IP:        212.40.90.248:27965
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-11 22:48:38 (1 week ago)
+
+#35786   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:22573
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 15:20:35 (2 weeks ago)
+
+#35788   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:22915
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 16:12:37 (2 weeks ago)
 
 #28623   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:18790
@@ -2645,11 +2867,77 @@ Count: 1179
     Failures:  225
     Last seen: 2026-03-12 15:05:26 (1 month ago)
 
+#35791   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:10865
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-06 21:34:00 (2 weeks ago)
+
+#35282   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42668
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 07:03:38 (2 weeks ago)
+
+#35287   SUKUNA
+    IP:        128.251.227.72:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-10 19:59:46 (1 week ago)
+
+#35800   ET:L-Public Server
+    IP:        93.198.49.155:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-08 00:18:03 (1 week ago)
+
+#34267   [PL] Wilki Wojny | Polski Serwer ET
+    IP:        51.68.150.221:28431
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 03:25:07 (2 weeks ago)
+
+#34268   [PL] Front Wschodni | Real Combat Server
+    IP:        51.68.150.221:15944
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 03:25:07 (2 weeks ago)
+
 #28638   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:16479
     Game:      ET 2.60b
     Failures:  225
     Last seen: 2026-03-12 16:21:25 (1 month ago)
+
+#34526   BRASIL ET: Legacy Host
+    IP:        179.127.185.186:27002
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-03 21:03:51 (2 weeks ago)
+
+#35806   OBJ
+    IP:        37.114.36.66:27962
+    Game:      RtCW 1.0-1.1
+    Failures:  225
+    Last seen: 2026-04-08 20:32:57 (1 week ago)
+
+#34271   =|POLSKA|VODKA|silEnt|XPSAVE|=
+    IP:        51.68.150.221:27277
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 03:25:15 (2 weeks ago)
+
+#34527   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:37249
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 11:34:18 (2 weeks ago)
+
+#34272   Brygada Pustynna | Polska Taktyka i Walka
+    IP:        51.68.150.221:10788
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-01 03:25:15 (2 weeks ago)
 
 #28643   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36855
@@ -2657,11 +2945,143 @@ Count: 1179
     Failures:  225
     Last seen: 2026-03-12 19:44:49 (1 month ago)
 
+#35299   >> POLSKA DYWIZJA <<
+    IP:        51.68.150.221:27501
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
+
+#35300   223rc2
+    IP:        51.68.150.221:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-16 22:38:33 (4 days ago)
+
+#35812   Brygada Pustynna | Polska Taktyka i Walka
+    IP:        51.68.150.221:26991
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
+
+#34533   Shagadelic Baby | XPSave |
+    IP:        80.69.89.24:27960
+    Game:      ETL
+    Failures:  225
+    Last seen: 2026-04-09 22:35:49 (1 week ago)
+
+#35301   * POLSKIE POLE BITWY *
+    IP:        51.68.150.221:36542
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
+
+#35813   * POLSKIE POLE BITWY *
+    IP:        51.68.150.221:18302
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
+
+#35302   * OGNISTY MLYN * [XP SAVE] * 
+    IP:        51.68.150.221:35581
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
+
+#35814   Batalion 303 | Polskie Skrzydla Wolnosci
+    IP:        51.68.150.221:34271
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
+
 #28647   ETLHost
     IP:        47.227.100.40:27960
     Game:      ETL
     Failures:  225
     Last seen: 2026-03-12 18:27:57 (1 month ago)
+
+#35303   [SpecOps] Poland | Polska Jednostka Taktyczna
+    IP:        51.68.150.221:38920
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
+
+#35816   * OGNISTY MLYN * [XP SAVE] * 
+    IP:        51.68.150.221:14914
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
+
+#35561            .EA#Jaymod#XPS
+    IP:        94.27.220.96:27961
+    Game:      ET 2.55
+    Failures:  225
+    Last seen: 2026-04-20 04:38:02 (1 day ago)
+
+#35817   * OGNISTY MLYN * [XP SAVE] *
+    IP:        51.68.150.221:27003
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
+
+#35562            .EA#Hide&Seek
+    IP:        94.27.220.96:40001
+    Game:      ET 2.55
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35818   [PL] Wilki Wojny | Polski Serwer ET
+    IP:        51.68.150.221:31973
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
+
+#35563            .EA#Trickjump
+    IP:        94.27.220.96:30001
+    Game:      ET 2.55
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35819   =|POLSKA|VODKA|silEnt|XPSAVE|=
+    IP:        51.68.150.221:11666
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
+
+#35564            .EA#N!tmod#XPS
+    IP:        94.27.220.96:27981
+    Game:      ET 2.55
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35565            .EA#Jaymod#XPS
+    IP:        94.27.220.96:27960
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-20 04:38:02 (1 day ago)
+
+#35566            .EA#Hide&Seek
+    IP:        94.27.220.96:40000
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35822   Legion Orla | Polski Realistic Server
+    IP:        51.68.150.221:10780
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 03:21:19 (2 weeks ago)
+
+#35567            .EA#Trickjump
+    IP:        94.27.220.96:30000
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35823   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18582
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-07 07:10:52 (2 weeks ago)
 
 #28656   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:23307
@@ -2669,11 +3089,59 @@ Count: 1179
     Failures:  225
     Last seen: 2026-03-12 21:57:39 (1 month ago)
 
+#35568            .EA#N!tmod#XPS
+    IP:        94.27.220.96:27980
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
+#35572            EA#Scrim#2.6b
+    IP:        94.27.220.96:25000
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-20 04:41:02 (1 day ago)
+
 #28661   euro.rtcw.eu - server 1
     IP:        139.162.210.43:27960
     Game:      RtCW 1.4x
     Failures:  225
     Last seen: 2026-03-13 01:43:05 (1 month ago)
+
+#35575   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42348
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 09:27:45 (2 weeks ago)
+
+#35581   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:19559
+    Game:      ET 2.60b
+    Failures:  225
+    Last seen: 2026-04-05 13:48:14 (2 weeks ago)
+
+#35074   [KOLEDZY] ORIGINAL MAPS
+    IP:        79.186.196.39:27960
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-08 08:04:38 (1 week ago)
+
+#35075   xt.msk
+    IP:        82.202.165.51:27961
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-03 19:16:16 (2 weeks ago)
+
+#35096   BRASIL ET: Legacy Host
+    IP:        177.221.162.140:27002
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-13 01:37:37 (1 week ago)
+
+#35098   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:39292
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-03 22:51:55 (2 weeks ago)
 
 #28259   Vanilla ET Server
     IP:        181.226.154.243:27960
@@ -2716,6 +3184,66 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  224
     Last seen: 2026-03-12 03:19:06 (1 month ago)
+
+#34742   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:33396
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-02 17:31:12 (2 weeks ago)
+
+#34743   .    UltraX New Mod
+    IP:        86.121.226.241:27963
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-02 19:23:15 (2 weeks ago)
+
+#34763   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:28115
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-02 19:52:46 (2 weeks ago)
+
+#34767   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:39672
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-02 22:13:14 (2 weeks ago)
+
+#34769   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42550
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-03 07:36:27 (2 weeks ago)
+
+#34770   ETHost
+    IP:        105.188.85.99:27960
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-07 22:44:08 (1 week ago)
+
+#34771   [KOLEDZY] ORIGINAL MAPS
+    IP:        79.186.66.64:27960
+    Game:      ETL
+    Failures:  224
+    Last seen: 2026-04-03 18:03:47 (2 weeks ago)
+
+#35036   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:34151
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-03 09:26:31 (2 weeks ago)
+
+#35042   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:40179
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-03 14:12:01 (2 weeks ago)
+
+#35058   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:25514
+    Game:      ET 2.60b
+    Failures:  224
+    Last seen: 2026-04-03 21:27:21 (2 weeks ago)
 
 #27683   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:38511
@@ -3107,533 +3635,89 @@ Count: 1179
     Failures:  223
     Last seen: 2026-03-11 03:31:04 (1 month ago)
 
-#35590   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:33484
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 14:41:06 (2 weeks ago)
-
-#35599   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:15514
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 16:28:20 (2 weeks ago)
-
-#35603   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:12172
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 20:31:35 (2 weeks ago)
-
-#35608   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42133
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 22:49:00 (2 weeks ago)
-
-#35100   ETLHost
-    IP:        178.255.175.152:27960
+#99      ET LEGACY | Official Maps
+    IP:        78.46.121.107:27961
     Game:      ETL
-    Failures:  220
-    Last seen: 2026-04-04 00:14:57 (2 weeks ago)
+    Failures:  217
+    Last seen: 2026-03-01 09:42:57 (1 month ago)
 
-#35613   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18974
+#101     TOPCLAN 
+    IP:        192.169.95.163:27960
     Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 07:07:53 (2 weeks ago)
+    Failures:  217
+    Last seen: 2026-03-01 09:42:57 (1 month ago)
 
-#35102   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42725
+#104     Kanonenfutter - Enemy Territory Team Fortress - Eine JMOVEL…
+    IP:        62.141.39.17:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-04-10 10:35:08 (1 week ago)
+
+#109       ET:  Wolves Of Doom
+    IP:        23.88.75.88:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-03-04 23:20:08 (1 month ago)
+
+#112     TheOfficialGamerClub - ET Degeneracy
+    IP:        188.36.164.81:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-02-18 04:20:08 (2 months ago)
+
+#122     ~~~[=G!X=]EUN!tmodRecruitingXPS
+    IP:        51.195.8.3:27960
     Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 07:14:09 (2 weeks ago)
+    Failures:  217
+    Last seen: 2026-03-08 09:08:10 (1 month ago)
 
-#35104   ~~~[=G!X=]SniperJaymod
-    IP:        108.93.119.194:27960
+#123     Unreal Community Wolf
+    IP:        50.37.38.89:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-03-07 10:26:14 (1 month ago)
+
+#141     Phir0x
+    IP:        167.86.76.90:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-04-09 13:24:10 (1 week ago)
+
+#149         LBN Beginner Server
+    IP:        194.163.151.49:27960
+    Game:      ETL
+    Failures:  217
+    Last seen: 2026-03-08 08:43:09 (1 month ago)
+
+#157              .EA#Trickjump
+    IP:        94.27.217.17:30000
     Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 02:06:17 (2 weeks ago)
+    Failures:  217
+    Last seen: 2026-02-18 03:50:27 (2 months ago)
 
-#35617   euro.rtcw.eu - server 1
-    IP:        139.162.142.229:27960
-    Game:      RtCW 1.4x
-    Failures:  220
-    Last seen: 2026-04-06 01:08:31 (2 weeks ago)
-
-#35223   1944 RCTWLegacy
-    IP:        184.187.83.157:27961
-    Game:      RtCW 1.0-1.1
-    Failures:  220
-    Last seen: 2026-04-04 21:00:25 (2 weeks ago)
-
-#35996   =|POLSKA|VODKA|silEnt|XPSAVE|=
-    IP:        51.68.150.221:38508
+#35997   >> SZARA PIECHOTA <<
+    IP:        51.68.150.221:16646
     Game:      ET 2.60b
-    Failures:  220
+    Failures:  217
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
-#35229   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42506
+#158     .:|bAd|:.EU
+    IP:        82.43.149.87:27960
     Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 12:27:43 (2 weeks ago)
+    Failures:  217
+    Last seen: 2026-02-22 18:48:10 (1 month ago)
 
-#35241   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:26848
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 13:46:34 (2 weeks ago)
-
-#35251   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:23446
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 19:10:23 (2 weeks ago)
-
-#35765   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:30573
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 08:32:08 (2 weeks ago)
-
-#35769   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:35708
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 10:37:31 (2 weeks ago)
-
-#35259   Ana's GTVd ETTVoD #43
-    IP:        176.9.42.71:18042
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 18:15:52 (2 weeks ago)
-
-#35775   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:34631
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 13:35:56 (2 weeks ago)
-
-#35264   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:22716
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-04 22:28:02 (2 weeks ago)
-
-#35269   ~~~~NQ...
-    IP:        212.40.90.248:27963
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
-
-#35270   ~~~~Silent... 
-    IP:        212.40.90.248:27966
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
-
-#35782   euro.rtcw.eu - server 1
-    IP:        172.104.147.54:27960
-    Game:      RtCW 1.4x
-    Failures:  220
-    Last seen: 2026-04-06 22:54:22 (2 weeks ago)
-
-#35271   ~~~~N!tmod... 
-    IP:        212.40.90.248:27968
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
-
-#35272   ~~~~ETJump...
-    IP:        212.40.90.248:27964
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
-
-#35273   ~~~~ETProTJ...
-    IP:        212.40.90.248:27962
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
-
-#35274   ~~~~LegaJay...
-    IP:        212.40.90.248:27965
+#179     [Psy]-Galaxy
+    IP:        89.245.228.213:28960
     Game:      ETL
-    Failures:  220
-    Last seen: 2026-04-11 22:48:38 (1 week ago)
+    Failures:  217
+    Last seen: 2026-02-21 09:31:58 (2 months ago)
 
-#35786   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:22573
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 15:20:35 (2 weeks ago)
-
-#35788   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:22915
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 16:12:37 (2 weeks ago)
-
-#35791   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:10865
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-06 21:34:00 (2 weeks ago)
-
-#35282   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42668
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 07:03:38 (2 weeks ago)
-
-#35287   SUKUNA
-    IP:        128.251.227.72:27960
+#1       Juiffi.eu ET Legacy Server
+    IP:        65.21.56.143:27960
     Game:      ETL
-    Failures:  220
-    Last seen: 2026-04-10 19:59:46 (1 week ago)
-
-#35800   ET:L-Public Server
-    IP:        93.198.49.155:27960
-    Game:      ETL
-    Failures:  220
-    Last seen: 2026-04-08 00:18:03 (1 week ago)
-
-#35806   OBJ
-    IP:        37.114.36.66:27962
-    Game:      RtCW 1.0-1.1
-    Failures:  220
-    Last seen: 2026-04-08 20:32:57 (1 week ago)
-
-#35299   >> POLSKA DYWIZJA <<
-    IP:        51.68.150.221:27501
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
-
-#35300   223rc2
-    IP:        51.68.150.221:27960
-    Game:      ETL
-    Failures:  220
-    Last seen: 2026-04-16 22:38:33 (4 days ago)
-
-#35812   Brygada Pustynna | Polska Taktyka i Walka
-    IP:        51.68.150.221:26991
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
-
-#35301   * POLSKIE POLE BITWY *
-    IP:        51.68.150.221:36542
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
-
-#35813   * POLSKIE POLE BITWY *
-    IP:        51.68.150.221:18302
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
-
-#35302   * OGNISTY MLYN * [XP SAVE] * 
-    IP:        51.68.150.221:35581
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
-
-#35814   Batalion 303 | Polskie Skrzydla Wolnosci
-    IP:        51.68.150.221:34271
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:07 (2 weeks ago)
-
-#35303   [SpecOps] Poland | Polska Jednostka Taktyczna
-    IP:        51.68.150.221:38920
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 03:29:58 (2 weeks ago)
-
-#35816   * OGNISTY MLYN * [XP SAVE] * 
-    IP:        51.68.150.221:14914
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
-
-#35561            .EA#Jaymod#XPS
-    IP:        94.27.220.96:27961
-    Game:      ET 2.55
-    Failures:  220
-    Last seen: 2026-04-20 04:38:02 (1 day ago)
-
-#35817   * OGNISTY MLYN * [XP SAVE] *
-    IP:        51.68.150.221:27003
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
-
-#35562            .EA#Hide&Seek
-    IP:        94.27.220.96:40001
-    Game:      ET 2.55
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35818   [PL] Wilki Wojny | Polski Serwer ET
-    IP:        51.68.150.221:31973
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
-
-#35563            .EA#Trickjump
-    IP:        94.27.220.96:30001
-    Game:      ET 2.55
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35819   =|POLSKA|VODKA|silEnt|XPSAVE|=
-    IP:        51.68.150.221:11666
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:11 (2 weeks ago)
-
-#35564            .EA#N!tmod#XPS
-    IP:        94.27.220.96:27981
-    Game:      ET 2.55
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35565            .EA#Jaymod#XPS
-    IP:        94.27.220.96:27960
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-20 04:38:02 (1 day ago)
-
-#35566            .EA#Hide&Seek
-    IP:        94.27.220.96:40000
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35822   Legion Orla | Polski Realistic Server
-    IP:        51.68.150.221:10780
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 03:21:19 (2 weeks ago)
-
-#35567            .EA#Trickjump
-    IP:        94.27.220.96:30000
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35823   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18582
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-07 07:10:52 (2 weeks ago)
-
-#35568            .EA#N!tmod#XPS
-    IP:        94.27.220.96:27980
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35572            EA#Scrim#2.6b
-    IP:        94.27.220.96:25000
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-20 04:41:02 (1 day ago)
-
-#35575   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42348
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 09:27:45 (2 weeks ago)
-
-#35581   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:19559
-    Game:      ET 2.60b
-    Failures:  220
-    Last seen: 2026-04-05 13:48:14 (2 weeks ago)
-
-#34560   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:40088
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 21:28:35 (2 weeks ago)
-
-#34561   (HBC)TESTBASKET LEGACY
-    IP:        78.129.185.48:27965
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-01 13:20:32 (2 weeks ago)
-
-#35074   [KOLEDZY] ORIGINAL MAPS
-    IP:        79.186.196.39:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-08 08:04:38 (1 week ago)
-
-#35075   xt.msk
-    IP:        82.202.165.51:27961
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-03 19:16:16 (2 weeks ago)
-
-#35096   BRASIL ET: Legacy Host
-    IP:        177.221.162.140:27002
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-13 01:37:37 (1 week ago)
-
-#35098   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:39292
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-03 22:51:55 (2 weeks ago)
-
-#34334   = Wv Test=
-    IP:        37.114.36.66:27961
-    Game:      RtCW 1.0-1.1
-    Failures:  219
-    Last seen: 2026-04-03 00:39:14 (2 weeks ago)
-
-#34592   euro.rtcw.eu - server 1
-    IP:        139.162.177.74:27960
-    Game:      RtCW 1.4x
-    Failures:  219
-    Last seen: 2026-04-02 01:50:56 (2 weeks ago)
-
-#34597   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:11862
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-02 06:36:36 (2 weeks ago)
-
-#34712   G.O.D
-    IP:        97.181.183.219:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-03 03:22:13 (2 weeks ago)
-
-#34722   [iii]ET:Legacy
-    IP:        69.169.170.81:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-03 06:49:03 (2 weeks ago)
-
-#34726   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:22918
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-02 11:06:07 (2 weeks ago)
-
-#34735   ET:L-Public Server
-    IP:        93.198.54.54:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-02 15:38:54 (2 weeks ago)
-
-#34742   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:33396
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-02 17:31:12 (2 weeks ago)
-
-#34743   .    UltraX New Mod
-    IP:        86.121.226.241:27963
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-02 19:23:15 (2 weeks ago)
-
-#34763   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:28115
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-02 19:52:46 (2 weeks ago)
-
-#34767   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:39672
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-02 22:13:14 (2 weeks ago)
-
-#34769   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42550
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-03 07:36:27 (2 weeks ago)
-
-#34770   ETHost
-    IP:        105.188.85.99:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-07 22:44:08 (1 week ago)
-
-#34771   [KOLEDZY] ORIGINAL MAPS
-    IP:        79.186.66.64:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-03 18:03:47 (2 weeks ago)
-
-#34267   [PL] Wilki Wojny | Polski Serwer ET
-    IP:        51.68.150.221:28431
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 03:25:07 (2 weeks ago)
-
-#34268   [PL] Front Wschodni | Real Combat Server
-    IP:        51.68.150.221:15944
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 03:25:07 (2 weeks ago)
-
-#35036   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:34151
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-03 09:26:31 (2 weeks ago)
-
-#34526   BRASIL ET: Legacy Host
-    IP:        179.127.185.186:27002
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-03 21:03:51 (2 weeks ago)
-
-#34271   =|POLSKA|VODKA|silEnt|XPSAVE|=
-    IP:        51.68.150.221:27277
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 03:25:15 (2 weeks ago)
-
-#34527   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:37249
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 11:34:18 (2 weeks ago)
-
-#34272   Brygada Pustynna | Polska Taktyka i Walka
-    IP:        51.68.150.221:10788
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-01 03:25:15 (2 weeks ago)
-
-#35042   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:40179
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-03 14:12:01 (2 weeks ago)
-
-#34533   Shagadelic Baby | XPSave |
-    IP:        80.69.89.24:27960
-    Game:      ETL
-    Failures:  219
-    Last seen: 2026-04-09 22:35:49 (1 week ago)
-
-#35058   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:25514
-    Game:      ET 2.60b
-    Failures:  219
-    Last seen: 2026-04-03 21:27:21 (2 weeks ago)
+    Failures:  216
+    Last seen: 2026-03-05 20:18:02 (1 month ago)
 
 #27139   GG Server 1 GG - No rest for BOTs
     IP:        77.32.108.153:27960
@@ -3658,6 +3742,12 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  216
     Last seen: 2026-03-08 03:22:46 (1 month ago)
+
+#14      9ine|Trickjump.
+    IP:        45.9.60.102:27960
+    Game:      ET 2.60b
+    Failures:  216
+    Last seen: 2026-03-25 13:48:02 (3 weeks ago)
 
 #27150   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:22566
@@ -3706,6 +3796,12 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  216
     Last seen: 2026-03-08 03:22:47 (1 month ago)
+
+#19      ETUMR server
+    IP:        162.55.199.102:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-05 08:12:03 (1 month ago)
 
 #26899   ~~~~Jaymod...
     IP:        188.143.108.102:27965
@@ -3767,17 +3863,47 @@ Count: 1179
     Failures:  216
     Last seen: 2026-03-08 03:22:59 (1 month ago)
 
+#34      Darknet Gaming - Wolfenstein: Enemy Territory
+    IP:        15.204.132.9:27960
+    Game:      ET 2.60b
+    Failures:  216
+    Last seen: 2026-02-26 08:12:07 (1 month ago)
+
 #26916   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:27731
     Game:      ET 2.60b
     Failures:  216
     Last seen: 2026-03-06 20:56:17 (1 month ago)
 
+#37      9ine|Private.
+    IP:        45.9.60.102:27961
+    Game:      ET 2.60b
+    Failures:  216
+    Last seen: 2026-03-25 13:48:03 (3 weeks ago)
+
+#41      AMP Powered ET: Legacy
+    IP:        51.83.102.41:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-01 09:42:16 (1 month ago)
+
+#42      tastyspleen.net::Dallas
+    IP:        23.227.169.187:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-09 11:08:04 (1 month ago)
+
 #26925   ~~~~Silent... 
     IP:        188.143.108.102:27961
     Game:      ET 2.60b
     Failures:  216
     Last seen: 2026-03-10 09:54:40 (1 month ago)
+
+#49      ET: Legacy Host
+    IP:        178.24.151.130:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-15 03:21:04 (1 month ago)
 
 #26937   WOLFMP.INFO SHRUB PUB
     IP:        72.86.189.65:27960
@@ -3803,11 +3929,23 @@ Count: 1179
     Failures:  216
     Last seen: 2026-03-21 00:19:56 (1 month ago)
 
+#68      * * * * * * * *
+    IP:        85.10.201.99:27960
+    Game:      ET 2.60b
+    Failures:  216
+    Last seen: 2026-02-25 21:56:14 (1 month ago)
+
 #27460   Nitmod Test Server
     IP:        203.228.111.48:27962
     Game:      ETL
     Failures:  216
     Last seen: 2026-03-08 10:48:41 (1 month ago)
+
+#72      ET Legion
+    IP:        94.105.96.98:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-02-28 11:52:22 (1 month ago)
 
 #26952   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:38533
@@ -3815,11 +3953,29 @@ Count: 1179
     Failures:  216
     Last seen: 2026-03-07 16:43:01 (1 month ago)
 
+#73      Shoresy's Playground
+    IP:        158.69.211.212:27961
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-17 23:59:05 (1 month ago)
+
+#75      IT.TEM ET Legacy
+    IP:        83.169.2.126:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-12 09:00:33 (1 month ago)
+
 #27467   F!reFly's Cozy Den
     IP:        188.42.131.212:27960
     Game:      ETL
     Failures:  216
     Last seen: 2026-03-15 05:51:40 (1 month ago)
+
+#77      clunker ET: Legacy
+    IP:        118.93.167.205:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-04-07 13:57:08 (2 weeks ago)
 
 #27469   x-term's private pug/public
     IP:        72.56.70.196:27960
@@ -3832,6 +3988,24 @@ Count: 1179
     Game:      ETL
     Failures:  216
     Last seen: 2026-03-08 19:32:28 (1 month ago)
+
+#83      |DadLAN| ONE
+    IP:        202.27.231.36:27961
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-02-22 11:28:07 (1 month ago)
+
+#88      LinuxGSM
+    IP:        51.81.21.174:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-12 23:21:12 (1 month ago)
+
+#93      {Upstairs Basement}
+    IP:        104.249.62.16:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-03-05 08:54:11 (1 month ago)
 
 #26461   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:29430
@@ -3856,6 +4030,12 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  216
     Last seen: 2026-03-06 03:27:16 (1 month ago)
+
+#97      ET Legion: Back-up
+    IP:        62.235.90.163:27960
+    Game:      ETL
+    Failures:  216
+    Last seen: 2026-04-13 21:51:09 (1 week ago)
 
 #26465   ~~~~ETJump...
     IP:        188.143.54.213:27962
@@ -4023,7 +4203,7 @@ Count: 1179
     IP:        195.201.25.152:27140
     Game:      ET 2.60b
     Failures:  215
-    Last seen: 2026-04-20 18:57:32 (23 hours ago)
+    Last seen: 2026-04-20 18:57:32 (1 day ago)
 
 #26433   FUNBOY (CARNAGE)
     IP:        66.85.80.229:27962
@@ -4127,1253 +4307,1079 @@ Count: 1179
     Failures:  215
     Last seen: 2026-03-05 17:35:24 (1 month ago)
 
-#99      ET LEGACY | Official Maps
-    IP:        78.46.121.107:27961
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-03-01 09:42:57 (1 month ago)
-
-#101     TOPCLAN 
-    IP:        192.169.95.163:27960
-    Game:      ET 2.60b
-    Failures:  212
-    Last seen: 2026-03-01 09:42:57 (1 month ago)
-
-#104     Kanonenfutter - Enemy Territory Team Fortress - Eine JMOVEL…
-    IP:        62.141.39.17:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-04-10 10:35:08 (1 week ago)
-
-#109       ET:  Wolves Of Doom
-    IP:        23.88.75.88:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-03-04 23:20:08 (1 month ago)
-
-#112     TheOfficialGamerClub - ET Degeneracy
-    IP:        188.36.164.81:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-02-18 04:20:08 (2 months ago)
-
-#122     ~~~[=G!X=]EUN!tmodRecruitingXPS
-    IP:        51.195.8.3:27960
-    Game:      ET 2.60b
-    Failures:  212
-    Last seen: 2026-03-08 09:08:10 (1 month ago)
-
-#123     Unreal Community Wolf
-    IP:        50.37.38.89:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-03-07 10:26:14 (1 month ago)
-
-#141     Phir0x
-    IP:        167.86.76.90:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-04-09 13:24:10 (1 week ago)
-
-#149         LBN Beginner Server
-    IP:        194.163.151.49:27960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-03-08 08:43:09 (1 month ago)
-
-#157              .EA#Trickjump
-    IP:        94.27.217.17:30000
-    Game:      ET 2.60b
-    Failures:  212
-    Last seen: 2026-02-18 03:50:27 (2 months ago)
-
-#35997   >> SZARA PIECHOTA <<
-    IP:        51.68.150.221:16646
-    Game:      ET 2.60b
-    Failures:  212
-    Last seen: 2026-04-07 03:51:35 (2 weeks ago)
-
-#158     .:|bAd|:.EU
-    IP:        82.43.149.87:27960
-    Game:      ET 2.60b
-    Failures:  212
-    Last seen: 2026-02-22 18:48:10 (1 month ago)
-
-#179     [Psy]-Galaxy
-    IP:        89.245.228.213:28960
-    Game:      ETL
-    Failures:  212
-    Last seen: 2026-02-21 09:31:58 (2 months ago)
-
-#1       Juiffi.eu ET Legacy Server
-    IP:        65.21.56.143:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-05 20:18:02 (1 month ago)
-
-#14      9ine|Trickjump.
-    IP:        45.9.60.102:27960
-    Game:      ET 2.60b
-    Failures:  211
-    Last seen: 2026-03-25 13:48:02 (3 weeks ago)
-
-#19      ETUMR server
-    IP:        162.55.199.102:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-05 08:12:03 (1 month ago)
-
-#34      Darknet Gaming - Wolfenstein: Enemy Territory
-    IP:        15.204.132.9:27960
-    Game:      ET 2.60b
-    Failures:  211
-    Last seen: 2026-02-26 08:12:07 (1 month ago)
-
-#37      9ine|Private.
-    IP:        45.9.60.102:27961
-    Game:      ET 2.60b
-    Failures:  211
-    Last seen: 2026-03-25 13:48:03 (3 weeks ago)
-
-#41      AMP Powered ET: Legacy
-    IP:        51.83.102.41:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-01 09:42:16 (1 month ago)
-
-#42      tastyspleen.net::Dallas
-    IP:        23.227.169.187:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-09 11:08:04 (1 month ago)
-
-#49      ET: Legacy Host
-    IP:        178.24.151.130:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-15 03:21:04 (1 month ago)
-
-#68      * * * * * * * *
-    IP:        85.10.201.99:27960
-    Game:      ET 2.60b
-    Failures:  211
-    Last seen: 2026-02-25 21:56:14 (1 month ago)
-
-#72      ET Legion
-    IP:        94.105.96.98:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-02-28 11:52:22 (1 month ago)
-
-#73      Shoresy's Playground
-    IP:        158.69.211.212:27961
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-17 23:59:05 (1 month ago)
-
-#75      IT.TEM ET Legacy
-    IP:        83.169.2.126:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-12 09:00:33 (1 month ago)
-
-#77      clunker ET: Legacy
-    IP:        118.93.167.205:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-04-07 13:57:08 (2 weeks ago)
-
-#83      |DadLAN| ONE
-    IP:        202.27.231.36:27961
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-02-22 11:28:07 (1 month ago)
-
-#88      LinuxGSM
-    IP:        51.81.21.174:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-12 23:21:12 (1 month ago)
-
-#93      {Upstairs Basement}
-    IP:        104.249.62.16:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-03-05 08:54:11 (1 month ago)
-
-#97      ET Legion: Back-up
-    IP:        62.235.90.163:27960
-    Game:      ETL
-    Failures:  211
-    Last seen: 2026-04-13 21:51:09 (1 week ago)
-
 #3328    ~~~~NQ...
     IP:        78.131.49.78:27960
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-20 12:40:44 (2 months ago)
 
 #6408    euro.rtcw.eu - server 1
     IP:        172.236.214.193:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 01:28:22 (1 month ago)
 
 #10504   ~~~[=G!X=]SniperTEST
     IP:        75.217.8.246:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-24 20:55:52 (1 month ago)
 
 #265     =RD=Ducks & Friends ET:L
     IP:        83.64.165.233:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-02 22:42:13 (2 weeks ago)
 
 #268     VEGETABLES - Zazen Garlic.
     IP:        198.244.233.216:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-20 01:09:02 (1 day ago)
 
 #5645    POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:33481
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 08:46:18 (1 month ago)
 
 #271     POLSKIE SWIRY XP SAVE.
     IP:        81.210.88.38:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 13:19:43 (1 month ago)
 
 #528              .EA#Jaymod#XPS
     IP:        94.27.217.17:27961
     Game:      ET 2.55
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-18 03:51:44 (2 months ago)
 
 #2069             .EA#Jaymod#XPS
     IP:        94.27.216.131:27961
     Game:      ET 2.55
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-26 05:05:40 (1 month ago)
 
 #2071             .EA#Trickjump
     IP:        94.27.216.131:30000
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-26 05:05:40 (1 month ago)
 
 #3864    Chez Gritchou
     IP:        109.131.244.14:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-20 23:50:30 (2 months ago)
 
 #2073             .EA#Jaymod#XPS
     IP:        94.27.216.131:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-26 05:05:40 (1 month ago)
 
 #285     ET:Legacy server
     IP:        51.195.60.1:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 19:52:00 (1 month ago)
 
 #2334    ET: Legacy Host
     IP:        78.46.115.72:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-19 13:00:26 (2 months ago)
 
 #290     Tin Station
     IP:        31.220.48.162:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-08 01:28:27 (1 month ago)
 
 #3620    gather.etl.lol - server 1
     IP:        172.236.193.104:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 10:41:03 (2 months ago)
 
 #294     #fiGhtcluB ETL Stopwatch  by #kAmi.ET
     IP:        85.14.205.9:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-08 01:00:52 (1 month ago)
 
 #10536   euro.rtcw.eu - server 1
     IP:        104.105.20.54:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 02:02:29 (1 month ago)
 
 #6197    Tomato Server
     IP:        43.143.44.166:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 06:51:58 (1 month ago)
 
 #3383    ryzner.org ETLegacy Server
     IP:        20.215.42.142:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:49:55 (1 month ago)
 
 #6711    DieAchtServer
     IP:        202.61.242.93:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 23:31:47 (1 month ago)
 
 #316     The =NsS= WolfET Server
     IP:        52.144.109.210:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-10 18:38:21 (1 week ago)
 
 #319     -=American Rejects=-
     IP:        108.61.88.104:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-19 08:59:03 (2 days ago)
 
 #3393    ~~~~NQ...
     IP:        178.164.232.206:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-27 13:37:54 (1 month ago)
 
 #11330   =TS= Fun Server
     IP:        217.85.34.139:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-26 03:47:12 (1 month ago)
 
 #329     ~~~[=G!X=]SniperJaymod
     IP:        66.235.175.226:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-30 17:32:21 (3 weeks ago)
 
 #4941    DC Funserver Jaymod
     IP:        79.228.83.129:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 22:25:30 (1 month ago)
 
 #335     BlindZebra - Enemy Territory Server
     IP:        149.120.114.223:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-06 04:01:25 (1 month ago)
 
 #8794    POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:33502
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 22:59:12 (1 month ago)
 
 #5979    FRANCE CLASSIC
     IP:        77.202.125.157:27961
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 15:06:32 (1 month ago)
 
 #1116             .EA#Jaymod#XPS
     IP:        94.27.222.30:27961
     Game:      ET 2.55
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-19 03:56:02 (2 months ago)
 
 #1121             .EA#Jaymod#XPS
     IP:        94.27.222.30:27960
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-19 03:56:02 (2 months ago)
 
 #356     Himatubusi 60 Toybox JAPAN (2 of 41maps) 
     IP:        125.30.11.31:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-11 01:26:22 (1 month ago)
 
 #1124             .EA#Trickjump
     IP:        94.27.222.30:30000
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-19 03:56:02 (2 months ago)
 
 #874     ETHost
     IP:        196.118.114.14:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-17 23:44:36 (2 months ago)
 
 #25964   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:31213
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-04 19:37:32 (1 month ago)
 
 #5229    euro.rtcw.eu - server 1
     IP:        172.236.221.71:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 02:26:05 (1 month ago)
 
 #366     BraveHeart#Winter Party!
     IP:        91.236.202.75:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-29 01:03:21 (3 weeks ago)
 
 #367     FUNBOY (BEGINNER)
     IP:        66.85.80.229:27961
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-19 06:44:20 (1 month ago)
 
 #4463    euro.rtcw.eu - server 1
     IP:        172.238.122.18:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 21:29:57 (1 month ago)
 
 #368     FUNBOY (BEGINNER)
     IP:        66.85.80.229:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-19 06:44:20 (1 month ago)
 
 #373     ~+ FaLLeN AnGeLs +~ PL
     IP:        89.144.32.153:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-19 13:48:46 (2 months ago)
 
 #1142    TheOfficialGamerClub - ET Degeneracy
     IP:        134.255.21.124:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-24 13:05:45 (1 month ago)
 
 #377     ~~~~NQ...
     IP:        84.236.99.56:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-20 11:21:37 (2 months ago)
 
 #11644   FRANCE / SUISSE N!tmod
     IP:        185.165.67.91:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 02:04:22 (1 month ago)
 
 #2943    ETS Clan Silent TEST!
     IP:        74.50.89.106:27961
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 21:29:34 (1 month ago)
 
 #7552    [Psy]-Galaxy
     IP:        89.245.229.162:28960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 08:53:09 (1 month ago)
 
 #387     MastersOfWarDM
     IP:        77.90.52.32:27960
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:45:08 (1 month ago)
 
 #3715    Asgard Home
     IP:        79.255.31.84:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-20 20:35:05 (2 months ago)
 
 #3977    eudev.rtcw.eu - server 1
     IP:        172.234.168.194:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 00:08:45 (2 months ago)
 
 #6029    euro.rtcw.eu - server 1
     IP:        172.236.207.67:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 18:46:26 (1 month ago)
 
 #10637   =TS= Fun Server
     IP:        217.85.47.221:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 03:50:44 (1 month ago)
 
 #6287    Asgard Home
     IP:        79.255.27.16:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 22:01:12 (1 month ago)
 
 #8594    powersoup
     IP:        213.222.131.50:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-27 23:58:18 (1 month ago)
 
 #409     MastersOfWarOBJ
     IP:        77.90.52.32:27961
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:45:37 (1 month ago)
 
 #8345    euro.rtcw.eu - server 1
     IP:        172.236.214.27:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-24 01:18:11 (1 month ago)
 
 #2974    Nitmod ET Phone HomeAMC
     IP:        107.215.230.154:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-28 05:04:10 (1 month ago)
 
 #423     2tFu's|PlayGround!
     IP:        5.252.101.90:27960
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-13 18:55:28 (1 month ago)
 
 #26024   euro.rtcw.eu - server 1
     IP:        212.71.247.91:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 01:04:01 (1 month ago)
 
 #10411   beer's|Test
     IP:        2.58.197.168:27961
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-24 18:30:37 (1 month ago)
 
 #3246    Rtcw DEV NA
     IP:        168.93.2.215:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-20 16:01:03 (1 day ago)
 
 #3248    [FuN] 4 GOLDRUSH
     IP:        213.118.140.36:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 17:22:53 (1 month ago)
 
 #26034   ETc|Clan,xmod Dev Server
     IP:        84.200.135.3:27966
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 01:04:01 (1 month ago)
 
 #435     2tFu's|Beach 24/7
     IP:        45.141.116.200:27961
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:46:18 (1 month ago)
 
 #8116    POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:33479
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 15:48:19 (1 month ago)
 
 #26039   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:21184
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-04 22:28:27 (1 month ago)
 
 #3257    idtech.space rtcw (vanilla)
     IP:        192.99.32.215:27961
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 06:24:57 (1 month ago)
 
 #26042   |SAS|
     IP:        73.214.191.196:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-07 22:43:56 (1 month ago)
 
 #189     ET: Legacy Host
     IP:        193.33.176.190:27961
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-17 03:28:15 (1 month ago)
 
 #10429   ETHost
     IP:        196.118.149.17:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-18 11:20:01 (1 month ago)
 
 #190     ET: Legacy Host
     IP:        193.33.176.190:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-17 03:28:15 (1 month ago)
 
 #958     TeamBuilding
     IP:        71.178.41.6:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 23:47:43 (1 month ago)
 
 #3264    MADHOUSE
     IP:        144.217.77.230:27960
     Game:      RtCW 1.4x
-    Failures:  207
-    Last seen: 2026-04-21 03:06:32 (15 hours ago)
+    Failures:  212
+    Last seen: 2026-04-21 03:06:32 (17 hours ago)
 
 #194     LANRASGADOS
     IP:        188.34.191.49:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-04 19:46:12 (1 month ago)
 
 #3268    KhasteShodim.ir-RTCW-IRAN
     IP:        87.107.111.78:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-28 13:28:28 (1 month ago)
 
 #199     [EPTG] silEnt-1!!
     IP:        199.47.146.78:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 06:36:12 (1 month ago)
 
 #457     = RTCW DM Cup NA Server =
     IP:        74.91.123.213:27990
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-24 05:02:24 (4 weeks ago)
 
 #203     TEAMPLAY|ETBlight
     IP:        82.223.20.34:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-14 22:00:46 (1 month ago)
 
 #9931    POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:33460
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-24 12:40:41 (1 month ago)
 
 #26059   FRAGWISE.EU
     IP:        5.39.188.175:28050
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 01:04:22 (1 month ago)
 
 #26060   Ana's GTVd ETTVoD #16
     IP:        176.9.42.71:18015
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 01:28:28 (1 month ago)
 
 #26063   us.rtcw.eu - server 1
     IP:        172.104.31.88:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-05 02:50:06 (1 month ago)
 
 #208              .EA#Jaymod#XPS
     IP:        94.27.217.17:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-18 03:50:30 (2 months ago)
 
 #3281    LinuxGSM
     IP:        135.148.59.26:27961
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-13 18:55:32 (1 month ago)
 
 #466     2tFu's|PlayGround!
     IP:        45.141.116.200:27960
     Game:      RtCW 1.0-1.1
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:47:04 (1 month ago)
 
 #10450   TheOfficialGamerClub - ET Degeneracy
     IP:        188.36.164.0:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-01 09:25:13 (1 month ago)
 
 #5076    euro.rtcw.eu - server 1
     IP:        172.238.115.81:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-22 00:06:11 (1 month ago)
 
 #2775    ETHost
     IP:        196.115.191.83:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-20 12:47:15 (2 months ago)
 
 #216     AIMBOT TRAINING CENTER
     IP:        185.238.73.213:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-08 23:54:22 (1 month ago)
 
 #220     50 ticks/s etl2832
     IP:        79.141.144.104:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-04-01 14:39:13 (2 weeks ago)
 
 #8158    E|U=EUROPEGAMING XP SAVE
     IP:        185.181.139.39:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-27 23:33:52 (1 month ago)
 
 #3813    BrzezinkaBattle_NoMercY_NoHopE
     IP:        80.68.232.130:27960
     Game:      ET 2.60b
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 03:17:41 (2 months ago)
 
 #488     ET:L-Public Server
     IP:        176.191.50.10:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-28 01:55:44 (1 month ago)
 
 #3304    55th Street Brooklyn
     IP:        104.148.183.178:27960
     Game:      RtCW 1.4x
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-27 02:44:16 (1 month ago)
 
 #491     ET:L-Public Server
     IP:        93.198.53.69:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 22:45:13 (1 month ago)
 
 #4075    #25c3be [JayMod]
     IP:        98.142.254.190:27960
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 17:33:01 (2 months ago)
 
 #493     FUNCAMP! ET:L XPSAVE
     IP:        62.98.89.223:27961
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 11:33:59 (2 months ago)
 
 #2547    c!es to zjeb
     IP:        89.144.32.126:27960
     Game:      ET 2.60
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-21 16:43:38 (2 months ago)
 
 #757     ET: Legacy 2.83.2
     IP:        82.76.51.236:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-25 19:03:02 (1 month ago)
 
 #251     PZG #testing-area
     IP:        62.171.145.77:27961
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-02-23 09:59:46 (1 month ago)
 
 #4863    POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:33438
     Game:      ET 2.60
-    Failures:  207
-    Last seen: 2026-02-21 19:25:31 (1 month ago)
+    Failures:  212
+    Last seen: 2026-02-21 19:25:31 (2 months ago)
 
 #6911    Rathovo vino
     IP:        147.32.121.245:27960
     Game:      ETL
-    Failures:  207
+    Failures:  212
     Last seen: 2026-03-20 16:00:51 (1 month ago)
 
 #36096   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:24746
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 08:19:26 (2 weeks ago)
 
 #36098   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36849
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 10:01:44 (2 weeks ago)
 
 #18181   ~+ Classic Gameplay +~ BEST MAPS!
     IP:        193.33.177.195:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-31 16:05:30 (3 weeks ago)
 
 #25607   Juovamaaorava ETLegacy
     IP:        86.60.237.28:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 08:20:23 (2 weeks ago)
 
 #36106   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:32104
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 11:46:18 (2 weeks ago)
 
 #13328   =TS= Fun Server
     IP:        217.85.34.240:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-27 03:39:35 (1 month ago)
 
 #25617   TheOfficialGamerClub - ET Degeneracy
     IP:        188.36.167.209:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-11 04:37:31 (1 month ago)
 
 #25874            EA#Scrim#2.6b
     IP:        94.27.222.202:25000
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:45 (1 month ago)
 
 #36114   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:37561
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 14:48:54 (2 weeks ago)
 
 #11798   Oddzial Cieni | Stealth & Tactics
     IP:        145.239.89.166:24441
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-25 12:55:05 (1 month ago)
 
 #36119   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:16434
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 17:58:08 (2 weeks ago)
 
 #18456   euro.rtcw.eu - server 1
     IP:        172.238.122.231:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 22:33:28 (1 month ago)
 
 #36124   euro.rtcw.eu - server 1
     IP:        172.105.69.42:27960
     Game:      RtCW 1.4x
-    Failures:  206
-    Last seen: 2026-04-07 18:25:37 (1 week ago)
+    Failures:  211
+    Last seen: 2026-04-07 18:25:37 (2 weeks ago)
 
 #13853   NAC! - ET:Legacy
     IP:        97.120.124.47:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-05 01:54:33 (2 weeks ago)
 
 #25895   = WolfTactics =
     IP:        5.252.102.102:27966
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-17 00:10:36 (1 month ago)
 
 #25896   2tFu's|Dm|Scrim
     IP:        5.252.101.90:27972
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-13 18:55:39 (1 month ago)
 
 #25897   = ChA0S =
     IP:        5.252.102.102:27969
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-05 07:28:44 (1 month ago)
 
 #25899   2tFu's|SP
     IP:        5.252.101.90:27963
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-13 18:55:39 (1 month ago)
 
 #36147   euro.rtcw.eu - server 1
     IP:        139.162.176.192:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-08 00:11:34 (1 week ago)
 
 #36157   ETHost
     IP:        196.118.22.136:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-18 22:53:32 (2 days ago)
 
 #36160   FlufyBuny's RTCW Server
     IP:        72.109.19.243:27963
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-10 08:07:33 (1 week ago)
 
 #16457   euro.rtcw.eu - server 1
     IP:        172.236.201.124:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 04:24:59 (1 month ago)
 
 #25682   MastersOfWarOBJ
     IP:        45.142.106.27:27961
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-22 23:51:30 (4 weeks ago)
 
 #13395            .EA#Jaymod#XPS
     IP:        94.27.222.202:27961
     Game:      ET 2.55
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:43 (1 month ago)
 
 #15190   us.rtcw.eu - server 1
     IP:        45.79.187.62:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-27 06:37:55 (1 month ago)
 
 #13400            .EA#Jaymod#XPS
     IP:        94.27.222.202:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:43 (1 month ago)
 
 #13403            .EA#Trickjump
     IP:        94.27.222.202:30000
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:43 (1 month ago)
 
 #25948   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:27211
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:56 (1 month ago)
 
 #25949   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:37247
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25950   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:34978
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25951   Oddzial Cieni | Stealth & Tactics
     IP:        51.68.150.221:38530
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25952   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:21773
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25953   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:27885
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25954   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:33722
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25955   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:20555
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25956   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:31946
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25957   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:34266
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #16998   Installer Woes
     IP:        86.190.90.36:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 22:30:55 (1 month ago)
 
 #25958   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:31359
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:39:57 (1 month ago)
 
 #25959   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:20279
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:37:32 (1 month ago)
 
 #25960   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:17555
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:37:32 (1 month ago)
 
 #25961   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:18473
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-04 19:37:32 (1 month ago)
 
 #25711   MastersOfWarDM
     IP:        45.142.106.27:27960
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-22 23:51:30 (4 weeks ago)
 
 #15220   =TS= Fun Server
     IP:        93.218.234.104:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 03:31:39 (1 month ago)
 
 #15993   ~~~~NQ...
     IP:        188.143.54.213:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 13:49:55 (1 month ago)
 
 #17283   =TS= Fun Server
     IP:        93.218.235.51:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-01 02:11:09 (1 month ago)
 
 #15511   [Psy]-Galaxy
     IP:        89.245.231.86:28960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 08:30:23 (1 month ago)
 
 #12953   us.rtcw.eu - server 1
     IP:        173.255.232.236:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-26 02:42:21 (1 month ago)
 
 #35998   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:35406
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
 #18591   DC Funserver Jaymod
     IP:        84.181.250.4:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 21:38:01 (1 month ago)
 
 #35999   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:34715
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
 #36000   Oddzial Cieni | Stealth & Tactics
     IP:        51.68.150.221:17590
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
 #13217   us.rtcw.eu - server 1
     IP:        45.33.68.90:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-26 05:38:55 (1 month ago)
 
 #36001   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:13204
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
 #36002   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:14996
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
 
 #13731   Juovamaaorava ETLegacy
     IP:        80.95.140.172:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-01 08:53:35 (1 month ago)
 
 #36003   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:40723
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-07 03:51:35 (2 weeks ago)
-
-#26276   Batalion 303 | Polskie Skrzydla Wolnosci
-    IP:        51.68.150.221:39833
-    Game:      ET 2.60b
-    Failures:  206
-    Last seen: 2026-04-21 11:55:45 (6 hours ago)
 
 #12464   Beers Beta
     IP:        2.58.197.168:27960
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-25 22:38:02 (1 month ago)
 
 #18353   euro.rtcw.eu - server 1
     IP:        172.238.97.26:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 18:51:08 (1 month ago)
 
 #14780   GRANDPA
     IP:        188.26.182.65:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 16:58:40 (1 month ago)
 
 #16582   Chez Gritchou
     IP:        109.129.245.116:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-27 22:47:29 (1 month ago)
 
 #25800   2tFu's|Beach 24/7
     IP:        5.252.101.90:27961
     Game:      RtCW 1.0-1.1
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-13 18:55:34 (1 month ago)
 
 #12491   euro.rtcw.eu - server 1
     IP:        104.105.20.27:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-26 01:38:59 (1 month ago)
 
 #14287   Asgard Home
     IP:        87.167.161.121:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-26 18:37:04 (1 month ago)
 
 #19153   =TS= Fun Server
     IP:        84.152.179.144:27960
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-01 08:06:44 (1 month ago)
 
 #12250   Drempa's TJ Server?
     IP:        167.86.76.90:27961
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-04-14 03:13:22 (1 week ago)
 
 #17883   POLSKIE SWIRY XP SAVE.
     IP:        89.144.32.126:27953
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 13:42:38 (1 month ago)
 
 #14565   euro.rtcw.eu - server 1
     IP:        104.105.20.131:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-27 02:29:32 (1 month ago)
 
 #18156   sbk.etl.lol - server 1
     IP:        172.236.219.83:27960
     Game:      RtCW 1.4x
-    Failures:  206
+    Failures:  211
     Last seen: 2026-02-28 22:32:54 (1 month ago)
 
 #25840            .EA#Hide&Seek
     IP:        94.27.222.202:40001
     Game:      ET 2.55
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:44 (1 month ago)
 
 #25841            .EA#Trickjump
     IP:        94.27.222.202:30001
     Game:      ET 2.55
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:44 (1 month ago)
 
 #25842            .EA#N!tmod#XPS
     IP:        94.27.222.202:27981
     Game:      ET 2.55
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:44 (1 month ago)
 
 #12536   ET:Legacy server
     IP:        46.4.112.80:27960
     Game:      ETL
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-16 08:39:24 (1 month ago)
 
 #25850            .EA#Hide&Seek
     IP:        94.27.222.202:40000
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:44 (1 month ago)
 
 #25852            .EA#N!tmod#XPS
     IP:        94.27.222.202:27980
     Game:      ET 2.60b
-    Failures:  206
+    Failures:  211
     Last seen: 2026-03-06 04:24:44 (1 month ago)
+
+#26276   Batalion 303 | Polskie Skrzydla Wolnosci
+    IP:        51.68.150.221:39833
+    Game:      ET 2.60b
+    Failures:  206
+    Last seen: 2026-04-21 11:55:45 (8 hours ago)
+
+#32420   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:42181
+    Game:      ET 2.60b
+    Failures:  206
+    Last seen: 2026-04-21 12:50:32 (7 hours ago)
 
 #26316   Batalion 303 | Polskie Skrzydla Wolnosci
     IP:        51.68.150.221:34123
@@ -5495,6 +5501,252 @@ Count: 1179
     Failures:  205
     Last seen: 2026-03-05 07:26:11 (1 month ago)
 
+#26639   FlufyBuny's RTCW Server
+    IP:        75.192.167.254:27963
+    Game:      RtCW 1.0-1.1
+    Failures:  204
+    Last seen: 2026-03-12 01:01:11 (1 month ago)
+
+#26641   = OS = RtCW
+    IP:        185.107.96.164:27968
+    Game:      RtCW 1.0-1.1
+    Failures:  204
+    Last seen: 2026-03-12 01:01:11 (1 month ago)
+
+#26653   = WarZone =
+    IP:        185.107.96.164:27967
+    Game:      RtCW 1.0-1.1
+    Failures:  204
+    Last seen: 2026-03-12 01:01:11 (1 month ago)
+
+#26655   LinuxGSM
+    IP:        75.168.70.112:27970
+    Game:      RtCW 1.0-1.1
+    Failures:  204
+    Last seen: 2026-03-09 16:37:37 (1 month ago)
+
+#26707   RtCW - Wolffiles.eu
+    IP:        144.76.234.9:27962
+    Game:      RtCW 1.4x
+    Failures:  204
+    Last seen: 2026-03-11 21:24:55 (1 month ago)
+
+#26711   ---trickjump---
+    IP:        104.153.105.209:27968
+    Game:      RtCW 1.4x
+    Failures:  204
+    Last seen: 2026-03-19 06:44:38 (1 month ago)
+
+#26480   9ine|HudMaps.
+    IP:        45.9.60.102:27963
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-27 20:39:32 (3 weeks ago)
+
+#26741   <)Totalne-PIEKLO(>
+    IP:        51.38.122.215:26005
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-19 15:22:57 (1 month ago)
+
+#26495   -#C|C#- PALESTINIAN XPS
+    IP:        82.67.12.142:27963
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-04-07 21:15:58 (1 week ago)
+
+#26496   9ine|Originals.
+    IP:        45.9.60.102:27962
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-25 13:48:28 (3 weeks ago)
+
+#26501   Violence of Action Vietnam
+    IP:        206.189.221.189:27963
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-04-19 20:12:32 (2 days ago)
+
+#26763   us.rtcw.eu - server 1
+    IP:        69.164.209.215:27960
+    Game:      RtCW 1.4x
+    Failures:  204
+    Last seen: 2026-03-06 07:16:43 (1 month ago)
+
+#26768   Oddzial Cieni | Stealth & Tactics
+    IP:        51.68.150.221:26784
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-06 21:51:54 (1 month ago)
+
+#26770   [PL] Wilki Wojny | Polski Serwer ET
+    IP:        51.68.150.221:37579
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-06 17:09:35 (1 month ago)
+
+#26519   [>BH<] NODOWNLOAD XP SAVE
+    IP:        188.40.253.116:27980
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-24 09:56:37 (4 weeks ago)
+
+#26522   -#C|C#- VIETNAM XPS
+    IP:        82.67.12.142:27962
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-04-07 21:15:59 (1 week ago)
+
+#26527   BRASIL ET: Legacy Host
+    IP:        177.222.148.43:27002
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-12 00:33:38 (1 month ago)
+
+#26532    LEGACY BEGINNERS DBJ
+    IP:        82.67.12.142:27970
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-06 22:09:56 (1 month ago)
+
+#26533   (HBC)TESTBASKET LEGACY
+    IP:        78.129.185.48:27962
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-04-01 12:03:28 (2 weeks ago)
+
+#26818            .EA#N!tmod#XPS
+    IP:        94.27.219.162:27981
+    Game:      ET 2.55
+    Failures:  204
+    Last seen: 2026-03-13 05:31:05 (1 month ago)
+
+#26819            .EA#N!tmod#XPS
+    IP:        94.27.219.162:27980
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-13 05:31:05 (1 month ago)
+
+#26823            .EA#Trickjump
+    IP:        94.27.219.162:30001
+    Game:      ET 2.55
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26824            .EA#Jaymod#XPS
+    IP:        94.27.219.162:27961
+    Game:      ET 2.55
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26825            .EA#Hide&Seek
+    IP:        94.27.219.162:40001
+    Game:      ET 2.55
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26826            .EA#Trickjump
+    IP:        94.27.219.162:30000
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26827            .EA#Jaymod#XPS
+    IP:        94.27.219.162:27960
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26828            .EA#Hide&Seek
+    IP:        94.27.219.162:40000
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26832            EA#Scrim#2.6b
+    IP:        94.27.219.162:25000
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-13 05:31:06 (1 month ago)
+
+#26073   [><]LEGACY
+    IP:        78.129.185.48:27963
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-05 23:58:49 (1 month ago)
+
+#26077   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:27596
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 07:03:00 (1 month ago)
+
+#26078   >> SZARA PIECHOTA <<
+    IP:        51.68.150.221:25620
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:57 (1 month ago)
+
+#26846   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:35397
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-06 09:59:46 (1 month ago)
+
+#26079   * POLSKIE POLE BITWY *
+    IP:        51.68.150.221:27434
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:57 (1 month ago)
+
+#26080   Legion Orla | Polski Realistic Server
+    IP:        51.68.150.221:33539
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:58 (1 month ago)
+
+#26081   Batalion 303 | Polskie Skrzydla Wolnosci
+    IP:        51.68.150.221:15138
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:58 (1 month ago)
+
+#26849   A Oldman Bots ETL2.82.1
+    IP:        217.226.56.115:27962
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-07 00:40:22 (1 month ago)
+
+#26082   >> POLSKA DYWIZJA <<
+    IP:        51.68.150.221:21725
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:58 (1 month ago)
+
+#26083   Operacja Wisla | Polski Serwer Wojskowy
+    IP:        51.68.150.221:27347
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:58 (1 month ago)
+
+#26084   Brygada Pustynna | Polska Taktyka i Walka
+    IP:        51.68.150.221:10173
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-05 03:30:58 (1 month ago)
+
+#26858   Old BOM Boys Jaymod
+    IP:        101.161.77.8:27960
+    Game:      ETL
+    Failures:  204
+    Last seen: 2026-03-06 21:24:53 (1 month ago)
+
+#26865   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:20869
+    Game:      ET 2.60b
+    Failures:  204
+    Last seen: 2026-03-06 10:54:54 (1 month ago)
+
 #26294   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:19551
     Game:      ET 2.60b
@@ -5615,12 +5867,6 @@ Count: 1179
     Failures:  202
     Last seen: 2026-03-05 06:59:10 (1 month ago)
 
-#32420   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:42181
-    Game:      ET 2.60b
-    Failures:  201
-    Last seen: 2026-04-21 12:50:32 (5 hours ago)
-
 #26289   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:13726
     Game:      ET 2.60b
@@ -5669,66 +5915,6 @@ Count: 1179
     Failures:  200
     Last seen: 2026-03-05 05:54:25 (1 month ago)
 
-#26639   FlufyBuny's RTCW Server
-    IP:        75.192.167.254:27963
-    Game:      RtCW 1.0-1.1
-    Failures:  199
-    Last seen: 2026-03-12 01:01:11 (1 month ago)
-
-#26641   = OS = RtCW
-    IP:        185.107.96.164:27968
-    Game:      RtCW 1.0-1.1
-    Failures:  199
-    Last seen: 2026-03-12 01:01:11 (1 month ago)
-
-#26653   = WarZone =
-    IP:        185.107.96.164:27967
-    Game:      RtCW 1.0-1.1
-    Failures:  199
-    Last seen: 2026-03-12 01:01:11 (1 month ago)
-
-#26655   LinuxGSM
-    IP:        75.168.70.112:27970
-    Game:      RtCW 1.0-1.1
-    Failures:  199
-    Last seen: 2026-03-09 16:37:37 (1 month ago)
-
-#26707   RtCW - Wolffiles.eu
-    IP:        144.76.234.9:27962
-    Game:      RtCW 1.4x
-    Failures:  199
-    Last seen: 2026-03-11 21:24:55 (1 month ago)
-
-#26711   ---trickjump---
-    IP:        104.153.105.209:27968
-    Game:      RtCW 1.4x
-    Failures:  199
-    Last seen: 2026-03-19 06:44:38 (1 month ago)
-
-#26480   9ine|HudMaps.
-    IP:        45.9.60.102:27963
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-27 20:39:32 (3 weeks ago)
-
-#26741   <)Totalne-PIEKLO(>
-    IP:        51.38.122.215:26005
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-19 15:22:57 (1 month ago)
-
-#26495   -#C|C#- PALESTINIAN XPS
-    IP:        82.67.12.142:27963
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-04-07 21:15:58 (1 week ago)
-
-#26496   9ine|Originals.
-    IP:        45.9.60.102:27962
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-25 13:48:28 (3 weeks ago)
-
 #26241   Batalion 303 | Polskie Skrzydla Wolnosci
     IP:        51.68.150.221:24585
     Game:      ET 2.60b
@@ -5758,12 +5944,6 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  199
     Last seen: 2026-03-05 04:59:45 (1 month ago)
-
-#26501   Violence of Action Vietnam
-    IP:        206.189.221.189:27963
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-04-19 20:12:32 (1 day ago)
 
 #26246   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:38893
@@ -5801,12 +5981,6 @@ Count: 1179
     Failures:  199
     Last seen: 2026-03-05 04:59:45 (1 month ago)
 
-#26763   us.rtcw.eu - server 1
-    IP:        69.164.209.215:27960
-    Game:      RtCW 1.4x
-    Failures:  199
-    Last seen: 2026-03-06 07:16:43 (1 month ago)
-
 #26254   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:26524
     Game:      ET 2.60b
@@ -5825,12 +5999,6 @@ Count: 1179
     Failures:  199
     Last seen: 2026-03-05 05:25:33 (1 month ago)
 
-#26768   Oddzial Cieni | Stealth & Tactics
-    IP:        51.68.150.221:26784
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-06 21:51:54 (1 month ago)
-
 #26257   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:24027
     Game:      ET 2.60b
@@ -5842,12 +6010,6 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  199
     Last seen: 2026-03-05 05:25:33 (1 month ago)
-
-#26770   [PL] Wilki Wojny | Polski Serwer ET
-    IP:        51.68.150.221:37579
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-06 17:09:35 (1 month ago)
 
 #26259   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:40865
@@ -5879,12 +6041,6 @@ Count: 1179
     Failures:  199
     Last seen: 2026-03-05 05:25:34 (1 month ago)
 
-#26519   [>BH<] NODOWNLOAD XP SAVE
-    IP:        188.40.253.116:27980
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-24 09:56:37 (4 weeks ago)
-
 #26264   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:28045
     Game:      ET 2.60b
@@ -5903,12 +6059,6 @@ Count: 1179
     Failures:  199
     Last seen: 2026-03-05 05:25:34 (1 month ago)
 
-#26522   -#C|C#- VIETNAM XPS
-    IP:        82.67.12.142:27962
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-04-07 21:15:59 (1 week ago)
-
 #26267   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:17411
     Game:      ET 2.60b
@@ -5921,29 +6071,11 @@ Count: 1179
     Failures:  199
     Last seen: 2026-03-05 05:25:34 (1 month ago)
 
-#26527   BRASIL ET: Legacy Host
-    IP:        177.222.148.43:27002
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-12 00:33:38 (1 month ago)
-
-#26532    LEGACY BEGINNERS DBJ
-    IP:        82.67.12.142:27970
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-06 22:09:56 (1 month ago)
-
 #26277   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:36366
     Game:      ET 2.60b
     Failures:  199
     Last seen: 2026-03-05 05:54:25 (1 month ago)
-
-#26533   (HBC)TESTBASKET LEGACY
-    IP:        78.129.185.48:27962
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-04-01 12:03:28 (2 weeks ago)
 
 #26278   [PL] Wilki Wojny | Polski Serwer ET
     IP:        51.68.150.221:33388
@@ -5986,138 +6118,6 @@ Count: 1179
     Game:      ET 2.60b
     Failures:  199
     Last seen: 2026-03-05 05:54:25 (1 month ago)
-
-#26818            .EA#N!tmod#XPS
-    IP:        94.27.219.162:27981
-    Game:      ET 2.55
-    Failures:  199
-    Last seen: 2026-03-13 05:31:05 (1 month ago)
-
-#26819            .EA#N!tmod#XPS
-    IP:        94.27.219.162:27980
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-13 05:31:05 (1 month ago)
-
-#26823            .EA#Trickjump
-    IP:        94.27.219.162:30001
-    Game:      ET 2.55
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26824            .EA#Jaymod#XPS
-    IP:        94.27.219.162:27961
-    Game:      ET 2.55
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26825            .EA#Hide&Seek
-    IP:        94.27.219.162:40001
-    Game:      ET 2.55
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26826            .EA#Trickjump
-    IP:        94.27.219.162:30000
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26827            .EA#Jaymod#XPS
-    IP:        94.27.219.162:27960
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26828            .EA#Hide&Seek
-    IP:        94.27.219.162:40000
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26832            EA#Scrim#2.6b
-    IP:        94.27.219.162:25000
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-13 05:31:06 (1 month ago)
-
-#26073   [><]LEGACY
-    IP:        78.129.185.48:27963
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-05 23:58:49 (1 month ago)
-
-#26077   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:27596
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 07:03:00 (1 month ago)
-
-#26078   >> SZARA PIECHOTA <<
-    IP:        51.68.150.221:25620
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:57 (1 month ago)
-
-#26846   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:35397
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-06 09:59:46 (1 month ago)
-
-#26079   * POLSKIE POLE BITWY *
-    IP:        51.68.150.221:27434
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:57 (1 month ago)
-
-#26080   Legion Orla | Polski Realistic Server
-    IP:        51.68.150.221:33539
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:58 (1 month ago)
-
-#26081   Batalion 303 | Polskie Skrzydla Wolnosci
-    IP:        51.68.150.221:15138
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:58 (1 month ago)
-
-#26849   A Oldman Bots ETL2.82.1
-    IP:        217.226.56.115:27962
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-07 00:40:22 (1 month ago)
-
-#26082   >> POLSKA DYWIZJA <<
-    IP:        51.68.150.221:21725
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:58 (1 month ago)
-
-#26083   Operacja Wisla | Polski Serwer Wojskowy
-    IP:        51.68.150.221:27347
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:58 (1 month ago)
-
-#26084   Brygada Pustynna | Polska Taktyka i Walka
-    IP:        51.68.150.221:10173
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-05 03:30:58 (1 month ago)
-
-#26858   Old BOM Boys Jaymod
-    IP:        101.161.77.8:27960
-    Game:      ETL
-    Failures:  199
-    Last seen: 2026-03-06 21:24:53 (1 month ago)
-
-#26865   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:20869
-    Game:      ET 2.60b
-    Failures:  199
-    Last seen: 2026-03-06 10:54:54 (1 month ago)
 
 #26177   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:21652
@@ -6191,6 +6191,12 @@ Count: 1179
     Failures:  198
     Last seen: 2026-03-05 03:30:58 (1 month ago)
 
+#36353   BEGINNERS|NOQUARTER 1.3.0|
+    IP:        93.95.119.109:27960
+    Game:      ETL
+    Failures:  197
+    Last seen: 2026-04-09 02:23:57 (1 week ago)
+
 #26182   Oddzial Cieni | Stealth & Tactics
     IP:        51.68.150.221:14026
     Game:      ET 2.60b
@@ -6215,11 +6221,47 @@ Count: 1179
     Failures:  197
     Last seen: 2026-03-05 03:58:24 (1 month ago)
 
+#36169   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:24363
+    Game:      ET 2.60b
+    Failures:  197
+    Last seen: 2026-04-08 06:28:14 (1 week ago)
+
 #26186   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:22738
     Game:      ET 2.60b
     Failures:  197
     Last seen: 2026-03-05 03:58:24 (1 month ago)
+
+#36202   .:: POLSKIE PIEKIELKO ::. [XP]
+    IP:        51.68.150.221:38240
+    Game:      ET 2.60b
+    Failures:  197
+    Last seen: 2026-04-08 12:12:43 (1 week ago)
+
+#36337   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:18158
+    Game:      ET 2.60b
+    Failures:  197
+    Last seen: 2026-04-08 08:31:42 (1 week ago)
+
+#36344   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:39544
+    Game:      ET 2.60b
+    Failures:  197
+    Last seen: 2026-04-08 10:26:18 (1 week ago)
+
+#36347   [KOLEDZY] Valhalla 24/7
+    IP:        79.186.137.96:27960
+    Game:      ETL
+    Failures:  197
+    Last seen: 2026-04-18 02:40:02 (3 days ago)
+
+#36351   =|PoLISH|SoLDIERS|=
+    IP:        217.182.78.252:16278
+    Game:      ET 2.60b
+    Failures:  197
+    Last seen: 2026-04-08 15:48:45 (1 week ago)
 
 #26187   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:37941
@@ -6347,763 +6389,739 @@ Count: 1179
     Failures:  196
     Last seen: 2026-03-05 04:59:45 (1 month ago)
 
-#36353   BEGINNERS|NOQUARTER 1.3.0|
-    IP:        93.95.119.109:27960
-    Game:      ETL
-    Failures:  192
-    Last seen: 2026-04-09 02:23:57 (1 week ago)
-
-#36169   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:24363
-    Game:      ET 2.60b
-    Failures:  192
-    Last seen: 2026-04-08 06:28:14 (1 week ago)
-
-#36202   .:: POLSKIE PIEKIELKO ::. [XP]
-    IP:        51.68.150.221:38240
-    Game:      ET 2.60b
-    Failures:  192
-    Last seen: 2026-04-08 12:12:43 (1 week ago)
-
-#36337   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:18158
-    Game:      ET 2.60b
-    Failures:  192
-    Last seen: 2026-04-08 08:31:42 (1 week ago)
-
-#36344   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:39544
-    Game:      ET 2.60b
-    Failures:  192
-    Last seen: 2026-04-08 10:26:18 (1 week ago)
-
-#36347   [KOLEDZY] Valhalla 24/7
-    IP:        79.186.137.96:27960
-    Game:      ETL
-    Failures:  192
-    Last seen: 2026-04-18 02:40:02 (3 days ago)
-
-#36351   =|PoLISH|SoLDIERS|=
-    IP:        217.182.78.252:16278
-    Game:      ET 2.60b
-    Failures:  192
-    Last seen: 2026-04-08 15:48:45 (1 week ago)
-
 #36361   euro.rtcw.eu - server 1
     IP:        139.162.142.144:27960
     Game:      RtCW 1.4x
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-08 15:49:18 (1 week ago)
 
 #36370   Wujin Nitmod 27960
     IP:        183.103.115.250:27960
     Game:      ETL
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-09 13:53:43 (1 week ago)
 
 #36371   POPORU_FOREVER_ET_Legacy
     IP:        183.103.115.250:27961
     Game:      ETL
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-09 13:53:44 (1 week ago)
 
 #36374   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:33975
     Game:      ET 2.60b
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-08 19:26:13 (1 week ago)
 
 #36385   euro.rtcw.eu - server 1
     IP:        172.104.225.206:27960
     Game:      RtCW 1.4x
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-09 01:19:55 (1 week ago)
 
 #36393   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36903
     Game:      ET 2.60b
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-08 21:35:24 (1 week ago)
 
 #36396   NQ 64-bit test 27962
     IP:        93.95.119.109:27962
     Game:      ETL
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-08 22:39:42 (1 week ago)
 
 #36397   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:14914
     Game:      ET 2.60b
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-08 22:39:42 (1 week ago)
 
 #36400   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:38251
     Game:      ET 2.60b
-    Failures:  190
+    Failures:  195
     Last seen: 2026-04-09 07:00:48 (1 week ago)
 
 #36866   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:20544
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 08:30:38 (1 week ago)
 
 #36870   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:41562
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 11:24:35 (1 week ago)
 
 #36871   FlufyBuny's RTCW Server
     IP:        75.192.138.223:27963
     Game:      RtCW 1.0-1.1
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-12 12:55:36 (1 week ago)
 
 #36872   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:34262
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 21:45:22 (1 week ago)
 
 #36623   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:10613
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:50 (1 week ago)
 
 #36624   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:32485
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:50 (1 week ago)
 
 #36625   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:40708
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:50 (1 week ago)
 
 #36881   ET: Csirak Nepe
     IP:        162.220.9.194:5610
     Game:      ETL
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-11 23:19:50 (1 week ago)
 
 #36626   [PL] Front Wschodni | Real Combat Server
     IP:        51.68.150.221:11623
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:50 (1 week ago)
 
 #36629   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:35461
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:58 (1 week ago)
 
 #36630   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:12396
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:58 (1 week ago)
 
 #36631   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:17510
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:58 (1 week ago)
 
 #36632   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:28068
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 04:25:58 (1 week ago)
 
 #36404   ET: Csirak Nepe
     IP:        178.63.182.108:5622
     Game:      ETL
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-11 00:10:53 (1 week ago)
 
 #36405   JZM Forever silEnT
     IP:        38.44.211.180:27960
     Game:      ETL
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 04:08:35 (1 week ago)
 
 #36409   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:21600
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:14 (1 week ago)
 
 #36411   [SpecOps] Poland | Polska Jednostka Taktyczna
     IP:        51.68.150.221:25911
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:18 (1 week ago)
 
 #36412   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:16282
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:18 (1 week ago)
 
 #36413   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:23049
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:18 (1 week ago)
 
 #36414   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:13402
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:18 (1 week ago)
 
 #36415   * POLSKIE POLE BITWY *
     IP:        51.68.150.221:20723
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:18 (1 week ago)
 
 #36418   * POLSKIE POLE BITWY *
     IP:        51.68.150.221:37425
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:27 (1 week ago)
 
 #36427   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:41697
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 03:52:59 (1 week ago)
 
 #36710   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:21614
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 11:10:45 (1 week ago)
 
 #36723   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:14693
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 18:20:43 (1 week ago)
 
 #36741   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:30872
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 19:43:59 (1 week ago)
 
 #36743   Asgard Home
     IP:        87.167.175.67:27960
     Game:      ETL
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 00:29:13 (1 week ago)
 
 #36750   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36975
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-09 22:04:39 (1 week ago)
 
 #36759   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:20026
     Game:      ET 2.60b
-    Failures:  187
+    Failures:  192
     Last seen: 2026-04-10 06:47:18 (1 week ago)
 
 #37447   AMP Powered Wolfenstein: Enemy Territory Server
     IP:        184.105.7.248:27960
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 02:01:13 (1 week ago)
 
 #37450   ~~~~NQCamPanzerwar...
     IP:        62.165.241.21:27971
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-18 23:57:33 (2 days ago)
 
 #37452   WolfArena TvT
     IP:        146.103.119.224:27960
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 00:13:27 (1 week ago)
 
 #37456   Asgard Home
     IP:        79.255.13.157:27960
     Game:      ETL
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-12 15:24:57 (1 week ago)
 
 #37461   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:18998
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 06:24:45 (1 week ago)
 
 #37467   euro.rtcw.eu - server 1
     IP:        139.162.187.118:27960
     Game:      RtCW 1.4x
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 00:14:20 (1 week ago)
 
 #37488   * OGNISTY MLYN * [XP SAVE] * 
     IP:        51.68.150.221:19208
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:34 (1 week ago)
 
 #37489   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:35986
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:34 (1 week ago)
 
 #37491   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:39329
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:39 (1 week ago)
 
 #37492   [PL] Wilki Wojny | Polski Serwer ET
     IP:        51.68.150.221:25206
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:39 (1 week ago)
 
 #37493   Operacja Wisla | Polski Serwer Wojskowy
     IP:        51.68.150.221:10756
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:39 (1 week ago)
 
 #37495   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:17545
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:43 (1 week ago)
 
 #37498   * POLSKIE POLE BITWY *
     IP:        51.68.150.221:32386
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:51 (1 week ago)
 
 #37501   Brygada Pustynna | Polska Taktyka i Walka
     IP:        51.68.150.221:27939
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 03:28:59 (1 week ago)
 
 #37768   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:35225
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 09:27:51 (1 week ago)
 
 #37776   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:30991
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-13 20:04:13 (1 week ago)
 
 #37793   DynamoFC
     IP:        18.195.34.193:27960
     Game:      ETL
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 10:32:50 (1 week ago)
 
 #37805   ET: Legacy Host
     IP:        151.26.26.166:27960
     Game:      ETL
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 01:49:34 (1 week ago)
 
 #37807   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:12109
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 06:27:31 (1 week ago)
 
 #37812   euro.rtcw.eu - server 1
     IP:        139.162.184.57:27960
     Game:      RtCW 1.4x
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 01:49:50 (1 week ago)
 
 #37305   ~~~~N!tmod... 
     IP:        62.165.241.21:27968
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 00:03:56 (1 week ago)
 
 #37306   ~~~~ETJump...
     IP:        62.165.241.21:27964
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-18 23:55:02 (2 days ago)
 
 #37307   ~~~~ETProTJ...
     IP:        62.165.241.21:27962
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-18 23:59:03 (2 days ago)
 
 #37308   ~~~~NoDownload...
     IP:        62.165.241.21:27960
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-18 23:57:33 (2 days ago)
 
 #37311   ET: Legacy Host
     IP:        76.249.140.9:27960
     Game:      ETL
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-12 22:43:07 (1 week ago)
 
 #37314   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:27393
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-12 05:45:53 (1 week ago)
 
 #37834   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:28990
     Game:      ET 2.60b
-    Failures:  183
+    Failures:  188
     Last seen: 2026-04-14 03:44:30 (1 week ago)
 
 #36883   G-A-M-E-R-S
     IP:        83.223.210.135:27960
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 10:35:29 (1 week ago)
 
 #36897   ET: Legacy Host
     IP:        93.95.119.109:27970
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-10 18:37:46 (1 week ago)
 
 #36909   Crikton
     IP:        90.60.77.199:27960
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-10 23:12:13 (1 week ago)
 
 #36913   euro.rtcw.eu - server 1
     IP:        172.104.148.210:27960
     Game:      RtCW 1.4x
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 02:57:21 (1 week ago)
 
 #36927   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:33045
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 07:35:41 (1 week ago)
 
 #36931   us.rtcw.eu - server 1
     IP:        192.155.90.129:27960
     Game:      RtCW 1.4x
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 03:51:48 (1 week ago)
 
 #37247   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:27768
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 18:59:06 (1 week ago)
 
 #37250   Caffe bar Putnik Bektez
     IP:        86.33.9.202:27960
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 14:26:09 (1 week ago)
 
 #37270   NLsvr
     IP:        89.124.104.108:27960
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-12 06:33:19 (1 week ago)
 
 #37273   [KOLEDZY] Regular Maps
     IP:        79.186.137.96:27961
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-18 02:37:02 (3 days ago)
 
 #37276   euro.rtcw.eu - server 1
     IP:        172.104.146.4:27960
     Game:      RtCW 1.4x
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 19:28:54 (1 week ago)
 
 #37280   [KOLEDZY] Original Maps
     IP:        79.186.137.96:27962
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-18 02:35:33 (3 days ago)
 
 #37284   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:11197
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 19:57:50 (1 week ago)
 
 #37287   ET: Legacy Host
     IP:        151.26.26.136:27961
     Game:      ETL
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 20:25:36 (1 week ago)
 
 #37290   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:21451
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-12 14:49:40 (1 week ago)
 
 #37296   euro.rtcw.eu - server 1
     IP:        172.105.246.36:27960
     Game:      RtCW 1.4x
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-11 23:16:19 (1 week ago)
 
 #37303   ~~~~NQ...
     IP:        62.165.241.21:27963
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-18 23:59:03 (2 days ago)
 
 #37304   ~~~~Silent... 
     IP:        62.165.241.21:27966
     Game:      ET 2.60b
-    Failures:  182
+    Failures:  187
     Last seen: 2026-04-18 23:59:03 (2 days ago)
 
 #27159   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:10652
     Game:      ET 2.60b
-    Failures:  168
-    Last seen: 2026-04-21 12:58:01 (5 hours ago)
+    Failures:  173
+    Last seen: 2026-04-21 12:58:01 (7 hours ago)
 
 #38464   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:17625
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-16 10:30:44 (5 days ago)
 
 #38469   FALX|HeliAttack[RO]
     IP:        5.15.131.38:27960
     Game:      ETL
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-16 15:07:03 (5 days ago)
 
 #37959   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:22489
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-14 11:33:06 (1 week ago)
 
 #37962   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36284
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-14 20:51:25 (6 days ago)
 
 #38480   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:12891
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-16 15:07:44 (5 days ago)
 
 #38738   us.rtcw.eu - server 1
     IP:        45.56.100.160:27960
     Game:      RtCW 1.4x
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-17 06:53:32 (4 days ago)
 
 #38494   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:19803
     Game:      ET 2.60b
-    Failures:  165
-    Last seen: 2026-04-16 18:33:04 (4 days ago)
+    Failures:  170
+    Last seen: 2026-04-16 18:33:04 (5 days ago)
 
 #37984   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:35842
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-14 22:11:18 (6 days ago)
 
 #37988   euro.rtcw.eu - server 1
     IP:        139.162.153.228:27960
     Game:      RtCW 1.4x
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-14 23:32:09 (6 days ago)
 
 #37993   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:36324
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 06:21:28 (6 days ago)
 
 #38000   .:: POLSKIE PIEKIELKO ::. [XP]
     IP:        51.68.150.221:12530
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:42 (6 days ago)
 
 #38001   Legion Orla | Polski Realistic Server
     IP:        51.68.150.221:38911
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:42 (6 days ago)
 
 #38002   >> POLSKA DYWIZJA <<
     IP:        51.68.150.221:41639
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:42 (6 days ago)
 
 #38003   Oddzial Cieni | Stealth & Tactics
     IP:        51.68.150.221:25067
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:42 (6 days ago)
 
 #38004   Batalion 303 | Polskie Skrzydla Wolnosci
     IP:        51.68.150.221:26635
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:42 (6 days ago)
 
 #38006   =|POLSKA|VODKA|silEnt|XPSAVE|=
     IP:        51.68.150.221:18114
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:46 (6 days ago)
 
 #38007   * OGNISTY MLYN * [XP SAVE] *
     IP:        51.68.150.221:22327
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:21:47 (6 days ago)
 
 #38012   Kompania Szarzy Wilcy | Polski Serwer ET
     IP:        51.68.150.221:29603
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 03:22:03 (6 days ago)
 
 #38283   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:18679
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 10:17:08 (6 days ago)
 
 #38542   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:27828
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-17 06:41:05 (4 days ago)
 
 #38291   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:37330
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 17:09:12 (6 days ago)
 
 #38292   .     SS.ROMANIA
     IP:        86.121.226.241:27962
     Game:      ETL
-    Failures:  165
-    Last seen: 2026-04-16 18:37:00 (4 days ago)
+    Failures:  170
+    Last seen: 2026-04-16 18:37:00 (5 days ago)
 
 #38306   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:14768
     Game:      ET 2.60b
-    Failures:  165
-    Last seen: 2026-04-15 20:05:33 (5 days ago)
+    Failures:  170
+    Last seen: 2026-04-15 20:05:33 (6 days ago)
 
 #38316   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:33568
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-15 22:41:26 (5 days ago)
 
 #38323   euro.rtcw.eu - server 1
     IP:        139.162.159.222:27960
     Game:      RtCW 1.4x
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-16 00:00:52 (5 days ago)
 
 #39107   >> SZARA PIECHOTA <<
     IP:        51.68.150.221:11770
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-19 23:28:07 (1 day ago)
 
 #38341   =|PoLISH|SoLDIERS|=
     IP:        217.182.78.252:32107
     Game:      ET 2.60b
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-16 06:19:15 (5 days ago)
 
 #38889   [KOLEDZY] Valhalla 24/7
     IP:        79.186.210.21:27960
     Game:      ETL
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-20 13:52:02 (1 day ago)
 
 #38890   [KOLEDZY] Regular Maps
     IP:        79.186.210.21:27961
     Game:      ETL
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-20 13:52:02 (1 day ago)
 
 #38891   [KOLEDZY] Original Maps
     IP:        79.186.210.21:27962
     Game:      ETL
-    Failures:  165
+    Failures:  170
     Last seen: 2026-04-20 13:50:33 (1 day ago)
 
 #36911   FiresTestBude
     IP:        45.138.51.242:25007
     Game:      ETL
-    Failures:  129
-    Last seen: 2026-04-21 14:23:02 (3 hours ago)
+    Failures:  134
+    Last seen: 2026-04-21 14:23:02 (5 hours ago)
 
 
 === Aktuell offline (3-99 Failures — oft nur temporär) ===
-Count: 4
+Count: 7
 
 #39036   ratutiu
     IP:        176.98.81.2:27960
     Game:      ET 2.60b
-    Failures:  42
-    Last seen: 2026-04-21 15:12:46 (3 hours ago)
+    Failures:  47
+    Last seen: 2026-04-21 15:12:46 (5 hours ago)
 
 #26449   Forplay NQ XPsave!
     IP:        46.4.124.150:27999
     Game:      ET 2.60b
     Failures:  7
-    Last seen: 2026-04-21 18:06:02 (14 minutes ago)
+    Last seen: 2026-04-21 18:06:02 (2 hours ago)
+
+#793     SOE44 etl-maps
+    IP:        130.61.57.180:27961
+    Game:      ETL
+    Failures:  3
+    Last seen: 2026-04-21 18:42:33 (1 hour ago)
+
+#114     etblo.at test server
+    IP:        51.15.199.226:27960
+    Game:      ETL
+    Failures:  3
+    Last seen: 2026-04-21 18:54:02 (1 hour ago)
 
 #3713    .     SS.ROMANIA
     IP:        86.121.226.241:27960
     Game:      ETL
     Failures:  3
-    Last seen: 2026-04-21 17:42:01 (38 minutes ago)
+    Last seen: 2026-04-21 17:42:01 (2 hours ago)
+
+#26510   [BnS] Clan server
+    IP:        188.130.232.239:25589
+    Game:      ETL
+    Failures:  3
+    Last seen: 2026-04-21 20:08:04 (12 minutes ago)
 
 #3261    PMCG Burning Pubrtcwpro
     IP:        194.59.206.54:27131
     Game:      RtCW 1.4x
     Failures:  3
-    Last seen: 2026-04-21 16:27:32 (1 hour ago)
+    Last seen: 2026-04-21 16:27:32 (3 hours ago)
 

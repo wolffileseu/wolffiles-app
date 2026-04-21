@@ -192,10 +192,18 @@ class TrackerController extends Controller
 
         // Enhanced Tracker: recent matches (only if server reports via sv_tracker2)
         $recentMatches = collect();
+        $hallOfFame = [];
+        $lastMatch = null;
+        $lastMatchPlayers = collect();
+        $liveMatch = null;
+        $liveMatchPlayers = collect();
+        $serverMapBest = collect();
+        $serverWeaponMeta = collect();
+
         if ($server->is_enhanced_tracker) {
+            // Match history for existing section below (sub-30s fragments hidden)
             $recentMatches = \DB::table('tracker_matches')
                 ->where('server_id', $server->id)
-                // Hide sub-30s maprestart fragments, keep real matches + open ones
                 ->where(function ($q) {
                     $q->whereNull('ended_at')
                       ->orWhere('duration_seconds', '>=', 30);
@@ -203,10 +211,156 @@ class TrackerController extends Controller
                 ->orderByDesc('started_at')
                 ->limit(15)
                 ->get();
+
+            // === E) LIVE MATCH (currently running) ===
+            $liveMatch = \DB::table('tracker_matches')
+                ->where('server_id', $server->id)
+                ->whereNull('ended_at')
+                ->orderByDesc('started_at')
+                ->first();
+
+            if ($liveMatch) {
+                $liveMatchPlayers = \DB::table('tracker_player_match_stats as ms')
+                    ->leftJoin('tracker_players as p', 'p.id', '=', 'ms.player_id')
+                    ->where('ms.match_id', $liveMatch->id)
+                    ->orderByDesc('ms.kills')
+                    ->orderByDesc('ms.damage_given')
+                    ->select(
+                        'ms.*',
+                        'p.name_clean', 'p.name_html', 'p.country_code', 'p.is_bot', 'p.id as p_id'
+                    )
+                    ->get();
+            }
+
+            // === B) LAST COMPLETED MATCH (>= 30s) ===
+            $lastMatch = \DB::table('tracker_matches')
+                ->where('server_id', $server->id)
+                ->whereNotNull('ended_at')
+                ->where('duration_seconds', '>=', 30)
+                ->orderByDesc('ended_at')
+                ->first();
+
+            if ($lastMatch) {
+                $lastMatchPlayers = \DB::table('tracker_player_match_stats as ms')
+                    ->leftJoin('tracker_players as p', 'p.id', '=', 'ms.player_id')
+                    ->where('ms.match_id', $lastMatch->id)
+                    ->orderByDesc('ms.kills')
+                    ->orderByDesc('ms.damage_given')
+                    ->select(
+                        'ms.*',
+                        'p.name_clean', 'p.name_html', 'p.country_code', 'p.is_bot', 'p.id as p_id'
+                    )
+                    ->get();
+            }
+
+            // === A) HALL OF FAME — 5 leaderboards (lifetime, this server only) ===
+            $serverMatchIds = \DB::table('tracker_matches')
+                ->where('server_id', $server->id)
+                ->where('duration_seconds', '>=', 30)
+                ->pluck('id');
+
+            if ($serverMatchIds->isNotEmpty()) {
+                $hofBase = \DB::table('tracker_player_match_stats as ms')
+                    ->join('tracker_players as p', 'p.id', '=', 'ms.player_id')
+                    ->whereIn('ms.match_id', $serverMatchIds)
+                    ->where('p.is_bot', false);
+
+                $hallOfFame['killers'] = (clone $hofBase)
+                    ->select('p.id','p.name_clean','p.name_html','p.country_code',
+                        \DB::raw('SUM(ms.kills) as v'),
+                        \DB::raw('SUM(ms.deaths) as deaths_total'),
+                        \DB::raw('COUNT(*) as matches_played'))
+                    ->groupBy('p.id','p.name_clean','p.name_html','p.country_code')
+                    ->having('v','>',0)
+                    ->orderByDesc('v')
+                    ->limit(10)->get();
+
+                $hallOfFame['accuracy'] = (clone $hofBase)
+                    ->select('p.id','p.name_clean','p.name_html','p.country_code',
+                        \DB::raw('AVG(ms.accuracy_pct) as v'),
+                        \DB::raw('COUNT(*) as matches_played'))
+                    ->whereNotNull('ms.accuracy_pct')
+                    ->where('ms.accuracy_pct','>',0)
+                    ->groupBy('p.id','p.name_clean','p.name_html','p.country_code')
+                    ->havingRaw('COUNT(*) >= 3')
+                    ->orderByDesc('v')
+                    ->limit(10)->get();
+
+                $hallOfFame['objectives'] = (clone $hofBase)
+                    ->select('p.id','p.name_clean','p.name_html','p.country_code',
+                        \DB::raw('SUM(ms.objectives_taken) as v'),
+                        \DB::raw('COUNT(*) as matches_played'))
+                    ->groupBy('p.id','p.name_clean','p.name_html','p.country_code')
+                    ->having('v','>',0)
+                    ->orderByDesc('v')
+                    ->limit(10)->get();
+
+                $hallOfFame['revivers'] = (clone $hofBase)
+                    ->select('p.id','p.name_clean','p.name_html','p.country_code',
+                        \DB::raw('SUM(ms.revives_given) as v'),
+                        \DB::raw('COUNT(*) as matches_played'))
+                    ->groupBy('p.id','p.name_clean','p.name_html','p.country_code')
+                    ->having('v','>',0)
+                    ->orderByDesc('v')
+                    ->limit(10)->get();
+
+                $hallOfFame['teamkillers'] = (clone $hofBase)
+                    ->select('p.id','p.name_clean','p.name_html','p.country_code',
+                        \DB::raw('SUM(ms.team_kills) as v'),
+                        \DB::raw('COUNT(*) as matches_played'))
+                    ->groupBy('p.id','p.name_clean','p.name_html','p.country_code')
+                    ->having('v','>',0)
+                    ->orderByDesc('v')
+                    ->limit(10)->get();
+
+                // === C) PER-MAP BEST PERFORMERS ===
+                $serverMapBest = \DB::table('tracker_player_match_stats as ms')
+                    ->join('tracker_matches as m', 'm.id', '=', 'ms.match_id')
+                    ->join('tracker_players as p', 'p.id', '=', 'ms.player_id')
+                    ->where('m.server_id', $server->id)
+                    ->where('m.duration_seconds', '>=', 30)
+                    ->where('p.is_bot', false)
+                    ->whereNotNull('m.map_name')
+                    ->select(
+                        'm.map_name',
+                        'p.id as player_id', 'p.name_clean', 'p.name_html', 'p.country_code',
+                        \DB::raw('SUM(ms.kills) as total_kills'),
+                        \DB::raw('SUM(ms.deaths) as total_deaths'),
+                        \DB::raw('COUNT(DISTINCT m.id) as times_played')
+                    )
+                    ->groupBy('m.map_name','p.id','p.name_clean','p.name_html','p.country_code')
+                    ->orderByDesc('total_kills')
+                    ->get()
+                    ->groupBy('map_name')
+                    ->map(fn($rows) => $rows->first())
+                    ->sortByDesc('total_kills')
+                    ->take(8)
+                    ->values();
+
+                // === D) SERVER WEAPON META (most used weapons on this server) ===
+                $serverWeaponMeta = \DB::table('tracker_match_player_weapon_stats as w')
+                    ->join('tracker_matches as m', 'm.id', '=', 'w.match_id')
+                    ->where('m.server_id', $server->id)
+                    ->select(
+                        'w.weapon_bit',
+                        \DB::raw('SUM(w.kills) as total_kills'),
+                        \DB::raw('SUM(w.deaths) as total_deaths'),
+                        \DB::raw('SUM(w.hits) as total_hits'),
+                        \DB::raw('SUM(w.atts) as total_atts'),
+                        \DB::raw('SUM(w.headshots) as total_headshots'),
+                        \DB::raw('COUNT(DISTINCT w.player_id) as users')
+                    )
+                    ->groupBy('w.weapon_bit')
+                    ->orderByDesc('total_kills')
+                    ->limit(6)
+                    ->get();
+            }
         }
 
         return view('frontend.tracker.server-show', compact(
-            'server', 'activeSessions', 'history', 'topMaps', 'recentMatches'
+            'server', 'activeSessions', 'history', 'topMaps', 'recentMatches',
+            'hallOfFame', 'lastMatch', 'lastMatchPlayers',
+            'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta'
         ));
     }
 

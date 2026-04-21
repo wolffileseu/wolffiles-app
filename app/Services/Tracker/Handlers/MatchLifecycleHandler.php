@@ -154,6 +154,13 @@ class MatchLifecycleHandler extends AbstractHandler
                 'updated_at' => $endedAt->format('Y-m-d H:i:s.v'),
             ]);
 
+        // Reconstruct aggregate match result from per-player stats.
+        // The sv_tracker protocol does not emit a final scoreboard/score event,
+        // so we roll up tracker_player_match_stats (populated by ws-events) into
+        // the parent match row. Runs after duration is set so UI can filter by
+        // "has result".
+        $this->aggregateMatchResult($open->id);
+
         // If there were any other "open" matches on this server (should not
         // happen but be defensive against daemon crashes), close them as timeout.
         DB::table('tracker_matches')
@@ -172,6 +179,80 @@ class MatchLifecycleHandler extends AbstractHandler
     /**
      * Extract the map name from a "map <name>" payload.
      */
+    /**
+     * Aggregate match-level totals from per-player ws-event stats.
+     *
+     * team 0 = spectator, 1 = Axis, 2 = Allies in ET. We sum kills/deaths per
+     * team, plus overall totals. Written to tracker_matches.total_kills,
+     * total_deaths, player_count_max, and a JSON final_scoreboard with
+     * per-team breakdown + winner heuristic (kills-per-player, handles uneven
+     * team sizes better than raw kill totals).
+     */
+    private function aggregateMatchResult(int $matchId): void
+    {
+        $stats = DB::table('tracker_player_match_stats')
+            ->where('match_id', $matchId)
+            ->selectRaw("
+                SUM(kills) as total_kills,
+                SUM(deaths) as total_deaths,
+                COUNT(*) as player_count,
+                SUM(CASE WHEN team = 1 THEN kills ELSE 0 END) as axis_kills,
+                SUM(CASE WHEN team = 2 THEN kills ELSE 0 END) as allies_kills,
+                SUM(CASE WHEN team = 1 THEN deaths ELSE 0 END) as axis_deaths,
+                SUM(CASE WHEN team = 2 THEN deaths ELSE 0 END) as allies_deaths,
+                SUM(CASE WHEN team = 1 THEN 1 ELSE 0 END) as axis_players,
+                SUM(CASE WHEN team = 2 THEN 1 ELSE 0 END) as allies_players,
+                SUM(objectives_taken) as total_objectives
+            ")
+            ->first();
+
+        if ($stats === null || (int) $stats->player_count === 0) {
+            return; // no player stats recorded — leave match totals as-is
+        }
+
+        $axisScore   = $stats->axis_players   > 0 ? $stats->axis_kills   / $stats->axis_players   : 0;
+        $alliesScore = $stats->allies_players > 0 ? $stats->allies_kills / $stats->allies_players : 0;
+        $winner = null;
+        if ($axisScore > $alliesScore) {
+            $winner = 'axis';
+        } elseif ($alliesScore > $axisScore) {
+            $winner = 'allies';
+        } elseif ($stats->axis_players > 0 || $stats->allies_players > 0) {
+            $winner = 'draw';
+        }
+
+        $scoreboard = [
+            'axis' => [
+                'kills'   => (int) $stats->axis_kills,
+                'deaths'  => (int) $stats->axis_deaths,
+                'players' => (int) $stats->axis_players,
+            ],
+            'allies' => [
+                'kills'   => (int) $stats->allies_kills,
+                'deaths'  => (int) $stats->allies_deaths,
+                'players' => (int) $stats->allies_players,
+            ],
+            'winner'     => $winner,
+            'objectives' => (int) $stats->total_objectives,
+            'source'     => 'ws-aggregate',
+        ];
+
+        DB::table('tracker_matches')
+            ->where('id', $matchId)
+            ->update([
+                'total_kills'      => (int) $stats->total_kills,
+                'total_deaths'     => (int) $stats->total_deaths,
+                'player_count_max' => (int) $stats->player_count,
+                'final_scoreboard' => json_encode($scoreboard),
+            ]);
+
+        Log::info('Tracker match aggregated', [
+            'match_id' => $matchId,
+            'kills'    => (int) $stats->total_kills,
+            'winner'   => $winner,
+        ]);
+    }
+
     private function parseMapName(string $payload): ?string
     {
         if (!preg_match('/^map\s+([a-z0-9_\-]+)\s*$/i', $payload, $m)) {

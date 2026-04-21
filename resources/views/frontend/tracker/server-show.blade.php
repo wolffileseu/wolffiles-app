@@ -302,6 +302,274 @@ function playerChart() {
 @endif
 
 
+{{-- =====================================================================
+     Enhanced Tracker: Server Stats (Live Match, Last Match, Hall of Fame,
+     Per-Map Best, Weapon Meta) — renders only when server has sv_tracker.
+     ===================================================================== --}}
+@if($server->is_enhanced_tracker)
+<div class="max-w-7xl mx-auto px-4 pb-6">
+
+    {{-- E) LIVE MATCH (running right now) -------------------------------- --}}
+    @if($liveMatch && $liveMatchPlayers->count() > 0)
+    <div class="bg-gradient-to-r from-emerald-900/30 to-gray-800 border border-emerald-500/40 rounded-lg p-5 mb-6">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                {{ __('Live Match') }}
+                <span class="text-xs text-gray-400 font-normal">
+                    {{ $liveMatch->map_name }} · {{ \Carbon\Carbon::parse($liveMatch->started_at)->diffForHumans(null, true) }}
+                </span>
+            </h2>
+            <span class="text-xs text-emerald-400">🔴 {{ __('Running now') }}</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-xs text-gray-400 uppercase border-b border-gray-700">
+                    <tr>
+                        <th class="text-left py-2 pr-2">{{ __('Player') }}</th>
+                        <th class="text-right px-2">K</th>
+                        <th class="text-right px-2">D</th>
+                        <th class="text-right px-2 hidden sm:table-cell">HS</th>
+                        <th class="text-right px-2 hidden sm:table-cell">{{ __('Acc') }}</th>
+                        <th class="text-right px-2">{{ __('DMG') }}</th>
+                        <th class="text-right pl-2 hidden md:table-cell">{{ __('Score') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($liveMatchPlayers as $lp)
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/40">
+                        <td class="py-2 pr-2">
+                            @if($lp->p_id)
+                                <a href="{{ route('tracker.player.show', $lp->p_id) }}" class="hover:text-amber-400">
+                                    {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                </a>
+                            @else
+                                {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                            @endif
+                            @if($lp->is_bot ?? false)
+                                <span class="text-[9px] px-1 py-0 ml-1 rounded bg-gray-700 text-gray-400 uppercase">Bot</span>
+                            @endif
+                        </td>
+                        <td class="text-right px-2 text-emerald-400 font-semibold">{{ $lp->kills }}</td>
+                        <td class="text-right px-2 text-rose-400">{{ $lp->deaths }}</td>
+                        <td class="text-right px-2 hidden sm:table-cell text-amber-400">{{ $lp->headshots }}</td>
+                        <td class="text-right px-2 hidden sm:table-cell text-gray-300">{{ number_format($lp->accuracy_pct ?? 0, 1) }}%</td>
+                        <td class="text-right px-2 text-gray-200">{{ number_format($lp->damage_given) }}</td>
+                        <td class="text-right pl-2 hidden md:table-cell text-gray-300">{{ $lp->score }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- B) LAST COMPLETED MATCH (scoreboard) ----------------------------- --}}
+    @if($lastMatch && $lastMatchPlayers->count() > 0)
+    <div class="bg-gray-800 rounded-lg p-5 mb-6">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                🏁 {{ __('Last Match') }}
+                <span class="text-xs text-gray-500 font-normal">
+                    {{ $lastMatch->map_name }} ·
+                    @php
+                        $dur = $lastMatch->duration_seconds;
+                        $mins = intdiv($dur, 60); $secs = $dur % 60;
+                    @endphp
+                    {{ $mins }}m {{ $secs }}s ·
+                    {{ \Carbon\Carbon::parse($lastMatch->ended_at)->diffForHumans() }}
+                </span>
+            </h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="text-xs text-gray-400 uppercase border-b border-gray-700">
+                    <tr>
+                        <th class="text-left py-2 pr-2">#</th>
+                        <th class="text-left py-2 pr-2">{{ __('Player') }}</th>
+                        <th class="text-right px-2">K</th>
+                        <th class="text-right px-2">D</th>
+                        <th class="text-right px-2 hidden sm:table-cell">HS</th>
+                        <th class="text-right px-2 hidden sm:table-cell">{{ __('Acc') }}</th>
+                        <th class="text-right px-2">{{ __('DMG') }}</th>
+                        <th class="text-right pl-2 hidden md:table-cell">{{ __('Score') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach($lastMatchPlayers as $i => $lp)
+                    <tr class="border-b border-gray-800/50 hover:bg-gray-800/40">
+                        <td class="py-2 pr-2 text-gray-500 text-xs">{{ $i + 1 }}</td>
+                        <td class="py-2 pr-2">
+                            @if($lp->p_id)
+                                <a href="{{ route('tracker.player.show', $lp->p_id) }}" class="hover:text-amber-400">
+                                    {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                </a>
+                            @else
+                                {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                            @endif
+                            @if($lp->is_bot ?? false)
+                                <span class="text-[9px] px-1 py-0 ml-1 rounded bg-gray-700 text-gray-400 uppercase">Bot</span>
+                            @endif
+                        </td>
+                        <td class="text-right px-2 text-emerald-400 font-semibold">{{ $lp->kills }}</td>
+                        <td class="text-right px-2 text-rose-400">{{ $lp->deaths }}</td>
+                        <td class="text-right px-2 hidden sm:table-cell text-amber-400">{{ $lp->headshots }}</td>
+                        <td class="text-right px-2 hidden sm:table-cell text-gray-300">{{ number_format($lp->accuracy_pct ?? 0, 1) }}%</td>
+                        <td class="text-right px-2 text-gray-200">{{ number_format($lp->damage_given) }}</td>
+                        <td class="text-right pl-2 hidden md:table-cell text-gray-300">{{ $lp->score }}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
+    {{-- A) HALL OF FAME (5 leaderboards, tabbed) ------------------------ --}}
+    @if(!empty($hallOfFame) && collect($hallOfFame)->contains(fn($list) => $list->isNotEmpty()))
+    <div x-data="{ tab: 'killers' }" class="bg-gray-800 rounded-lg p-5 mb-6">
+        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                🏆 {{ __('Hall of Fame') }}
+                <span class="text-xs text-gray-500 font-normal">{{ __('lifetime, this server') }}</span>
+            </h2>
+        </div>
+        <div class="flex flex-wrap gap-2 mb-4 border-b border-gray-700 pb-3">
+            <button @click="tab = 'killers'" :class="tab === 'killers' ? 'bg-amber-500 text-gray-900' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'" class="px-3 py-1.5 rounded text-xs font-semibold transition">⚔️ {{ __('Top Killers') }}</button>
+            <button @click="tab = 'accuracy'" :class="tab === 'accuracy' ? 'bg-amber-500 text-gray-900' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'" class="px-3 py-1.5 rounded text-xs font-semibold transition">🎯 {{ __('Best Aim') }}</button>
+            <button @click="tab = 'objectives'" :class="tab === 'objectives' ? 'bg-amber-500 text-gray-900' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'" class="px-3 py-1.5 rounded text-xs font-semibold transition">🚩 {{ __('Objectives') }}</button>
+            <button @click="tab = 'revivers'" :class="tab === 'revivers' ? 'bg-amber-500 text-gray-900' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'" class="px-3 py-1.5 rounded text-xs font-semibold transition">🩹 {{ __('Top Medics') }}</button>
+            <button @click="tab = 'teamkillers'" :class="tab === 'teamkillers' ? 'bg-rose-500 text-white' : 'bg-gray-900 text-gray-300 hover:bg-gray-700'" class="px-3 py-1.5 rounded text-xs font-semibold transition">⚠️ {{ __('Wall of Shame') }}</button>
+        </div>
+
+        @foreach(['killers','accuracy','objectives','revivers','teamkillers'] as $hofKey)
+            @php
+                $list = $hallOfFame[$hofKey] ?? collect();
+                $labels = [
+                    'killers'     => ['v_label'=>__('Kills'),       'fmt' => fn($v) => number_format($v), 'color'=>'text-emerald-400'],
+                    'accuracy'    => ['v_label'=>__('Accuracy'),    'fmt' => fn($v) => number_format($v,2).'%', 'color'=>'text-amber-400'],
+                    'objectives'  => ['v_label'=>__('Objectives'),  'fmt' => fn($v) => number_format($v), 'color'=>'text-amber-400'],
+                    'revivers'    => ['v_label'=>__('Revives'),     'fmt' => fn($v) => number_format($v), 'color'=>'text-emerald-400'],
+                    'teamkillers' => ['v_label'=>__('Team Kills'),  'fmt' => fn($v) => number_format($v), 'color'=>'text-rose-400'],
+                ];
+                $meta = $labels[$hofKey];
+            @endphp
+            <div x-show="tab === '{{ $hofKey }}'" x-cloak>
+                @if($list->isEmpty())
+                    <p class="text-sm text-gray-500 italic py-6 text-center">{{ __('Not enough data yet') }}</p>
+                @else
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead class="text-xs text-gray-400 uppercase border-b border-gray-700">
+                                <tr>
+                                    <th class="text-left py-2 pr-2 w-8">#</th>
+                                    <th class="text-left py-2 pr-2">{{ __('Player') }}</th>
+                                    <th class="text-right px-2">{{ $meta['v_label'] }}</th>
+                                    <th class="text-right pl-2 hidden sm:table-cell">{{ __('Matches') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach($list as $i => $row)
+                                <tr class="border-b border-gray-800/50 hover:bg-gray-800/40">
+                                    <td class="py-2 pr-2 text-gray-500 text-xs">
+                                        @if($i === 0) 🥇
+                                        @elseif($i === 1) 🥈
+                                        @elseif($i === 2) 🥉
+                                        @else {{ $i + 1 }}
+                                        @endif
+                                    </td>
+                                    <td class="py-2 pr-2">
+                                        <a href="{{ route('tracker.player.show', $row->id) }}" class="hover:text-amber-400">
+                                            {!! $row->name_html ?: e($row->name_clean ?: '?') !!}
+                                        </a>
+                                    </td>
+                                    <td class="text-right px-2 {{ $meta['color'] }} font-semibold">{{ $meta['fmt']($row->v) }}</td>
+                                    <td class="text-right pl-2 hidden sm:table-cell text-gray-500">{{ $row->matches_played }}</td>
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    </div>
+    @endif
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
+        {{-- C) PER-MAP BEST PERFORMERS ----------------------------------- --}}
+        @if($serverMapBest->isNotEmpty())
+        <div class="bg-gray-800 rounded-lg p-5">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+                🗺️ {{ __('Map Champions') }}
+                <span class="text-xs text-gray-500 font-normal">{{ __('best killer per map') }}</span>
+            </h2>
+            <div class="space-y-2">
+                @foreach($serverMapBest as $mb)
+                <div class="flex items-center gap-3 bg-gray-900/40 rounded p-2.5 hover:bg-gray-900/70 transition">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm text-gray-200 font-medium truncate">{{ $mb->map_name }}</div>
+                        <div class="text-xs text-gray-500">
+                            <a href="{{ route('tracker.player.show', $mb->player_id) }}" class="hover:text-amber-400">
+                                {!! $mb->name_html ?: e($mb->name_clean ?: '?') !!}
+                            </a>
+                            · {{ $mb->times_played }} {{ __('matches') }}
+                        </div>
+                    </div>
+                    <div class="text-right flex-shrink-0">
+                        <div class="text-emerald-400 font-bold text-sm">{{ number_format($mb->total_kills) }}K</div>
+                        <div class="text-xs text-gray-500">{{ number_format($mb->total_deaths) }}D</div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+        @endif
+
+        {{-- D) SERVER WEAPON META --------------------------------------- --}}
+        @if($serverWeaponMeta->isNotEmpty())
+        <div class="bg-gray-800 rounded-lg p-5">
+            <h2 class="text-lg font-semibold text-white flex items-center gap-2 mb-4">
+                🔫 {{ __('Weapon Meta') }}
+                <span class="text-xs text-gray-500 font-normal">{{ __('top 6 on this server') }}</span>
+            </h2>
+            <div class="space-y-2">
+                @foreach($serverWeaponMeta as $wm)
+                    @php $cfg = config('tracker-weapons.'.$wm->weapon_bit); @endphp
+                    @if($cfg)
+                    <div class="flex items-center gap-3 bg-gray-900/40 rounded p-2.5 hover:bg-gray-900/70 transition">
+                        <img src="/img/tracker/weapons/{{ $cfg['icon'] }}"
+                             alt="{{ $cfg['name'] }}"
+                             class="w-10 h-10 object-contain flex-shrink-0"
+                             loading="lazy">
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm text-gray-200 font-medium truncate">{{ $cfg['name'] }}</div>
+                            <div class="text-xs text-gray-500 flex flex-wrap gap-x-2">
+                                <span>{{ number_format($wm->total_kills) }}K / {{ number_format($wm->total_deaths) }}D</span>
+                                @if($wm->total_headshots > 0)
+                                    <span class="text-amber-400">🎯 {{ number_format($wm->total_headshots) }}</span>
+                                @endif
+                                @if($wm->total_atts > 0)
+                                    <span class="text-emerald-400">{{ number_format(min(10000, ($wm->total_hits / $wm->total_atts) * 10000) / 100, 1) }}%</span>
+                                @endif
+                                <span class="text-gray-600">· {{ $wm->users }} {{ __('users') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+
+</div>
+@endif
+
 {{-- Enhanced Matches Section (only when server has sv_tracker active) --}}
 @if($server->is_enhanced_tracker && $recentMatches->count() > 0)
 <div class="max-w-7xl mx-auto px-4">

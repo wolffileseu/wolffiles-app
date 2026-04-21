@@ -25,6 +25,8 @@ class RankingService
         TrackerRanking::where('period', $period)->where('period_date', $periodDate)->delete();
 
         $query = TrackerPlayer::where('status', 'active')
+            ->where('is_bot', false)
+            ->whereNotNull('elo_rating')
             ->where('total_play_time_minutes', '>', 0)
             ->orderByDesc('elo_rating')
             ->orderByDesc('total_xp');
@@ -60,7 +62,17 @@ class RankingService
                 ];
                 $inserted++;
             }
-            if (!empty($rows)) TrackerRanking::insert($rows);
+            if (!empty($rows)) {
+                // upsert handles re-runs & multi-chunk races safely on
+                // (player_id, period, period_date) unique constraint
+                TrackerRanking::upsert(
+                    $rows,
+                    ['player_id', 'period', 'period_date'],
+                    ['rank', 'elo_rating', 'elo_change', 'total_xp',
+                     'playtime_minutes', 'sessions_count', 'kills', 'deaths',
+                     'servers_played', 'maps_played', 'updated_at']
+                );
+            }
         });
 
         return $inserted;
