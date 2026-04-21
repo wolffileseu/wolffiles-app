@@ -57,3 +57,9 @@ Schedule::command('tracker:rebuild-rankings-30d')->everyThirtyMinutes()->without
 
 // Rebuild top-players snapshot every 30 minutes (very stable cumulative XP ranks)
 Schedule::command('tracker:rebuild-top-players -q')->everyTenMinutes()->withoutOverlapping();
+
+// Refresh offline-server text report
+Schedule::command('tracker:offline-report -q')->everyTenMinutes()->withoutOverlapping();
+
+// Refresh offline-server text report every 10 min
+Schedule::command('tracker:offline-report -q')->everyTenMinutes()->withoutOverlapping();
