@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Models\Tracker\TrackerGame;
 use App\Models\Tracker\TrackerServer;
 use App\Models\Tracker\TrackerPlayer;
@@ -676,6 +677,73 @@ class TrackerController extends Controller
         // reset mechanic in some ET mods (ETJump, NoQuarter). 0 = no prestige,
         // higher values mean the player has reset their XP at MAX level N times.
         $prestigeLevel = 0;
+
+        // === Combat Overview (global headshot %, damage ratio, team preference) ===
+        $hsAgg = DB::table('tracker_player_weapon_stats')
+            ->where('player_id', $player->id)
+            ->selectRaw('SUM(total_headshots) as hs, SUM(total_kills) as k')
+            ->first();
+        $headshotRatio = ($hsAgg && $hsAgg->k > 0)
+            ? round(($hsAgg->hs / $hsAgg->k) * 100, 1) : null;
+
+        $dmgAgg = DB::table('tracker_player_match_stats')
+            ->where('player_id', $player->id)
+            ->selectRaw('SUM(damage_given) as given, SUM(damage_received) as received')
+            ->first();
+        $damageGiven = (int) ($dmgAgg?->given ?? 0);
+        $damageReceived = (int) ($dmgAgg?->received ?? 0);
+        $damageRatio = ($damageReceived > 0)
+            ? round($damageGiven / $damageReceived, 2) : null;
+
+        $teamAgg = DB::table('tracker_player_match_stats')
+            ->where('player_id', $player->id)
+            ->whereIn('team', [1, 2])
+            ->selectRaw('team, COUNT(*) as c')
+            ->groupBy('team')
+            ->pluck('c', 'team')
+            ->toArray();
+        $axisMatches = (int) ($teamAgg[1] ?? 0);
+        $alliesMatches = (int) ($teamAgg[2] ?? 0);
+
+        // === Skill Progression (XP per class skill, last 100 matches) ===
+        $skillRaws = DB::table('tracker_player_match_stats as ms')
+            ->join('tracker_matches as m', 'm.id', '=', 'ms.match_id')
+            ->where('ms.player_id', $player->id)
+            ->whereNotNull('ms.raw_skills')
+            ->orderBy('m.started_at')
+            ->limit(100)
+            ->get(['m.started_at as date', 'ms.raw_skills']);
+
+        $skillProgression = [];
+        foreach ($skillRaws as $row) {
+            $data = json_decode($row->raw_skills, true);
+            if (!is_array($data) || !isset($data['skills'])) continue;
+            foreach ($data['skills'] as $sid => $sdata) {
+                if (!isset($sdata['current'])) continue;
+                $skillProgression[(int) $sid][] = [
+                    'date' => $row->date,
+                    'xp'   => (int) $sdata['current'],
+                ];
+            }
+        }
+        ksort($skillProgression);
+
+        // === Prestige Timeline (level-up milestones) ===
+        $prestigeEvents = DB::table('tracker_player_match_stats as ms')
+            ->join('tracker_matches as m', 'm.id', '=', 'ms.match_id')
+            ->where('ms.player_id', $player->id)
+            ->where('ms.prestige', '>', 0)
+            ->orderBy('m.started_at')
+            ->get(['m.started_at as date', 'ms.prestige']);
+
+        $prestigeMilestones = [];
+        $lastP = 0;
+        foreach ($prestigeEvents as $e) {
+            if ($e->prestige > $lastP) {
+                $prestigeMilestones[] = ['date' => $e->date, 'level' => (int) $e->prestige];
+                $lastP = (int) $e->prestige;
+            }
+        }
         if ($player->has_enhanced_data) {
             $prestigeLevel = (int) \DB::table('tracker_player_match_stats')
                 ->where('player_id', $player->id)
@@ -689,7 +757,7 @@ class TrackerController extends Controller
             'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
             'lifetimeWeapons',
             'playerTimeline', 'xpSkills',
-            'prestigeLevel'));
+            'prestigeLevel', 'headshotRatio', 'damageGiven', 'damageReceived', 'damageRatio', 'axisMatches', 'alliesMatches', 'skillProgression', 'prestigeMilestones'));
     }
 
     /**

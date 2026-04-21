@@ -89,6 +89,17 @@
     </div>
 
     {{-- Stats Cards --}}
+    {{-- =========================================== --}}
+    {{-- Combat Overview: HS%, Dmg Ratio, Team Pref --}}
+    {{-- =========================================== --}}
+    @include('frontend.tracker.partials._combat_overview')
+
+    {{-- Skill XP progression per class --}}
+    @include('frontend.tracker.partials._skill_progression')
+
+    {{-- Prestige milestones --}}
+    @include('frontend.tracker.partials._prestige_timeline')
+
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <div class="bg-gray-800 rounded-lg p-4 text-center">
             <div class="text-2xl font-bold text-white">{{ $player->play_time_formatted }}</div>
@@ -789,6 +800,10 @@
     </div>
 @endif
 </div>
+
+
+
+
 @endif
 </div>
 </x-layouts.app>
