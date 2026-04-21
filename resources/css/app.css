@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Prevent FOUC on Alpine.js x-cloak elements
+   See https://alpinejs.dev/directives/cloak */
+[x-cloak] {
+    display: none !important;
+}
+
+
 /* Custom dark theme overrides */
 .bg-gray-750 {
     background-color: rgb(42, 46, 55);
