@@ -22,3 +22,6 @@ storage/app/stock-maps/
 *.backup2
 *.backup-[0-9]*
 *.pk3
+
+# Blade backup files
+*.blade.php.bak-*

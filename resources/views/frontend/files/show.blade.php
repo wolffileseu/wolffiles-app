@@ -32,7 +32,22 @@
                 </div>
             @endif
 
-            <h1 class="text-3xl font-bold text-white mb-4">{{ $file->display_title }}</h1>
+            <div class="flex items-start justify-between gap-4 mb-4">
+                <h1 class="text-3xl font-bold text-white">{{ $file->display_title }}</h1>
+                @auth
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('filament.admin.resources.files.edit', ['record' => $file->slug]) }}"
+                           target="_blank"
+                           class="shrink-0 inline-flex items-center gap-2 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium rounded-md transition-colors shadow-sm border border-amber-500/50"
+                           title="Im Admin bearbeiten">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Bearbeiten</span>
+                        </a>
+                    @endif
+                @endauth
+            </div>
 
             <livewire:frontend.map-server-activity :file="$file" />
 
