@@ -43,7 +43,7 @@ class RebuildServerTopPlayers extends Command
                     'tracker_players.id as player_id',
                     'tracker_players.name_clean',
                     'tracker_players.name_html',
-                    DB::raw('SUM(COALESCE(tracker_player_sessions.xp, 0)) as total_xp'),
+                    DB::raw('MAX(COALESCE(tracker_player_sessions.xp, 0)) as total_xp'),
                     DB::raw('SUM(CASE
                         WHEN tracker_player_sessions.ended_at IS NULL
                         THEN GREATEST(TIMESTAMPDIFF(MINUTE, tracker_player_sessions.started_at, NOW()), 0)
