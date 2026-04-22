@@ -22,7 +22,7 @@ class MapLinkService
         'et_ice', 'et_beach', 'et_mor2',
     ];
 
-    public static function findFile(string $mapName): ?File
+    public static function findFile(?string $mapName): ?File
     {
         $mapName = strtolower(trim($mapName));
         if (empty($mapName)) return null;

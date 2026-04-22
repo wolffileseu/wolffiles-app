@@ -657,7 +657,7 @@ function serverLive() {
         currentPlayers: {{ $server->current_players }},
         maxPlayers: {{ $server->max_players }},
         currentMap: '{{ $server->current_map }}',
-        currentMapSlug: '{{ \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? "" }}',
+        currentMapSlug: '{{ $server->current_map ? \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug : "" }}',
         gametype: '{{ $server->gametype ?? '' }}',
         players: [],
         polling: null,
