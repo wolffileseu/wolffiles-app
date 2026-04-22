@@ -343,4 +343,120 @@ class TrackerExtendedController extends Controller
         if ($q = $request->get('q')) $query->where(fn($qr) => $qr->where('tag_clean', 'LIKE', "%{$q}%")->orWhere('name', 'LIKE', "%{$q}%"));
         return response()->json($query->orderByDesc('member_count')->paginate($request->get('limit', 50)));
     }
+
+    // === MATCH BROWSER (Commit 1) ===
+
+    /**
+     * Browse all past matches with time-range filter.
+     * Solves the Trackbase pain point: "find a match from 8-12 hours ago".
+     */
+    public function matchesBrowse(Request $request)
+    {
+        $defaultFrom = now()->subDay()->format('Y-m-d\TH:i');
+        $defaultTo = now()->format('Y-m-d\TH:i');
+
+        $from = $request->input('from', $defaultFrom);
+        $to = $request->input('to', $defaultTo);
+        $serverId = $request->input('server_id');
+        $mapName = $request->input('map_name');
+        $minPlayers = (int) $request->input('min_players', 0);
+        $perPage = min(100, max(10, (int) $request->input('per_page', 25)));
+
+        $query = DB::table('tracker_matches as m')
+            ->leftJoin('tracker_servers as s', 's.id', '=', 'm.server_id')
+            ->whereNotNull('m.ended_at')
+            ->select([
+                'm.id', 'm.server_id', 'm.map_name', 'm.started_at', 'm.ended_at',
+                'm.duration_seconds', 'm.player_count_max', 'm.player_count_avg',
+                'm.total_kills', 'm.end_reason',
+                's.hostname_clean', 's.hostname_html', 's.country_code', 's.ip', 's.port',
+            ]);
+
+        if ($from) {
+            try { $query->where('m.started_at', '>=', \Carbon\Carbon::parse($from)); } catch (\Throwable $e) {}
+        }
+        if ($to) {
+            try { $query->where('m.started_at', '<=', \Carbon\Carbon::parse($to)); } catch (\Throwable $e) {}
+        }
+        if ($serverId) {
+            $query->where('m.server_id', (int) $serverId);
+        }
+        if ($mapName) {
+            $query->where('m.map_name', $mapName);
+        }
+        if ($minPlayers > 0) {
+            $query->where('m.player_count_max', '>=', $minPlayers);
+        }
+
+        $matches = $query->orderByDesc('m.started_at')->paginate($perPage)->withQueryString();
+
+        $servers = Cache::remember('tracker:matches:servers', 600, function () {
+            return DB::table('tracker_matches as m')
+                ->join('tracker_servers as s', 's.id', '=', 'm.server_id')
+                ->select('s.id', 's.hostname_clean', 's.country_code')
+                ->groupBy('s.id', 's.hostname_clean', 's.country_code')
+                ->orderBy('s.hostname_clean')
+                ->get();
+        });
+
+        $maps = Cache::remember('tracker:matches:maps', 600, function () {
+            return DB::table('tracker_matches')
+                ->select('map_name', DB::raw('COUNT(*) as cnt'))
+                ->whereNotNull('ended_at')
+                ->groupBy('map_name')
+                ->orderByDesc('cnt')
+                ->limit(200)
+                ->get();
+        });
+
+        return view('frontend.tracker.matches-browse', compact(
+            'matches', 'servers', 'maps', 'from', 'to', 'serverId', 'mapName', 'minPlayers'
+        ));
+    }
+
+    /**
+     * Show single match with all participating players and their stats.
+     */
+    public function matchShow($matchId)
+    {
+        $match = DB::table('tracker_matches as m')
+            ->leftJoin('tracker_servers as s', 's.id', '=', 'm.server_id')
+            ->where('m.id', (int) $matchId)
+            ->select([
+                'm.*',
+                's.hostname_clean', 's.hostname_html', 's.country_code', 's.country',
+                's.ip', 's.port', 's.mod_name', 's.game_id',
+            ])
+            ->first();
+
+        if (!$match) {
+            abort(404, 'Match not found');
+        }
+
+        $players = DB::table('tracker_player_match_stats as ms')
+            ->leftJoin('tracker_players as p', 'p.id', '=', 'ms.player_id')
+            ->where('ms.match_id', (int) $matchId)
+            ->select([
+                'ms.player_id', 'ms.name_snapshot', 'ms.name_clean_snapshot',
+                'ms.team', 'ms.class', 'ms.kills', 'ms.deaths', 'ms.headshots',
+                'ms.team_kills', 'ms.gibs', 'ms.kill_assists', 'ms.suicides',
+                'ms.damage_given', 'ms.damage_received', 'ms.accuracy_pct',
+                'ms.score', 'ms.ping_avg', 'ms.playtime_seconds',
+                'ms.revives_given', 'ms.revives_received', 'ms.objectives_taken',
+                'p.country_code', 'p.name_clean as current_name', 'p.name_html as current_name_html',
+            ])
+            ->orderByDesc('ms.score')
+            ->orderByDesc('ms.kills')
+            ->get();
+
+        $teams = [
+            'axis' => $players->filter(fn($p) => in_array(strtolower((string)$p->team), ['axis', 'r', '1', 'red'])),
+            'allies' => $players->filter(fn($p) => in_array(strtolower((string)$p->team), ['allies', 'b', '2', 'blue'])),
+            'spec' => $players->filter(fn($p) => in_array(strtolower((string)$p->team), ['spectator', 'spec', 's', '3'])),
+            'unknown' => $players->filter(fn($p) => $p->team === null || !in_array(strtolower((string)$p->team), ['axis', 'r', '1', 'red', 'allies', 'b', '2', 'blue', 'spectator', 'spec', 's', '3'])),
+        ];
+
+        return view('frontend.tracker.match-show', compact('match', 'players', 'teams'));
+    }
+
 }

@@ -362,6 +362,11 @@ Route::get('/tracker/rankings/players', [TrackerExtendedController::class, 'play
 Route::get('/tracker/clans', [TrackerExtendedController::class, 'clans'])->name('tracker.clans');
 Route::get('/tracker/clans/{clan}', [TrackerExtendedController::class, 'clanShow'])->name('tracker.clan.show');
 Route::get('/tracker/compare', [TrackerExtendedController::class, 'playerCompare'])->name('tracker.compare');
+
+// === MATCH BROWSER (Commit 1) ===
+Route::get('/tracker/matches', [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'matchesBrowse'])->name('tracker.matches.browse');
+Route::get('/tracker/matches/{match}', [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'matchShow'])->name('tracker.matches.show');
+
 Route::get('/tracker/scrims', [TrackerExtendedController::class, 'scrims'])->name('tracker.scrims');
 
 Route::middleware('auth')->group(function () {
