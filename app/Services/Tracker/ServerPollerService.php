@@ -109,15 +109,17 @@ class ServerPollerService
         $botPlayers  = array_filter($players, fn($p) => ($p['ping'] ?? 0) === 0);
 
         // Prefer explicit omnibot_playing setting when available, fallback to count of ping=0 entries
-        $botCount = isset($settings['omnibot_playing'])
+        $rawBotCount = isset($settings['omnibot_playing'])
             ? (int) $settings['omnibot_playing']
             : count($botPlayers);
 
         // current_players = humans + bots (matches how other trackers display it)
-        $totalPlayers = count($realPlayers) + $botCount;
+        $botCount = max(0, min(255, $rawBotCount));
+        $totalPlayers = max(0, min(255, count($realPlayers) + $botCount));
+        $maxPlayers = max(0, min(255, $maxPlayers));
 
-        $privateSlots = isset($settings['sv_privateClients']) ? (int) $settings['sv_privateClients'] : null;
-        $latencyMs = isset($data['latency_ms']) ? (int) $data['latency_ms'] : null;
+        $privateSlots = isset($settings['sv_privateClients']) ? max(0, min(255, (int) $settings['sv_privateClients'])) : null;
+        $latencyMs = isset($data['latency_ms']) ? max(0, min(65535, (int) $data['latency_ms'])) : null;
 
         // Server property flags from getstatus settings
         // g_friendlyFire is a bitfield on ETL; any non-zero value means FF is active
