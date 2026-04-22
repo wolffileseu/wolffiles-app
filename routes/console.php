@@ -71,3 +71,8 @@ Schedule::command('tracker:offline-report -q')->everyTenMinutes()->withoutOverla
 
 // Refresh offline-server text report every 10 min
 Schedule::command('tracker:offline-report -q')->everyTenMinutes()->withoutOverlapping();
+
+// === BOT CLEANUP SAFETY-NET (Commit 6) ===
+// Run daily cleanup as safety net in case new bot variants slip past the
+// in-handler prevention (other bot software, custom names, etc).
+Schedule::command('tracker:cleanup-bots --force')->dailyAt('04:15')->withoutOverlapping();

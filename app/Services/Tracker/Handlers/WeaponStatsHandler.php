@@ -6,6 +6,7 @@ use App\Models\Tracker\TrackerRawEvent;
 use App\Services\Tracker\WeaponStatsParser;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\Tracker\Handlers\PlayerPresenceHandler;
 
 /**
  * Handles 'ws' (weapon stats) packets from ETLegacy.
@@ -62,6 +63,20 @@ class WeaponStatsHandler extends AbstractHandler
             Log::warning('WeaponStatsHandler: unparsable ws payload', [
                 'event_id' => $event->id,
                 'payload' => substr($event->payload, 0, 200),
+            ]);
+            return;
+        }
+
+        // === BOT SKIP (Commit 6: early return) ===
+        // Defensive check: if the parsed client name looks like a bot,
+        // skip everything. Prevents slot-recycling from attaching bot
+        // stats to the previous real player on that slot.
+        $clientName = $parsed['client']['name'] ?? null;
+        if (PlayerPresenceHandler::looksLikeBot(null, $clientName)) {
+            Log::debug('WeaponStatsHandler: skipping bot ws event', [
+                'server_id' => $serverId,
+                'slot' => $parsed['slot'] ?? null,
+                'name' => $clientName,
             ]);
             return;
         }
