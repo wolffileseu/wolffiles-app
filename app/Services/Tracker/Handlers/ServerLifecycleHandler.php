@@ -86,29 +86,37 @@ class ServerLifecycleHandler extends AbstractHandler
 
         // Multi-stage matching. Each stage is a stricter match than the next.
         //
-        // Stage 1: Admin explicitly marked a server with this IP as the enhanced
-        //          source — always wins.
-        $server = DB::table('tracker_servers')
-            ->where('enhanced_source_ip', $event->source_ip)
-            ->where('enhanced_disabled', false)
-            ->first(['id']);
-        if ($server !== null) {
-            return (int) $server->id;
-        }
-
-        // Stage 2: Match on IP AND port — ETLegacy sends OOB packets from the
-        //          game port (sv_port), so source_port typically equals the
-        //          gameserver's public port. This disambiguates multi-server
-        //          hosts that share a single IP.
+        // Stage 1: Match on IP AND source_port — ETDS/ETLegacy sends OOB
+        //          packets from sv_port, so source_port equals the
+        //          gameserver's public port. This is the MOST specific
+        //          match and must win against every other stage,
+        //          otherwise multi-server hosts (same IP, different ports)
+        //          all collapse onto whichever server was promoted first.
         if ($event->source_port !== null) {
             $server = DB::table('tracker_servers')
                 ->where('ip', $event->source_ip)
                 ->where('port', $event->source_port)
                 ->where('enhanced_disabled', false)
+                ->orderByDesc('is_enhanced_tracker') // prefer already-promoted
+                ->orderBy('id')
                 ->first(['id']);
             if ($server !== null) {
                 return (int) $server->id;
             }
+        }
+
+        // Stage 2: Admin-pinned enhanced_source_ip (no port). Fallback for
+        //          NAT/proxy setups where source_port doesn't equal the
+        //          gameserver port. Narrower than plain IP-match because it
+        //          only hits servers an admin (or prior auto-discover) has
+        //          flagged for this source IP.
+        $server = DB::table('tracker_servers')
+            ->where('enhanced_source_ip', $event->source_ip)
+            ->where('enhanced_disabled', false)
+            ->orderBy('id')
+            ->first(['id']);
+        if ($server !== null) {
+            return (int) $server->id;
         }
 
         // Stage 3: Fall back to IP-only match. Only safe when exactly one
