@@ -223,6 +223,10 @@ Route::get('/servers', [TrackerController::class, 'servers'])->name('tracker.ser
 Route::get('/servers/{server}', [TrackerController::class, 'serverShow'])->name('tracker.server.show');
 Route::get('/players', [TrackerController::class, 'players'])->name('tracker.players');
 Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name('tracker.player.show');
+
+// === PLAYER SERVERS (Commit 2) ===
+Route::get('/players/{player}/servers', [TrackerController::class, 'playerServers'])->name('tracker.player.servers');
+
 Route::post('/players/{player}/claim', [TrackerController::class, 'claimPlayer'])->middleware('auth')->name('tracker.player.claim');
 Route::post('/players/{player}/unclaim', [TrackerController::class, 'unclaimPlayer'])->middleware('auth')->name('tracker.player.unclaim');
 

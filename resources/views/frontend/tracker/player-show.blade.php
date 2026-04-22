@@ -287,7 +287,7 @@
             </div>
             @endif
 
-            {{-- Favorite Servers --}}
+            {{-- Favorite Servers (Commit 2: + last_played + View all) --}}
             @if($favoriteServers->count() > 0)
             <div class="bg-gray-800 rounded-lg p-4">
                 <h2 class="text-lg font-semibold text-white mb-3">{{ __('messages.favorite_servers') }}</h2>
@@ -298,11 +298,29 @@
                         <a href="{{ route('tracker.server.show', $fav->server) }}" class="text-amber-400 hover:text-amber-300 text-xs">
                             {!! $fav->server->hostname_html ?: e($fav->server->hostname_clean) !!}
                         </a>
-                        <div class="text-gray-500 text-xs">{{ $fav->session_count }} sessions &middot; {{ round($fav->total_time / 60) }}h</div>
+                        <div class="text-gray-500 text-xs">
+                            {{ $fav->session_count }} sessions &middot; {{ round($fav->total_time / 60) }}h
+                            @if(!empty($fav->last_played_at))
+                                &middot; {{ \Carbon\Carbon::parse($fav->last_played_at)->diffForHumans() }}
+                            @endif
+                        </div>
                     </div>
                     @endif
                     @endforeach
                 </div>
+                @if(($favoriteServersTotal ?? 0) > $favoriteServers->count())
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <a href="{{ route('tracker.player.servers', $player) }}" class="text-amber-400 hover:text-amber-300 text-xs">
+                            {{ __('tracker.view_all_servers') ?? 'View all servers' }} ({{ $favoriteServersTotal }}) &rarr;
+                        </a>
+                    </div>
+                @elseif(($favoriteServersTotal ?? 0) >= 1)
+                    <div class="mt-3 pt-3 border-t border-gray-700">
+                        <a href="{{ route('tracker.player.servers', $player) }}" class="text-amber-400 hover:text-amber-300 text-xs">
+                            {{ __('tracker.server_details') ?? 'Server details' }} &rarr;
+                        </a>
+                    </div>
+                @endif
             </div>
             @endif
 

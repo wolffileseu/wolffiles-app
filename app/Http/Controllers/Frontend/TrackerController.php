@@ -435,15 +435,20 @@ class TrackerController extends Controller
             ->limit(90)
             ->get(['elo_after', 'recorded_at']);
 
-        // Favorite servers
+        // Favorite servers (Commit 2: added last_played_at + total count)
         $favoriteServers = $player->sessions()
             ->select('server_id')
-            ->selectRaw('COUNT(*) as session_count, SUM(duration_minutes) as total_time')
+            ->selectRaw('COUNT(*) as session_count, SUM(duration_minutes) as total_time, MAX(started_at) as last_played_at')
             ->groupBy('server_id')
             ->orderByDesc('total_time')
             ->limit(5)
             ->with('server')
             ->get();
+
+        $favoriteServersTotal = (int) \DB::table('tracker_player_sessions')
+            ->where('player_id', $player->id)
+            ->distinct()
+            ->count('server_id');
 
         // Favorite maps
         $favoriteMaps = $player->sessions()
@@ -751,7 +756,7 @@ class TrackerController extends Controller
         }
 
         return view('frontend.tracker.player-show', compact(
-            'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteMaps',
+            'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteServersTotal', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
             'enhancedRating', 'enhancedRatingPeak', 'enhancedRatingAvg', 'enhancedRatingMatches',
@@ -1355,6 +1360,85 @@ class TrackerController extends Controller
                 'gametype'    => $p->gametype,
             ])->values(),
         ]);
+    }
+
+
+    // === PLAYER SERVERS (Commit 2) ===
+
+    /**
+     * Deep-dive page: show ALL servers a player has played on, with
+     * detailed stats (sessions, playtime, K/D, names used, top maps).
+     * Used for cross-server activity tracking, incl. problematic user detection.
+     */
+    public function playerServers(TrackerPlayer $player)
+    {
+        $sortBy = request()->input('sort', 'playtime');
+        $validSorts = ['playtime', 'sessions', 'last_played', 'first_played', 'kills'];
+        if (!in_array($sortBy, $validSorts, true)) {
+            $sortBy = 'playtime';
+        }
+        $sortColumn = [
+            'playtime'     => 'total_time',
+            'sessions'     => 'session_count',
+            'last_played'  => 'last_played_at',
+            'first_played' => 'first_played_at',
+            'kills'        => 'total_kills',
+        ][$sortBy];
+
+        // Alle Server mit Sessions + aggregierten Stats
+        $servers = \DB::table('tracker_player_sessions as sess')
+            ->leftJoin('tracker_servers as s', 's.id', '=', 'sess.server_id')
+            ->leftJoin('tracker_games as g', 'g.id', '=', 's.game_id')
+            ->where('sess.player_id', $player->id)
+            ->select([
+                'sess.server_id',
+                \DB::raw('COUNT(*) as session_count'),
+                \DB::raw('SUM(sess.duration_minutes) as total_time'),
+                \DB::raw('MIN(sess.started_at) as first_played_at'),
+                \DB::raw('MAX(sess.started_at) as last_played_at'),
+                \DB::raw('SUM(sess.kills) as total_kills'),
+                \DB::raw('SUM(sess.deaths) as total_deaths'),
+                \DB::raw('MAX(sess.score) as max_score'),
+                \DB::raw('SUM(sess.xp) as total_xp'),
+                's.hostname_clean', 's.hostname_html', 's.country_code', 's.country',
+                's.ip', 's.port', 's.is_enhanced_tracker', 's.is_online',
+                'g.short_name as game_short', 'g.color as game_color',
+            ])
+            ->groupBy(
+                'sess.server_id', 's.hostname_clean', 's.hostname_html',
+                's.country_code', 's.country', 's.ip', 's.port',
+                's.is_enhanced_tracker', 's.is_online',
+                'g.short_name', 'g.color'
+            )
+            ->orderByDesc($sortColumn)
+            ->get();
+
+        // Namen pro Server (aus Enhanced match_stats)
+        $namesByServer = \DB::table('tracker_player_match_stats')
+            ->where('player_id', $player->id)
+            ->whereNotNull('name_clean_snapshot')
+            ->select('server_id', 'name_clean_snapshot', \DB::raw('COUNT(*) as used'))
+            ->groupBy('server_id', 'name_clean_snapshot')
+            ->orderByDesc('used')
+            ->get()
+            ->groupBy('server_id');
+
+        // Top-Map pro Server
+        $topMapByServer = \DB::table('tracker_player_sessions')
+            ->where('player_id', $player->id)
+            ->whereNotNull('map_name')
+            ->select('server_id', 'map_name', \DB::raw('COUNT(*) as c'))
+            ->groupBy('server_id', 'map_name')
+            ->orderByDesc('c')
+            ->get()
+            ->groupBy('server_id')
+            ->map(function ($rows) {
+                return $rows->take(3);
+            });
+
+        return view('frontend.tracker.player-servers', compact(
+            'player', 'servers', 'namesByServer', 'topMapByServer', 'sortBy'
+        ));
     }
 
 }
