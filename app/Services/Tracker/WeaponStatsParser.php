@@ -138,86 +138,102 @@ class WeaponStatsParser
             }
         }
 
-        // Damage section: 10 values, ONLY if weapon_mask > 0.
-        // Last value is a float (time_played_pct), rest are ints.
+        // Damage section: ETL source says "9 ints + 1 float = 10 tokens",
+        // but in practice we see anything from 9 to 11. Parse defensively:
+        // consume up to 9 named fields, and probe for an optional float
+        // time_played_pct afterwards. Any extras stay in $tail.
+        //
+        // We consume a damage section only when weapon_mask > 0, per source.
         $damage = null;
         $timePlayedPct = null;
         if ($weaponMask > 0) {
-            if ($i + 9 >= count($tokens)) {
-                throw new \RuntimeException("truncated damage section");
-            }
-            $damage = [
-                'given'          => (int) $tokens[$i++],
-                'received'       => (int) $tokens[$i++],
-                'team_given'     => (int) $tokens[$i++],
-                'team_received'  => (int) $tokens[$i++],
-                'gibs'           => (int) $tokens[$i++],
-                'kill_assists'   => (int) $tokens[$i++],
-                'self_kills'     => (int) $tokens[$i++],
-                'team_kills'     => (int) $tokens[$i++],
-                'team_gibs'      => (int) $tokens[$i++],
+            $damageFields = [
+                'given', 'received', 'team_given', 'team_received',
+                'gibs', 'kill_assists', 'self_kills', 'team_kills', 'team_gibs',
             ];
-            $timePlayedPct = (float) $tokens[$i++];
-        }
-
-        // Skill section.
-        // Next token is skill_mask, followed by N values where N = popcount(mask).
-        // NOTE: We've observed 7 values in the payload for mask=19 (popcount=3),
-        // which contradicts the code. Keeping strict for now; if we see
-        // parse errors in logs we'll investigate the skill section more.
-        if ($i >= count($tokens)) {
-            throw new \RuntimeException("missing skill_mask");
-        }
-        $skillMask = (int) $tokens[$i++];
-        $setBits = [];
-        for ($bit = 0; $bit < 32; $bit++) {
-            if (($skillMask & (1 << $bit)) !== 0) {
-                $setBits[] = $bit;
+            $damage = [];
+            foreach ($damageFields as $field) {
+                if ($i >= count($tokens)) break;
+                $damage[$field] = (int) $tokens[$i++];
             }
-        }
-        $skillBitCount = count($setBits);
-
-        // Detect SINGLE vs PAIR mode for skill values.
-        //
-        // Standard mode (campaign/stopwatch/lms etc.): 1 int per set skill bit
-        //   (current map XP only)
-        // PRESTIGE mode (non-campaign/sw/lms with g_prestige.integer > 0):
-        //   2 ints per set skill bit (current skillpoints + delta from startskillpoints)
-        //
-        // We look ahead in $tokens to decide: if there are >= 2*N ints
-        // followed by something non-int (float/rating), treat as PAIR mode.
-        $remaining = array_slice($tokens, $i);
-        $leadingInts = 0;
-        foreach ($remaining as $t) {
-            if (is_numeric($t) && !str_contains($t, '.')) {
-                $leadingInts++;
-            } else {
-                break;
+            // Optional trailing time_played_pct. Accept it if the next token
+            // looks like a percentage (float 0-100, OR a small int 0-100).
+            // If it looks like a skill_mask (large int, >200 typical), leave it.
+            if ($i < count($tokens)) {
+                $next = $tokens[$i];
+                $isFloat = str_contains($next, '.');
+                $numeric = is_numeric($next) ? (float) $next : null;
+                if ($isFloat || ($numeric !== null && $numeric >= 0 && $numeric <= 100)) {
+                    $timePlayedPct = (float) $next;
+                    $i++;
+                }
             }
         }
 
-        $isPairMode = ($skillBitCount > 0 && $leadingInts >= 2 * $skillBitCount);
-        $valuesPerSkill = $isPairMode ? 2 : 1;
-
+        // Skill section — entirely optional.
+        //
+        // The ETL source schema says: skill_mask (1 int) + N values where
+        // N = popcount(mask) in SINGLE mode, or 2*N in PRESTIGE/PAIR mode.
+        //
+        // In practice we see payloads where the skill section is missing
+        // entirely (mid-match ws-updates before stats stabilise), truncated,
+        // or where the "time_played_pct" trailing value was emitted as an
+        // integer instead of a float. We parse defensively rather than abort
+        // the whole packet.
+        $skillMask = 0;
         $skills = [];
-        foreach ($setBits as $bit) {
-            if ($i + ($valuesPerSkill - 1) >= count($tokens)) {
-                throw new \RuntimeException("truncated skill values at bit $bit");
+        $skillMode = 'single';
+
+        if ($i < count($tokens)) {
+            $maybeMask = (int) $tokens[$i];
+            $setBits = [];
+            for ($bit = 0; $bit < 32; $bit++) {
+                if (($maybeMask & (1 << $bit)) !== 0) {
+                    $setBits[] = $bit;
+                }
             }
-            if ($isPairMode) {
-                $skills[$bit] = [
-                    'current' => (int) $tokens[$i++],
-                    'delta'   => (int) $tokens[$i++],
-                ];
+            $skillBitCount = count($setBits);
+
+            // How many tokens remain AFTER consuming the putative mask?
+            $remaining = count($tokens) - ($i + 1);
+
+            // Only consume as skill_mask if the remainder can plausibly
+            // fit the skills. Otherwise the "mask" was in reality the
+            // rating / tail / something else.
+            $canFitSingle = $skillBitCount > 0 && $remaining >= $skillBitCount;
+            $canFitPair   = $skillBitCount > 0 && $remaining >= 2 * $skillBitCount;
+
+            if ($skillBitCount === 0) {
+                // mask = 0 or no bits set — consume it, no skills follow
+                $skillMask = $maybeMask;
+                $i++;
+            } elseif ($canFitPair || $canFitSingle) {
+                $skillMask = $maybeMask;
+                $i++;
+                $skillMode = $canFitPair ? 'pair' : 'single';
+
+                foreach ($setBits as $bit) {
+                    if ($skillMode === 'pair') {
+                        if ($i + 1 >= count($tokens)) break;
+                        $skills[$bit] = [
+                            'current' => (int) $tokens[$i++],
+                            'delta'   => (int) $tokens[$i++],
+                        ];
+                    } else {
+                        if ($i >= count($tokens)) break;
+                        $skills[$bit] = (int) $tokens[$i++];
+                    }
+                }
             } else {
-                $skills[$bit] = (int) $tokens[$i++];
+                // The value at $i doesn't look like a mask that fits.
+                // Leave it in the tail array for downstream inspection.
             }
         }
 
         // Everything remaining goes into 'tail' — this typically contains
-        // rating / rating_delta / prestige depending on server compilation.
+        // rating / rating_delta / prestige depending on server compilation,
+        // or leftover bytes when the skill section was absent/truncated.
         $tail = array_slice($tokens, $i);
-        $skillMode = $isPairMode ? 'pair' : 'single';
 
         // Parse clientinfo: ping\score\P\class\name
         $client = null;
