@@ -261,10 +261,14 @@ class PlayerPresenceHandler extends AbstractHandler
             return true;
         }
         if (is_string($name) && $name !== '') {
-            if (stripos($name, '[BOT]') === 0) {
+            // Strip ET color codes (^0-9, ^a-z, ^A-Z) before pattern match.
+            // Bots often have admin-configured colored names like ^o[BOT]^7Fullmonty.
+            $clean = preg_replace('/\^[0-9a-zA-Z]/', '', $name);
+            $clean = trim((string) $clean);
+            if (stripos($clean, '[BOT]') === 0) {
                 return true;
             }
-            if (stripos($name, 'OmniBot') === 0) {
+            if (stripos($clean, 'OmniBot') === 0) {
                 return true;
             }
         }
