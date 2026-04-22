@@ -358,10 +358,52 @@ class TrackerController extends Controller
             }
         }
 
+        // === RECENT ACTIVITY (Commit 3) ===
+        $recentRange = request()->input('recent', '7d');
+        $rangeMap = ['24h' => 1, '7d' => 7, '30d' => 30];
+        $days = $rangeMap[$recentRange] ?? 7;
+        $sinceRecent = now()->subDays($days);
+
+        $recentPlayers = \DB::table('tracker_player_sessions as sess')
+            ->leftJoin('tracker_players as p', 'p.id', '=', 'sess.player_id')
+            ->where('sess.server_id', $server->id)
+            ->where('sess.started_at', '>=', $sinceRecent)
+            ->select([
+                'sess.player_id',
+                'p.name_clean', 'p.name_html', 'p.country_code',
+                'p.has_enhanced_data', 'p.elo_rating',
+                \DB::raw('COUNT(*) as sess_count'),
+                \DB::raw('SUM(sess.duration_minutes) as total_min'),
+                \DB::raw('SUM(sess.kills) as kills'),
+                \DB::raw('SUM(sess.deaths) as deaths'),
+                \DB::raw('MAX(sess.started_at) as last_seen'),
+            ])
+            ->groupBy('sess.player_id', 'p.name_clean', 'p.name_html', 'p.country_code', 'p.has_enhanced_data', 'p.elo_rating')
+            ->orderByDesc('last_seen')
+            ->limit(30)
+            ->get();
+
+        $recentMaps = \DB::table('tracker_player_sessions')
+            ->where('server_id', $server->id)
+            ->whereNotNull('map_name')
+            ->where('started_at', '>=', $sinceRecent)
+            ->select([
+                'map_name',
+                \DB::raw('MAX(started_at) as last_played_at'),
+                \DB::raw('COUNT(DISTINCT player_id) as unique_players'),
+                \DB::raw('COUNT(*) as session_count'),
+                \DB::raw('SUM(duration_minutes) as total_time'),
+            ])
+            ->groupBy('map_name')
+            ->orderByDesc('last_played_at')
+            ->limit(15)
+            ->get();
+
         return view('frontend.tracker.server-show', compact(
             'server', 'activeSessions', 'history', 'topMaps', 'recentMatches',
             'hallOfFame', 'lastMatch', 'lastMatchPlayers',
-            'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta'
+            'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta',
+            'recentPlayers', 'recentMaps', 'recentRange'
         ));
     }
 

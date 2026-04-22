@@ -309,6 +309,120 @@ function playerChart() {
 @if($server->is_enhanced_tracker)
 <div class="max-w-7xl mx-auto px-4 pb-6">
 
+{{-- === RECENT ACTIVITY (Commit 3) === --}}
+<div class="max-w-7xl mx-auto px-4 mb-8" x-data="{}">
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h2 class="text-xl font-bold text-white">{{ __('tracker.recent_activity') ?? 'Recent Activity' }}</h2>
+        <div class="flex gap-2 text-xs">
+            @foreach(['24h' => '24h', '7d' => '7 days', '30d' => '30 days'] as $key => $label)
+                <a href="{{ request()->fullUrlWithQuery(['recent' => $key]) }}"
+                   class="px-3 py-1.5 rounded {{ ($recentRange ?? '7d') === $key ? 'bg-amber-500 text-black font-medium' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                    {{ $label }}
+                </a>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {{-- Recent Players --}}
+        <div class="bg-gray-800 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+                <h3 class="font-semibold text-white">{{ __('tracker.recent_players') ?? 'Recent Players' }}</h3>
+                <span class="text-xs text-gray-400">{{ $recentPlayers->count() }}</span>
+            </div>
+            @if($recentPlayers->count() === 0)
+                <div class="p-6 text-center text-gray-500 text-sm">
+                    {{ __('tracker.no_recent_players') ?? 'No players in this time range.' }}
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-900 text-gray-400 text-xs uppercase">
+                            <tr>
+                                <th class="px-4 py-2 text-left">{{ __('tracker.player') ?? 'Player' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.sessions_short') ?? 'Sess' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.playtime_short') ?? 'Time' }}</th>
+                                <th class="px-4 py-2 text-right">K/D</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.last_seen') ?? 'Last' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+                            @foreach($recentPlayers as $rp)
+                                <tr class="hover:bg-gray-700/40">
+                                    <td class="px-4 py-2">
+                                        @if($rp->player_id)
+                                            <a href="{{ route('tracker.player.show', $rp->player_id) }}" class="text-white hover:text-amber-300">
+                                                {!! $rp->name_html ?: e($rp->name_clean ?: 'unknown') !!}
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400">{{ $rp->name_clean ?: 'unknown' }}</span>
+                                        @endif
+                                        @if($rp->country_code)<x-country-flag :code="$rp->country_code" />@endif
+                                        @if($rp->has_enhanced_data)
+                                            <span class="text-xs text-amber-400 ml-1" title="Enhanced Tracker">&#9733;</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-4 py-2 text-right text-gray-300">{{ $rp->sess_count }}</td>
+                                    <td class="px-4 py-2 text-right text-gray-300">{{ round($rp->total_min / 60, 1) }}h</td>
+                                    <td class="px-4 py-2 text-right text-xs">
+                                        <span class="text-green-400">{{ number_format($rp->kills) }}</span>
+                                        /
+                                        <span class="text-red-400">{{ number_format($rp->deaths) }}</span>
+                                    </td>
+                                    <td class="px-4 py-2 text-right text-gray-400 text-xs whitespace-nowrap">
+                                        {{ \Carbon\Carbon::parse($rp->last_seen)->diffForHumans() }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
+        {{-- Recent Maps --}}
+        <div class="bg-gray-800 rounded-lg overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+                <h3 class="font-semibold text-white">{{ __('tracker.recent_maps') ?? 'Recently Played Maps' }}</h3>
+                <span class="text-xs text-gray-400">{{ $recentMaps->count() }}</span>
+            </div>
+            @if($recentMaps->count() === 0)
+                <div class="p-6 text-center text-gray-500 text-sm">
+                    {{ __('tracker.no_recent_maps') ?? 'No maps played in this time range.' }}
+                </div>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-900 text-gray-400 text-xs uppercase">
+                            <tr>
+                                <th class="px-4 py-2 text-left">{{ __('tracker.map') ?? 'Map' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.sessions_short') ?? 'Sess' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.unique_players') ?? 'Players' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.time_short') ?? 'Time' }}</th>
+                                <th class="px-4 py-2 text-right">{{ __('tracker.last_played') ?? 'Last' }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+                            @foreach($recentMaps as $rm)
+                                <tr class="hover:bg-gray-700/40">
+                                    <td class="px-4 py-2 text-amber-400 font-mono text-xs">{{ $rm->map_name }}</td>
+                                    <td class="px-4 py-2 text-right text-gray-300">{{ $rm->session_count }}</td>
+                                    <td class="px-4 py-2 text-right text-gray-300">{{ $rm->unique_players }}</td>
+                                    <td class="px-4 py-2 text-right text-gray-300">{{ round($rm->total_time / 60, 1) }}h</td>
+                                    <td class="px-4 py-2 text-right text-gray-400 text-xs whitespace-nowrap">
+                                        {{ \Carbon\Carbon::parse($rm->last_played_at)->diffForHumans() }}
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </div>
+</div>
+{{-- === /RECENT ACTIVITY === --}}
+
     {{-- E) LIVE MATCH (running right now) -------------------------------- --}}
     @if($liveMatch && $liveMatchPlayers->count() > 0)
     <div class="bg-gradient-to-r from-emerald-900/30 to-gray-800 border border-emerald-500/40 rounded-lg p-5 mb-6">
