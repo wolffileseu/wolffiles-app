@@ -11,9 +11,9 @@ cd /var/www/vhosts/wolffiles.eu/httpdocs_new/wolffiles-app
 PHP=/opt/plesk/php/8.3/bin/php
 
 # === Config ===
-DB_WORKERS=6       # database:tracker → verarbeitet raw_events
-REDIS_HIGH=4       # redis:tracker-high → verarbeitet PollServerJobs
-REDIS_LOW=2        # redis:tracker-low → niedrige Priorität
+DB_WORKERS=10       # database:tracker → verarbeitet raw_events
+REDIS_HIGH=10       # redis:tracker-high → verarbeitet PollServerJobs
+REDIS_LOW=16       # redis:tracker-low → niedrige Priorität
 
 # === Abräumen ===
 echo "Stoppe alte Worker..."
