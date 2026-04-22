@@ -244,4 +244,31 @@ class PlayerPresenceHandler extends AbstractHandler
 
         return $server?->id;
     }
+
+    // === BOT DETECTION HELPER (Commit 5) ===
+    /**
+     * Identify bots by any of the following markers:
+     *   - real GUID contains 'BOT' (OmniBot: 000000000000000000000000BOT00018)
+     *   - name starts with '[BOT]' (often set by admin in configs)
+     *   - name starts with 'OmniBot' (default OmniBot naming)
+     *
+     * @param string|null $realGuid  Raw ET GUID (32 hex chars) or null
+     * @param string|null $name      Player nickname (color-stripped)
+     */
+    public static function looksLikeBot(?string $realGuid, ?string $name): bool
+    {
+        if (is_string($realGuid) && stripos($realGuid, 'BOT') !== false) {
+            return true;
+        }
+        if (is_string($name) && $name !== '') {
+            if (stripos($name, '[BOT]') === 0) {
+                return true;
+            }
+            if (stripos($name, 'OmniBot') === 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
