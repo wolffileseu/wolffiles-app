@@ -25,3 +25,6 @@ storage/app/stock-maps/
 
 # Blade backup files
 *.blade.php.bak-*
+
+# Auto-generierte Tracker-Reports
+public/tracker-offline-report.txt

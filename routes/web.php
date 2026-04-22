@@ -352,6 +352,12 @@ use App\Http\Controllers\Frontend\TrackerExtendedController;
 Route::get('/tracker/map', [TrackerExtendedController::class, 'worldMap'])->name('tracker.map');
 Route::get('/tracker/rankings', [TrackerExtendedController::class, 'rankings'])->name('tracker.rankings');
 Route::get('/tracker/rankings/servers', [TrackerExtendedController::class, 'serverRankings'])->name('tracker.rankings.servers');
+
+// Global Weapon Mastery Leaderboards
+Route::get('/tracker/weapons', [\App\Http\Controllers\Frontend\WeaponLeaderboardController::class, 'index'])
+    ->name('tracker.weapons.index');
+Route::get('/tracker/weapons/{slug}', [\App\Http\Controllers\Frontend\WeaponLeaderboardController::class, 'show'])
+    ->name('tracker.weapons.show');
 Route::get('/tracker/rankings/players', [TrackerExtendedController::class, 'playerRankings'])->name('tracker.rankings.players');
 Route::get('/tracker/clans', [TrackerExtendedController::class, 'clans'])->name('tracker.clans');
 Route::get('/tracker/clans/{clan}', [TrackerExtendedController::class, 'clanShow'])->name('tracker.clan.show');
