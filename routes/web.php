@@ -202,6 +202,8 @@ Route::middleware("auth")->prefix("my-fastdl")->group(function () {
     Route::post("/directories", [ClanFastDlController::class, "updateDirectories"])->name("clan.fastdl.directories");
     Route::post("/upload", [ClanFastDlController::class, "upload"])->name("clan.fastdl.upload");
     Route::delete("/file/{file}", [ClanFastDlController::class, "deleteFile"])->name("clan.fastdl.delete");
+    // Fallback: verhindert 405 bei direkter GET-Navigation auf die Delete-URL
+    Route::get("/file/{file}", fn () => redirect()->route("clan.fastdl"));
 });
 
 // ===== Fast Download =====
