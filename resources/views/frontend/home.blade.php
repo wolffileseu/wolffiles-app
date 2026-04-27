@@ -114,7 +114,7 @@
                 <div class="space-y-4">
                     @foreach($latestPosts as $post)
                         @php
-                            $cleanContent = $post->content ?? '';
+                            $cleanContent = $post->translated_content ?? '';
                             $cleanContent = strip_tags($cleanContent);
                             $cleanContent = preg_replace('/[#*_~`>]+/', '', $cleanContent);
                             $cleanContent = html_entity_decode($cleanContent, ENT_QUOTES, 'UTF-8');
@@ -134,7 +134,7 @@
                         <article class="bg-gray-800 rounded-lg border border-gray-700 p-4 hover:border-gray-600 transition-colors">
                             <div class="flex items-start gap-3">
                                 @if($imageUrl)
-                                    <img src="{{ $imageUrl }}" alt="{{ $post->title }}"
+                                    <img src="{{ $imageUrl }}" alt="{{ $post->translated_title }}"
                                          class="w-20 h-16 object-cover rounded flex-shrink-0" loading="lazy"
                                          onerror="this.style.display='none'">
                                 @endif
@@ -146,7 +146,7 @@
                                         @endif
                                     </div>
                                     <h3 class="text-base font-semibold text-amber-400 mb-1 leading-tight">
-                                        <a href="{{ route('posts.show', $post) }}" class="hover:underline">{{ $post->title }}</a>
+                                        <a href="{{ route('posts.show', $post) }}" class="hover:underline">{{ $post->translated_title }}</a>
                                     </h3>
                                     @if($post->type === 'event' && $post->event_date)
                                         <p class="text-green-400 text-xs mb-1">📅 {{ $post->event_date->format('d.m.Y H:i') }}{{ $post->event_location ? ' · ' . $post->event_location : '' }}</p>
@@ -165,7 +165,7 @@
                     @endforeach
 
                     @if($latestPosts->isEmpty())
-                        <p class="text-gray-500 text-center py-8">Keine Neuigkeiten.</p>
+                        <p class="text-gray-500 text-center py-8">{{ __('messages.no_news_yet') }}</p>
                     @endif
                 </div>
             </section>

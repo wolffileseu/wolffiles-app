@@ -144,7 +144,13 @@
                 <span>Menu</span>
                 <svg class="w-4 h-4 transition-transform" :class="mobileOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
             </button>
-            <div x-show="mobileOpen" x-cloak class="px-4 pb-3 space-y-1">
+            <div x-show="mobileOpen" x-cloak class="fixed inset-0 z-50 bg-gray-900 overflow-y-auto overscroll-contain px-4 pb-8 pt-3 space-y-1">
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-700">
+                    <span class="text-gray-100 font-medium">Menu</span>
+                    <button @click="mobileOpen = false" type="button" class="text-gray-400 hover:text-white p-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
                 <form action="{{ route('files.index') }}" method="GET" class="mb-2">
                     <input type="text" name="search" placeholder="{{ __('messages.search') }}..."
                            class="w-full bg-gray-700 border-gray-600 text-gray-100 rounded-lg px-4 py-2 text-sm">

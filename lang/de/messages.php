@@ -775,7 +775,6 @@ return [
     'active_days' => 'aktive Tage',
     'less' => 'weniger',
     'more' => 'mehr',
-    // Live Server Stats (Issue #5)
     'map_live_stats_title' => 'Live-Server-Stats',
     'map_live_stats_total_plays' => 'Gesamt gespielt',
     'map_live_stats_active_servers' => 'Aktive Server',
@@ -784,9 +783,6 @@ return [
     'map_live_stats_top_servers' => 'Top Server',
     'map_live_stats_unnamed_server' => 'Unbenannter Server',
     'map_live_stats_plays_short' => 'mal',
-
-
-    // === Server-property tooltips and labels (tracker) ===
     'tracker_info_column' => 'Infos',
     'tracker_bot_badge' => 'BOT',
     'tracker_humans_plus_bots' => ':humans Spieler + :bots Bots',
@@ -804,4 +800,16 @@ return [
     'tracker_prop_os_mac' => 'Server läuft auf Mac',
     'tracker_connect' => 'Verbinden',
     'tracker_ping_from' => 'Ping vom Tracker in Falkenstein, DE',
+    'edit_in_admin' => 'Im Admin bearbeiten',
+    'no_news_yet' => 'Keine Neuigkeiten.',
+    'views_count' => 'Aufrufe',
+    'reset_filter' => 'Reset',
+    'breadcrumb_home' => 'Startseite',
+    'breadcrumb_news' => 'News',
+    'event_date_time_label' => 'Datum & Uhrzeit',
+    'event_location_label' => 'Ort / Server',
+    'match_opponent_label' => 'Gegner',
+    'match_result_label' => 'Ergebnis',
+    'match_map_label' => 'Map',
+    'match_date_label' => 'Datum',
 ];

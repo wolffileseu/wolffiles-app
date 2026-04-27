@@ -35,6 +35,11 @@ class Post extends Model
         "recruitment_requirements",
     ];
 
+    protected $attributes = [
+        "title_translations"   => "[]",
+        "content_translations" => "[]",
+    ];
+
     protected function casts(): array
     {
         return [
@@ -72,4 +77,29 @@ class Post extends Model
     public function scopeSitePosts($query) { return $query->whereNull("clan_id"); }
 
     public function isClanPost(): bool { return $this->clan_id !== null; }
+    /**
+     * Liefert Titel in aktueller Locale, fällt zurück auf default (DE).
+     */
+    public function getTranslatedTitleAttribute(): string
+    {
+        $locale = app()->getLocale();
+        $translations = $this->title_translations ?? [];
+        if ($locale !== "de" && !empty($translations[$locale] ?? null)) {
+            return $translations[$locale];
+        }
+        return $this->title ?? "";
+    }
+
+    /**
+     * Liefert Inhalt in aktueller Locale, fällt zurück auf default (DE).
+     */
+    public function getTranslatedContentAttribute(): string
+    {
+        $locale = app()->getLocale();
+        $translations = $this->content_translations ?? [];
+        if ($locale !== "de" && !empty($translations[$locale] ?? null)) {
+            return $translations[$locale];
+        }
+        return $this->content ?? "";
+    }
 }

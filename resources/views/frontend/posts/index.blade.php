@@ -17,7 +17,7 @@
                     @endforeach
                 </select>
                 @if(request('type') || request('clan'))
-                    <a href="{{ route('posts.index') }}" class="bg-gray-700 text-gray-300 hover:bg-gray-600 rounded px-3 py-1.5 text-sm">✕ Reset</a>
+                    <a href="{{ route('posts.index') }}" class="bg-gray-700 text-gray-300 hover:bg-gray-600 rounded px-3 py-1.5 text-sm">✕ {{ __('messages.reset_filter') }}</a>
                 @endif
             </form>
         </div>
@@ -34,15 +34,15 @@
                         <span class="text-gray-500 text-xs">{{ $post->published_at?->format('d.m.Y') }}</span>
                     </div>
                     @if($post->featured_image)
-                        <img src="{{ Storage::disk('s3')->temporaryUrl($post->featured_image, now()->addHours(2)) }}" alt="{{ $post->title }}" class="w-full rounded-lg mb-4 max-h-64 object-cover">
+                        <img src="{{ Storage::disk('s3')->temporaryUrl($post->featured_image, now()->addHours(2)) }}" alt="{{ $post->translated_title }}" class="w-full rounded-lg mb-4 max-h-64 object-cover">
                     @endif
                     <h2 class="text-2xl font-bold text-white mb-2">
-                        <a href="{{ route('posts.show', $post) }}" class="hover:text-amber-400 transition-colors">{{ $post->title }}</a>
+                        <a href="{{ route('posts.show', $post) }}" class="hover:text-amber-400 transition-colors">{{ $post->translated_title }}</a>
                     </h2>
-                    <p class="text-gray-400">{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 300) }}</p>
+                    <p class="text-gray-400">{{ $post->excerpt ?? Str::limit(strip_tags($post->translated_content), 300) }}</p>
                     <div class="mt-4 flex items-center space-x-4 text-sm text-gray-500">
-                        <span>by {{ $post->user?->name }}</span>
-                        <span>{{ $post->view_count }} views</span>
+                        <span>{{ __("messages.by_author") }} {{ $post->user?->name }}</span>
+                        <span>{{ $post->view_count }} {{ __("messages.views_count") }}</span>
                         <a href="{{ route('posts.show', $post) }}" class="text-amber-400 hover:text-amber-300">{{ __('messages.read_more') }} →</a>
                     </div>
                 </article>
@@ -64,18 +64,18 @@
                                 @endif
                             </div>
                             <h2 class="text-lg font-semibold text-white mb-1">
-                                <a href="{{ route('posts.show', $post) }}" class="hover:text-amber-400 transition-colors">{{ $post->title }}</a>
+                                <a href="{{ route('posts.show', $post) }}" class="hover:text-amber-400 transition-colors">{{ $post->translated_title }}</a>
                             </h2>
                             @if($post->type === 'event' && $post->event_date)
                                 <p class="text-green-400 text-xs mb-1">📅 {{ $post->event_date->format('d.m.Y H:i') }}{{ $post->event_location ? ' · ' . $post->event_location : '' }}</p>
                             @elseif($post->type === 'match' && $post->match_opponent)
                                 <p class="text-yellow-400 text-xs mb-1">⚔️ vs {{ $post->match_opponent }}{{ $post->match_result ? ' · ' . $post->match_result : '' }}{{ $post->match_map ? ' · ' . $post->match_map : '' }}</p>
                             @endif
-                            <p class="text-gray-400 text-sm mb-2 line-clamp-2">{{ $post->excerpt ?? Str::limit(strip_tags($post->content), 200) }}</p>
+                            <p class="text-gray-400 text-sm mb-2 line-clamp-2">{{ $post->excerpt ?? Str::limit(strip_tags($post->translated_content), 200) }}</p>
                             <div class="flex items-center gap-4 text-xs text-gray-500">
                                 <span>{{ $post->published_at?->format('d.m.Y') }}</span>
-                                <span>by {{ $post->user?->name }}</span>
-                                <span>{{ $post->view_count }} views</span>
+                                <span>{{ __("messages.by_author") }} {{ $post->user?->name }}</span>
+                                <span>{{ $post->view_count }} {{ __("messages.views_count") }}</span>
                             </div>
                         </div>
                     </div>

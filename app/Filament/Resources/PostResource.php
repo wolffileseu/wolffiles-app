@@ -42,22 +42,65 @@ class PostResource extends Resource
                     ->visible(fn(Get $get) => $get('type') !== Post::TYPE_NEWS || true),
             ])->columns(2),
 
-            Forms\Components\Section::make('Inhalt')->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label('Titel')
-                    ->required()
-                    ->maxLength(255),
+            Forms\Components\Section::make('Inhalt & Übersetzungen')->schema([
                 Forms\Components\TextInput::make('slug')
                     ->maxLength(255)
-                    ->hint('Leer lassen für automatische Generierung')
-                    ->unique(ignoreRecord: true),
-                Forms\Components\Textarea::make('excerpt')
-                    ->label('Kurzbeschreibung')
-                    ->rows(3),
-                Forms\Components\RichEditor::make('content')
-                    ->label('Inhalt')
-                    ->required()
+                    ->hint('Leer lassen für automatische Generierung aus DE-Titel')
+                    ->unique(ignoreRecord: true)
                     ->columnSpanFull(),
+                Forms\Components\Textarea::make('excerpt')
+                    ->label('Kurzbeschreibung (DE)')
+                    ->rows(3)
+                    ->columnSpanFull(),
+                Forms\Components\Tabs::make('translations')
+                    ->columnSpanFull()
+                    ->tabs([
+                        Forms\Components\Tabs\Tab::make('🇩🇪 Deutsch (Standard)')
+                            ->schema([
+                                Forms\Components\TextInput::make('title')
+                                    ->label('Titel')
+                                    ->required()
+                                    ->maxLength(255),
+                                Forms\Components\RichEditor::make('content')
+                                    ->label('Inhalt')
+                                    ->required(),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('🇬🇧 English')
+                            ->schema([
+                                Forms\Components\TextInput::make('title_translations.en')
+                                    ->label('Title (EN)')->maxLength(255),
+                                Forms\Components\RichEditor::make('content_translations.en')
+                                    ->label('Content (EN)'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('🇫🇷 Français')
+                            ->schema([
+                                Forms\Components\TextInput::make('title_translations.fr')
+                                    ->label('Titre (FR)')->maxLength(255),
+                                Forms\Components\RichEditor::make('content_translations.fr')
+                                    ->label('Contenu (FR)'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('🇳🇱 Nederlands')
+                            ->schema([
+                                Forms\Components\TextInput::make('title_translations.nl')
+                                    ->label('Titel (NL)')->maxLength(255),
+                                Forms\Components\RichEditor::make('content_translations.nl')
+                                    ->label('Inhoud (NL)'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('🇵🇱 Polski')
+                            ->schema([
+                                Forms\Components\TextInput::make('title_translations.pl')
+                                    ->label('Tytuł (PL)')->maxLength(255),
+                                Forms\Components\RichEditor::make('content_translations.pl')
+                                    ->label('Treść (PL)'),
+                            ]),
+                        Forms\Components\Tabs\Tab::make('🇹🇷 Türkçe')
+                            ->schema([
+                                Forms\Components\TextInput::make('title_translations.tr')
+                                    ->label('Başlık (TR)')->maxLength(255),
+                                Forms\Components\RichEditor::make('content_translations.tr')
+                                    ->label('İçerik (TR)'),
+                            ]),
+                    ]),
                 Forms\Components\FileUpload::make('featured_image')
                     ->disk('s3')
                     ->directory('posts/images')
@@ -68,7 +111,7 @@ class PostResource extends Resource
                     ->imageResizeTargetHeight('675')
                     ->label('Beitragsbild')
                     ->columnSpanFull(),
-            ])->columns(2),
+            ])->columns(1),
 
             // Event Felder
             Forms\Components\Section::make('Event Details')
