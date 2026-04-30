@@ -1,29 +1,38 @@
+User-agent: Amazonbot
+Crawl-delay: 30
+Disallow: /tracker/rankings/
+Disallow: /tracker/server/
+Disallow: /servers
+Disallow: /players
+
+User-agent: SemrushBot
+Crawl-delay: 60
+Disallow: /tracker/
+Disallow: /servers
+Disallow: /players
+
+User-agent: MJ12bot
+Crawl-delay: 60
+Disallow: /tracker/
+Disallow: /servers
+
+User-agent: meta-externalagent
+Crawl-delay: 30
+
+User-agent: AhrefsBot
+Crawl-delay: 60
+
+User-agent: DotBot
+Crawl-delay: 60
+
+User-agent: PetalBot
+Crawl-delay: 60
+
 User-agent: *
-Allow: /
+Crawl-delay: 10
 Disallow: /admin/
-Disallow: /login
-Disallow: /register
-Disallow: /my/
-Disallow: /upload
-Disallow: /notifications/
+Disallow: /filament/
+Disallow: /api/
+Allow: /api/heatmap
 
 Sitemap: https://wolffiles.eu/sitemap.xml
-
-# AI Crawlers welcome
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-User-agent: Claude-Web
-Allow: /
-
-User-agent: Amazonbot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-User-agent: Google-Extended
-Allow: /

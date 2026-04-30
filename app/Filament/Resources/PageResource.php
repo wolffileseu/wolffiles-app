@@ -27,21 +27,76 @@ class PageResource extends Resource
 
     public static function form(Form $form): Form
     {
+        // Helper: build a content-editor tuple (richtext/html/markdown) for a given field path
+        $contentEditors = function (string $field, string $label): array {
+            return [
+                Forms\Components\RichEditor::make($field)
+                    ->label($label)
+                    ->columnSpanFull()
+                    ->visible(fn (callable $get) => ($get('content_type') ?? 'richtext') === 'richtext'),
+                Forms\Components\Textarea::make($field)
+                    ->label($label . ' (HTML)')
+                    ->columnSpanFull()
+                    ->rows(20)
+                    ->extraAttributes(['style' => 'font-family: monospace; font-size: 13px;'])
+                    ->visible(fn (callable $get) => $get('content_type') === 'html'),
+                Forms\Components\MarkdownEditor::make($field)
+                    ->label($label . ' (Markdown)')
+                    ->columnSpanFull()
+                    ->visible(fn (callable $get) => $get('content_type') === 'markdown'),
+            ];
+        };
+
         return $form->schema([
-            Forms\Components\TextInput::make('title')
-                ->required()
-                ->maxLength(255)
-                ->live(onBlur: true)
-                ->afterStateUpdated(function ($state, callable $set, ?Page $record) {
-                    if (!$record) {
-                        $set('slug', \Illuminate\Support\Str::slug($state));
-                    }
-                }),
+            Forms\Components\Placeholder::make('tools_hint')
+                ->label('')
+                ->content(new \Illuminate\Support\HtmlString(
+                    '<div style="background:#1f2937;border-left:3px solid #f59e0b;padding:12px 16px;border-radius:6px;color:#d1d5db;font-size:13px;line-height:1.5;">'
+                    . '<strong style="color:#f59e0b;">ℹ️ Hinweis:</strong> '
+                    . 'Diese Seite verwaltet <strong>statische Inhalte</strong> wie Impressum, Datenschutz oder Hilfetexte. '
+                    . 'Tools wie der <em>ET Nickname Generator</em> oder der <em>Omni-Bot Browser</em> sind hartcodiert und werden im Code (Blade-Templates) gepflegt. '
+                    . 'Übersetzungen für Tools laufen über den <strong>TranslationManager</strong> (lang/&#123;locale&#125;/messages.php).'
+                    . '</div>'
+                ))
+                ->columnSpanFull(),
 
             Forms\Components\TextInput::make('slug')
                 ->maxLength(255)
-                ->hint('Leave empty to auto-generate')
-                ->unique(ignoreRecord: true),
+                ->hint('Leer lassen für automatische Generierung aus DE-Titel. Reservierte Slugs (Tools/System) sind nicht erlaubt.')
+                ->unique(ignoreRecord: true)
+                ->rules([
+                    function () {
+                        return function (string $attribute, $value, \Closure $fail) {
+                            $reserved = [
+                                'nickname-generator',
+                                'omni-bot',
+                                'omnibot',
+                                'tools',
+                                'admin',
+                                'api',
+                                'login',
+                                'register',
+                                'logout',
+                                'dashboard',
+                                'files',
+                                'news',
+                                'contact',
+                                'sitemap',
+                                'statistics',
+                                'rss',
+                                'upload',
+                                'wiki',
+                                'forum',
+                                'profile',
+                                'user',
+                            ];
+                            if (in_array(strtolower((string) $value), $reserved, true)) {
+                                $fail('Der Slug "' . $value . '" ist reserviert (Tool/System) und kann nicht für eine Page verwendet werden.');
+                            }
+                        };
+                    },
+                ])
+                ->columnSpanFull(),
 
             Forms\Components\Grid::make(2)->schema([
                 Forms\Components\Select::make('type')
@@ -60,27 +115,56 @@ class PageResource extends Resource
                         'markdown' => 'Markdown',
                     ])
                     ->default('richtext')
-                    ->live()
-                    ->afterStateUpdated(fn ($state) => $state),
+                    ->live(),
             ]),
 
-            // Rich Text Editor (default)
-            Forms\Components\RichEditor::make('content')
+            Forms\Components\Tabs::make('translations')
                 ->columnSpanFull()
-                ->visible(fn (callable $get) => ($get('content_type') ?? 'richtext') === 'richtext'),
+                ->tabs([
+                    Forms\Components\Tabs\Tab::make('🇩🇪 Deutsch (Standard)')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title')
+                                ->label('Titel')
+                                ->required()
+                                ->maxLength(255)
+                                ->live(onBlur: true)
+                                ->afterStateUpdated(function ($state, callable $set, ?Page $record) {
+                                    if (!$record) {
+                                        $set('slug', \Illuminate\Support\Str::slug($state));
+                                    }
+                                }),
+                        ], $contentEditors('content', 'Inhalt'))),
 
-            // HTML Code Editor
-            Forms\Components\Textarea::make('content')
-                ->label('HTML Content')
-                ->columnSpanFull()
-                ->rows(20)
-                ->extraAttributes(['style' => 'font-family: monospace; font-size: 13px;'])
-                ->visible(fn (callable $get) => $get('content_type') === 'html'),
+                    Forms\Components\Tabs\Tab::make('🇬🇧 English')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title_translations.en')
+                                ->label('Title (EN)')->maxLength(255),
+                        ], $contentEditors('content_translations.en', 'Content (EN)'))),
 
-            // Markdown Editor
-            Forms\Components\MarkdownEditor::make('content')
-                ->columnSpanFull()
-                ->visible(fn (callable $get) => $get('content_type') === 'markdown'),
+                    Forms\Components\Tabs\Tab::make('🇫🇷 Français')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title_translations.fr')
+                                ->label('Titre (FR)')->maxLength(255),
+                        ], $contentEditors('content_translations.fr', 'Contenu (FR)'))),
+
+                    Forms\Components\Tabs\Tab::make('🇳🇱 Nederlands')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title_translations.nl')
+                                ->label('Titel (NL)')->maxLength(255),
+                        ], $contentEditors('content_translations.nl', 'Inhoud (NL)'))),
+
+                    Forms\Components\Tabs\Tab::make('🇵🇱 Polski')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title_translations.pl')
+                                ->label('Tytuł (PL)')->maxLength(255),
+                        ], $contentEditors('content_translations.pl', 'Treść (PL)'))),
+
+                    Forms\Components\Tabs\Tab::make('🇹🇷 Türkçe')
+                        ->schema(array_merge([
+                            Forms\Components\TextInput::make('title_translations.tr')
+                                ->label('Başlık (TR)')->maxLength(255),
+                        ], $contentEditors('content_translations.tr', 'İçerik (TR)'))),
+                ]),
 
             Forms\Components\Select::make('template')
                 ->options([
@@ -102,18 +186,6 @@ class PageResource extends Resource
                 Forms\Components\Toggle::make('is_published')->default(false),
                 Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
             ]),
-
-            Forms\Components\Section::make('Translations')->schema([
-                Forms\Components\KeyValue::make('title_translations')
-                    ->label('Title Translations')
-                    ->keyLabel('Language')
-                    ->valueLabel('Title')
-                    ->hint('e.g. de → Impressum, en → Imprint'),
-                Forms\Components\KeyValue::make('content_translations')
-                    ->label('Content Translations')
-                    ->keyLabel('Language')
-                    ->valueLabel('Content'),
-            ])->collapsed(),
         ]);
     }
 

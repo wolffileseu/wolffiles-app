@@ -44,14 +44,14 @@
                             <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9.5c0 .83-.67 1.5-1.5 1.5H7v2H5.5v-6H8.5c.83 0 1.5.67 1.5 1.5v1zm5 3c0 .83-.67 1.5-1.5 1.5H11v-6h2.5c.83 0 1.5.67 1.5 1.5v3zm4-3c0 .28-.22.5-.5.5H17v1h1.5v1H17v2h-1.5v-6H19.5c.28 0 .5.22.5.5v1z"/>
                         </svg>
                         <div>
-                            <p class="text-white font-medium">PDF Dokument</p>
-                            <p class="text-gray-400 text-sm">Anhang herunterladen</p>
+                            <p class="text-white font-medium">{{ __('messages.page_pdf_document') }}</p>
+                            <p class="text-gray-400 text-sm">{{ __('messages.page_pdf_subtitle') }}</p>
                         </div>
                     </div>
                     <a href="{{ Storage::disk('s3')->url($page->pdf_path) }}"
                        target="_blank"
                        class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                        ↓ PDF öffnen
+                        ↓ {{ __('messages.page_pdf_open') }}
                     </a>
                 </div>
             </div>

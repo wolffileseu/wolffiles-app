@@ -812,4 +812,7 @@ return [
     'match_result_label' => 'Sonuç',
     'match_map_label' => 'Harita',
     'match_date_label' => 'Tarih',
+    'page_pdf_document' => 'PDF belgesi',
+    'page_pdf_subtitle' => 'Eki indir',
+    'page_pdf_open' => 'PDF\'i aç',
 ];

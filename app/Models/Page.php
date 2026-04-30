@@ -59,4 +59,31 @@ class Page extends Model
         $locale = $locale ?? app()->getLocale();
         return $this->content_translations[$locale] ?? $this->content;
     }
+    /**
+     * Accessor: $page->translated_title
+     * Liefert Titel in aktueller Locale, fällt zurück auf default (DE).
+     */
+    public function getTranslatedTitleAttribute(): string
+    {
+        $locale = app()->getLocale();
+        $translations = $this->title_translations ?? [];
+        if ($locale !== "de" && !empty($translations[$locale] ?? null)) {
+            return $translations[$locale];
+        }
+        return $this->title ?? "";
+    }
+
+    /**
+     * Accessor: $page->translated_content
+     * Liefert Inhalt in aktueller Locale, fällt zurück auf default (DE).
+     */
+    public function getTranslatedContentAttribute(): string
+    {
+        $locale = app()->getLocale();
+        $translations = $this->content_translations ?? [];
+        if ($locale !== "de" && !empty($translations[$locale] ?? null)) {
+            return $translations[$locale];
+        }
+        return $this->content ?? "";
+    }
 }

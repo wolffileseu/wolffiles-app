@@ -812,4 +812,7 @@ return [
     'match_result_label' => 'Résultat',
     'match_map_label' => 'Map',
     'match_date_label' => 'Date',
+    'page_pdf_document' => 'Document PDF',
+    'page_pdf_subtitle' => 'Télécharger la pièce jointe',
+    'page_pdf_open' => 'Ouvrir le PDF',
 ];

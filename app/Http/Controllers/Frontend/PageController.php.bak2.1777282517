@@ -19,7 +19,7 @@ class PageController extends Controller
         $content     = $page->translated_content;
         $contentType = $page->content_type ?? "richtext";
 
-        // Markdown -> HTML mit Heading-IDs fuer Anchor-Links
+        // Markdown → HTML mit Heading-IDs für Anchor-Links
         $looksLikeMarkdown = $content && (
             str_starts_with(trim($content), "#")
             || str_contains($content, "##")
@@ -46,7 +46,6 @@ class PageController extends Controller
         $seo          = SeoService::defaults();
         $seo["title"] = $title;
 
-        $view_name = "frontend" . "." . "pages" . "." . "show";
-        return view($view_name, compact("page", "title", "content", "seo"));
+        return view("frontend.pages.show", compact("page", "title", "content", "seo"));
     }
 }
