@@ -28,3 +28,10 @@ storage/app/stock-maps/
 
 # Auto-generierte Tracker-Reports
 public/tracker-offline-report.txt
+
+# Backup-Dateien sollen NIE ins Repo
+*.bak
+*.bak.*
+*.backup
+*.orig
+.env.bak*
