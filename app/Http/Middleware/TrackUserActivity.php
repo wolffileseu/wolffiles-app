@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
+use GeoIp2\Database\Reader;
+use Illuminate\Support\Facades\Log;
 
 class TrackUserActivity
 {
@@ -162,10 +164,29 @@ class TrackUserActivity
     protected function getCountry(?string $ip): ?string
     {
         if (!$ip) return null;
+
+        // Reserved/private IPs überspringen
+        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
+            return null;
+        }
+
+        $dbPath = storage_path("app/geoip/GeoLite2-Country.mmdb");
+        if (!file_exists($dbPath)) {
+            return null;
+        }
+
         try {
-            $response = @file_get_contents("https://ipapi.co/{$ip}/country/");
-            return $response && strlen($response) === 2 ? strtoupper($response) : null;
-        } catch (\Exception $e) {
+            // Reader pro Request cachen
+            static $reader = null;
+            if ($reader === null) {
+                $reader = new Reader($dbPath);
+            }
+            $record = $reader->country($ip);
+            return $record->country->isoCode ?? null;
+        } catch (\GeoIp2\Exception\AddressNotFoundException $e) {
+            return null;
+        } catch (\Throwable $e) {
+            Log::warning("GeoIP lookup failed for {$ip}: " . $e->getMessage());
             return null;
         }
     }
