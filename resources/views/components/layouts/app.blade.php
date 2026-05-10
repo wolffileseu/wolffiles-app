@@ -295,6 +295,48 @@
     </footer>
 
     {{-- Cookie Consent --}}
+    {{-- Flash-Notifications (global) --}}
+    @if(session('success'))
+    <div x-data="{ show: true }"
+         x-show="show"
+         x-init="setTimeout(() => show = false, 6000)"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 translate-x-4"
+         class="fixed top-20 right-4 z-50 max-w-md bg-green-600/95 backdrop-blur border border-green-500 text-white px-5 py-4 rounded-lg shadow-xl flex items-start gap-3">
+        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+        <div class="flex-1 text-sm leading-relaxed">{{ session('success') }}</div>
+        <button @click="show = false" class="text-white/70 hover:text-white" aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div x-data="{ show: true }"
+         x-show="show"
+         x-init="setTimeout(() => show = false, 8000)"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 translate-x-0"
+         x-transition:leave-end="opacity-0 translate-x-4"
+         class="fixed top-20 right-4 z-50 max-w-md bg-red-600/95 backdrop-blur border border-red-500 text-white px-5 py-4 rounded-lg shadow-xl flex items-start gap-3">
+        <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <div class="flex-1 text-sm leading-relaxed">{{ session('error') }}</div>
+        <button @click="show = false" class="text-white/70 hover:text-white" aria-label="Close">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </button>
+    </div>
+    @endif
+
+    
     @include('components.cookie-consent')
 
     {{-- Easter Egg --}}

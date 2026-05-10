@@ -270,8 +270,15 @@ class FileController extends Controller
         foreach ($admins as $admin) {
             $admin->notify(new NewFileUploaded($file, auth()->user()));
         }
-        return redirect()->route('files.show', $file)
-            ->with('success', __('messages.file_uploaded_success'));
+        $file->refresh();
+
+        if ($file->isApproved()) {
+            return redirect()->route('files.show', $file)
+                ->with('success', __('messages.file_uploaded_success'));
+        }
+
+        return redirect()->route('files.upload')
+            ->with('success', __('messages.file_uploaded_pending'));
     }
     public function rate(Request $request, File $file)
     {

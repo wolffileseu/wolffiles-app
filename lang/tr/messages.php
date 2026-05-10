@@ -196,6 +196,7 @@ return [
     'file_size' => '[TODO:tr] Size',
     'file_uploaded' => '[TODO:tr] File uploaded',
     'file_uploaded_success' => '[TODO:tr] File uploaded success',
+    'file_uploaded_pending' => 'Gönderiminiz için teşekkür ederiz! Dosya, bir ekip üyesi tarafından incelenip onaylandıktan sonra burada görünecek.',
     'filebase' => '[TODO:tr] Files',
     'filename' => '[TODO:tr] Filename',
     'files' => '[TODO:tr] Files',

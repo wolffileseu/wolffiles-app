@@ -196,6 +196,7 @@ return [
     'file_size' => 'Rozmiar',
     'file_uploaded' => 'Plik przesłany (uploadowany)',
     'file_uploaded_success' => 'Plik został przesłany (uploadowany) pomyślnie',
+    'file_uploaded_pending' => 'Dziękujemy za przesłanie pliku! Plik pojawi się tutaj po sprawdzeniu i zatwierdzeniu przez członka zespołu.',
     'filebase' => 'Pliki',
     'filename' => 'Nazwa pliku',
     'files' => 'Pliki',

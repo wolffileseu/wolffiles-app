@@ -196,6 +196,7 @@ return [
     'file_size' => 'Größe',
     'file_uploaded' => '[TODO:de] File uploaded',
     'file_uploaded_success' => '[TODO:de] File uploaded success',
+    'file_uploaded_pending' => 'Vielen Dank für deine Einreichung! Die Datei erscheint hier, sobald sie von einem Teammitglied geprüft und freigegeben wurde.',
     'filebase' => '[TODO:de] Files',
     'filename' => 'Dateiname',
     'files' => 'Dateien',

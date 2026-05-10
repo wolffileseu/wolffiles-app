@@ -196,6 +196,7 @@ return [
     'file_size' => '[TODO:nl] Size',
     'file_uploaded' => '[TODO:nl] File uploaded',
     'file_uploaded_success' => '[TODO:nl] File uploaded success',
+    'file_uploaded_pending' => 'Bedankt voor je inzending! Het bestand verschijnt hier zodra het is gecontroleerd en goedgekeurd door een teamlid.',
     'filebase' => '[TODO:nl] Files',
     'filename' => '[TODO:nl] Filename',
     'files' => '[TODO:nl] Files',

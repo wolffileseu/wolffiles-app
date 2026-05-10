@@ -196,6 +196,7 @@ return [
     'file_size' => 'Taille',
     'file_uploaded' => 'Fichier uploadé',
     'file_uploaded_success' => 'Fichier uploadé avec succès',
+    'file_uploaded_pending' => 'Merci pour votre contribution ! Le fichier apparaîtra ici une fois examiné et approuvé par un membre de l\'équipe.',
     'filebase' => 'Fichiers',
     'filename' => 'Nom du fichier',
     'files' => 'Fichiers',

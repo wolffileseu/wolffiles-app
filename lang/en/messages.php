@@ -196,6 +196,7 @@ return [
     'file_size' => 'Size',
     'file_uploaded' => 'File uploaded',
     'file_uploaded_success' => 'File uploaded success',
+    'file_uploaded_pending' => 'Thank you for your submission! The file will appear here once it has been reviewed and approved by a team member.',
     'filebase' => 'Files',
     'filename' => 'Filename',
     'files' => 'Files',
