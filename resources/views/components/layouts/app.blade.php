@@ -133,6 +133,9 @@
                     {{-- #19 Notification Bell --}}
                     @include('components.notification-bell')
 
+                    {{-- DM (Private Messages) Bell --}}
+                    @include('components.dm-bell')
+
                     @auth
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" class="text-gray-300 hover:text-white flex items-center space-x-2">
@@ -145,6 +148,12 @@
                                 <a href="{{ route('profile.uploads') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">{{ __('messages.my_uploads') }}</a>
                                 <a href="{{ route('profile.favorites') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">{{ __('messages.my_favorites') }}</a>
                                 <a href="{{ route('profile.settings') }}" class="block px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">{{ __('messages.settings') }}</a>
+                                <a href="{{ route('dm.inbox') }}" class="flex items-center justify-between px-4 py-2 text-sm text-gray-300 hover:bg-gray-700">
+                                    <span>📬 {{ __('messages.dm_inbox') }}</span>
+                                    @if(($dmUnreadCount ?? 0) > 0)
+                                        <span class="text-xs bg-amber-500 text-white rounded-full px-2 py-0.5 font-bold">{{ $dmUnreadCount > 9 ? '9+' : $dmUnreadCount }}</span>
+                                    @endif
+                                </a>
                                 <hr class="border-gray-700 my-1">
                                 <a href="{{ route('files.upload') }}" class="block px-4 py-2 text-sm text-amber-400 hover:bg-gray-700">{{ __('messages.upload_file') }}</a>
                                 @if(auth()->user()->hasRole("clan_leader") || auth()->user()->hasRole("admin"))

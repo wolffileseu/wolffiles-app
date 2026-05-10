@@ -38,6 +38,7 @@
                         <div class="border-b border-gray-700 py-4 last:border-0">
                             <div class="flex items-center space-x-2 mb-2">
                                 <span class="font-medium text-amber-400">{{ $comment->user?->name }}</span>
+                                <x-dm-button :user="$comment->user" />
                                 <span class="text-gray-500 text-xs">{{ $comment->created_at->diffForHumans() }}</span>
                             </div>
                             <p class="text-gray-300">{{ $comment->body }}</p>

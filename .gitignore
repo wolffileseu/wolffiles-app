@@ -36,3 +36,4 @@ public/tracker-offline-report.txt
 *.orig
 .env.bak*
 *.bak3
+storage/backups/

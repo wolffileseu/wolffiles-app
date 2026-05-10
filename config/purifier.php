@@ -16,5 +16,23 @@ return [
             'AutoFormat.RemoveEmpty' => true,
             'URI.AllowedSchemes' => ['http' => true, 'https' => true, 'mailto' => true],
         ],
+        // PM profile: very restrictive. Used for private messages.
+        // No images (attachments handled separately), no tables, no divs/spans,
+        // no inline CSS. Links forced to noopener+noreferrer+target=_blank.
+        'pm' => [
+            'HTML.Doctype' => 'HTML 4.01 Transitional',
+            'HTML.Allowed' => 'p,br,strong,em,b,i,u,code,pre,blockquote,ul,ol,li,a[href|title|rel|target]',
+            'CSS.AllowedProperties' => '',
+            'AutoFormat.AutoParagraph' => false,
+            'AutoFormat.RemoveEmpty' => true,
+            'AutoFormat.Linkify' => false,
+            'URI.AllowedSchemes' => ['http' => true, 'https' => true, 'mailto' => true],
+            'URI.DisableExternalResources' => true,
+            'Attr.AllowedFrameTargets' => ['_blank'],
+            'HTML.TargetBlank' => true,
+            'HTML.Nofollow' => true,
+            'HTML.TargetNoreferrer' => true,
+            'HTML.TargetNoopener' => true,
+        ],
     ],
 ];

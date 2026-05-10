@@ -76,3 +76,11 @@ Schedule::command('tracker:offline-report -q')->everyTenMinutes()->withoutOverla
 // Run daily cleanup as safety net in case new bot variants slip past the
 // in-handler prevention (other bot software, custom names, etc).
 Schedule::command('tracker:cleanup-bots --force')->dailyAt('04:15')->withoutOverlapping();
+
+// =====================================================================
+// PM (Direct Messages) retention -- Phase 8
+// =====================================================================
+// Purge message bodies and attachments older than retention_body_days
+// (default 180 days). Conversations with active reports or evidence
+// snapshots are skipped.
+Schedule::command('pm:purge-retention')->dailyAt('03:45')->withoutOverlapping();
