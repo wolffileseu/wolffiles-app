@@ -848,4 +848,5 @@ return [
     'dm_reason_message_purged' => 'This message has already been deleted.',
     'dm_reason_edit_window_expired' => 'Edit window has expired.',
     'dm_reason_not_message_owner' => 'You can only edit your own messages.',
+    'dm_your_reply' => 'Your reply',
 ];

@@ -210,8 +210,51 @@ class DmController extends Controller
      */
     public function reply(Request $request, PmConversation $conversation)
     {
-        // TODO: Phase 4d
-        abort(501, "Not implemented yet (Phase 4d).");
+        $sender = Auth::user();
+
+        // Authorization: must be a participant
+        if (! $conversation->hasParticipant($sender->id)) {
+            abort(403, __("messages.dm_reason_not_a_participant"));
+        }
+
+        $validated = $request->validate([
+            "body" => "required|string|min:1|max:" . config("pm.max_body_length", 10000),
+        ], [
+            "body.required" => __("messages.dm_body_required"),
+            "body.max"      => __("messages.dm_body_too_long"),
+        ]);
+
+        try {
+            $this->conversations->sendMessage(
+                $sender,
+                $conversation,
+                $validated["body"],
+                "markdown",
+                $request->ip(),
+                $request->userAgent()
+            );
+        } catch (\App\Exceptions\Pm\RateLimitExceededException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(["body" => __("messages.dm_rate_limit", [
+                    "minutes" => ceil($e->retryAfterSeconds / 60),
+                ])]);
+        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(["body" => __("messages.dm_reason_" . $e->reasonCode)]);
+        }
+
+        // Invalidate dmUnreadCount cache for all OTHER participants
+        foreach ($conversation->participants()->whereNull("left_at")->get() as $p) {
+            if ($p->user_id !== $sender->id) {
+                \Illuminate\Support\Facades\Cache::forget("pm:unread_count:{$p->user_id}");
+            }
+        }
+
+        return redirect()
+            ->route("dm.show", $conversation)
+            ->with("status", __("messages.dm_sent"));
     }
 
     /**
