@@ -849,4 +849,5 @@ return [
     'dm_reason_edit_window_expired' => 'Edit window has expired.',
     'dm_reason_not_message_owner' => 'You can only edit your own messages.',
     'dm_your_reply' => 'Your reply',
+    'dm_send_message' => 'Send message',
 ];

@@ -62,7 +62,11 @@
             <div class="flex-shrink-0 flex gap-2 self-center">
                 @auth
                     @if(auth()->id() !== $user->id)
-                        {{-- TODO: messages.create route not yet implemented --}}
+                        <a href="{{ route('dm.compose', ['to' => $user->id]) }}"
+                           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-black transition-all"
+                           style="background:linear-gradient(135deg,#f59e0b,#ea580c);font-family:'Rajdhani',sans-serif;">
+                            ✉ {{ __('messages.dm_send_message') }}
+                        </a>
                     @else
                         <a href="{{ route('profile.settings') }}" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold text-black transition-all" style="background:linear-gradient(135deg,#f59e0b,#ea580c);font-family:'Rajdhani',sans-serif;">⚙ {{ __('messages.settings') ?? 'Einstellungen' }}</a>
                     @endif

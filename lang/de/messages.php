@@ -849,4 +849,5 @@ return [
     'dm_reason_edit_window_expired' => 'Bearbeitungsfenster abgelaufen.',
     'dm_reason_not_message_owner' => 'Du kannst nur deine eigenen Nachrichten bearbeiten.',
     'dm_your_reply' => 'Deine Antwort',
+    'dm_send_message' => 'Nachricht senden',
 ];
