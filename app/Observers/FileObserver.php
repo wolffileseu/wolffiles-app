@@ -7,15 +7,28 @@ use App\Models\Badge;
 use Illuminate\Support\Facades\Storage;
 use App\Services\OmnibotWaypointService;
 use App\Services\EmbeddingService;
+use App\Services\FileRelationMatcher;
 
 class FileObserver
 {
+    public function __construct(private ?FileRelationMatcher $matcher = null) {}
+
+    public function created(File $file): void
+    {
+        $this->syncMapBotRelations($file, 'created');
+    }
+
     public function updated(File $file): void
     {
         if ($file->isDirty('status') && $file->status === 'approved') {
             $this->checkBadges($file);
             $this->scanForWaypoints($file);
             $this->indexEmbedding($file);
+        }
+
+        // Re-match map<->bot relations if a relevant field changed (issue #12)
+        if ($file->wasChanged(['file_name', 'title', 'map_name_clean', 'category_id'])) {
+            $this->syncMapBotRelations($file, 'updated');
         }
     }
 
@@ -116,6 +129,31 @@ class FileObserver
             \Log::info("Embedding indexed for file {$file->id}");
         } catch (\Exception $e) {
             \Log::warning("Embedding indexing failed: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Auto-link new/updated map and bot files via filename token matching (issue #12).
+     */
+    protected function syncMapBotRelations(File $file, string $event): void
+    {
+        try {
+            $matcher = $this->matcher ?? app(FileRelationMatcher::class);
+            $cat = (int) $file->category_id;
+
+            if ($cat === FileRelationMatcher::CATEGORY_BOT) {
+                $linked = $matcher->matchBot($file);
+                if (!empty($linked)) {
+                    \Log::info("FileObserver: bot {$file->id} {$event}, linked to maps: " . implode(',', $linked));
+                }
+            } elseif ($cat === FileRelationMatcher::CATEGORY_MAP) {
+                $linked = $matcher->matchMap($file);
+                if (!empty($linked)) {
+                    \Log::info("FileObserver: map {$file->id} {$event}, linked to bots: " . implode(',', $linked));
+                }
+            }
+        } catch (\Throwable $e) {
+            \Log::error("FileObserver syncMapBotRelations failed for file {$file->id}: " . $e->getMessage());
         }
     }
 }
