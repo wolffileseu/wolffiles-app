@@ -129,6 +129,7 @@
                             <div class="flex-1">
                                 <div class="flex items-center space-x-2 mb-1">
                                     <span class="text-amber-400 font-medium text-sm">{{ $comment->user?->name ?? 'Unknown' }}</span>
+                                    <x-dm-button :user="$comment->user" />
                                     <span class="text-gray-500 text-xs">{{ $comment->created_at->diffForHumans() }}</span>
                                 </div>
                                 <p class="text-gray-300 text-sm">{{ $comment->body }}</p>

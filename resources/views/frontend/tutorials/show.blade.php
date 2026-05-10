@@ -242,6 +242,7 @@
                         <div>
                             <div class="text-sm">
                                 <strong class="text-gray-300">{{ $comment->user?->name }}</strong>
+                                <x-dm-button :user="$comment->user" />
                                 <span class="text-gray-500 text-xs ml-2">{{ $comment->created_at->diffForHumans() }}</span>
                             </div>
                             <p class="text-gray-400 text-sm mt-1">{{ $comment->content }}</p>
