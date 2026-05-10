@@ -873,4 +873,5 @@ return [
     'dm_blocked' => 'Du hast :name blockiert.',
     'dm_unblocked' => ':name wurde freigegeben.',
     'dm_user' => 'User',
+    'uploaded_by' => 'Hochgeladen von',
 ];

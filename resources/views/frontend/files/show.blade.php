@@ -796,6 +796,27 @@
                         <dt class="text-gray-400">{{ __('messages.author') }}</dt>
                         <dd class="text-gray-200">{{ $file->original_author ?? $file->user?->name }}</dd>
                     </div>
+                    @if($file->user)
+                        <div class="flex justify-between items-center">
+                            <dt class="text-gray-400">{{ __('messages.uploaded_by') }}</dt>
+                            <dd class="text-gray-200 flex items-center gap-2">
+                                <a href="{{ route('profile.show', $file->user) }}" class="text-amber-400 hover:underline">
+                                    {{ $file->user->name }}
+                                </a>
+                                @auth
+                                    @if(auth()->id() !== $file->user->id)
+                                        <a href="{{ route('dm.compose', ['to' => $file->user->id]) }}"
+                                           class="text-gray-400 hover:text-amber-400 transition-colors"
+                                           title="{{ __('messages.dm_send_message') }}">
+                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                            </svg>
+                                        </a>
+                                    @endif
+                                @endauth
+                            </dd>
+                        </div>
+                    @endif
                     <div class="flex justify-between">
                         <dt class="text-gray-400">{{ __('messages.downloads') }}</dt>
                         <dd class="text-gray-200">{{ number_format($file->download_count) }}</dd>
