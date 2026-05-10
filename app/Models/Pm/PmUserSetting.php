@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Privacy and notification settings per user.
  *
  * @property int $user_id (primary key)
- * @property string $who_can_message everyone|clan_only|nobody
+ * @property string $who_can_message everyone|nobody
  * @property bool $email_notify
  * @property bool $discord_notify
  * @property bool $telegram_notify
@@ -25,6 +25,9 @@ class PmUserSetting extends Model
     public $incrementing = false;
 
     protected $keyType = "int";
+
+    public const PRIVACY_EVERYONE = "everyone";
+    public const PRIVACY_NOBODY   = "nobody";
 
     protected $fillable = [
         "user_id",
@@ -63,21 +66,15 @@ class PmUserSetting extends Model
         return self::firstOrCreate(["user_id" => $userId]);
     }
 
-    public function allowsMessageFrom(User $sender): bool
-    {
-        return match ($this->who_can_message) {
-            "nobody"    => false,
-            "clan_only" => $this->senderInSameClan($sender),
-            default     => true,
-        };
-    }
-
     /**
-     * Stub. Wired up in Phase 3 once we know the clan relation on User.
+     * Whether this user accepts messages from $sender at all,
+     * based purely on who_can_message.
+     *
+     * Block-list and rate-limit checks are NOT here; they belong
+     * in PmPolicyService::canSendTo().
      */
-    protected function senderInSameClan(User $sender): bool
+    public function allowsAnyMessage(): bool
     {
-        // TODO: implement in Phase 3 against actual User::clan() relation
-        return false;
+        return $this->who_can_message !== self::PRIVACY_NOBODY;
     }
 }
