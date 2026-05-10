@@ -274,7 +274,97 @@ class DmController extends Controller
      */
     public function settings()
     {
-        // TODO: Phase 4e
-        abort(501, "Not implemented yet (Phase 4e).");
+        $user = Auth::user();
+        $settings = $this->policy->getOrCreateSettings($user);
+
+        // Loaded blocks: blockerships I created
+        $blocks = \App\Models\Pm\PmUserBlock::with("blocked:id,name")
+            ->where("blocker_id", $user->id)
+            ->orderByDesc("created_at")
+            ->get();
+
+        // Suggestion list for adding new blocks (excludes self + already-blocked)
+        $alreadyBlockedIds = $blocks->pluck("blocked_id")->push($user->id)->all();
+        $allUsers = \App\Models\User::query()
+            ->select("id", "name")
+            ->whereNotIn("id", $alreadyBlockedIds)
+            ->orderBy("name")
+            ->get();
+
+        return view("frontend.dm.settings", [
+            "title"    => __("messages.dm_settings"),
+            "settings" => $settings,
+            "blocks"   => $blocks,
+            "allUsers" => $allUsers,
+        ]);
+    }
+
+    public function updateSettings(\Illuminate\Http\Request $request)
+    {
+        $user = Auth::user();
+        $settings = $this->policy->getOrCreateSettings($user);
+
+        $validated = $request->validate([
+            "who_can_message"               => "required|in:everyone,nobody",
+            "email_notify"                  => "nullable|boolean",
+            "discord_notify"                => "nullable|boolean",
+            "telegram_notify"               => "nullable|boolean",
+            "notification_throttle_minutes" => "required|integer|min:0|max:1440",
+        ]);
+
+        $settings->fill([
+            "who_can_message"               => $validated["who_can_message"],
+            "email_notify"                  => (bool) ($validated["email_notify"] ?? false),
+            "discord_notify"                => (bool) ($validated["discord_notify"] ?? false),
+            "telegram_notify"               => (bool) ($validated["telegram_notify"] ?? false),
+            "notification_throttle_minutes" => (int) $validated["notification_throttle_minutes"],
+        ])->save();
+
+        return redirect()
+            ->route("dm.settings")
+            ->with("status", __("messages.dm_settings_saved"));
+    }
+
+    public function blockUser(\Illuminate\Http\Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            "blocked_name" => "required|string|max:255",
+            "reason"       => "nullable|string|max:200",
+        ]);
+
+        $target = \App\Models\User::where("name", $validated["blocked_name"])->first();
+
+        if (! $target) {
+            return back()->withErrors(["blocked_name" => __("messages.dm_recipient_not_found")]);
+        }
+
+        try {
+            $this->policy->block($user, $target, $validated["reason"] ?? null);
+        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+            return back()->withErrors(["blocked_name" => __("messages.dm_reason_" . $e->reasonCode)]);
+        }
+
+        return redirect()
+            ->route("dm.settings")
+            ->with("status", __("messages.dm_blocked", ["name" => $target->name]));
+    }
+
+    public function unblockUser(\App\Models\Pm\PmUserBlock $block)
+    {
+        $user = Auth::user();
+
+        // Authorization: must be the blocker
+        if ($block->blocker_id !== $user->id) {
+            abort(403);
+        }
+
+        $blockedName = $block->blocked->name ?? __("messages.dm_user");
+        $block->delete();
+
+        return redirect()
+            ->route("dm.settings")
+            ->with("status", __("messages.dm_unblocked", ["name" => $blockedName]));
     }
 }

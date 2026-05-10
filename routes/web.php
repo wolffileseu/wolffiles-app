@@ -491,6 +491,9 @@ Route::middleware("auth")->prefix("dm")->name("dm.")->group(function () {
     Route::get("/compose",                 [DmController::class, "compose"])->name("compose");
     Route::post("/",                       [DmController::class, "store"])->name("store");
     Route::get("/settings",                [DmController::class, "settings"])->name("settings");
+    Route::post("/settings",               [DmController::class, "updateSettings"])->name("settings.update");
+    Route::post("/blocks",                 [DmController::class, "blockUser"])->name("blocks.store");
+    Route::delete("/blocks/{block}",       [DmController::class, "unblockUser"])->name("blocks.destroy")->whereNumber("block");
     Route::get("/{conversation}",          [DmController::class, "show"])->name("show")->whereNumber("conversation");
     Route::post("/{conversation}/reply",   [DmController::class, "reply"])->name("reply")->whereNumber("conversation");
     Route::delete("/{conversation}",       [DmController::class, "softDelete"])->name("delete")->whereNumber("conversation");
