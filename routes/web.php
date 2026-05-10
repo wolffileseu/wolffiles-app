@@ -15,6 +15,7 @@ use App\Http\Controllers\Frontend\ContactController;
 use App\Http\Controllers\Frontend\SitemapController;
 use App\Http\Controllers\Frontend\SearchController;
 use App\Http\Controllers\Frontend\NotificationController;
+use App\Http\Controllers\Frontend\DmController;
 use App\Http\Controllers\Frontend\TrackerController;
 use App\Http\Controllers\Frontend\DemoController;
 use App\Http\Controllers\Frontend\DonationController;
@@ -481,3 +482,17 @@ Route::middleware('auth')->prefix('upload-api')->name('upload.')->group(function
     Route::post('/complete', [\App\Http\Controllers\MultipartUploadController::class, 'complete'])->name('complete');
     Route::post('/abort',    [\App\Http\Controllers\MultipartUploadController::class, 'abort'])->name('abort');
 });
+
+// =====================================================================
+// Direct Messages (PM System) -- Phase 4
+// =====================================================================
+Route::middleware("auth")->prefix("dm")->name("dm.")->group(function () {
+    Route::get("/",                        [DmController::class, "inbox"])->name("inbox");
+    Route::get("/compose",                 [DmController::class, "compose"])->name("compose");
+    Route::post("/",                       [DmController::class, "store"])->name("store");
+    Route::get("/settings",                [DmController::class, "settings"])->name("settings");
+    Route::get("/{conversation}",          [DmController::class, "show"])->name("show")->whereNumber("conversation");
+    Route::post("/{conversation}/reply",   [DmController::class, "reply"])->name("reply")->whereNumber("conversation");
+    Route::delete("/{conversation}",       [DmController::class, "softDelete"])->name("delete")->whereNumber("conversation");
+});
+

@@ -1,0 +1,152 @@
+<?php
+
+namespace App\Http\Controllers\Frontend;
+
+use App\Http\Controllers\Controller;
+use App\Models\Pm\PmConversation;
+use App\Models\Pm\PmParticipant;
+use App\Services\Pm\PmConversationService;
+use App\Services\Pm\PmMarkdownRenderer;
+use App\Services\Pm\PmPolicyService;
+use App\Services\Pm\PmRateLimiter;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+/**
+ * Frontend controller for Direct Messages (PM system).
+ *
+ * URL space: /dm/...
+ * All routes require auth middleware.
+ */
+class DmController extends Controller
+{
+    public function __construct(
+        private PmConversationService $conversations,
+        private PmPolicyService $policy,
+        private PmMarkdownRenderer $renderer,
+        private PmRateLimiter $rateLimiter,
+    ) {}
+
+    /**
+     * Inbox: list of conversations the user participates in.
+     */
+    public function inbox(Request $request)
+    {
+        $user = Auth::user();
+
+        // Conversations where user is participant, not soft-deleted, not left
+        $participants = PmParticipant::query()
+            ->with([
+                "conversation" => function ($q) {
+                    $q->with([
+                        "latestMessage.sender:id,name,avatar",
+                        "participants" => function ($q2) {
+                            $q2->whereNull("left_at")->with("user:id,name,avatar");
+                        },
+                    ]);
+                },
+            ])
+            ->where("user_id", $user->id)
+            ->whereNull("deleted_at")
+            ->whereNull("left_at")
+            ->whereHas("conversation")
+            ->get()
+            ->sortByDesc(fn ($p) => optional($p->conversation)->last_message_at)
+            ->values();
+
+        return view("frontend.dm.inbox", [
+            "title"        => __("Postfach"),
+            "participants" => $participants,
+            "renderer"     => $this->renderer,
+        ]);
+    }
+
+    /**
+     * Show a single conversation with all its messages.
+     */
+    public function show(PmConversation $conversation)
+    {
+        $user = Auth::user();
+
+        // Authorization: user must be a participant
+        if (! $conversation->hasParticipant($user->id)) {
+            abort(403, __("You are not a participant of this conversation."));
+        }
+
+        // Mark as read
+        $this->conversations->markAsRead($user, $conversation);
+
+        // Load messages with sender + edits
+        $messages = $conversation->messages()
+            ->with("sender:id,name,avatar")
+            ->orderBy("created_at")
+            ->get();
+
+        $participants = $conversation->participants()
+            ->with("user:id,name,avatar")
+            ->whereNull("left_at")
+            ->get();
+
+        return view("frontend.dm.show", [
+            "title"        => $conversation->subject ?? __("Conversation"),
+            "conversation" => $conversation,
+            "messages"     => $messages,
+            "participants" => $participants,
+            "renderer"     => $this->renderer,
+        ]);
+    }
+
+    /**
+     * Show compose form for a new direct message.
+     * Phase 4d will fully implement this.
+     */
+    public function compose(Request $request)
+    {
+        $recipientId = $request->query("to");
+        return view("frontend.dm.compose", [
+            "title"       => __("New message"),
+            "recipientId" => $recipientId,
+        ]);
+    }
+
+    /**
+     * Store a new message (reply or new conversation).
+     * Phase 4d will fully implement this.
+     */
+    public function store(Request $request)
+    {
+        // TODO: Phase 4d
+        abort(501, "Not implemented yet (Phase 4d).");
+    }
+
+    /**
+     * Reply to an existing conversation.
+     * Phase 4d will fully implement this.
+     */
+    public function reply(Request $request, PmConversation $conversation)
+    {
+        // TODO: Phase 4d
+        abort(501, "Not implemented yet (Phase 4d).");
+    }
+
+    /**
+     * Soft-delete a conversation from this user's inbox.
+     * Phase 4d will fully implement this.
+     */
+    public function softDelete(PmConversation $conversation)
+    {
+        $user = Auth::user();
+        $this->conversations->softDeleteForUser($user, $conversation);
+        return redirect()->route("dm.inbox")->with("status", __("Conversation removed from inbox."));
+    }
+
+    /**
+     * User settings: privacy + notifications.
+     * Phase 4e will fully implement this.
+     */
+    public function settings()
+    {
+        // TODO: Phase 4e
+        abort(501, "Not implemented yet (Phase 4e).");
+    }
+}
