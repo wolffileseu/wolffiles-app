@@ -6,7 +6,7 @@
 # Usage: ./scripts/start-tracker-workers.sh
 # Idempotent — killt vorhandene Worker und startet frisch.
 
-cd /var/www/vhosts/wolffiles.eu/httpdocs_new/wolffiles-app
+cd /var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app
 
 PHP=/opt/plesk/php/8.3/bin/php
 

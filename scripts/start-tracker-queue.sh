@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-APP_DIR="/var/www/vhosts/wolffiles.eu/httpdocs_new/wolffiles-app"
+APP_DIR="/var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app"
 PHP_BIN="/var/www/vhosts/wolffiles.eu/.phpenv/shims/php"
 
 if [ ! -x "$PHP_BIN" ]; then

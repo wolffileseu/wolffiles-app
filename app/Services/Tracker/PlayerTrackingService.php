@@ -100,11 +100,16 @@ class PlayerTrackingService
             // Update name if changed
             $cleanName = ColorCodeService::toClean($name);
             if ($player->name_clean !== $cleanName) {
-                $player->update([
+                $updates = [
                     'name' => $name,
                     'name_clean' => $cleanName,
                     'name_html' => ColorCodeService::toHtml($name),
-                ]);
+                ];
+                // Promote to bot if name now matches bot pattern
+                if (!$player->is_bot && $this->isBotName($cleanName)) {
+                    $updates['is_bot'] = true;
+                }
+                $player->update($updates);
             }
             return $player;
         }
@@ -112,18 +117,37 @@ class PlayerTrackingService
         // Look up geo data
         $geo = GeoIpService::lookup($ip);
 
+        $cleanName = ColorCodeService::toClean($name);
+
         return TrackerPlayer::create([
             'guid_hash' => $guidHash,
             'name' => $name,
-            'name_clean' => ColorCodeService::toClean($name),
+            'name_clean' => $cleanName,
             'name_html' => ColorCodeService::toHtml($name),
             'country' => $geo['country'] ?? null,
             'country_code' => $geo['country_code'] ?? null,
+            'is_bot' => $this->isBotName($cleanName),
             'first_seen_at' => now(),
             'last_seen_at' => now(),
             'elo_rating' => 1000.00,
             'elo_peak' => 1000.00,
         ]);
+    }
+
+    /**
+     * Detect whether a clean name matches a known bot pattern.
+     *
+     * Mirrors CleanupBotsCommand:
+     *   - [BOT]<name>   → Omni-Bot (admin-configured prefix)
+     *   - OmniBot<name> → Omni-Bot default
+     *
+     * Used at insert/update time so bots are flagged immediately and
+     * never pollute ELO / rankings / snapshots before the daily cleanup.
+     */
+    private function isBotName(string $cleanName): bool
+    {
+        return str_starts_with($cleanName, '[BOT]')
+            || str_starts_with($cleanName, 'OmniBot');
     }
 
     /**

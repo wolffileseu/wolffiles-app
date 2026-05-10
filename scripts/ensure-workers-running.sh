@@ -3,7 +3,7 @@
 # Läuft alle 5 Minuten via Cron.
 # Silent bei OK; loggt nur wenn restart nötig.
 
-APP_DIR=/var/www/vhosts/wolffiles.eu/httpdocs_new/wolffiles-app
+APP_DIR=/var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app
 LOG=$APP_DIR/storage/logs/keepalive.log
 MIN_TOTAL=10   # unter dieser Zahl wird neu gestartet
 
