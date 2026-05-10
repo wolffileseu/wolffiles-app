@@ -11,6 +11,11 @@ use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
+use App\Models\Pm\PmConversation;
+use App\Models\Pm\PmUserSetting;
+use App\Models\Pm\PmUserBlock;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property \Carbon\Carbon|null $last_activity_at
@@ -120,4 +125,48 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasAnyRole(['admin', 'moderator']);
     }
+
+    // =====================================================================
+    // Private Messages (PM) -- Phase 2
+    // =====================================================================
+
+    public function pmConversations(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PmConversation::class,
+            'pm_conversation_participants',
+            'user_id',
+            'conversation_id'
+        )->withPivot(['joined_at', 'left_at', 'last_read_at', 'deleted_at', 'muted', 'is_creator']);
+    }
+
+    public function pmSettings(): HasOne
+    {
+        return $this->hasOne(PmUserSetting::class, 'user_id');
+    }
+
+    public function pmBlocks(): HasMany
+    {
+        return $this->hasMany(PmUserBlock::class, 'blocker_id');
+    }
+
+    public function pmBlockedBy(): HasMany
+    {
+        return $this->hasMany(PmUserBlock::class, 'blocked_id');
+    }
+
+    public function hasBlocked(int $userId): bool
+    {
+        return PmUserBlock::where('blocker_id', $this->id)
+            ->where('blocked_id', $userId)
+            ->exists();
+    }
+
+    public function isBlockedBy(int $userId): bool
+    {
+        return PmUserBlock::where('blocker_id', $userId)
+            ->where('blocked_id', $this->id)
+            ->exists();
+    }
+
 }
