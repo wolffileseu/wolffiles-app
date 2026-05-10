@@ -815,4 +815,9 @@ return [
     'page_pdf_document' => 'PDF Dokument',
     'page_pdf_subtitle' => 'Anhang herunterladen',
     'page_pdf_open' => 'PDF öffnen',
+    'dm_inbox' => 'Postfach',
+    'dm_new' => 'Neue Nachricht',
+    'dm_view_all' => 'Alle Nachrichten anzeigen',
+    'dm_empty' => 'Keine Nachrichten',
+    'dm_no_subject' => '(kein Betreff)',
 ];

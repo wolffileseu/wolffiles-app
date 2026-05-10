@@ -815,4 +815,9 @@ return [
     'page_pdf_document' => 'PDF document',
     'page_pdf_subtitle' => 'Download attachment',
     'page_pdf_open' => 'Open PDF',
+    'dm_inbox' => 'Inbox',
+    'dm_new' => 'New message',
+    'dm_view_all' => 'View all messages',
+    'dm_empty' => 'No messages',
+    'dm_no_subject' => '(no subject)',
 ];

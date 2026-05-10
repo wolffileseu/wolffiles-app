@@ -9,6 +9,7 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -52,6 +53,12 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         File::observe(FileObserver::class);
+
+        // PM (Direct Messages) view composer: provides $dmUnreadCount in layouts
+        View::composer(
+            ["components.layouts.app", "components.dm-bell"],
+            \App\Http\View\Composers\DmComposer::class
+        );
     }
     /**
      * Auto-create permissions for all Filament resources.
