@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'click_or_drop' => 'Cliquez pour sélectionner ou déposez un fichier ici',
+    'up_to_size' => 'Jusqu\'à :size • directement dans le stockage cloud',
+    'max_size_label' => 'max.',
+    'preparing' => 'Préparation…',
+    'computing_hash' => 'Calcul du hash du fichier…',
+    'starting_upload' => 'Démarrage du téléversement…',
+    'uploading' => 'Téléversement en cours…',
+    'finalizing' => 'Finalisation…',
+    'cancel' => 'Annuler',
+    'success' => 'Téléversement réussi — vous pouvez soumettre le formulaire',
+    'choose_other' => 'Choisir un autre fichier',
+    'try_again' => 'Réessayer',
+    'too_large' => 'Fichier trop volumineux (:size). Maximum : :max',
+    'upload_failed' => 'Échec du téléversement',
+    'duplicate_exists' => 'Ce fichier existe déjà : :title',
+    'aborted' => 'Annulé',
+    'network_error' => 'Erreur réseau pendant le téléversement',
+    'choose_images' => 'Choisir des images',
+    'no_files_selected' => 'Aucune sélectionnée',
+    'files_selected' => ':count images sélectionnées',
+    'one_file_selected' => '1 image sélectionnée',
+    'remove_file' => 'Retirer',
+];

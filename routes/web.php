@@ -471,3 +471,13 @@ Route::get('/tracker/server/{server}/embed', [\App\Http\Controllers\Tracker\Bann
 Route::get('/tracker/player/{player}/embed', [\App\Http\Controllers\Tracker\BannerController::class, 'playerEmbed'])
     ->name('tracker.player.embed');
 
+
+// ============================================================
+// Multipart Upload API (for Uppy.io browser-direct uploads to S3)
+// ============================================================
+Route::middleware('auth')->prefix('upload-api')->name('upload.')->group(function () {
+    Route::post('/init',     [\App\Http\Controllers\MultipartUploadController::class, 'init'])->name('init');
+    Route::post('/sign',     [\App\Http\Controllers\MultipartUploadController::class, 'sign'])->name('sign');
+    Route::post('/complete', [\App\Http\Controllers\MultipartUploadController::class, 'complete'])->name('complete');
+    Route::post('/abort',    [\App\Http\Controllers\MultipartUploadController::class, 'abort'])->name('abort');
+});

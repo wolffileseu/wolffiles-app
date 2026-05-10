@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'click_or_drop' => 'Seçmek için tıklayın veya bir dosyayı buraya bırakın',
+    'up_to_size' => ':size boyutuna kadar • doğrudan bulut depolamaya',
+    'max_size_label' => 'maks.',
+    'preparing' => 'Hazırlanıyor…',
+    'computing_hash' => 'Dosya özeti hesaplanıyor…',
+    'starting_upload' => 'Yükleme başlıyor…',
+    'uploading' => 'Yükleniyor…',
+    'finalizing' => 'Tamamlanıyor…',
+    'cancel' => 'İptal',
+    'success' => 'Başarıyla yüklendi — formu şimdi gönderebilirsiniz',
+    'choose_other' => 'Başka bir dosya seç',
+    'try_again' => 'Tekrar dene',
+    'too_large' => 'Dosya çok büyük (:size). Maksimum: :max',
+    'upload_failed' => 'Yükleme başarısız',
+    'duplicate_exists' => 'Bu dosya zaten mevcut: :title',
+    'aborted' => 'İptal edildi',
+    'network_error' => 'Yükleme sırasında ağ hatası',
+    'choose_images' => 'Resim seç',
+    'no_files_selected' => 'Hiçbiri seçilmedi',
+    'files_selected' => ':count resim seçildi',
+    'one_file_selected' => '1 resim seçildi',
+    'remove_file' => 'Kaldır',
+];

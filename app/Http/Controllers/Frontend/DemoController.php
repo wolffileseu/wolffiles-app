@@ -130,7 +130,9 @@ class DemoController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $isMultipart = $request->filled('file_s3_key');
+
+        $rules = [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:10000',
             'category_id' => 'required|exists:categories,id',
@@ -146,19 +148,39 @@ class DemoController extends Controller
             'match_source_url' => 'nullable|url|max:255',
             'recorder_name' => 'nullable|string|max:100',
             'server_name' => 'nullable|string|max:255',
-            'file' => 'required|file|max:' . (config('app.max_upload_size', 500) * 1024),
             'screenshots.*' => 'nullable|image|max:10240',
             'tags' => 'nullable|array|max:20',
             'tags.*' => 'string|max:50',
-        ]);
+        ];
 
-        $uploadedFile = $request->file('file');
-        $hash = hash_file('sha256', $uploadedFile->getRealPath());
-        $originalName = $uploadedFile->getClientOriginalName();
-        $extension = strtolower($uploadedFile->getClientOriginalExtension());
+        if ($isMultipart) {
+            $rules['file_s3_key'] = 'required|string|max:500';
+            $rules['file_filename'] = 'required|string|max:255';
+            $rules['file_size'] = 'required|integer|min:1';
+            $rules['file_hash'] = 'nullable|string|size:64';
+            $rules['file_content_type'] = 'nullable|string|max:200';
+        } else {
+            $rules['file'] = 'required|file|max:' . (config('app.max_upload_size', 500) * 1024);
+        }
+
+        $request->validate($rules);
+
+        if ($isMultipart) {
+            $path = $request->input('file_s3_key');
+            $originalName = $request->input('file_filename');
+            $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+            $hash = $request->input('file_hash') ?: '';
+            $fileSize = (int) $request->input('file_size');
+        } else {
+            $uploadedFile = $request->file('file');
+            $hash = hash_file('sha256', $uploadedFile->getRealPath());
+            $originalName = $uploadedFile->getClientOriginalName();
+            $extension = strtolower($uploadedFile->getClientOriginalExtension());
+            $path = $uploadedFile->store('demos/' . date('Y/m'), 's3');
+            $fileSize = $uploadedFile->getSize();
+        }
 
         $demoFormat = $this->detectDemoFormat($originalName, $extension);
-        $path = $uploadedFile->store('demos/' . date('Y/m'), 's3');
 
         $demo = Demo::create([
             'user_id' => auth()->id(),
@@ -180,7 +202,7 @@ class DemoController extends Controller
             'file_path' => $path,
             'file_name' => $originalName,
             'file_extension' => $extension,
-            'file_size' => $uploadedFile->getSize(),
+            'file_size' => $fileSize,
             'file_hash' => $hash,
             'demo_format' => $demoFormat,
             'status' => 'pending',

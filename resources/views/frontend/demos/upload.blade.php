@@ -149,14 +149,21 @@
             {{-- File Upload --}}
             <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 space-y-4">
                 <h2 class="text-lg font-semibold text-white mb-2">Demo File *</h2>
-                <input type="file" name="file" required accept=".dm_84,.dm_83,.dm_82,.dm_60,.tv_84,.zip,.rar,.7z,.gz"
-                       class="w-full text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-amber-600 file:text-white hover:file:bg-amber-700">
-                <p class="text-gray-500 text-xs">Accepted: .dm_84, .dm_83, .dm_82, .dm_60, .tv_84, .zip, .rar, .7z (max {{ config('app.max_upload_size', 500) }}MB)</p>
+                <x-multipart-uploader
+                    name="file"
+                    target="demos"
+                    accept=".dm_84,.dm_83,.dm_82,.dm_60,.tv_84,.zip,.rar,.7z,.gz"
+                    label="Demo file"
+                    :required="true"
+                />
+                <p class="text-gray-500 text-xs mt-2">Accepted: .dm_84, .dm_83, .dm_82, .dm_60, .tv_84, .zip, .rar, .7z, .gz</p>
 
                 <div>
-                    <label class="block text-gray-300 text-sm font-medium mb-1">Screenshots (optional)</label>
-                    <input type="file" name="screenshots[]" multiple accept="image/*"
-                           class="w-full text-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-gray-600 file:text-white">
+                    <x-image-picker
+                        name="screenshots"
+                        label="Screenshots (optional)"
+                        :maxFiles="10"
+                    />
                 </div>
             </div>
 

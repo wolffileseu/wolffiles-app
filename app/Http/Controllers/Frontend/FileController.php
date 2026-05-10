@@ -187,32 +187,69 @@ class FileController extends Controller
     }
     public function store(Request $request)
     {
-        $request->validate([
+        // Multipart-Upload: S3-Key kommt aus Hidden-Fields
+        $isMultipart = $request->filled('file_s3_key');
+
+        $rules = [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string|max:10000',
             'category_id' => 'required|exists:categories,id',
             'game' => 'nullable|string|max:50',
             'version' => 'nullable|string|max:50',
             'original_author' => 'nullable|string|max:255',
-            'file' => 'required|file|max:' . (config('app.max_upload_size', 500) * 1024),
             'screenshots.*' => 'nullable|image|max:10240',
             'tags' => 'nullable|array|max:20',
             'tags.*' => 'string|max:50',
-        ]);
-        $uploadedFile = $request->file('file');
-        $hash = hash_file('sha256', $uploadedFile->getRealPath());
-        $duplicate = FileValidationService::findDuplicate($hash);
-        if ($duplicate) {
-            return back()->withErrors(['file' => __('messages.duplicate_detected', ['title' => $duplicate->title])])->withInput();
+        ];
+
+        if ($isMultipart) {
+            $rules['file_s3_key'] = 'required|string|max:500';
+            $rules['file_filename'] = 'required|string|max:255';
+            $rules['file_size'] = 'required|integer|min:1';
+            $rules['file_hash'] = 'nullable|string|size:64';
+            $rules['file_content_type'] = 'nullable|string|max:200';
+        } else {
+            $rules['file'] = 'required|file|max:' . (config('app.max_upload_size', 500) * 1024);
         }
-        $file = app(FileUploadService::class)->upload(
-            $uploadedFile,
-            array_merge($request->only(['title', 'description', 'category_id', 'game', 'version', 'original_author']), [
-                'file_hash' => $hash,
-            ]),
-            auth()->id(),
-            $request->file('screenshots', [])
-        );
+
+        $request->validate($rules);
+
+        if ($isMultipart) {
+            $hash = $request->input('file_hash') ?: '';
+            // Duplicate-Check — hash kann leer sein für > 1GB Files
+            if ($hash) {
+                $duplicate = FileValidationService::findDuplicate($hash);
+                if ($duplicate) {
+                    return back()->withErrors(['file' => __('messages.duplicate_detected', ['title' => $duplicate->title])])->withInput();
+                }
+            }
+
+            $file = app(FileUploadService::class)->uploadFromS3(
+                s3Key: $request->input('file_s3_key'),
+                originalFilename: $request->input('file_filename'),
+                fileSize: (int) $request->input('file_size'),
+                fileHash: $hash,
+                contentType: $request->input('file_content_type'),
+                data: $request->only(['title', 'description', 'category_id', 'game', 'version', 'original_author']),
+                userId: auth()->id(),
+                screenshots: $request->file('screenshots', [])
+            );
+        } else {
+            $uploadedFile = $request->file('file');
+            $hash = hash_file('sha256', $uploadedFile->getRealPath());
+            $duplicate = FileValidationService::findDuplicate($hash);
+            if ($duplicate) {
+                return back()->withErrors(['file' => __('messages.duplicate_detected', ['title' => $duplicate->title])])->withInput();
+            }
+            $file = app(FileUploadService::class)->upload(
+                $uploadedFile,
+                array_merge($request->only(['title', 'description', 'category_id', 'game', 'version', 'original_author']), [
+                    'file_hash' => $hash,
+                ]),
+                auth()->id(),
+                $request->file('screenshots', [])
+            );
+        }
         // Sync tags
         if ($request->has('tags') && is_array($request->tags)) {
             $tagIds = collect($request->tags)

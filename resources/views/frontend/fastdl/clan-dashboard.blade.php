@@ -76,8 +76,14 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-sm text-gray-400 block mb-1">PK3 File</label>
-                            <input type="file" name="file" accept=".pk3,.zip" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white text-sm">
+                            <x-multipart-uploader
+                                name="file"
+                                target="fastdl"
+                                accept=".pk3,.zip"
+                                label="PK3 File"
+                                :required="true"
+                                :maxSize="2147483648"
+                            />
                         </div>
                     </div>
                     <button type="submit" class="px-6 py-2 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-500 transition">Upload</button>

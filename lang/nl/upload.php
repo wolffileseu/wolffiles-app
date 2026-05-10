@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'click_or_drop' => 'Klik om te selecteren of sleep een bestand hierheen',
+    'up_to_size' => 'Tot :size • rechtstreeks naar de cloud-opslag',
+    'max_size_label' => 'max.',
+    'preparing' => 'Voorbereiden…',
+    'computing_hash' => 'Bestand-hash berekenen…',
+    'starting_upload' => 'Upload starten…',
+    'uploading' => 'Bezig met uploaden…',
+    'finalizing' => 'Afronden…',
+    'cancel' => 'Annuleren',
+    'success' => 'Succesvol geüpload — je kunt het formulier nu verzenden',
+    'choose_other' => 'Ander bestand kiezen',
+    'try_again' => 'Opnieuw proberen',
+    'too_large' => 'Bestand te groot (:size). Maximum: :max',
+    'upload_failed' => 'Upload mislukt',
+    'duplicate_exists' => 'Dit bestand bestaat al: :title',
+    'aborted' => 'Geannuleerd',
+    'network_error' => 'Netwerkfout tijdens upload',
+    'choose_images' => 'Afbeeldingen kiezen',
+    'no_files_selected' => 'Geen geselecteerd',
+    'files_selected' => ':count afbeeldingen geselecteerd',
+    'one_file_selected' => '1 afbeelding geselecteerd',
+    'remove_file' => 'Verwijderen',
+];

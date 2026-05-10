@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'click_or_drop' => 'Kliknij, aby wybrać lub przeciągnij plik tutaj',
+    'up_to_size' => 'Do :size • bezpośrednio do chmury',
+    'max_size_label' => 'maks.',
+    'preparing' => 'Przygotowywanie…',
+    'computing_hash' => 'Obliczanie skrótu pliku…',
+    'starting_upload' => 'Rozpoczynanie przesyłania…',
+    'uploading' => 'Przesyłanie…',
+    'finalizing' => 'Finalizowanie…',
+    'cancel' => 'Anuluj',
+    'success' => 'Pomyślnie przesłane — możesz teraz wysłać formularz',
+    'choose_other' => 'Wybierz inny plik',
+    'try_again' => 'Spróbuj ponownie',
+    'too_large' => 'Plik za duży (:size). Maksimum: :max',
+    'upload_failed' => 'Przesyłanie nie powiodło się',
+    'duplicate_exists' => 'Ten plik już istnieje: :title',
+    'aborted' => 'Przerwano',
+    'network_error' => 'Błąd sieci podczas przesyłania',
+    'choose_images' => 'Wybierz obrazy',
+    'no_files_selected' => 'Nic nie wybrano',
+    'files_selected' => 'Wybrano: :count obrazów',
+    'one_file_selected' => 'Wybrano 1 obraz',
+    'remove_file' => 'Usuń',
+];

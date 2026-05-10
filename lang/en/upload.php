@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'click_or_drop' => 'Click to select or drop a file here',
+    'up_to_size' => 'Up to :size • directly to cloud storage',
+    'max_size_label' => 'max.',
+    'preparing' => 'Preparing…',
+    'computing_hash' => 'Computing file hash…',
+    'starting_upload' => 'Starting upload…',
+    'uploading' => 'Uploading…',
+    'finalizing' => 'Finalizing…',
+    'cancel' => 'Cancel',
+    'success' => 'Successfully uploaded — you can now submit the form',
+    'choose_other' => 'Choose another file',
+    'try_again' => 'Try again',
+    'too_large' => 'File too large (:size). Maximum: :max',
+    'upload_failed' => 'Upload failed',
+    'duplicate_exists' => 'This file already exists: :title',
+    'aborted' => 'Aborted',
+    'network_error' => 'Network error during upload',
+    'choose_images' => 'Choose images',
+    'no_files_selected' => 'None selected',
+    'files_selected' => ':count images selected',
+    'one_file_selected' => '1 image selected',
+    'remove_file' => 'Remove',
+];

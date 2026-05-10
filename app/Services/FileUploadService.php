@@ -72,6 +72,54 @@ class FileUploadService
     }
 
     /**
+     * Handle a multipart upload that already lives in S3.
+     * Used after browser-direct multipart upload via MultipartUploadController.
+     */
+    public function uploadFromS3(
+        string $s3Key,
+        string $originalFilename,
+        int $fileSize,
+        string $fileHash,
+        ?string $contentType,
+        array $data,
+        int $userId,
+        array $screenshots = []
+    ): File {
+        $extension = strtolower(pathinfo($originalFilename, PATHINFO_EXTENSION));
+
+        // Create file record
+        $file = File::create([
+            'user_id' => $userId,
+            'category_id' => $data['category_id'],
+            'title' => $data['title'] ?? pathinfo($originalFilename, PATHINFO_FILENAME),
+            'description' => $data['description'] ?? null,
+            'file_path' => $s3Key,
+            'file_name' => $originalFilename,
+            'file_extension' => $extension,
+            'file_size' => $fileSize,
+            'file_hash' => $fileHash,
+            'mime_type' => $contentType ?? 'application/octet-stream',
+            'game' => $data['game'] ?? null,
+            'version' => $data['version'] ?? null,
+            'original_author' => $data['original_author'] ?? null,
+            'status' => 'pending',
+        ]);
+
+        // Manuell hochgeladene Screenshots (klassisch, sind klein)
+        foreach ($screenshots as $index => $screenshot) {
+            if ($screenshot instanceof UploadedFile) {
+                $this->uploadScreenshot($file, $screenshot, $index);
+            }
+        }
+
+        // Background jobs
+        AnalyzeUploadedFile::dispatch($file);
+        ScanFileForViruses::dispatch($file);
+
+        return $file;
+    }
+
+    /**
      * Upload a screenshot for a file
      */
     public function uploadScreenshot(File $file, UploadedFile $image, int $order = 0): FileScreenshot

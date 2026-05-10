@@ -103,27 +103,54 @@ class ClanFastDlController extends Controller
     {
         $clan = FastDlClan::where('leader_user_id', auth()->id())->firstOrFail();
 
-        $request->validate([
-            'file' => 'required|file|max:102400',
-            'directory' => 'required|string|max:50',
-        ]);
+        $isMultipart = $request->filled('file_s3_key');
 
-        $file = $request->file('file');
-        $filename = $file->getClientOriginalName();
+        $rules = ['directory' => 'required|string|max:50'];
+        if ($isMultipart) {
+            $rules['file_s3_key'] = 'required|string|max:500';
+            $rules['file_filename'] = 'required|string|max:255';
+            $rules['file_size'] = 'required|integer|min:1';
+        } else {
+            $rules['file'] = 'required|file|max:102400';
+        }
+
+        $request->validate($rules);
+
         $directory = $request->input('directory');
+
+        if ($isMultipart) {
+            $filename = $request->input('file_filename');
+            $fileSize = (int) $request->input('file_size');
+            $tempS3Key = $request->input('file_s3_key');
+        } else {
+            $file = $request->file('file');
+            $filename = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+        }
 
         $currentUsage = $clan->ownFiles()->sum('file_size');
         $limitBytes = $clan->storage_limit_mb * 1024 * 1024;
-        if (($currentUsage + $file->getSize()) > $limitBytes) {
+        if (($currentUsage + $fileSize) > $limitBytes) {
             return back()->with('error', __('messages.storage_limit_reached'));
         }
 
-        $s3Path = "fastdl/clans/{$clan->slug}/{$directory}/{$filename}";
-        Storage::disk('s3')->put($s3Path, file_get_contents($file));
+        $finalS3Path = "fastdl/clans/{$clan->slug}/{$directory}/{$filename}";
+
+        if ($isMultipart) {
+            // File ist schon in S3 unter fastdl/uploads/... — wir kopieren zur finalen Location
+            try {
+                Storage::disk('s3')->copy($tempS3Key, $finalS3Path);
+                Storage::disk('s3')->delete($tempS3Key);
+            } catch (\Exception $e) {
+                return back()->with('error', 'S3 copy failed: ' . $e->getMessage());
+            }
+        } else {
+            Storage::disk('s3')->put($finalS3Path, file_get_contents($file));
+        }
 
         FastDlClanFile::updateOrCreate(
             ['clan_id' => $clan->id, 'directory' => $directory, 'filename' => $filename],
-            ['s3_path' => $s3Path, 'file_size' => $file->getSize(), 'is_active' => true]
+            ['s3_path' => $finalS3Path, 'file_size' => $fileSize, 'is_active' => true]
         );
 
         $clan->update(['storage_used_mb' => round($clan->ownFiles()->sum('file_size') / 1024 / 1024)]);

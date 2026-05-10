@@ -147,18 +147,24 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">File * (max {{ config('app.max_upload_size', 500) }}MB)</label>
-                <input type="file" name="file" required
-                       class="w-full bg-gray-700 border-gray-600 text-white rounded-lg px-4 py-3 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:bg-amber-600 file:text-white file:cursor-pointer">
-                <p class="text-gray-500 text-sm mt-1">Supported: .pk3, .zip, .rar, .7z, .lua, .cfg, .txt</p>
-                @error('file') <p class="text-red-400 text-sm mt-1">{{ $message }}</p> @enderror
+                <x-multipart-uploader
+                    name="file"
+                    target="files"
+                    accept=".pk3,.zip,.rar,.7z,.lua,.cfg,.txt"
+                    label="File"
+                    :required="true"
+                />
+                <p class="text-gray-500 text-sm mt-2">Supported: .pk3, .zip, .rar, .7z, .lua, .cfg, .txt — direkt in den Cloud-Speicher hochgeladen</p>
+                @error('file_s3_key') <p class="text-red-400 text-sm mt-1">{{ $message }}</p> @enderror
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-300 mb-2">Screenshots (optional, max 10)</label>
-                <input type="file" name="screenshots[]" multiple accept="image/*"
-                       class="w-full bg-gray-700 border-gray-600 text-white rounded-lg px-4 py-3">
-                <p class="text-gray-500 text-sm mt-1">Images will also be auto-extracted from PK3/ZIP files.</p>
+                <x-image-picker
+                    name="screenshots"
+                    label="Screenshots (optional, max 10)"
+                    :maxFiles="10"
+                    helpText="Images will also be auto-extracted from PK3/ZIP files."
+                />
             </div>
 
             <div class="bg-gray-750 rounded-lg p-4 border border-gray-600">
