@@ -625,6 +625,12 @@
                 {!! $file->description_html ?? nl2br(e($file->description ?? __('messages.no_description'))) !!}
             </div>
 
+            {{-- Related Bot Files / Maps (issue #12) --}}
+            <div class="mb-6">
+                @include('frontend.files.partials._related_bots', ['file' => $file])
+                @include('frontend.files.partials._related_maps', ['file' => $file])
+            </div>
+
             {{-- Share Buttons --}}
             <div class="mb-6">
                 @include('components.share-buttons', ['url' => route('files.show', $file), 'title' => $file->display_title])

@@ -874,4 +874,15 @@ return [
     'dm_unblocked' => ':name wurde freigegeben.',
     'dm_user' => 'User',
     'uploaded_by' => 'Hochgeladen von',
+
+    // Bot/Map relations (issue #12)
+    'related_bot_files' => 'Verfügbare Bot-Files',
+    'related_bot_files_hint' => 'Bot- und Waypoint-Dateien für diese Map.',
+    'related_maps' => 'Zugehörige Maps',
+    'related_maps_hint' => 'Maps für die diese Bot-Datei verwendet werden kann.',
+    'verified' => 'verifiziert',
+    'likely_match' => 'wahrscheinlicher Treffer',
+    'relation_verified' => 'Manuell verifizierte Verknüpfung',
+    'relation_low_confidence' => 'Automatisch erkannt - bitte prüfen',
+
 ];

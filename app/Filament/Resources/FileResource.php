@@ -337,6 +337,14 @@ class FileResource extends Resource
             ]);
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\FileResource\RelationManagers\RelatedBotsRelationManager::class,
+            \App\Filament\Resources\FileResource\RelationManagers\RelatedMapsRelationManager::class,
+        ];
+    }
+
     public static function getPages(): array
     {
         return [

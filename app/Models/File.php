@@ -180,4 +180,46 @@ class File extends Model
             'rating_count' => $this->ratings()->count(),
         ]);
     }
+
+    /**
+     * Bot/Waypoint files related to this map (this = map).
+     */
+    public function relatedBots()
+    {
+        return $this->belongsToMany(
+            File::class,
+            'file_map_relations',
+            'map_file_id',
+            'bot_file_id'
+        )
+            ->withPivot(['relation_type', 'confidence', 'source', 'is_manual'])
+            ->withTimestamps()
+            ->orderByPivot('confidence', 'desc');
+    }
+
+    /**
+     * Map files this bot/waypoint file belongs to (this = bot).
+     */
+    public function relatedMaps()
+    {
+        return $this->belongsToMany(
+            File::class,
+            'file_map_relations',
+            'bot_file_id',
+            'map_file_id'
+        )
+            ->withPivot(['relation_type', 'confidence', 'source', 'is_manual'])
+            ->withTimestamps()
+            ->orderByPivot('confidence', 'desc');
+    }
+
+    public function isMap(): bool
+    {
+        return (int) $this->category_id === 10;
+    }
+
+    public function isBotFile(): bool
+    {
+        return (int) $this->category_id === 12;
+    }
 }

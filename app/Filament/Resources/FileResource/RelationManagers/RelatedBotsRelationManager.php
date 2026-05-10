@@ -1,0 +1,129 @@
+<?php
+
+namespace App\Filament\Resources\FileResource\RelationManagers;
+
+use App\Models\File;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+class RelatedBotsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'relatedBots';
+
+    protected static ?string $title = 'Bot / Waypoint Files';
+
+    protected static ?string $icon = 'heroicon-o-cpu-chip';
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return (int) $ownerRecord->category_id === 10; // only on maps
+    }
+
+    public function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Select::make('relation_type')
+                ->options([
+                    'bot_files' => 'Bot files',
+                    'waypoints' => 'Waypoints',
+                    'goals'     => 'Goals',
+                ])
+                ->default('bot_files')
+                ->required(),
+            Forms\Components\TextInput::make('confidence')
+                ->numeric()->minValue(0)->maxValue(1)->step(0.01)
+                ->default(1.0)
+                ->disabled()->dehydrated(),
+            Forms\Components\Toggle::make('is_manual')
+                ->default(true)
+                ->disabled()->dehydrated()
+                ->helperText('Manual links are never overwritten by the auto-backfill.'),
+        ]);
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->recordTitleAttribute('file_name')
+            ->columns([
+                Tables\Columns\TextColumn::make('id')->sortable()->toggleable(),
+                Tables\Columns\TextColumn::make('title')->limit(40)->searchable(),
+                Tables\Columns\TextColumn::make('file_name')->limit(40)->searchable()->copyable(),
+                Tables\Columns\TextColumn::make('pivot.relation_type')->label('Type')->badge(),
+                Tables\Columns\TextColumn::make('pivot.confidence')
+                    ->label('Conf.')
+                    ->numeric(decimalPlaces: 2)
+                    ->badge()
+                    ->color(fn ($state) => match (true) {
+                        (float) $state >= 0.85 => 'success',
+                        (float) $state >= 0.70 => 'warning',
+                        default                => 'danger',
+                    }),
+                Tables\Columns\IconColumn::make('pivot.is_manual')
+                    ->label('Manual')
+                    ->boolean(),
+                Tables\Columns\TextColumn::make('download_count')
+                    ->label('DLs')->numeric()->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\TernaryFilter::make('manual')
+                    ->label('Manual only')
+                    ->queries(
+                        true: fn (Builder $q) => $q->wherePivot('is_manual', true),
+                        false: fn (Builder $q) => $q->wherePivot('is_manual', false),
+                        blank: fn (Builder $q) => $q,
+                    ),
+            ])
+            ->headerActions([
+                Tables\Actions\AttachAction::make()
+                    ->preloadRecordSelect()
+                    ->recordSelectSearchColumns(['title', 'file_name'])
+                    ->recordSelectOptionsQuery(fn (Builder $q) => $q->where('category_id', 12))
+                    ->form(fn (Tables\Actions\AttachAction $action): array => [
+                        $action->getRecordSelect(),
+                        Forms\Components\Select::make('relation_type')
+                            ->options(['bot_files' => 'Bot files', 'waypoints' => 'Waypoints', 'goals' => 'Goals'])
+                            ->default('bot_files')->required(),
+                    ])
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['confidence'] = 1.000;
+                        $data['source']     = 'manual';
+                        $data['is_manual']  = true;
+                        return $data;
+                    }),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('open')
+                    ->label('Open')
+                    ->icon('heroicon-m-arrow-top-right-on-square')
+                    ->url(fn (File $record) => route('filament.admin.resources.files.edit', ['record' => $record->slug]))
+                    ->openUrlInNewTab(),
+                Tables\Actions\Action::make('promote')
+                    ->label('Mark verified')
+                    ->icon('heroicon-m-check-badge')
+                    ->color('success')
+                    ->visible(fn (File $record) => ! (bool) $record->pivot->is_manual)
+                    ->requiresConfirmation()
+                    ->action(function (File $record) {
+                        $this->getOwnerRecord()->relatedBots()->updateExistingPivot($record->id, [
+                            'is_manual'  => true,
+                            'confidence' => 1.000,
+                            'source'     => 'manual',
+                            'updated_at' => now(),
+                        ]);
+                    }),
+                Tables\Actions\DetachAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DetachBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('pivot_confidence', 'desc');
+    }
+}
