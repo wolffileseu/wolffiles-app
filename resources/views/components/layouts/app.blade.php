@@ -42,7 +42,7 @@
     <nav class="bg-gray-800 border-b border-gray-700 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
-                <div class="flex items-center space-x-8">
+                <div class="flex items-center space-x-4 lg:space-x-6">
                     <a href="{{ route('home') }}" class="flex-shrink-0">
                         <img src="{{ asset('images/wolffiles_logo.png') }}" alt="Wolffiles.eu" class="h-10" width="200" height="40">
                     </a>
@@ -85,12 +85,45 @@
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-4">
-                    <form action="{{ route('files.index') }}" method="GET" class="hidden sm:block">
-                        <input type="text" name="search" placeholder="{{ __('messages.search') }}..."
-                               value="{{ request('search') }}"
-                               class="bg-gray-700 border-gray-600 text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 w-48 lg:w-64">
+                <div class="flex items-center space-x-3">
+                    {{-- Ab lg: kompakte Suchleiste --}}
+                    <form action="{{ route('files.index') }}" method="GET" class="hidden lg:block">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z"/>
+                                </svg>
+                            </span>
+                            <input type="text" name="search" placeholder="{{ __('messages.search') }}..."
+                                   value="{{ request('search') }}"
+                                   class="bg-gray-700 border-gray-600 text-gray-100 rounded-lg pl-9 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 w-40 xl:w-56">
+                        </div>
                     </form>
+
+                    {{-- Auf sm bis md: Lupe + Click-to-Expand-Dropdown --}}
+                    <div x-data="{ open: false }"
+                         @keydown.escape.window="open = false"
+                         @keydown.window.prevent.cmd.k="open = true; $nextTick(() => $refs.searchInput.focus())"
+                         @keydown.window.prevent.ctrl.k="open = true; $nextTick(() => $refs.searchInput.focus())"
+                         @click.away="open = false"
+                         class="relative hidden sm:block lg:hidden">
+                        <button type="button"
+                                @click="open = !open; if (open) $nextTick(() => $refs.searchInput.focus())"
+                                class="text-gray-300 hover:text-amber-400 p-2 rounded-lg hover:bg-gray-700 transition"
+                                aria-label="{{ __('messages.search') }}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1010.5 18a7.5 7.5 0 006.15-3.35z"/>
+                            </svg>
+                        </button>
+                        <form x-show="open" x-cloak x-transition
+                              action="{{ route('files.index') }}" method="GET"
+                              class="absolute right-0 top-full mt-2 z-50">
+                            <input type="text" name="search" placeholder="{{ __('messages.search') }}..."
+                                   value="{{ request('search') }}"
+                                   x-ref="searchInput"
+                                   class="bg-gray-700 border border-gray-600 text-gray-100 rounded-lg px-4 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 w-72 shadow-lg">
+                        </form>
+                    </div>
 
                     @include('components.locale-switcher')
 
@@ -259,6 +292,9 @@
     <script src="{{ asset('js/easter-egg.js') }}?v={{ filemtime(public_path('js/easter-egg.js')) }}" defer></script>
 
     {{-- Scripts --}}
+    {{-- Browser Extension Promo (Chrome/Brave) --}}
+    <x-extension-promo />
+
     @stack('scripts')
     @include('components.heatmap-tracker')
 </body>
