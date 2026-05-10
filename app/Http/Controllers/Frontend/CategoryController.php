@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\File;
 use App\Services\SeoService;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -36,7 +37,7 @@ class CategoryController extends Controller
     }
 
 
-    public function show(Category $category)
+    public function show(Request $request, Category $category)
     {
         $category->load(['children' => function ($q) {
             $q->where('is_active', true)
@@ -46,11 +47,24 @@ class CategoryController extends Controller
               ->orderBy('sort_order');
         }, 'parent']);
 
-        $files = File::where('status', 'approved')
+        $query = File::where('status', 'approved')
             ->where('category_id', $category->id)
-            ->with(['screenshots', 'user', 'category'])
-            ->orderByDesc('created_at')
-            ->paginate(24);
+            ->with(['screenshots', 'user', 'category']);
+
+        // #13 Sort by user choice
+        $sort = $request->input('sort', 'newest');
+        $query = match ($sort) {
+            'oldest' => $query->orderBy('created_at', 'asc'),
+            'downloads' => $query->orderByDesc('download_count'),
+            'rating' => $query->orderByDesc('average_rating'),
+            'name_asc' => $query->orderBy('title', 'asc'),
+            'name_desc' => $query->orderBy('title', 'desc'),
+            'size_desc' => $query->orderByDesc('file_size'),
+            'size_asc' => $query->orderBy('file_size', 'asc'),
+            default => $query->orderByDesc('created_at'),
+        };
+
+        $files = $query->paginate(24)->withQueryString();
 
         // #30 SEO
         $seo = SeoService::forCategory($category);

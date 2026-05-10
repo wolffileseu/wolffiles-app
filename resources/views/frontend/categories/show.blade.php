@@ -17,9 +17,12 @@
                     <p class="text-gray-400 mt-2">{{ $category->description }}</p>
                 @endif
             </div>
-            <span class="bg-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm">
-                {{ $files->total() }} {{ __('messages.files') }}
-            </span>
+            <div class="flex items-center gap-3">
+                <span class="bg-gray-700 text-gray-300 px-4 py-2 rounded-full text-sm">
+                    {{ $files->total() }} {{ __('messages.files') }}
+                </span>
+                @include('components.sort-dropdown', ['currentSort' => request('sort', 'newest')])
+            </div>
         </div>
 
         {{-- Subcategories --}}
