@@ -5,6 +5,13 @@
 
     RewriteEngine On
 
+    # === EMERGENCY: Block aggressive crawlers on /servers ===
+    RewriteCond %{HTTP_USER_AGENT} (Amzn-SearchBot|SemrushBot|MJ12bot|AliyunSecBot|AhrefsBot|DotBot|PetalBot|Bytespider|ClaudeBot|Claude-SearchBot|GPTBot|CCBot|YandexBot|Applebot|FacebookBot|DataForSeoBot|BLEXBot) [NC]
+    RewriteCond %{REQUEST_URI} ^/servers [NC]
+    RewriteRule .* - [F,L]
+    # === END EMERGENCY ===
+
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

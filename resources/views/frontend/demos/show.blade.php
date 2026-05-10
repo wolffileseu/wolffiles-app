@@ -112,7 +112,7 @@
                         <h2 class="text-lg font-semibold text-white mb-4">Screenshots</h2>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                             @foreach($demo->screenshots as $ss)
-                                @php try { $ssUrl = Storage::disk('s3')->temporaryUrl($ss->path, now()->addHours(2)); } catch (\Exception $e) { $ssUrl = null; } @endphp
+                                @php $ssUrl = Storage::disk('s3')->url($ss->path); @endphp
                                 @if($ssUrl)
                                     <img src="{{ $ssUrl }}" alt="Screenshot" class="rounded-lg w-full h-32 object-cover cursor-pointer hover:opacity-80 transition-opacity">
                                 @endif

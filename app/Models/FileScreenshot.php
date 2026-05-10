@@ -33,11 +33,11 @@ class FileScreenshot extends Model
 
     public function getUrlAttribute(): string
     {
-        return \Storage::disk('s3')->temporaryUrl($this->path, now()->addHours(2));
+        return \Storage::disk('s3')->url($this->path);
     }
 
     public function getThumbnailUrlAttribute(): string
     {
-        return \Storage::disk('s3')->temporaryUrl($this->thumbnail_path ?? $this->path, now()->addHours(2));
+        return \Storage::disk('s3')->url($this->thumbnail_path ?? $this->path);
     }
 }

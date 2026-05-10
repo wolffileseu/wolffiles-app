@@ -17,8 +17,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/easter-egg.css') }}">
     {{-- Performance: Preconnect to S3 for faster image loading --}}
-    <link rel="preconnect" href="https://wolffiles.fsn1.your-objectstorage.com" crossorigin>
-    <link rel="dns-prefetch" href="https://wolffiles.fsn1.your-objectstorage.com">
+    <link rel="preconnect" href="https://cdn.wolffiles.eu" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.wolffiles.eu">
     
     {{-- Preload critical font if used --}}
     <meta name="theme-color" content="#1f2937">

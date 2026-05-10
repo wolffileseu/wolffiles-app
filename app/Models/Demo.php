@@ -157,7 +157,7 @@ class Demo extends Model
     {
         $screenshot = $this->primaryScreenshot ?? $this->screenshots->first();
         if (!$screenshot) return null;
-        return \Storage::disk('s3')->temporaryUrl($screenshot->path, now()->addHours(2));
+        return \Storage::disk('s3')->url($screenshot->path);
     }
 
     public function isPending(): bool { return $this->status === 'pending'; }

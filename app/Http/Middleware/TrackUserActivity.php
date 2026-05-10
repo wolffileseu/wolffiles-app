@@ -105,8 +105,54 @@ class TrackUserActivity
         if (str_starts_with($path, '_debugbar/')) return true;
         if (str_starts_with($path, 'build/')) return true;
         if (str_starts_with($path, 'storage/')) return true;
+        if (str_starts_with($path, 'api/')) return true;
+        if (str_starts_with($path, 'admin/')) return true;
         if (preg_match('/\.(css|js|jpg|png|gif|ico|svg|woff|woff2|ttf)$/', $path)) return true;
         if ($request->isMethod('POST') && str_contains($path, 'livewire')) return true;
+
+        // Skip /servers - Bot-Magnet, hat eigene Stats im Tracker
+        if ($path === 'servers' || str_starts_with($path, 'servers/')) return true;
+        if (str_starts_with($path, 'tracker/')) return true;
+
+        // Skip bots based on User-Agent
+        if ($this->isBot($request->userAgent() ?? '')) return true;
+
+        // Skip if no User-Agent (suspicious)
+        if (empty($request->userAgent())) return true;
+
+        return false;
+    }
+
+    private function isBot(string $ua): bool
+    {
+        if (empty($ua)) return true;
+
+        // Common bot keywords (case-insensitive)
+        $botPatterns = [
+            'bot', 'crawl', 'spider', 'scrap', 'fetch',
+            'slurp', 'mediapartners', 'archiver',
+            'http_request', 'check_http',
+            'facebookexternalhit', 'twitterbot', 'whatsapp',
+            'telegrambot', 'discordbot', 'linkedinbot', 'pinterestbot',
+            'semrush', 'ahrefs', 'mj12', 'dotbot', 'rogerbot',
+            'baiduspider', 'yandex', 'bingpreview', 'sogou',
+            'petalbot', 'bytespider', 'applebot',
+            'gptbot', 'chatgpt', 'claudebot', 'anthropic', 'perplexity',
+            'meta-externalagent', 'amazonbot', 'cohere',
+            'python', 'curl', 'wget', 'libwww', 'go-http', 'java/',
+            'phantomjs', 'headless', 'puppeteer', 'selenium',
+            'apache-httpclient', 'okhttp', 'axios',
+            'monitor', 'pingdom', 'uptime', 'tlm-audit',
+            'scanner', 'nikto', 'nmap', 'masscan',
+        ];
+
+        $uaLower = strtolower($ua);
+        foreach ($botPatterns as $pattern) {
+            if (str_contains($uaLower, $pattern)) {
+                return true;
+            }
+        }
+
         return false;
     }
 

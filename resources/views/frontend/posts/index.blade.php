@@ -34,7 +34,7 @@
                         <span class="text-gray-500 text-xs">{{ $post->published_at?->format('d.m.Y') }}</span>
                     </div>
                     @if($post->featured_image)
-                        <img src="{{ Storage::disk('s3')->temporaryUrl($post->featured_image, now()->addHours(2)) }}" alt="{{ $post->translated_title }}" class="w-full rounded-lg mb-4 max-h-64 object-cover">
+                        <img src="{{ Storage::disk('s3')->url($post->featured_image) }}" alt="{{ $post->translated_title }}" class="w-full rounded-lg mb-4 max-h-64 object-cover">
                     @endif
                     <h2 class="text-2xl font-bold text-white mb-2">
                         <a href="{{ route('posts.show', $post) }}" class="hover:text-amber-400 transition-colors">{{ $post->translated_title }}</a>
@@ -54,7 +54,7 @@
                 <article class="bg-gray-800 rounded-lg border border-gray-700 p-5 hover:border-gray-600 transition-colors">
                     <div class="flex items-start gap-4">
                         @if($post->featured_image)
-                            <img src="{{ Storage::disk('s3')->temporaryUrl($post->featured_image, now()->addHours(2)) }}" alt="" class="w-28 h-18 object-cover rounded flex-shrink-0">
+                            <img src="{{ Storage::disk('s3')->url($post->featured_image) }}" alt="" class="w-28 h-18 object-cover rounded flex-shrink-0">
                         @endif
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-wrap items-center gap-2 mb-2">

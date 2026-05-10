@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Tracker\TrackerGame;
 use App\Models\Tracker\TrackerServer;
 use App\Models\Tracker\TrackerPlayer;
@@ -44,6 +45,22 @@ class TrackerController extends Controller
      */
     public function servers(Request $request)
     {
+        $cacheKey = 'tracker:web:servers:' . md5(json_encode([
+            'game'        => $request->input('game'),
+            'online'      => $request->boolean('online'),
+            'players'     => $request->boolean('players'),
+            'country'     => $request->input('country'),
+            'map'         => $request->input('map'),
+            'mod'         => $request->input('mod'),
+            'gametype'    => $request->input('gametype'),
+            'search'      => $request->input('search'),
+            'no_password' => $request->boolean('no_password'),
+            'sort'        => $request->get('sort', 'players'),
+            'dir'         => $request->get('dir', 'desc'),
+            'page'        => $request->get('page', 1),
+        ]));
+
+        $payload = Cache::remember($cacheKey, 25, function () use ($request) {
         $games = TrackerGame::active()->orderBy('sort_order')->get();
 
         $query = TrackerServer::active()->with('game');
@@ -163,7 +180,10 @@ class TrackerController extends Controller
             ->orderBy('gametype')
             ->pluck('gametype');
 
-        return view('frontend.tracker.servers', compact('servers', 'games', 'countries', 'mods', 'gametypes'));
+            return compact('servers', 'games', 'countries', 'mods', 'gametypes');
+        });
+
+        return view('frontend.tracker.servers', $payload);
     }
 
     /**
@@ -954,22 +974,27 @@ class TrackerController extends Controller
      */
     public function apiServers(Request $request)
     {
-        $query = TrackerServer::active()->where('is_online', true)->with('game');
+        $gameSlug = (string) $request->input('game', '');
+        $cacheKey = 'tracker:api:servers:' . md5($gameSlug);
 
-        if ($request->filled('game')) {
-            $game = TrackerGame::where('slug', $request->game)->first();
-            if ($game) {
-                $query->where('game_id', $game->id);
+        $data = Cache::remember($cacheKey, 15, function () use ($gameSlug) {
+            $query = TrackerServer::active()->where('is_online', true)->with('game');
+
+            if ($gameSlug !== '') {
+                $game = TrackerGame::where('slug', $gameSlug)->first();
+                if ($game) {
+                    $query->where('game_id', $game->id);
+                }
             }
-        }
 
-        return response()->json(
-            $query->orderByDesc('current_players')->limit(200)->get([
+            return $query->orderByDesc('current_players')->limit(200)->get([
                 'id', 'game_id', 'hostname_html', 'hostname_clean', 'ip', 'port',
                 'current_map', 'current_players', 'max_players', 'gametype',
                 'mod_name', 'country_code', 'is_online', 'needs_password',
-            ])
-        );
+            ]);
+        });
+
+        return response()->json($data);
     }
 
     public function serverLiveData(TrackerServer $server)
@@ -1018,7 +1043,9 @@ class TrackerController extends Controller
             now()->addSeconds(60),
             function () use ($server) {
                 try {
-                    $q = app(\App\Services\Tracker\ServerQueryService::class);
+                    // Kurzer Timeout (1s) und keine Retries fuer Frontend-Live-Polling.
+                    // Tote Server bremsen sonst Worker bis zu 9 Sekunden.
+                    $q = new \App\Services\Tracker\ServerQueryService(timeout: 1, retries: 0);
                     $data = $q->queryServer($server->ip, $server->port);
                     if ($data === null || empty($data['players'])) {
                         return [];

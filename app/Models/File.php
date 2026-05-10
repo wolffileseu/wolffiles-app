@@ -155,7 +155,7 @@ class File extends Model
     {
         $screenshot = $this->primaryScreenshot ?? $this->screenshots->first();
         if (!$screenshot) return null;
-        return \Storage::disk('s3')->temporaryUrl($screenshot->path, now()->addHours(2));
+        return \Storage::disk('s3')->url($screenshot->path);
     }
 
     public function getThumbnailUrlAttribute(): ?string
@@ -163,7 +163,7 @@ class File extends Model
         $screenshot = $this->primaryScreenshot ?? $this->screenshots->first();
         if (!$screenshot) return null;
         $path = $screenshot->thumbnail_path ?? $screenshot->path;
-        return \Storage::disk('s3')->temporaryUrl($path, now()->addHours(2));
+        return \Storage::disk('s3')->url($path);
     }
 
     public function isPending(): bool { return $this->status === 'pending'; }
