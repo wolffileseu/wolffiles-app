@@ -103,9 +103,24 @@ class DmController extends Controller
     public function compose(Request $request)
     {
         $recipientId = $request->query("to");
+        $recipient = $recipientId
+            ? \App\Models\User::find($recipientId)
+            : null;
+
+        // Load all active users (excluding self) for the recipient suggestions datalist.
+        // For wolffiles.eu small user-base (~ a few hundred max), this is fine.
+        // If you scale to thousands of users, switch to AJAX search.
+        $allUsers = \App\Models\User::query()
+            ->select("id", "name")
+            ->where("id", "!=", Auth::id())
+            ->orderBy("name")
+            ->get();
+
         return view("frontend.dm.compose", [
-            "title"       => __("New message"),
+            "title"       => __("messages.dm_new"),
             "recipientId" => $recipientId,
+            "recipient"   => $recipient,
+            "allUsers"    => $allUsers,
         ]);
     }
 
@@ -115,8 +130,78 @@ class DmController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO: Phase 4d
-        abort(501, "Not implemented yet (Phase 4d).");
+        $sender = Auth::user();
+
+        $validated = $request->validate([
+            // Either recipient_id (from pre-filled link with ?to=) or recipient_name (typed)
+            "recipient_id"   => "nullable|integer|exists:users,id",
+            "recipient_name" => "nullable|string|max:255",
+            "body"           => "required|string|min:1|max:" . config("pm.max_body_length", 10000),
+            "subject"        => "nullable|string|max:" . config("pm.max_subject_length", 200),
+        ], [
+            "body.required" => __("messages.dm_body_required"),
+            "body.max"      => __("messages.dm_body_too_long"),
+        ]);
+
+        // Resolve recipient: prefer ID, fallback to name lookup
+        $recipient = null;
+        if (! empty($validated["recipient_id"])) {
+            $recipient = \App\Models\User::find($validated["recipient_id"]);
+        } elseif (! empty($validated["recipient_name"])) {
+            $recipient = \App\Models\User::where("name", $validated["recipient_name"])->first();
+        }
+
+        if (! $recipient) {
+            return back()
+                ->withInput()
+                ->withErrors(["recipient_name" => __("messages.dm_recipient_not_found")]);
+        }
+
+        // Policy: can sender send to recipient?
+        $policyResult = $this->policy->canSendTo($sender, $recipient);
+        if (! $policyResult["ok"]) {
+            return back()
+                ->withInput()
+                ->withErrors(["recipient_id" => __("messages.dm_reason_" . $policyResult["reason"])]);
+        }
+
+        // Find-or-create the 1:1 conversation
+        try {
+            $conversation = $this->conversations->findOrCreateDirect($sender, $recipient);
+        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(["recipient_id" => __("messages.dm_reason_" . $e->reasonCode)]);
+        }
+
+        // Send the message
+        try {
+            $this->conversations->sendMessage(
+                $sender,
+                $conversation,
+                $validated["body"],
+                "markdown",
+                $request->ip(),
+                $request->userAgent()
+            );
+        } catch (\App\Exceptions\Pm\RateLimitExceededException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(["body" => __("messages.dm_rate_limit", [
+                    "minutes" => ceil($e->retryAfterSeconds / 60),
+                ])]);
+        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+            return back()
+                ->withInput()
+                ->withErrors(["body" => __("messages.dm_reason_" . $e->reasonCode)]);
+        }
+
+        // Invalidate the dmUnreadCount cache for the recipient (composer cache)
+        \Illuminate\Support\Facades\Cache::forget("pm:unread_count:{$recipient->id}");
+
+        return redirect()
+            ->route("dm.show", $conversation)
+            ->with("status", __("messages.dm_sent"));
     }
 
     /**
