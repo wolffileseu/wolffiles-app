@@ -65,7 +65,7 @@ class ViewPmConversation extends ViewRecord
                     PmAdminAccessLog::create([
                         "admin_id"        => Auth::id(),
                         "conversation_id" => $this->record->id,
-                        "action"          => $newState ? "lock_conversation" : "unlock_conversation",
+                        "action"          => $newState ? "lock" : "unlock",
                         "reason"          => $data["reason"],
                         "admin_ip"        => request()->ip(),
                         "user_agent"      => mb_substr((string) request()->userAgent(), 0, 500),
