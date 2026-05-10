@@ -85,6 +85,26 @@
                class="px-3 py-2 rounded-lg text-sm transition {{ request('players') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
                 {{ __('messages.has_players') }}
             </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['ff' => request('ff') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('ff') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                {{ __('messages.tracker_filter_ff') }}
+            </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['antilag' => request('antilag') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('antilag') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                {{ __('messages.tracker_filter_antilag') }}
+            </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['balanced' => request('balanced') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('balanced') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                {{ __('messages.tracker_filter_balanced') }}
+            </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['anticheat' => request('anticheat') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('anticheat') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                {{ __('messages.tracker_filter_anticheat') }}
+            </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['hwrestrict' => request('hwrestrict') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('hwrestrict') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                {{ __('messages.tracker_filter_hwrestrict') }}
+            </a>
             <button @click="filtersOpen = !filtersOpen" class="px-3 py-2 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition">
                 {{ __('messages.more_filters') }}
                 @if(count($selCountries) + count($selMods) + count($selGametypes) > 0)

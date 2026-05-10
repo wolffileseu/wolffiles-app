@@ -55,6 +55,11 @@ class TrackerController extends Controller
             'gametype'    => $request->input('gametype'),
             'search'      => $request->input('search'),
             'no_password' => $request->boolean('no_password'),
+            'ff'          => $request->boolean('ff'),
+            'antilag'     => $request->boolean('antilag'),
+            'balanced'    => $request->boolean('balanced'),
+            'anticheat'   => $request->boolean('anticheat'),
+            'hwrestrict'  => $request->boolean('hwrestrict'),
             'sort'        => $request->get('sort', 'players'),
             'dir'         => $request->get('dir', 'desc'),
             'page'        => $request->get('page', 1),
@@ -132,6 +137,23 @@ class TrackerController extends Controller
         // No password
         if ($request->boolean('no_password', false)) {
             $query->where('needs_password', false);
+        }
+
+        // #13 Cvar filters
+        if ($request->boolean('ff', false)) {
+            $query->where('friendly_fire', 1);
+        }
+        if ($request->boolean('antilag', false)) {
+            $query->where('antilag', 1);
+        }
+        if ($request->boolean('balanced', false)) {
+            $query->where('balanced_teams', 1);
+        }
+        if ($request->boolean('anticheat', false)) {
+            $query->whereNotNull('anticheat');
+        }
+        if ($request->boolean('hwrestrict', false)) {
+            $query->where('heavy_weapon_restriction', '>', 0);
         }
 
         // Sort

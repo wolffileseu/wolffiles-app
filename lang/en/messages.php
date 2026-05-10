@@ -886,4 +886,11 @@ return [
     'relation_verified' => 'Manually verified link',
     'relation_low_confidence' => 'Auto-detected - please verify',
 
+
+    // #13 Cvar filter labels
+    'tracker_filter_ff' => 'Friendly Fire',
+    'tracker_filter_antilag' => 'Antilag',
+    'tracker_filter_balanced' => 'Balanced Teams',
+    'tracker_filter_anticheat' => 'Anticheat',
+    'tracker_filter_hwrestrict' => 'Weapon Limit',
 ];

@@ -816,4 +816,11 @@ return [
     'page_pdf_document' => 'Dokument PDF',
     'page_pdf_subtitle' => 'Pobierz załącznik',
     'page_pdf_open' => 'Otwórz PDF',
+
+    // #13 Cvar filter labels
+    'tracker_filter_ff' => '[TODO:tracker_filter_ff]',
+    'tracker_filter_antilag' => '[TODO:tracker_filter_antilag]',
+    'tracker_filter_balanced' => '[TODO:tracker_filter_balanced]',
+    'tracker_filter_anticheat' => '[TODO:tracker_filter_anticheat]',
+    'tracker_filter_hwrestrict' => '[TODO:tracker_filter_hwrestrict]',
 ];
