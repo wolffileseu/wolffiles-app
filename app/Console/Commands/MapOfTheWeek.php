@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\File;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\SocialMedia\SocialMediaService;
 
@@ -101,11 +102,25 @@ class MapOfTheWeek extends Command
             return self::SUCCESS;
         }
 
-        // Remove featured from current file(s)
-        File::where('is_featured', true)->update(['is_featured' => false]);
+        // Issue #16: idempotent + atomic featured rotation.
+        // Set the new featured row FIRST via Query Builder (bypasses Eloquent
+        // dirty-tracking — protects against stale in-memory state if the model
+        // was loaded with is_featured=true). Then clear all OTHER featured rows.
+        // Wrapped in a transaction so the DB is never observed without a
+        // featured file between the two writes.
+        DB::transaction(function () use ($newFeatured) {
+            File::whereKey($newFeatured->id)
+                ->update(['is_featured' => true, 'featured_at' => now()]);
 
-        // Set new featured
-        $newFeatured->update(['is_featured' => true]);
+            File::where('is_featured', true)
+                ->where('id', '!=', $newFeatured->id)
+                ->update(['is_featured' => false]);
+        });
+
+        // Keep the in-memory model consistent with the DB for downstream uses.
+        $newFeatured->is_featured = true;
+        $newFeatured->featured_at = now();
+        $newFeatured->syncOriginal();
 
         // Update history
         $history[] = $newFeatured->id;

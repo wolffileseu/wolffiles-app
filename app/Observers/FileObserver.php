@@ -18,6 +18,25 @@ class FileObserver
         $this->syncMapBotRelations($file, 'created');
     }
 
+    public function updating(File $file): void
+    {
+        // Issue #16 — audit any Eloquent-driven change to is_featured.
+        // Mass updates via Query Builder bypass observers by design; the only
+        // known mass-updater is MapOfTheWeek, which is intentional. Anything
+        // logged here is an unexpected toggle and helps identify the source
+        // (HTTP request, console command, queued job) if the bug ever recurs.
+        if ($file->isDirty('is_featured')) {
+            \Log::info('File.is_featured change (audit)', [
+                'file_id' => $file->id,
+                'title'   => $file->title,
+                'from'    => $file->getOriginal('is_featured'),
+                'to'      => $file->is_featured,
+                'context' => $this->captureContext(),
+                'callers' => $this->topCallerFrames(),
+            ]);
+        }
+    }
+
     public function updated(File $file): void
     {
         if ($file->isDirty('status') && $file->status === 'approved') {
@@ -155,5 +174,55 @@ class FileObserver
         } catch (\Throwable $e) {
             \Log::error("FileObserver syncMapBotRelations failed for file {$file->id}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Capture call-site context for the audit log: CLI argv or HTTP URL + user.
+     */
+    private function captureContext(): array
+    {
+        if (app()->runningInConsole()) {
+            return ['cli' => implode(' ', $_SERVER['argv'] ?? [])];
+        }
+
+        try {
+            return [
+                'url'     => request()->fullUrl(),
+                'method'  => request()->method(),
+                'user_id' => optional(auth()->user())->id,
+            ];
+        } catch (\Throwable $e) {
+            return ['source' => 'unknown'];
+        }
+    }
+
+    /**
+     * Top N non-vendor stack frames, for identifying who triggered the change.
+     */
+    private function topCallerFrames(int $limit = 6): array
+    {
+        $trace  = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 30);
+        $frames = [];
+        $base   = base_path() . '/';
+
+        foreach ($trace as $frame) {
+            $file = $frame['file'] ?? null;
+            if (!$file) continue;
+            if (str_contains($file, '/vendor/')) continue;
+            if (str_contains($file, '/Observers/FileObserver.php')) continue;
+
+            $frames[] = sprintf(
+                '%s:%d %s%s%s()',
+                str_replace($base, '', $file),
+                $frame['line'] ?? 0,
+                $frame['class'] ?? '',
+                $frame['type'] ?? '',
+                $frame['function'] ?? '?'
+            );
+
+            if (count($frames) >= $limit) break;
+        }
+
+        return $frames;
     }
 }
