@@ -23,6 +23,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: '--allowed-tools "Read,Glob,Grep,Bash(git log:*),Bash(git diff:*),Bash(git show:*),Bash(grep:*),Bash(find:*),Bash(cat:*),Bash(ls:*),Bash(wc:*),Bash(head:*),Bash(tail:*),Bash(awk:*),Bash(sed:*),mcp__github__*"'
           prompt: |
             Du führst einen wöchentlichen Code-Audit auf wolffiles-app durch.
             Stack: Laravel 12 / Filament 3 / PHP 8.3.
