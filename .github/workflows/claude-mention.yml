@@ -1,0 +1,43 @@
+name: Claude Mention Handler
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  respond:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Respond to @claude mention
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          mode: agent
+          agent_prompt: |
+            Du wurdest in einem Issue oder PR-Comment mit @claude erwähnt.
+            Lies den Comment-Inhalt sowie den Issue/PR-Kontext und antworte hilfreich.
+
+            Stack: Laravel 12 / Filament 3 / PHP 8.3 / MariaDB / Redis / Plesk auf AlmaLinux 9.
+
+            Du darfst:
+            - Code analysieren und Findings als Comment posten
+            - Bei klaren Bugs einen Fix-PR vorschlagen
+            - Issue labeln/kategorisieren
+
+            Du darfst NICHT:
+            - Direkt in main pushen
+            - Secrets/API-Keys offenlegen
+            - Migrations ohne Bestätigung ausführen

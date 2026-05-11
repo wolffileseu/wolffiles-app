@@ -1,0 +1,57 @@
+name: Claude Weekly Audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # Montag 06:00 UTC
+  workflow_dispatch:      # Manuell triggerbar
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 50
+
+      - name: Run Weekly Audit
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          mode: agent
+          agent_prompt: |
+            Du führst einen wöchentlichen Code-Audit auf wolffiles-app durch.
+            Stack: Laravel 12 / Filament 3 / PHP 8.3.
+
+            Fokus auf VERÄNDERUNGEN der letzten 7 Tage (git log --since='1 week ago').
+            Nicht das ganze Repo neu auditieren - nur das was sich geändert hat.
+
+            Schau nach:
+
+            1. Security-Issues in neuem Code:
+               - exec/shell_exec mit CWD-Risiko oder unescaped Input
+               - File-Uploads ohne Validation
+               - SQL-Injection-Risiken (whereRaw etc)
+               - Mass Assignment ohne $fillable
+
+            2. Performance-Issues:
+               - Neue N+1 Queries
+               - Loops mit DB-Calls drin
+               - Fehlende Cache/Index-Möglichkeiten
+
+            3. Bug-Risiken:
+               - Race Conditions ohne Transaction/Lock
+               - Observer/Job-Probleme
+               - Fehlende Error-Handling bei externen Services
+
+            4. Composer/NPM Vulnerabilities (composer audit, npm audit).
+
+            Erstelle EIN GitHub Issue mit dem Titel "Weekly Audit YYYY-MM-DD" 
+            (Datum von heute) das die Findings nach Severity sortiert auflistet.
+            Wenn nichts gefunden wurde: Issue mit "All clean ✅".
+
+            Sei knapp und konkret. Pro Finding: Datei:Zeile, Beschreibung, Fix-Vorschlag.
