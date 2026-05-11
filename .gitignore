@@ -39,3 +39,4 @@ public/tracker-offline-report.txt
 storage/backups/
 # Mystery RAR-extracted files leaking into public/
 public/*.pk3
+public/tmp/
