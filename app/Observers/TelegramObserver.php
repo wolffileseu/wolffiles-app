@@ -29,8 +29,28 @@ class TelegramObserver
             $telegram->notifyUserRegistered($model);
         }
 
-        if ($model instanceof File && $model->status === 'pending') {
+        // Notify on every new File regardless of status:
+        // - pending uploads from untrusted users
+        // - direct-approved uploads from trusted users
+        if ($model instanceof File && in_array($model->status, ['pending', 'approved'], true)) {
             $telegram->notifyFileUploaded($model);
+        }
+    }
+
+    /**
+     * Catches the case where a pending File gets approved later by an admin.
+     * Without this, files that started as pending and were approved afterwards
+     * would never trigger a notification.
+     */
+    public function updated($model): void
+    {
+        if (! $model instanceof File) return;
+        if (! $model->wasChanged('status')) return;
+
+        // Only notify on the transition pending -> approved
+        $previous = $model->getOriginal('status');
+        if ($previous === 'pending' && $model->status === 'approved') {
+            app(TelegramNotificationService::class)->notifyFileUploaded($model);
         }
     }
 }
