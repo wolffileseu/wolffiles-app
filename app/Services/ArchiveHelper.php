@@ -268,11 +268,11 @@ class ArchiveHelper
         @mkdir($this->tempDir, 0755, true);
 
         if ($this->type === 'rar') {
-            exec(sprintf('unrar p -inul %s %s 2>/dev/null', escapeshellarg($this->path), escapeshellarg($name)), $output, $ret);
-            if ($ret === 0 && !empty($output)) {
-                return implode("\n", $output);
-            }
-            // Fallback: extract to temp
+            // unrar-free 0.1.1 has a bug: the 'p' (print to stdout) mode ALSO
+            // writes the file to the current working directory as a side-effect.
+            // When called from a PHP-FPM worker whose CWD is the Laravel public/
+            // directory, these stray files become publicly served. We therefore
+            // skip 'unrar p' entirely and always extract to our tempDir.
             $this->extractTo($this->tempDir, $name);
         } elseif ($this->type === '7z') {
             $this->extractTo($this->tempDir, $name);
