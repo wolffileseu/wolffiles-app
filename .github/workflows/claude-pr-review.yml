@@ -8,6 +8,7 @@ permissions:
   contents: read
   pull-requests: write
   issues: write
+  id-token: write
 
 jobs:
   review:
@@ -23,28 +24,26 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          mode: review
-          review_prompt: |
+          prompt: |
             Du reviewst einen PR für wolffiles-app: Laravel 12 / Filament 3 / PHP 8.3 / MariaDB / Redis.
-            Stack-Kontext: läuft auf AlmaLinux 9 mit Plesk + Apache + PHP-FPM. App-Path ist /var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app/.
+            Stack-Kontext: läuft auf AlmaLinux 9 mit Plesk + Apache + PHP-FPM.
 
-            Wichtig: Wir haben in der Vergangenheit folgende Bug-Klassen gehabt - schau besonders danach:
+            Wichtig: Wir hatten folgende Bug-Klassen - schau besonders danach:
 
             1. CWD-abhängiger Code in Shell-Exec-Calls. Beispiel: exec('unrar p ...') schreibt in CWD,
                und PHP-FPM-Worker haben CWD=public/. Files leakten nach public/.
-               → Jeden exec/shell_exec/passthru/system markieren und prüfen ob CWD relevant ist.
 
             2. unrar-free 0.1.1 Bugs: dessen 'p' (print) Mode hat einen CWD-Write Side-Effect.
                Generell exec-Calls die externe Tools mit relativen Pfaden aufrufen sind verdächtig.
 
             3. Filament-Routen: route('filament.admin.resources.X.edit', $model) braucht ['record' => $model->slug],
-               sonst nutzt Filament die ID statt slug. Markieren wenn falsch.
+               sonst nutzt Filament die ID statt slug.
 
             4. Race Conditions bei concurrent Updates: tracker_servers Deadlocks waren ein Problem.
                Multi-Step DB-Ops sollten in Transactions sein.
 
             5. Observer/Notification-Logik: TelegramObserver hatte status==='pending' und vergaß
-               approved/transition-Fälle. Bei Observers immer schauen: deckt das alle relevanten Cases ab?
+               approved/transition-Fälle.
 
             6. Path Traversal in File-Uploads/Storage.
 
@@ -56,13 +55,10 @@ jobs:
 
             10. Hardcoded URLs (besonders wolffiles.wahke.dev — die existiert nicht mehr, immer wolffiles.eu).
 
-            Sei knapp:
-            - Critical (Security/Data Loss/Breaking): markiere mit 🔴 und BLOCKE den PR wenn möglich
-            - High (echter Bug, sollte gefixt werden): 🟠
-            - Medium (best practice, nicht dringend): 🟡 inline comment
+            Severities:
+            - Critical (Security/Data Loss): markiere mit 🔴, BLOCKE wenn möglich
+            - High (echter Bug): 🟠
+            - Medium (best practice): 🟡 inline comment
             - Low/Style: skip ganz
 
-            KEINE Stil-Diskussion, keine Tab-vs-Spaces, keine Kommentar-Pedanterie.
-            Nur substanzielle Findings.
-
-            Wenn der PR sauber ist, schreibe einen kurzen positiven Comment.
+            Keine Stil-Diskussion. Nur substanzielle Findings. Bei sauberem PR: kurzer positiver Comment.

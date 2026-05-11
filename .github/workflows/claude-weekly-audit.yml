@@ -2,12 +2,13 @@ name: Claude Weekly Audit
 
 on:
   schedule:
-    - cron: '0 6 * * 1'  # Montag 06:00 UTC
-  workflow_dispatch:      # Manuell triggerbar
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
 
 permissions:
   contents: read
   issues: write
+  id-token: write
 
 jobs:
   audit:
@@ -22,8 +23,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          mode: agent
-          agent_prompt: |
+          prompt: |
             Du führst einen wöchentlichen Code-Audit auf wolffiles-app durch.
             Stack: Laravel 12 / Filament 3 / PHP 8.3.
 
@@ -50,8 +50,8 @@ jobs:
 
             4. Composer/NPM Vulnerabilities (composer audit, npm audit).
 
-            Erstelle EIN GitHub Issue mit dem Titel "Weekly Audit YYYY-MM-DD" 
-            (Datum von heute) das die Findings nach Severity sortiert auflistet.
-            Wenn nichts gefunden wurde: Issue mit "All clean ✅".
+            Erstelle EIN GitHub Issue mit dem Titel "Weekly Audit YYYY-MM-DD"
+            das die Findings nach Severity sortiert auflistet.
+            Wenn nichts gefunden: Issue mit "All clean ✅".
 
-            Sei knapp und konkret. Pro Finding: Datei:Zeile, Beschreibung, Fix-Vorschlag.
+            Sei knapp. Pro Finding: Datei:Zeile, Beschreibung, Fix-Vorschlag.
