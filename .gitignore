@@ -37,3 +37,5 @@ public/tracker-offline-report.txt
 .env.bak*
 *.bak3
 storage/backups/
+# Mystery RAR-extracted files leaking into public/
+public/*.pk3
