@@ -17,6 +17,9 @@ final class Preprocessor
     /** @var string[] */
     private array $includeStack = [];
 
+    /** @var list<array{original: bool, inElse: bool}> */
+    private array $conditionalStack = [];
+
     private ErrorBag $errors;
 
     public function __construct(
@@ -36,9 +39,16 @@ final class Preprocessor
         }
         $this->errors = new ErrorBag();
         $this->includeStack = [];
+        $this->conditionalStack = [];
 
         $cleaned = $this->stripComments($source);
-        return $this->processLines(explode("\n", $cleaned));
+        $result = $this->processLines(explode("\n", $cleaned));
+
+        if ($this->conditionalStack !== []) {
+            $this->errors->error('Unterminated #ifdef / #ifndef block at end of source', 0, 0);
+        }
+
+        return $result;
     }
 
     public function errors(): ErrorBag
@@ -69,6 +79,11 @@ final class Preprocessor
                 continue;
             }
 
+            if (! $this->shouldEmit()) {
+                $out[] = '';
+                continue;
+            }
+
             $out[] = $this->substituteDefines($line);
         }
 
@@ -85,6 +100,49 @@ final class Preprocessor
     {
         // Strip leading # and any spacing.
         $body = ltrim(substr($line, 1));
+
+        // Conditional directives are always tracked so the stack stays balanced
+        // even inside an outer dead branch — otherwise a nested #endif inside a
+        // skipped #ifdef would pop the wrong frame and leak emit-state.
+        if (preg_match('/^ifdef\s+(\w+)\s*$/', $body, $m)) {
+            $this->conditionalStack[] = [
+                'original' => array_key_exists($m[1], $this->defines),
+                'inElse' => false,
+            ];
+            return '';
+        }
+        if (preg_match('/^ifndef\s+(\w+)\s*$/', $body, $m)) {
+            $this->conditionalStack[] = [
+                'original' => ! array_key_exists($m[1], $this->defines),
+                'inElse' => false,
+            ];
+            return '';
+        }
+        if (preg_match('/^else\s*$/', $body)) {
+            $top = array_pop($this->conditionalStack);
+            if ($top === null) {
+                $this->errors->error('#else without matching #ifdef', 0, 0);
+                return '';
+            }
+            if ($top['inElse']) {
+                $this->errors->error('Duplicate #else in same conditional', 0, 0);
+            }
+            $top['inElse'] = true;
+            $this->conditionalStack[] = $top;
+            return '';
+        }
+        if (preg_match('/^endif\s*$/', $body)) {
+            if (array_pop($this->conditionalStack) === null) {
+                $this->errors->error('#endif without matching #ifdef', 0, 0);
+            }
+            return '';
+        }
+
+        // Side-effecting directives below this line are gated by the
+        // conditional stack so a dead branch doesn't leak its #define-s.
+        if (! $this->shouldEmit()) {
+            return '';
+        }
 
         if (preg_match('/^include\s+"([^"]+)"\s*$/', $body, $m)) {
             return $this->handleInclude($m[1]);
@@ -104,6 +162,17 @@ final class Preprocessor
         // live-linter can flag them at a higher layer once we know which
         // directives ET mods rely on beyond the documented set.
         return '';
+    }
+
+    private function shouldEmit(): bool
+    {
+        foreach ($this->conditionalStack as $frame) {
+            $active = $frame['inElse'] ? ! $frame['original'] : $frame['original'];
+            if (! $active) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private function handleInclude(string $path): string
