@@ -33,15 +33,16 @@ class PollServerJob implements ShouldQueue
 
         $success = $poller->pollServer($server);
 
-        $interval = match(true) {
-            !$success                         => 300,
-            $server->current_players >= 15    => 30,
-            $server->current_players >= 5     => 60,
-            $server->current_players >= 1     => 120,
-            default                            => 300,
-        };
-
+        // Single source of truth for next_poll_at. Was previously a local
+        // match() block that overrode ServerPollerService::handleOffline()'s
+        // next_poll_at, making offlinePollInterval() effectively dead code.
+        // Now both online cadence (player-count based) and offline backoff
+        // (poll_failures based) live in ServerPollerService. See B-3b.
         $server->refresh();
+        $interval = $success
+            ? $poller->onlinePollInterval($server)
+            : $poller->offlinePollInterval($server);
+
         $server->update(['next_poll_at' => now()->addSeconds($interval)]);
     }
 }

@@ -285,9 +285,12 @@ class ServerPollerService
     /**
      * Handle an offline/unreachable server.
      *
-     * Polling interval is now based on server maturity so established servers
-     * are still checked frequently and come back online automatically once
-     * they reply to getstatus again.
+     * Increments the failure counter and (after 3 consecutive failures)
+     * marks the server offline + closes its sessions. Does NOT set
+     * next_poll_at — that's owned by PollServerJob now (single source
+     * of truth, B-3b). Previously this method also wrote next_poll_at,
+     * which PollServerJob then immediately overwrote — making
+     * offlinePollInterval() effectively dead code.
      */
     private function handleOffline(TrackerServer $server): void
     {
@@ -300,7 +303,6 @@ class ServerPollerService
                 'is_online' => false,
                 'current_players' => 0,
                 'last_poll_at' => now(),
-                'next_poll_at' => now()->addSeconds($this->offlinePollInterval($server)),
             ]);
 
             // End all active sessions on this server
@@ -308,33 +310,76 @@ class ServerPollerService
         } else {
             $server->update([
                 'last_poll_at' => now(),
-                'next_poll_at' => now()->addSeconds($this->offlinePollInterval($server)),
             ]);
         }
     }
 
     /**
-     * Offline polling interval in seconds, based on server maturity.
+     * Offline poll backoff in seconds, based on poll_failures.
      *
-     * - Established + enhanced tracker active: 2 min (very likely a real server)
-     * - Established (>=1 day, was online):     3 min
-     * - Probation (<1 day, was online once):   10 min
-     * - Never verified online:                 30 min
+     * Public API — used by PollServerJob and may be used by admin actions
+     * or future force-poll workflows.
+     *
+     * Staircase:
+     *   1 fail   → 5 min     (300 s)
+     *   2 fails  → 15 min    (900 s)
+     *   3 fails  → 1 hour    (3600 s)
+     *   4 fails  → 24 hours  (86400 s)
+     *   5 fails  → 48 hours  (172800 s)
+     *   6+ fails → 1 week    (604800 s)
+     *
+     * Enhanced-tracker servers (recent UDP within 1h) are capped at 3 min
+     * regardless of failure count — they've proven they're alive recently.
+     *
+     * Recovery: updateServerFromResponse() resets poll_failures to 0 on any
+     * successful poll, so a returning server snaps back to the 5-min cadence
+     * on its next failure (or stays online indefinitely).
      */
-    private function offlinePollInterval(TrackerServer $server): int
+    public function offlinePollInterval(TrackerServer $server): int
     {
         $hasRecentEnhanced = $server->is_enhanced_tracker
             && !$server->enhanced_disabled
             && $server->enhanced_last_event_at
             && $server->enhanced_last_event_at->greaterThanOrEqualTo(now()->subHour());
 
-        $established = $server->last_seen_at
-            && $server->first_seen_at
-            && $server->first_seen_at->lessThanOrEqualTo(now()->subDay());
+        // Defensive: pollServer() called outside the normal job pipeline
+        // could theoretically pass through with poll_failures=0. Fall back
+        // to 5min (default branch) rather than masking unexpected state.
+        $failures = max(1, (int) $server->poll_failures);
 
-        if ($established && $hasRecentEnhanced) return 120;
-        if ($established)                      return 180;
-        if ($server->last_seen_at)             return 600;
-        return 1800;
+        $base = match (true) {
+            $failures >= 6  => 604800,  // 1 week
+            $failures === 5 => 172800,  // 48 h
+            $failures === 4 => 86400,   // 24 h
+            $failures === 3 => 3600,    // 1 h
+            $failures === 2 => 900,     // 15 min
+            default         => 300,     // 5 min — fail #1
+        };
+
+        if ($hasRecentEnhanced) {
+            $base = min($base, 180);
+        }
+
+        return $base;
+    }
+
+    /**
+     * Online poll cadence in seconds, based on current_players.
+     *
+     * Public API — used by PollServerJob and may be used by admin actions
+     * or future force-poll workflows.
+     *
+     * Busier servers get polled more often so player snapshots stay dense
+     * during active matches. Empty/idle servers fall back to the 5-min
+     * baseline.
+     */
+    public function onlinePollInterval(TrackerServer $server): int
+    {
+        return match (true) {
+            $server->current_players >= 15 => 30,
+            $server->current_players >= 5  => 60,
+            $server->current_players >= 1  => 120,
+            default                        => 300,
+        };
     }
 }
