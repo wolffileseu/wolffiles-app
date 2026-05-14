@@ -40,3 +40,4 @@ storage/backups/
 # Mystery RAR-extracted files leaking into public/
 public/*.pk3
 public/tmp/
+tests/fixtures/etui/_paks/
