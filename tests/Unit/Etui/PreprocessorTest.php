@@ -88,6 +88,29 @@ it('handles #ifdef when symbol is undefined — emits #else branch', function ()
     expect(trim(preg_replace('/\s+/', ' ', $out)))->toBe('B');
 });
 
+it('expands nested $evalint depth-first against substituted #defines', function () {
+    // Outer $evalint depends on the inner one resolving to a number first.
+    // Mirrors how menumacros.h composes layouts from primitive #defines.
+    $out = pp(
+        "#define WIDTH 100\nrect \$evalint(2 + \$evalint(WIDTH / 4)) 0 0 0",
+    );
+
+    expect($out)->toContain('rect 27 0 0 0');
+});
+
+it('errors on a non-constant $evalint and leaves the directive intact', function () {
+    $resolver = new PreprocessorInMemoryResolver();
+    $pp = new Preprocessor($resolver);
+
+    $out = $pp->process("rect \$evalint(UNDEFINED_THING + 5) 0 0 0");
+
+    expect($pp->errors()->hasErrors())->toBeTrue();
+    expect($pp->errors()->count())->toBe(1);
+    // Directive must survive in the output so the editor's linter can point
+    // at the offending source position rather than the now-deleted bytes.
+    expect($out)->toContain('$evalint(UNDEFINED_THING + 5)');
+});
+
 it('resolves the WINDOW alias via #ifdef per menumacros.h pattern', function () {
     $source = <<<'MENU'
 #ifdef FUI

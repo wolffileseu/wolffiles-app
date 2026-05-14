@@ -84,7 +84,7 @@ final class Preprocessor
                 continue;
             }
 
-            $out[] = $this->substituteDefines($line);
+            $out[] = $this->expandEvalDirectives($this->substituteDefines($line));
         }
 
         return implode("\n", $out);
@@ -215,6 +215,94 @@ final class Preprocessor
         }
 
         $this->defines[$name] = trim($afterName);
+    }
+
+    /**
+     * id Tech 3 build-time eval directives: $evalint(expr) / $evalfloat(expr).
+     * Runs AFTER #define substitution so the symbols inside are already
+     * numeric. Inner $eval directives are expanded depth-first, so
+     * $evalint(2 + $evalint(3 * 4)) resolves to 14. When the inner
+     * expression can't be folded (unresolved IDENT, syntax error), the
+     * directive is left intact in the output and recorded in ErrorBag —
+     * leaving it intact prevents an infinite re-evaluation loop and lets
+     * the editor highlight the bad spot.
+     */
+    private function expandEvalDirectives(string $text): string
+    {
+        $out = '';
+        $i = 0;
+        $n = strlen($text);
+
+        while ($i < $n) {
+            if ($text[$i] === '$') {
+                $match = $this->matchEvalDirective($text, $i);
+                if ($match !== null) {
+                    [$mode, $exprStart, $closingPos] = $match;
+                    $rawExpr = substr($text, $exprStart, $closingPos - $exprStart);
+                    $expandedExpr = $this->expandEvalDirectives($rawExpr);
+                    $value = $this->evaluateExpression($expandedExpr);
+
+                    if ($value === null) {
+                        $this->errors->error(
+                            "Non-constant or unparseable expression in \$eval{$mode}({$expandedExpr})",
+                            0,
+                            0,
+                        );
+                        $out .= substr($text, $i, $closingPos - $i + 1);
+                    } elseif ($mode === 'int') {
+                        $out .= (string) (int) $value;
+                    } else {
+                        $out .= (string) (float) $value;
+                    }
+                    $i = $closingPos + 1;
+                    continue;
+                }
+            }
+            $out .= $text[$i++];
+        }
+
+        return $out;
+    }
+
+    /**
+     * @return array{0: 'int'|'float', 1: int, 2: int}|null  [mode, exprStart, closingParenPos]
+     */
+    private function matchEvalDirective(string $text, int $i): ?array
+    {
+        $n = strlen($text);
+        foreach (['int' => '$evalint(', 'float' => '$evalfloat('] as $mode => $prefix) {
+            $plen = strlen($prefix);
+            if ($i + $plen > $n) {
+                continue;
+            }
+            if (substr($text, $i, $plen) !== $prefix) {
+                continue;
+            }
+
+            $exprStart = $i + $plen;
+            $depth = 1;
+            $j = $exprStart;
+            while ($j < $n) {
+                $ch = $text[$j];
+                if ($ch === '(') {
+                    $depth++;
+                } elseif ($ch === ')') {
+                    $depth--;
+                    if ($depth === 0) {
+                        return [$mode, $exprStart, $j];
+                    }
+                }
+                $j++;
+            }
+            return null;
+        }
+        return null;
+    }
+
+    private function evaluateExpression(string $expr): int|float|null
+    {
+        $tokens = (new Lexer())->tokenize($expr);
+        return (new ExpressionEvaluator())->evaluate($tokens);
     }
 
     private function substituteDefines(string $text): string
