@@ -34,33 +34,37 @@ class ServerLifecycleHandler extends AbstractHandler
             return;
         }
 
-        DB::transaction(function () use ($event, $serverId) {
-            // Bump the event onto its server
+        // Single statement collapses the previous three sequential UPDATEs
+        // (last_event_at, event_count increment, first-packet flip) into one.
+        // COALESCE preserves the "set first_seen / source_ip only on the first
+        // ever event" semantics of the old conditional UPDATE.
+        //
+        // Why: the old 3-statement pattern held an X-lock on tracker_servers:id
+        // for the duration of all three plus the event UPDATE below, and
+        // combined with the FK-induced S-lock from tracker_raw_events.server_id
+        // produced an S→X-lock-upgrade deadlock under 10 concurrent workers
+        // hitting the same hot row. See FINDINGS.md B-1.
+        //
+        // Order matters: tracker_servers UPDATE BEFORE the event UPDATE.
+        // The event UPDATE's FK check on server_id takes an S-lock on the
+        // same server row; doing the X-lock-acquiring UPDATE first means we
+        // never hold S and try to upgrade to X (the deadlock pattern).
+        $receivedAt = $event->received_at?->format('Y-m-d H:i:s.v')
+            ?? now()->format('Y-m-d H:i:s.v');
+
+        DB::transaction(function () use ($event, $serverId, $receivedAt) {
+            DB::update(
+                'UPDATE tracker_servers
+                    SET enhanced_last_event_at  = ?,
+                        enhanced_event_count    = enhanced_event_count + 1,
+                        is_enhanced_tracker     = 1,
+                        enhanced_first_seen_at  = COALESCE(enhanced_first_seen_at, ?),
+                        enhanced_source_ip      = COALESCE(enhanced_source_ip, ?)
+                  WHERE id = ?',
+                [$receivedAt, $receivedAt, $event->source_ip, $serverId]
+            );
+
             $event->update(['server_id' => $serverId]);
-
-            // Touch server-level state
-            $updates = [
-                'enhanced_last_event_at' => $event->received_at,
-            ];
-
-            // Event counter is updated via raw SQL to avoid read-modify-write races.
-            DB::table('tracker_servers')
-                ->where('id', $serverId)
-                ->update($updates);
-
-            DB::table('tracker_servers')
-                ->where('id', $serverId)
-                ->increment('enhanced_event_count');
-
-            // First-packet-ever: flip the flag and record the milestone
-            DB::table('tracker_servers')
-                ->where('id', $serverId)
-                ->where('is_enhanced_tracker', false)
-                ->update([
-                    'is_enhanced_tracker' => true,
-                    'enhanced_first_seen_at' => $event->received_at,
-                    'enhanced_source_ip' => $event->source_ip,
-                ]);
         });
 
         // Log lifecycle events (but not keepalives — too noisy)
