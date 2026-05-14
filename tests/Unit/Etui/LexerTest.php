@@ -37,16 +37,22 @@ it('lexes integer, float and negative numbers as single NUMBER tokens', function
     expect($tokens[3]->value)->toBe(0);
 });
 
-it('lexes braces, parens, commas', function () {
-    $tokens = (new Lexer())->tokenize('{ } ( ) ,');
+it('lexes braces, parens, commas, semicolons', function () {
+    // Semicolons separate statements inside event blocks like
+    //   onESC { close quit ; open main }
+    // and ALSO appear unquoted inside macro-call arguments — both contexts
+    // the Parser captures as raw Token[], so the Lexer's only job is to
+    // make `;` a valid token instead of an "Unexpected character" error.
+    $tokens = (new Lexer())->tokenize('{ } ( ) , ;');
 
-    $types = array_map(fn (Token $t) => $t->type, array_slice($tokens, 0, 5));
+    $types = array_map(fn (Token $t) => $t->type, array_slice($tokens, 0, 6));
     expect($types)->toBe([
         TokenType::LBRACE,
         TokenType::RBRACE,
         TokenType::LPAREN,
         TokenType::RPAREN,
         TokenType::COMMA,
+        TokenType::SEMICOLON,
     ]);
 });
 

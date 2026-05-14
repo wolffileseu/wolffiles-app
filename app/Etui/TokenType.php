@@ -11,6 +11,7 @@ enum TokenType: string
     case LPAREN = 'LPAREN';
     case RPAREN = 'RPAREN';
     case COMMA = 'COMMA';
+    case SEMICOLON = 'SEMICOLON';
     case PLUS = 'PLUS';
     case MINUS = 'MINUS';
     case STAR = 'STAR';

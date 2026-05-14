@@ -144,6 +144,9 @@ final class Lexer
             case ',':
                 $this->advance();
                 return new Token(TokenType::COMMA, ',', null, $line, $col);
+            case ';':
+                $this->advance();
+                return new Token(TokenType::SEMICOLON, ';', null, $line, $col);
             case '+':
                 $this->advance();
                 return new Token(TokenType::PLUS, '+', null, $line, $col);
