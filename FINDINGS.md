@@ -290,3 +290,29 @@ Both are fine — `processing_error` column is presumably VARCHAR(255). Worth a 
 6. The rest can be scheduled as a cleanup PR.
 
 No patches were applied to `main`, per request.
+
+## B-2 Detail Investigation (2026-05-14)
+
+Live UDP query on server 209 confirms: **ETLegacy `getstatus` returns ping=0 for bots**.
+Example: 10 bots (ping=0) + 15 humans (ping=23-262) on the server.
+
+### Bug locations found
+- **`app/Services/Tracker/PlayerTrackingService.php:28`**:
+  `if (($playerData['ping'] ?? 0) <= 0) continue;`
+  Filters out bots from snapshot pipeline. Should be `< 0` (only skip missing/invalid pings).
+- **`app/Services/Tracker/ServerPollerService.php:108-109`**: Has correct bot detection
+  via ping=0, but result apparently not propagated to `tracker_players.is_bot`.
+
+### Bot snapshots in DB
+- Bots like Blackadder (id=1616) have 145+ snapshots, all `ping=999` (disconnect value)
+- No snapshot in 30 days has `ping=0` across 8.4M rows
+- The `[BOT]` prefix detection (181 players) works correctly
+- Other classic Omnibot names (Wens, Craig, Heinrich, etc.) are NOT in DB as bots
+- IMPORTANT: name-based bot detection is unreliable — "Heinrich" was a real player
+  (ping 128-133ms, realistic score progression)
+
+### Recommended fix
+1. Change `PlayerTrackingService:28` filter to allow ping=0 entries
+2. In `PlayerPresenceHandler::handleConnect`, set `is_bot=true` when `ping=0` is seen
+3. Add a `bot_confidence` column tracking ping=0 ratio over time
+4. Backfill: do NOT trust name-based heuristics, do NOT mass-mark old data
