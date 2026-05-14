@@ -9,3 +9,10 @@
 /.github export-ignore
 CHANGELOG.md export-ignore
 .styleci.yml export-ignore
+
+# ETUI .menu fixtures + headers — extracted from Windows-built .pk3 archives.
+# The global `* text=auto eol=lf` rule already normalises them; these are
+# explicit pins so a future change to the global rule doesn't silently
+# re-introduce CRLF in these specific paths.
+tests/fixtures/etui/**/*.menu        text eol=lf
+tests/fixtures/etui/_includes/**/*.h text eol=lf
