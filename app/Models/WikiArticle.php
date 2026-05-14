@@ -7,47 +7,40 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-/**
- * @property int $id
- * @property string $title
- * @property string $slug
- * @property string|null $content
- * @property string|null $excerpt
- * @property int|null $wiki_category_id
- * @property int|null $user_id
- * @property string $status
- * @property \Carbon\Carbon|null $published_at
- * @property-read \App\Models\WikiCategory|null $category
- * @property-read \App\Models\User|null $user
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Comment[] $comments
- */
 class WikiArticle extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'title', 'slug', 'content', 'excerpt', 'wiki_category_id', 'user_id',
-        'approved_by', 'status', 'tags', 'title_translations', 'view_count',
-        'revision_count', 'is_locked', 'is_featured', 'attachments', 'published_at',
+        'title', 'slug', 'namespace', 'content', 'wikitext', 'excerpt',
+        'wiki_category_id', 'user_id', 'approved_by', 'status', 'tags',
+        'title_translations', 'view_count', 'revision_count', 'is_locked',
+        'is_redirect', 'redirect_target',
+        'is_featured', 'attachments', 'published_at',
     ];
 
     protected $casts = [
-        'tags' => 'array',
+        'tags'               => 'array',
         'title_translations' => 'array',
-        'attachments' => 'array',
-        'is_locked' => 'boolean',
-        'is_featured' => 'boolean',
-        'published_at' => 'datetime',
+        'attachments'        => 'array',
+        'is_locked'          => 'boolean',
+        'is_redirect'        => 'boolean',
+        'is_featured'        => 'boolean',
+        'published_at'       => 'datetime',
     ];
 
     protected static function booted()
     {
         static::creating(function ($article) {
+            if (empty($article->namespace)) {
+                $article->namespace = 'main';
+            }
             if (empty($article->slug)) {
                 $article->slug = Str::slug($article->title);
                 $base = $article->slug;
                 $counter = 1;
-                while (static::where('slug', $article->slug)->exists()) {
+                while (static::where('namespace', $article->namespace)
+                             ->where('slug', $article->slug)->exists()) {
                     $article->slug = $base . '-' . $counter++;
                 }
             }
@@ -64,7 +57,8 @@ class WikiArticle extends Model
         );
     }
 
-    // Scopes
+    // ===== Scopes =====
+
     public function scopePublished($query)
     {
         return $query->where('status', 'published')->whereNotNull('published_at');
@@ -75,13 +69,34 @@ class WikiArticle extends Model
         return $query->where('status', 'pending');
     }
 
-    // Relationships
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function scopeInNamespace($query, string $namespace)
+    {
+        return $query->where('namespace', $namespace);
+    }
+
+    public function scopeMain($query)
+    {
+        return $query->where('namespace', 'main');
+    }
+
+    // ===== Relationships =====
+
+    public function category()
     {
         return $this->belongsTo(WikiCategory::class, 'wiki_category_id');
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function categoriesM2M()
+    {
+        return $this->belongsToMany(
+            WikiCategory::class,
+            'wiki_article_category',
+            'wiki_article_id',
+            'wiki_category_id'
+        );
+    }
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
@@ -101,21 +116,49 @@ class WikiArticle extends Model
         return $this->hasMany(WikiMedia::class);
     }
 
-    public function comments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function translations()
+    {
+        return $this->hasMany(WikiArticleTranslation::class);
+    }
+
+    public function talkThreads()
+    {
+        return $this->hasMany(WikiTalkThread::class)
+                    ->orderByDesc('is_pinned')
+                    ->orderByDesc('last_reply_at');
+    }
+
+    public function incomingLinks()
+    {
+        return $this->hasMany(WikiLink::class, 'to_article_id');
+    }
+
+    public function outgoingLinks()
+    {
+        return $this->hasMany(WikiLink::class, 'from_article_id');
+    }
+
+    public function redirectsHere()
+    {
+        return $this->hasMany(WikiRedirect::class, 'to_article_id');
+    }
+
+    public function comments()
     {
         return $this->morphMany(Comment::class, 'commentable');
     }
 
-    // Methods
+    // ===== Methods =====
+
     public function createRevision(int $userId, ?string $changeSummary = null): WikiRevision
     {
         $this->increment('revision_count');
 
         return $this->revisions()->create([
-            'user_id' => $userId,
-            'title' => $this->title,
-            'content' => $this->content,
-            'change_summary' => $changeSummary,
+            'user_id'         => $userId,
+            'title'           => $this->title,
+            'content'         => $this->content,
+            'change_summary'  => $changeSummary,
             'revision_number' => $this->revision_count,
         ]);
     }
@@ -123,7 +166,7 @@ class WikiArticle extends Model
     public function restoreRevision(WikiRevision $revision): void
     {
         $this->update([
-            'title' => $revision->title,
+            'title'   => $revision->title,
             'content' => $revision->content,
         ]);
     }
@@ -136,6 +179,69 @@ class WikiArticle extends Model
     public function getLocalizedTitleAttribute(): string
     {
         $locale = app()->getLocale();
+
+        if ($this->relationLoaded('translations')) {
+            $t = $this->translations->firstWhere('locale', $locale);
+            if ($t && !empty($t->title)) {
+                return $t->title;
+            }
+        }
+
         return $this->title_translations[$locale] ?? $this->title;
+    }
+
+    public function localizedTitle(?string $locale = null): string
+    {
+        $locale = $locale ?? app()->getLocale();
+        $trans = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->get();
+        $t = $trans->firstWhere('locale', $locale);
+        if ($t && !empty($t->title)) {
+            return $t->title;
+        }
+        return $this->title_translations[$locale] ?? $this->title;
+    }
+
+    public function localizedHtml(?string $locale = null): ?string
+    {
+        $locale = $locale ?? app()->getLocale();
+        $trans = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->get();
+        $t = $trans->firstWhere('locale', $locale);
+        if ($t && !empty($t->content_html)) {
+            return $t->content_html;
+        }
+        return $this->content;
+    }
+
+    public function localizedWikitext(?string $locale = null): ?string
+    {
+        $locale = $locale ?? app()->getLocale();
+        $trans = $this->relationLoaded('translations')
+            ? $this->translations
+            : $this->translations()->get();
+        $t = $trans->firstWhere('locale', $locale);
+        if ($t && !empty($t->wikitext)) {
+            return $t->wikitext;
+        }
+        return $this->wikitext;
+    }
+
+    public function translation(string $locale): ?WikiArticleTranslation
+    {
+        if ($this->relationLoaded('translations')) {
+            return $this->translations->firstWhere('locale', $locale);
+        }
+        return $this->translations()->where('locale', $locale)->first();
+    }
+
+    public function availableLocales(): array
+    {
+        if ($this->relationLoaded('translations')) {
+            return $this->translations->pluck('locale')->all();
+        }
+        return $this->translations()->pluck('locale')->all();
     }
 }
