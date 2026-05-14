@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Etui;
 
 use App\Etui\Errors\ErrorBag;
+use App\Etui\Profiles\MacroDefinition;
 
 final class Preprocessor
 {
@@ -13,6 +14,9 @@ final class Preprocessor
 
     /** @var array<string, string> */
     private array $defines = [];
+
+    /** @var array<string, MacroDefinition> */
+    private array $localMacros = [];
 
     /** @var string[] */
     private array $includeStack = [];
@@ -31,9 +35,10 @@ final class Preprocessor
     /**
      * @param  array<string, string|int>  $predefined  Symbols pre-set as if by #define before processing.
      */
-    public function process(string $source, array $predefined = []): string
+    public function process(string $source, array $predefined = []): PreprocessResult
     {
         $this->defines = [];
+        $this->localMacros = [];
         foreach ($predefined as $name => $value) {
             $this->defines[(string) $name] = (string) $value;
         }
@@ -42,13 +47,13 @@ final class Preprocessor
         $this->conditionalStack = [];
 
         $cleaned = $this->stripComments($source);
-        $result = $this->processLines(explode("\n", $cleaned));
+        $resultSource = $this->processLines(explode("\n", $cleaned));
 
         if ($this->conditionalStack !== []) {
             $this->errors->error('Unterminated #ifdef / #ifndef block at end of source', 0, 0);
         }
 
-        return $result;
+        return new PreprocessResult($resultSource, $this->localMacros, $this->errors);
     }
 
     public function errors(): ErrorBag
@@ -207,14 +212,52 @@ final class Preprocessor
         $afterName = substr($afterDirective, strlen($name));
 
         // Function-like macros — NAME(params) with NO space between NAME and '(' —
-        // are the territory of the MacroExpander, not the preprocessor. We strip
-        // the directive so #include "ui/menumacros.h" doesn't blow up downstream,
-        // while leaving the call sites in user .menu files intact for expansion.
+        // are parsed into MacroDefinition objects and exposed via
+        // PreprocessResult::$localMacros so the MacroExpander can apply them.
+        // The directive itself is consumed (not emitted into source), but the
+        // call sites in user code remain intact for the expander to see.
         if (isset($afterName[0]) && $afterName[0] === '(') {
+            $this->parseFunctionLikeDefine($name, $afterName);
             return;
         }
 
         $this->defines[$name] = trim($afterName);
+    }
+
+    private function parseFunctionLikeDefine(string $name, string $afterName): void
+    {
+        $n = strlen($afterName);
+        $depth = 0;
+        $closingPos = null;
+        for ($i = 0; $i < $n; $i++) {
+            $ch = $afterName[$i];
+            if ($ch === '(') {
+                $depth++;
+            } elseif ($ch === ')') {
+                $depth--;
+                if ($depth === 0) {
+                    $closingPos = $i;
+                    break;
+                }
+            }
+        }
+        if ($closingPos === null) {
+            $this->errors->error("Unterminated parameter list in #define {$name}", 0, 0);
+            return;
+        }
+
+        $paramsRaw = substr($afterName, 1, $closingPos - 1);
+        $bodyTemplate = trim(substr($afterName, $closingPos + 1));
+
+        $paramNames = [];
+        foreach (explode(',', $paramsRaw) as $param) {
+            $trimmed = trim($param);
+            if ($trimmed !== '') {
+                $paramNames[] = $trimmed;
+            }
+        }
+
+        $this->localMacros[$name] = new MacroDefinition($name, $paramNames, $bodyTemplate);
     }
 
     /**

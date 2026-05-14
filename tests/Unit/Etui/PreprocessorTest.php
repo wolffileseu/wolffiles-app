@@ -27,7 +27,7 @@ final class PreprocessorInMemoryResolver implements SourceResolver
 function pp(string $source, array $files = [], array $predefined = []): string
 {
     $resolver = new PreprocessorInMemoryResolver($files);
-    return (new Preprocessor($resolver))->process($source, $predefined);
+    return (new Preprocessor($resolver))->process($source, $predefined)->source;
 }
 
 it('passes through source without directives unchanged', function () {
@@ -63,13 +63,18 @@ it('reports an error on unresolvable #include', function () {
     expect($pp->errors()->count())->toBe(1);
 });
 
-it('strips function-like #define directives entirely', function () {
-    $out = pp(
+it('removes function-like #define directives from source and exposes them as local macros', function () {
+    $resolver = new PreprocessorInMemoryResolver();
+    $pp = new Preprocessor($resolver);
+    $result = $pp->process(
         "#define BTN(x, y, w, h, t) itemDef { name t rect x y w h }\nBTN( 1, 2, 3, 4, \"Quit\" )",
     );
 
-    expect($out)->toContain('BTN( 1, 2, 3, 4, "Quit" )');
-    expect($out)->not->toContain('itemDef { name t');
+    expect($result->source)->toContain('BTN( 1, 2, 3, 4, "Quit" )');
+    expect($result->source)->not->toContain('itemDef { name t');
+    expect($result->localMacros)->toHaveKey('BTN');
+    expect($result->localMacros['BTN']->paramNames)->toBe(['x', 'y', 'w', 'h', 't']);
+    expect($result->localMacros['BTN']->bodyTemplate)->toContain('itemDef');
 });
 
 it('handles #ifdef when symbol is defined', function () {
@@ -86,6 +91,25 @@ it('handles #ifdef when symbol is undefined — emits #else branch', function ()
     $out = pp($source);
 
     expect(trim(preg_replace('/\s+/', ' ', $out)))->toBe('B');
+});
+
+it('detects indented #define directives (real wm_quickmessage.menu pattern)', function () {
+    // The wm_*.menu fixtures put their #define lines after a tab:
+    //     \t#define DEFAULT_TEXT_SCALE 0.25
+    // The directive detector ltrim()-s the line before the '#' check so
+    // these are picked up just like a left-aligned directive.
+    $out = pp("\t#define X 5\nname X\n");
+
+    expect($out)->toContain('name 5');
+});
+
+it('treats a valueless #define as a defined symbol for #ifdef', function () {
+    // wm_quickmessage.menu line 7:
+    //     #define QM_MENU_GRADIENT_START_OFFSET
+    // (used purely as an #ifdef sentinel, the value never matters)
+    $out = pp("#define X\n#ifdef X\nyes\n#endif\n");
+
+    expect(trim(preg_replace('/\s+/', ' ', $out)))->toBe('yes');
 });
 
 it('expands nested $evalint depth-first against substituted #defines', function () {
@@ -108,7 +132,7 @@ it('errors on a non-constant $evalint and leaves the directive intact', function
     expect($pp->errors()->count())->toBe(1);
     // Directive must survive in the output so the editor's linter can point
     // at the offending source position rather than the now-deleted bytes.
-    expect($out)->toContain('$evalint(UNDEFINED_THING + 5)');
+    expect($out->source)->toContain('$evalint(UNDEFINED_THING + 5)');
 });
 
 it('resolves the WINDOW alias via #ifdef per menumacros.h pattern', function () {
