@@ -30,7 +30,8 @@ class MasterServerService
                 $servers = $this->queryService->queryMasterServer(
                     $master->address,
                     $master->port,
-                    $game->protocol_version
+                    $master->protocol_override ?? $game->protocol_version,
+                    $master->gamename
                 );
 
                 if (!empty($servers)) {

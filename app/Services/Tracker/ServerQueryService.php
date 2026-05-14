@@ -58,9 +58,12 @@ class ServerQueryService
      * Query a master server for a list of game servers.
      * Returns array of ['ip' => '...', 'port' => ...] entries.
      */
-    public function queryMasterServer(string $address, int $port, int $protocol): array
+    public function queryMasterServer(string $address, int $port, int $protocol, ?string $gamename = null): array
     {
-        $packet = "\xFF\xFF\xFF\xFFgetservers {$protocol} empty full\n";
+        // Wenn ein gamename gesetzt ist (z.B. "wolfcoop" für rtcwcoop-Master),
+        // wird er als Filter eingebaut. Ohne gamename = exakt das alte Verhalten.
+        $gameFilter = ($gamename !== null && $gamename !== '') ? "{$gamename} " : "";
+        $packet = "\xFF\xFF\xFF\xFFgetservers {$gameFilter}{$protocol} empty full\n";
         $response = $this->sendUdp($address, $port, $packet, 5);
 
         if ($response === null) {
