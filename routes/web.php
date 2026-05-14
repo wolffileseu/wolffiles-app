@@ -39,6 +39,12 @@ Route::prefix('tools')->name('tools.')->group(function () {
 
 // Wiki (public)
 Route::get('/wiki', [WikiController::class, 'index'])->name('wiki.index');
+// Wiki Special Pages — MÜSSEN vor /wiki/{slug} stehen, sonst Catch-all-Konflikt!
+Route::get('/wiki/special/recent',          [WikiController::class, 'recentChanges'])->name('wiki.special.recent');
+Route::get('/wiki/special/random',          [WikiController::class, 'randomPage'])->name('wiki.special.random');
+Route::get('/wiki/special/all',             [WikiController::class, 'allPages'])->name('wiki.special.all');
+Route::get('/wiki/special/links-to/{slug}', [WikiController::class, 'whatLinksHere'])->name('wiki.special.whatlinkshere');
+
 Route::get('/wiki/{slug}', [WikiController::class, 'show'])->name('wiki.show');
 Route::get('/wiki/{wikiArticle}/history', [WikiController::class, 'history'])->name('wiki.history');
 
@@ -499,3 +505,21 @@ Route::middleware("auth")->prefix("dm")->name("dm.")->group(function () {
     Route::delete("/{conversation}",       [DmController::class, "softDelete"])->name("delete")->whereNumber("conversation");
 });
 
+// TEMPORARY DEBUG - REMOVE AFTER USE
+Route::get('/__omnibot_trigger/{id}', function (int $id) {
+    $start = microtime(true);
+    $startCwd = getcwd();
+    $file = App\Models\File::findOrFail($id);
+    $svc = app(App\Services\OmnibotWaypointService::class);
+    $result = $svc->scanFile($file);
+    $afterCwd = getcwd();
+    return response()->json([
+        'file_id' => $file->id,
+        'file_name' => $file->file_name,
+        'cwd_before' => $startCwd,
+        'cwd_after' => $afterCwd,
+        'result' => $result,
+        'duration_ms' => round((microtime(true) - $start) * 1000, 2),
+        'pid' => getmypid(),
+    ]);
+});

@@ -12,6 +12,19 @@ class WikiController extends Controller
 {
     public function index(Request $request)
     {
+        // MediaWiki-Style: /wiki → wenn ein Artikel mit slug 'hauptseite' oder 'main-page' existiert, dorthin redirecten.
+        // Erst wenn der User explizit Filter setzt (search/category/tag/sort), bleibt er auf der Index-Liste.
+        $hasFilter = $request->hasAny(['search', 'category', 'tag', 'sort']);
+        if (!$hasFilter) {
+            $home = WikiArticle::published()
+                ->whereIn('slug', ['hauptseite', 'main-page', 'home'])
+                ->orderByRaw("FIELD(slug, 'hauptseite', 'main-page', 'home')")
+                ->first();
+            if ($home) {
+                return redirect()->route('wiki.show', $home->slug);
+            }
+        }
+
         $query = WikiArticle::published()->with(['category', 'user']);
 
         if ($search = $request->input('search')) {
@@ -119,5 +132,80 @@ class WikiController extends Controller
     {
         $revisions = $wikiArticle->revisions()->with('user')->paginate(20);
         return view('frontend.wiki.history', compact('wikiArticle', 'revisions'));
+    }
+
+    /**
+     * Special:Recent Changes — letzte Edits chronologisch.
+     */
+    public function recentChanges(Request $request)
+    {
+        $days  = (int) $request->input('days', 30);
+        $limit = min(500, max(10, (int) $request->input('limit', 100)));
+
+        $revisions = \App\Models\WikiRevision::with(['article', 'user'])
+            ->whereHas('article', fn($q) => $q->whereNull('deleted_at'))
+            ->where('created_at', '>=', now()->subDays($days))
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get();
+
+        return view('frontend.wiki.special.recent', compact('revisions', 'days', 'limit'));
+    }
+
+    /**
+     * Special:Random — redirect zu zufälligem published Artikel.
+     */
+    public function randomPage()
+    {
+        $article = WikiArticle::published()
+            ->where('namespace', 'main')
+            ->where('is_redirect', false)
+            ->inRandomOrder()
+            ->first();
+
+        if (!$article) {
+            return redirect()->route('wiki.special.all')
+                ->with('info', 'Es gibt noch keine Artikel.');
+        }
+
+        return redirect()->route('wiki.show', $article->slug);
+    }
+
+    /**
+     * Special:AllPages — alphabetisch sortierte Liste aller published Artikel.
+     */
+    public function allPages(Request $request)
+    {
+        $namespace = $request->input('ns', 'main');
+        $startsWith = $request->input('from', '');
+
+        $query = WikiArticle::published()->where('namespace', $namespace);
+        if ($startsWith !== '') {
+            $query->where('title', 'like', $startsWith . '%');
+        }
+
+        $articles = $query->orderBy('title')->paginate(100)->withQueryString();
+
+        // Alphabet-Navigation
+        $letters = range('A', 'Z');
+
+        return view('frontend.wiki.special.all', compact('articles', 'namespace', 'startsWith', 'letters'));
+    }
+
+    /**
+     * Special:WhatLinksHere — alle Artikel die auf $slug verlinken.
+     */
+    public function whatLinksHere(string $slug)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+
+        $incoming = $article->incomingLinks()
+            ->with('fromArticle.user')
+            ->whereHas('fromArticle', fn($q) => $q->where('status', 'published')->whereNull('deleted_at'))
+            ->paginate(50);
+
+        $redirects = $article->redirectsHere()->get();
+
+        return view('frontend.wiki.special.whatlinkshere', compact('article', 'incoming', 'redirects'));
     }
 }
