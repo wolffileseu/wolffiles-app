@@ -37,6 +37,47 @@ Route::get('/etui-debug/{mod}/{file}', [EtuiDebugController::class, 'show'])
     ->where('file', '[a-zA-Z0-9_]+\.menu')
     ->name('etui-debug.show');
 
+// Phase 3 ETUI API — same-origin, session-auth, CSRF via web middleware.
+// The editor's live-linter calls /parse every ~300ms of inactivity;
+// /autosave fires every ~5s while a logged-in user types.
+Route::prefix('api/etui')->middleware(['throttle:60,1'])->group(function () {
+    Route::post('/parse', [\App\Http\Controllers\Frontend\EtuiApiController::class, 'parse'])
+        ->name('etui.api.parse');
+    Route::post('/autosave', [\App\Http\Controllers\Frontend\EtuiApiController::class, 'autosave'])
+        ->middleware('auth')
+        ->name('etui.api.autosave');
+});
+
+// Phase 3 ETUI public + editor. Route order matters: specific paths first
+// (/edit, /edit/{id}, /share/{token}), then the {mod}/{file} wildcards.
+// Laravel matches in registration order, so "/etui/edit" beats "/etui/{mod}"
+// even without where() constraints — but the constraints stay as defence.
+Route::prefix('etui')->name('etui.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Frontend\EtuiPublicController::class, 'index'])
+        ->name('index');
+
+    Route::middleware('auth')->group(function () {
+        Route::get('/edit', [\App\Http\Controllers\Frontend\EtuiEditorController::class, 'edit'])
+            ->name('edit.new');
+        Route::get('/edit/{project}', [\App\Http\Controllers\Frontend\EtuiEditorController::class, 'edit'])
+            ->whereNumber('project')->name('edit');
+        Route::post('/projects', [\App\Http\Controllers\Frontend\EtuiEditorController::class, 'store'])
+            ->name('projects.store');
+        Route::put('/projects/{project}', [\App\Http\Controllers\Frontend\EtuiEditorController::class, 'update'])
+            ->whereNumber('project')->name('projects.update');
+        Route::delete('/projects/{project}', [\App\Http\Controllers\Frontend\EtuiEditorController::class, 'destroy'])
+            ->whereNumber('project')->name('projects.destroy');
+    });
+
+    Route::get('/share/{token}', [\App\Http\Controllers\Frontend\EtuiPublicController::class, 'share'])
+        ->where('token', '[A-Za-z0-9]{32}')->name('share');
+
+    Route::get('/{mod}', [\App\Http\Controllers\Frontend\EtuiPublicController::class, 'mod'])
+        ->where('mod', '[a-z0-9_]+')->name('mod');
+    Route::get('/{mod}/{file}', [\App\Http\Controllers\Frontend\EtuiPublicController::class, 'file'])
+        ->where(['mod' => '[a-z0-9_]+', 'file' => '[a-zA-Z0-9_]+\.menu'])->name('file');
+});
+
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::get('/campaign-creator', [CampaignCreatorController::class, 'index'])->name('campaign-creator');
     Route::get('/campaign-creator/search-maps', [CampaignCreatorController::class, 'searchMaps'])->name('campaign-creator.search-maps');
