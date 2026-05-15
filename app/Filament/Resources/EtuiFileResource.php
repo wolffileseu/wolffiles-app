@@ -19,7 +19,7 @@ class EtuiFileResource extends Resource
 {
     protected static ?string $model = EtuiFile::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-code-bracket';
+    protected static ?string $navigationIcon = 'heroicon-o-code-bracket';
 
     protected static ?string $navigationGroup = 'ETUI Builder';
 
