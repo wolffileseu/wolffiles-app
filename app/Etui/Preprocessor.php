@@ -73,9 +73,19 @@ final class Preprocessor
             $line = $lines[$i];
 
             // Backslash-newline continuation joins multi-line directives so the
-            // function-like #define body in menumacros.h is consumed as one line.
+            // function-like #define body in menumacros.h is consumed as one
+            // logical line for directive parsing. Joined with "\n" (not " ")
+            // so the body keeps its line-break structure — the MacroExpander
+            // hands the body to the Lexer later, and the Parser's
+            // "property runs to end of line" rule depends on tokens carrying
+            // distinct line numbers for distinct source rows. A single-line
+            // body collapses every property into one greedy value list.
+            //
+            // rtrim() with no charlist strips ALL trailing whitespace — real
+            // menumacros.h ships lines that end with "\   " (backslash + spaces)
+            // and we must not let those break the continuation chain.
             while ($this->lineContinues($line) && $i + 1 < $count) {
-                $line = substr(rtrim($line, "\r"), 0, -1) . ' ' . $lines[++$i];
+                $line = substr(rtrim($line), 0, -1) . "\n" . $lines[++$i];
             }
 
             $trimmed = ltrim($line);
@@ -97,7 +107,7 @@ final class Preprocessor
 
     private function lineContinues(string $line): bool
     {
-        $stripped = rtrim($line, "\r");
+        $stripped = rtrim($line);
         return $stripped !== '' && substr($stripped, -1) === '\\';
     }
 

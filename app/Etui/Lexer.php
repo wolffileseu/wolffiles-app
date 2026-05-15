@@ -38,14 +38,24 @@ final class Lexer
         $tokens = [];
 
         while (true) {
+            $preWhitespacePos = $this->pos;
             $this->skipWhitespaceAndComments();
             if ($this->isAtEnd()) {
                 break;
             }
+            $precededByWhitespace = $this->pos > $preWhitespacePos;
 
             $token = $this->scanToken();
             if ($token !== null) {
-                $tokens[] = $token;
+                $tokens[] = new Token(
+                    $token->type,
+                    $token->lexeme,
+                    $token->value,
+                    $token->line,
+                    $token->col,
+                    $token->isI18n,
+                    $precededByWhitespace,
+                );
                 $this->lastToken = $token->type;
             }
         }

@@ -48,6 +48,19 @@ final class MacroExpander
     {
         $macros = array_merge($this->profile->macros(), $localMacros);
 
+        // Top-level macro calls expand to top-level constructs (menuDef).
+        // Their results are pushed into $menus so downstream consumers see
+        // a unified list without caring whether each menu was authored
+        // literally or via a template macro.
+        foreach ($result->topLevelMacroCalls as $call) {
+            foreach ($this->expandMacroCall($call, $macros, $result->errors) as $node) {
+                if ($node instanceof MenuDefNode) {
+                    $result->menus[] = $node;
+                }
+            }
+        }
+        $result->topLevelMacroCalls = [];
+
         foreach ($result->menus as $menu) {
             $menu->children = $this->expandChildren($menu->children, $macros, $result->errors);
         }
@@ -122,12 +135,66 @@ final class MacroExpander
      * character — otherwise rejected by the Lexer — survives until the
      * post-substitution paste pass can act on it.
      *
+     * Also strips $evalint(...) / $evalfloat(...) wrappers from the
+     * template, keeping their inner arithmetic as raw tokens. The
+     * Preprocessor's $eval pass already evaluated top-level directives
+     * in the call-site source; local macros lifted from menumacros.h
+     * however still carry $eval in their bodies, and the Lexer doesn't
+     * recognise `$`. The Phase-4 expression evaluator folds the inner
+     * arithmetic later when concrete values are known.
+     *
      * @return Token[]
      */
     private function lexBodyTemplate(string $template): array
     {
+        $template = $this->stripEvalDirectives($template);
         $marked = str_replace('##', ' '.self::PASTE_MARKER.' ', $template);
         return (new Lexer($this->profile->supportsI18nWrapper()))->tokenize($marked);
+    }
+
+    private function stripEvalDirectives(string $template): string
+    {
+        $out = '';
+        $i = 0;
+        $n = strlen($template);
+
+        while ($i < $n) {
+            $matched = false;
+            foreach (['$evalint(', '$evalfloat('] as $prefix) {
+                $plen = strlen($prefix);
+                if ($i + $plen > $n || substr($template, $i, $plen) !== $prefix) {
+                    continue;
+                }
+                // Skip the prefix and the matching ) but keep what's inside,
+                // wrapped in literal parens so precedence stays intact.
+                $i += $plen;
+                $out .= '(';
+                $depth = 1;
+                while ($i < $n) {
+                    $ch = $template[$i];
+                    if ($ch === '(') {
+                        $depth++;
+                    } elseif ($ch === ')') {
+                        $depth--;
+                        if ($depth === 0) {
+                            $i++;
+                            $out .= ')';
+                            break;
+                        }
+                    }
+                    $out .= $ch;
+                    $i++;
+                }
+                $matched = true;
+                break;
+            }
+            if ($matched) {
+                continue;
+            }
+            $out .= $template[$i++];
+        }
+
+        return $out;
     }
 
     /**
@@ -246,7 +313,28 @@ final class MacroExpander
             static fn (Token $t): bool => $t->type !== TokenType::EOF,
         ));
 
-        $line = $tokens === [] ? 0 : $tokens[0]->line;
+        if ($tokens === []) {
+            return [];
+        }
+
+        $line = $tokens[0]->line;
+
+        // Template macros like QM_MENU_START expand to a complete top-level
+        // menuDef { ... }. Parse those at the source root so the inner
+        // menuDef becomes a real MenuDefNode rather than getting wrapped a
+        // second time and read as an EventBlockNode named "menuDef".
+        $first = $tokens[0];
+        $producesTopLevel = $first->type === TokenType::IDENT
+            && in_array($first->value, ['menuDef', 'assetGlobalDef'], true);
+
+        if ($producesTopLevel) {
+            $tokens[] = new Token(TokenType::EOF, '', null, $line, 1);
+            $mini = (new Parser())->parse($tokens);
+            foreach ($mini->errors->all() as $e) {
+                $outerErrors->error('(in macro body) '.$e->message, $e->line, $e->col);
+            }
+            return $mini->menus;
+        }
 
         $wrapped = array_merge(
             [

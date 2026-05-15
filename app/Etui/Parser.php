@@ -51,19 +51,37 @@ final class Parser
         $result = new ParseResult();
         $this->errors = $result->errors;
 
+        // Recognised top-level keywords. menuDef is the common case; ETMain's
+        // global.menu opens with assetGlobalDef instead, declaring shared
+        // fonts/cursors that subsequent menus reference. Both have the same
+        // shape (`IDENT { ... }`) and same body grammar.
+        $topLevelKeywords = ['menuDef', 'assetGlobalDef'];
+
         while (! $this->isAtEnd()) {
             $t = $this->peek();
             if ($t === null || $t->type === TokenType::EOF) {
                 break;
             }
 
-            if ($t->type === TokenType::IDENT && $t->value === 'menuDef') {
+            if ($t->type === TokenType::IDENT && in_array($t->value, $topLevelKeywords, true)) {
                 $result->menus[] = $this->parseMenuDef();
                 continue;
             }
 
+            // Top-level macro call: IDENT glued to '(' at the source root.
+            // The macro's body is itself a menuDef { ... }; the expander
+            // turns this into a real top-level MenuDefNode.
+            $next = $this->peekAt(1);
+            if ($t->type === TokenType::IDENT
+                && $next?->type === TokenType::LPAREN
+                && ! $next->precededByWhitespace
+            ) {
+                $result->topLevelMacroCalls[] = $this->parseMacroCall();
+                continue;
+            }
+
             $this->errors->error(
-                "Unexpected token '{$t->lexeme}' at top level — expected 'menuDef'",
+                "Unexpected token '{$t->lexeme}' at top level — expected one of: ".implode(', ', $topLevelKeywords),
                 $t->line,
                 $t->col,
             );
@@ -155,7 +173,12 @@ final class Parser
         if ($next?->type === TokenType::LBRACE) {
             return $this->parseEventBlock();
         }
-        if ($next?->type === TokenType::LPAREN) {
+        // Macro call disambiguation: `BUTTON(args)` has no space between the
+        // identifier and '(', `rect (expr)` has a space. The latter is a
+        // property whose first value is a parenthesised expression — without
+        // this check, every $eval-stripped body's `rect (X) (Y) ...` would
+        // be misread as a macro call into a nonexistent `rect` macro.
+        if ($next?->type === TokenType::LPAREN && ! $next->precededByWhitespace) {
             return $this->parseMacroCall();
         }
         return $this->parseProperty();
@@ -298,7 +321,7 @@ final class Parser
             if ($t === null || $t->type === TokenType::EOF) {
                 return;
             }
-            if ($t->type === TokenType::IDENT && $t->value === 'menuDef') {
+            if ($t->type === TokenType::IDENT && ($t->value === 'menuDef' || $t->value === 'assetGlobalDef')) {
                 return;
             }
             $this->advance();
