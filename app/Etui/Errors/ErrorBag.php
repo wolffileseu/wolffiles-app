@@ -19,6 +19,17 @@ final class ErrorBag
         $this->errors[] = new ParseError($message, $line, $col, ParseError::SEVERITY_WARNING);
     }
 
+    /**
+     * Push a pre-built ParseError, preserving its original severity.
+     * Used when MenuFile merges errors from multiple pipeline stages into
+     * a single ParseResult so a downstream consumer never needs to know
+     * which stage flagged what — the editor's linter just iterates.
+     */
+    public function push(ParseError $error): void
+    {
+        $this->errors[] = $error;
+    }
+
     public function isEmpty(): bool
     {
         return $this->errors === [];
