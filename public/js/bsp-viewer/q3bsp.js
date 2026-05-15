@@ -29,7 +29,7 @@
 q3bsp_vertex_stride = 56;
 q3bsp_sky_vertex_stride = 20;
 
-q3bsp_base_folder = '/et-assets';
+q3bsp_base_folder = (typeof window !== 'undefined' && window.q3bspBaseFolder) ? window.q3bspBaseFolder : '/et-assets';
 
 /*
  * q3bsp

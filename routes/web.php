@@ -262,68 +262,9 @@ Route::get('/bsp-proxy/{file_id}', function (int $file_id) {
     ]);
 })->name('bsp.proxy');
 
-// Texture proxy for 3D map viewer (serves map-specific textures from S3)
-Route::get('/tex-proxy/{file_id}/{path}', function (int $file_id, string $path) {
-    $s3 = Storage::disk('s3');
-    $s3Path = "bsp/{$file_id}/assets/{$path}";
-
-    // Try exact path first
-    if (!$s3->exists($s3Path)) {
-        // Case-insensitive: list ALL files under bsp/{id}/assets/ and match
-        $allFiles = $s3->allFiles("bsp/{$file_id}/assets");
-        $searchPath = strtolower($path);
-        $found = false;
-        foreach ($allFiles as $f) {
-            $relative = str_replace("bsp/{$file_id}/assets/", '', $f);
-            if (strtolower($relative) === $searchPath) {
-                $s3Path = $f;
-                $found = true;
-                break;
-            }
-        }
-        if (!$found) { abort(404); }
-    }
-
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    $mimeTypes = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png'];
-    $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
-
-    return response($s3->get($s3Path), 200, [
-        'Content-Type' => $mime,
-        'Cache-Control' => 'public, max-age=604800',
-    ]);
-})->where('path', '.*')->name('tex.proxy');
-Route::get('/tex-proxy/{file_id}/{path}', function (int $file_id, string $path) {
-    $s3 = Storage::disk('s3');
-    $s3Path = "bsp/{$file_id}/assets/{$path}";
-
-    // Try exact path first
-    if (!$s3->exists($s3Path)) {
-        // Case-insensitive: list ALL files under bsp/{id}/assets/ and match
-        $allFiles = $s3->allFiles("bsp/{$file_id}/assets");
-        $searchPath = strtolower($path);
-        $found = false;
-        foreach ($allFiles as $f) {
-            $relative = str_replace("bsp/{$file_id}/assets/", '', $f);
-            if (strtolower($relative) === $searchPath) {
-                $s3Path = $f;
-                $found = true;
-                break;
-            }
-        }
-        if (!$found) { abort(404); }
-    }
-
-    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    $mimeTypes = ['jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png'];
-    $mime = $mimeTypes[$ext] ?? 'application/octet-stream';
-
-    return response($s3->get($s3Path), 200, [
-        'Content-Type' => $mime,
-        'Cache-Control' => 'public, max-age=604800',
-    ]);
-})->where('path', '.*')->name('tex.proxy');
-
+// Texture proxy for 3D map viewer (S3 -> game-pool -> placeholder)
+Route::get('/tex-proxy/{file_id}/{path}', App\Http\Controllers\TexProxyController::class)
+    ->where('path', '.*')->name('tex.proxy');
 // Public API Documentation
 Route::get('/api-docs', function () {
     return view('frontend.api-docs');

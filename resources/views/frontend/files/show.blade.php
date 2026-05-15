@@ -151,6 +151,10 @@
 
                 {{-- 3D Viewer Script --}}
                 @push('scripts')
+                                        {{-- Inject game-specific asset base folder for the BSP viewer --}}
+                    <script>
+                        window.q3bspBaseFolder = @json(App\Services\GameAssetMapper::urlFor($file->game) ?? '/et-assets');
+                    </script>
                     <script src="/js/bsp-viewer/game-shim.js"></script>
                     <script src="/js/bsp-viewer/gl-matrix-min.js"></script>
                     <script src="/js/bsp-viewer/q3shader.js"></script>
