@@ -15,6 +15,13 @@ final class ProfileRegistry
     {
         $this->register(new EtMainProfile());
         $this->register(new EtLegacyProfile());
+        $this->register(new EtJumpProfile());
+        $this->register(new SilentProfile());
+        $this->register(new JaymodProfile());
+        $this->register(new NoQuarterProfile());
+        $this->register(new NitmodProfile());
+        $this->register(new TceProfile());
+        $this->register(new EtcProfile());
     }
 
     public function register(ModProfile $profile): void

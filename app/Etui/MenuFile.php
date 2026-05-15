@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Etui;
 
+use App\Etui\Profiles\ModProfile;
 use App\Etui\Profiles\ProfileRegistry;
 
 /**
@@ -23,6 +24,11 @@ use App\Etui\Profiles\ProfileRegistry;
 final class MenuFile
 {
     /**
+     * @param  string|ModProfile  $modSlugOrProfile  Either a slug for the registry
+     *         to resolve ("etmain", "etlegacy") or a ready-made ModProfile instance.
+     *         Phase 2 DB-backed mods pass `$mod->profile` directly so a custom slug
+     *         like "myetmain" can still drive an arbitrary profile class without
+     *         needing to register it on the static ProfileRegistry first.
      * @param  array<string, string|int>  $extraDefines  Additional symbols pre-set
      *         as if by #define before processing, merged on top of the profile's
      *         definedSymbols(). The profile's defaults win on a duplicate key —
@@ -31,11 +37,13 @@ final class MenuFile
      */
     public static function parse(
         string $source,
-        string $modSlug = 'etmain',
+        string|ModProfile $modSlugOrProfile = 'etmain',
         ?SourceResolver $resolver = null,
         array $extraDefines = [],
     ): ParseResult {
-        $profile = (new ProfileRegistry())->resolve($modSlug);
+        $profile = $modSlugOrProfile instanceof ModProfile
+            ? $modSlugOrProfile
+            : (new ProfileRegistry())->resolve($modSlugOrProfile);
 
         $defines = array_merge($extraDefines, $profile->definedSymbols());
 
