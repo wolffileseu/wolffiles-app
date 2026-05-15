@@ -1,0 +1,91 @@
+/*
+ * ETUI Builder — Phase 3+4 styles.
+ *
+ * The .etui-canvas is the 640x480 reference frame from id Tech 3.
+ * `transform: scale()` lets it fit any parent column without losing
+ * the absolute-positioned item layout. JS computes the scale factor
+ * dynamically so the canvas tracks container width on resize.
+ */
+
+.etui-canvas {
+    position: relative;
+    width: 640px;
+    height: 480px;
+    background: #000;
+    overflow: hidden;
+    transform-origin: top left;
+    color: #ccc;
+    font-family: 'Arial Black', Impact, sans-serif;
+}
+
+.etui-canvas .etui-item {
+    position: absolute;
+    box-sizing: border-box;
+    overflow: hidden;
+    line-height: 1;
+}
+
+.etui-canvas .etui-item.has-border {
+    border-style: solid;
+    border-width: 1px;
+}
+
+.etui-canvas .etui-item .etui-text {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: 0 4px;
+    align-items: center;
+}
+
+.etui-canvas .etui-item[data-style="filled"] {
+    /* fall-through — backcolor inline takes care of it */
+}
+
+.etui-canvas .etui-item[data-style="gradient"] {
+    background-image: linear-gradient(180deg, rgba(255,255,255,.08), transparent);
+}
+
+/* Editor layout — 2-column shell */
+.etui-editor {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: calc(100vh - 60px);
+}
+
+.etui-editor .editor-col {
+    border-right: 1px solid #1f2937;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.etui-editor .preview-col {
+    overflow: auto;
+    padding: 1rem;
+    background: #030712;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.etui-editor .cm-editor {
+    flex: 1;
+    height: 100%;
+}
+
+.etui-status-bar {
+    border-top: 1px solid #1f2937;
+    background: #0f172a;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.etui-status-bar .status-ok { color: #6ee7b7; }
+.etui-status-bar .status-err { color: #fca5a5; }
+.etui-status-bar .status-saving { color: #fcd34d; }
