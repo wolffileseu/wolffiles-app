@@ -27,6 +27,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\WikiController;
 use App\Http\Controllers\Frontend\TutorialController;
 use App\Http\Controllers\Frontend\CampaignCreatorController;
+use App\Http\Controllers\EtuiDebugController;
+
+// Phase 1 ETUI debug viewer — local-dev tool, no auth, read-only over the
+// stock fixtures under tests/fixtures/etui/. Phase 4 will replace this with
+// the proper public viewer + editor under /etui.
+Route::get('/etui-debug', [EtuiDebugController::class, 'index'])->name('etui-debug.index');
+Route::get('/etui-debug/{mod}/{file}', [EtuiDebugController::class, 'show'])
+    ->where('file', '[a-zA-Z0-9_]+\.menu')
+    ->name('etui-debug.show');
 
 Route::prefix('tools')->name('tools.')->group(function () {
     Route::get('/campaign-creator', [CampaignCreatorController::class, 'index'])->name('campaign-creator');
