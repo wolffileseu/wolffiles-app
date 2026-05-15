@@ -36,10 +36,10 @@
 </div>
 
 @push('scripts')
-    <script type="module">
-        import { renderMenu } from '{{ Vite::asset('resources/js/etui/renderer.js') }}';
+    @vite('resources/js/etui/renderer.js')
+    <script>
         const ast = @json($ast);
-        renderMenu(ast, document.getElementById('etui-preview'));
+        window.renderMenu(ast, document.getElementById('etui-preview'));
     </script>
 @endpush
 @endsection

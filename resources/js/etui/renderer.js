@@ -170,3 +170,9 @@ function fitCanvas(container) {
     apply();
     window.addEventListener('resize', apply);
 }
+
+// Vite tree-shakes named exports from entry points that no other module statically imports.
+// Blade-template <script type="module"> imports are invisible to Vite. Expose globally so the view can call it.
+if (typeof window !== 'undefined') {
+    window.renderMenu = renderMenu;
+}

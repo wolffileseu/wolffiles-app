@@ -25,7 +25,12 @@ final class EtLegacyProfile extends EtMainProfile
 
     public function includeSearchPaths(): array
     {
-        return ['_includes/etlegacy/', '_includes/'];
+        return [
+            storage_path('app/etui/_includes/etlegacy'),
+            storage_path('app/etui/_includes'),
+            base_path('tests/fixtures/etui/_includes/etlegacy'),
+            base_path('tests/fixtures/etui/_includes'),
+        ];
     }
 
     public function supportsI18nWrapper(): bool

@@ -27,7 +27,10 @@ abstract class ModProfile
      */
     public function includeSearchPaths(): array
     {
-        return ['_includes/'];
+        return [
+            storage_path('app/etui/_includes'),
+            base_path('tests/fixtures/etui/_includes'),
+        ];
     }
 
     /**

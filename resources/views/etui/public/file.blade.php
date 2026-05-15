@@ -43,10 +43,12 @@
 </div>
 
 @push('scripts')
-    <script type="module">
-        import { renderMenu } from '{{ Vite::asset('resources/js/etui/renderer.js') }}';
-        const ast = @json($ast);
-        renderMenu(ast, document.getElementById('etui-preview'));
+    @vite('resources/js/etui/renderer.js')
+    <script>
+        window.addEventListener('DOMContentLoaded', function () {
+            const ast = {!! json_encode($ast) !!};
+            window.renderMenu(ast, document.getElementById('etui-preview'));
+        });
     </script>
 @endpush
 @endsection

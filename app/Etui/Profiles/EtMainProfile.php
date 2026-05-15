@@ -38,7 +38,10 @@ class EtMainProfile extends ModProfile
 
     public function includeSearchPaths(): array
     {
-        return ['_includes/'];
+        return [
+            storage_path('app/etui/_includes'),
+            base_path('tests/fixtures/etui/_includes'),
+        ];
     }
 
     public function flagProperties(): array
