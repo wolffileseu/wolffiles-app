@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Sluggable\HasSlug;
 use Spatie\Sluggable\SlugOptions;
 
@@ -45,6 +46,9 @@ class File extends Model
         'is_featured', 'featured_at', 'featured_label',
         'virus_scanned', 'virus_clean', 'virus_scan_result',
         'bsp_path', 'fastdownload_path', 'fastdownload_available',
+        'playable_path', 'playable_mime', 'playable_size',
+        'playable_duration_seconds', 'playable_codec',
+        'playable_status', 'playable_error', 'playable_processed_at',
     ];
 
     protected function casts(): array
@@ -66,6 +70,9 @@ class File extends Model
             'reviewed_at' => 'datetime',
             'published_at' => 'datetime',
             'featured_at' => 'datetime',
+            'playable_processed_at' => 'datetime',
+            'playable_size' => 'integer',
+            'playable_duration_seconds' => 'integer',
         ];
     }
 
@@ -150,6 +157,54 @@ class File extends Model
     }
 
     public function getDownloadUrlAttribute(): string { return route('files.download', $this); }
+
+    /**
+     * Is this file a playable video that's been processed and ready to stream?
+     */
+    public function isPlayableVideo(): bool
+    {
+        return $this->playable_status === 'ready'
+            && !empty($this->playable_path);
+    }
+
+    /**
+     * Does this file (or its archive contents) contain a video?
+     */
+    public function hasVideoContent(): bool
+    {
+        $videoExts = ['mkv', 'mp4', 'avi', 'wmv', 'mpg', 'mpeg', 'flv', 'mov', 'webm', 'm4v'];
+
+        if (in_array(strtolower($this->file_extension ?? ''), $videoExts, true)) {
+            return true;
+        }
+
+        $fileTypes = $this->extracted_metadata['file_types'] ?? [];
+        foreach ($videoExts as $ext) {
+            if (!empty($fileTypes[$ext])) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Streamable signed URL for the playable MP4 (inline disposition, 6h TTL).
+     */
+    public function getPlayableUrlAttribute(): ?string
+    {
+        if (!$this->isPlayableVideo()) {
+            return null;
+        }
+        return Storage::disk('s3')->temporaryUrl(
+            $this->playable_path,
+            now()->addHours(6),
+            [
+                'ResponseContentDisposition' => 'inline',
+                'ResponseContentType' => $this->playable_mime ?? 'video/mp4',
+            ]
+        );
+    }
+
 
     public function getPrimaryImageUrlAttribute(): ?string
     {

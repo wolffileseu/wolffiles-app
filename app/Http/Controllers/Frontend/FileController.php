@@ -180,6 +180,21 @@ class FileController extends Controller
         ]);
         return redirect($url);
     }
+    /**
+     * Stream the playable video version (inline, no download counter).
+     * Returns a signed S3 redirect with 6h TTL.
+     */
+    public function stream(File $file)
+    {
+        abort_unless($file->status === 'approved', 404);
+        abort_unless($file->isPlayableVideo(), 404, 'No playable video available for this file');
+
+        $url = $file->playable_url;
+        abort_unless($url, 503, 'Stream URL could not be generated');
+
+        return redirect($url);
+    }
+
     public function upload()
     {
         $categories = Category::where('is_active', true)->with('parent')->orderBy('sort_order')->get();

@@ -45,8 +45,22 @@ Route::get('/wiki/special/random',          [WikiController::class, 'randomPage'
 Route::get('/wiki/special/all',             [WikiController::class, 'allPages'])->name('wiki.special.all');
 Route::get('/wiki/special/links-to/{slug}', [WikiController::class, 'whatLinksHere'])->name('wiki.special.whatlinkshere');
 
+// Wiki Talk-Pages
+Route::get('/wiki/{slug}/talk',                            [WikiController::class, 'talk'])->name('wiki.talk');
+Route::middleware('auth')->group(function () {
+    Route::get('/wiki/{slug}/talk/new',                    [WikiController::class, 'newThreadForm'])->name('wiki.talk.new');
+    Route::post('/wiki/{slug}/talk',                       [WikiController::class, 'storeThread'])->name('wiki.talk.store');
+    Route::post('/wiki/{slug}/talk/{thread}/reply',        [WikiController::class, 'reply'])->name('wiki.talk.reply');
+    Route::post('/wiki/{slug}/talk/{thread}/resolve',      [WikiController::class, 'toggleResolve'])->name('wiki.talk.resolve');
+    Route::post('/wiki/{slug}/talk/{thread}/pin',          [WikiController::class, 'togglePin'])->name('wiki.talk.pin');
+    Route::delete('/wiki/{slug}/talk/{thread}',            [WikiController::class, 'deleteThread'])->name('wiki.talk.delete');
+    Route::delete('/wiki/{slug}/talk/msg/{message}',       [WikiController::class, 'deleteMessage'])->name('wiki.talk.delete_msg');
+});
+
 Route::get('/wiki/{slug}', [WikiController::class, 'show'])->name('wiki.show');
-Route::get('/wiki/{wikiArticle}/history', [WikiController::class, 'history'])->name('wiki.history');
+Route::get('/wiki/{slug}/history', [WikiController::class, 'history'])->name('wiki.history');
+Route::get('/wiki/{slug}/diff/{rev1}/{rev2}', [WikiController::class, 'diff'])->name('wiki.diff');
+Route::post('/wiki/{slug}/restore/{rev}', [WikiController::class, 'restore'])->middleware('auth')->name('wiki.restore');
 
 // Wiki (auth required)
 Route::middleware('auth')->group(function () {
@@ -94,6 +108,7 @@ Route::middleware('auth')->group(function () {
 Route::get('/files', [FileController::class, 'index'])->name('files.index');
 Route::get('/files/{file}', [FileController::class, 'show'])->name('files.show');
 Route::get('/files/{file}/download', [FileController::class, 'download'])->name('files.download');
+Route::get('/files/{file}/stream', [\App\Http\Controllers\Frontend\FileController::class, 'stream'])->name('files.stream');
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');

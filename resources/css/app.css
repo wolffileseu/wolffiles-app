@@ -2,22 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent FOUC on Alpine.js x-cloak elements
-   See https://alpinejs.dev/directives/cloak */
+/* Plyr video player */
+@import 'plyr/dist/plyr.css';
+
+/* Prevent FOUC on Alpine.js x-cloak elements */
 [x-cloak] {
     display: none !important;
 }
 
-
-/* Custom dark theme overrides */
-.bg-gray-750 {
-    background-color: rgb(42, 46, 55);
+/* Plyr — dark theme integration to match Wolffiles gray-900 */
+.plyr {
+    --plyr-color-main: #f59e0b;            /* amber-500 (Wolffiles accent) */
+    --plyr-video-background: #111827;      /* gray-900 */
+    --plyr-menu-background: rgba(17, 24, 39, 0.95);
+    --plyr-menu-color: #f3f4f6;
+    --plyr-tooltip-background: rgba(17, 24, 39, 0.95);
+    --plyr-tooltip-color: #f3f4f6;
+    --plyr-video-control-color: #f3f4f6;
+    --plyr-video-control-color-hover: #ffffff;
+    --plyr-video-control-background-hover: #f59e0b;
+    --plyr-range-fill-background: #f59e0b;
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
-html.light body { background-color: #f3f4f6; color: #111827; }
-html.light .bg-gray-800 { background-color: #ffffff; }
-html.light .bg-gray-900 { background-color: #f3f4f6; }
-html.light .bg-gray-700 { background-color: #e5e7eb; }
-html.light .text-gray-100 { color: #111827; }
-html.light .text-gray-300 { color: #374151; }
-html.light .text-gray-400 { color: #6b7280; }
-html.light .border-gray-700 { border-color: #d1d5db; }
+
+.plyr--video {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Loading / status banners for video processing */
+.video-status-banner {
+    @apply rounded-lg p-6 mb-6 text-center;
+}
+.video-status-banner.processing {
+    @apply bg-blue-900/30 border border-blue-700/50 text-blue-200;
+}
+.video-status-banner.failed {
+    @apply bg-red-900/30 border border-red-700/50 text-red-200;
+}
+.video-status-banner.pending {
+    @apply bg-gray-800/50 border border-gray-700 text-gray-300;
+}

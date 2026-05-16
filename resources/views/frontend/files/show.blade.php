@@ -14,8 +14,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {{-- Main Content --}}
         <div class="lg:col-span-2">
-            {{-- Screenshots --}}
-            @if($file->screenshots->isNotEmpty())
+            {{-- Video Player (if file has playable video) --}}
+            @include('frontend.files.partials.video-player', ['file' => $file])
+
+            {{-- Screenshots / Contact Sheets --}}
+            @if($file->screenshots->isNotEmpty() && !$file->isPlayableVideo())
                 <div class="mb-6">
                     <img src="{{ $file->primary_image_url }}" alt="{{ $file->display_title }}"
                          class="w-full rounded-lg border border-gray-700" id="mainImage" loading="lazy" style="aspect-ratio: 16/9;">
@@ -29,6 +32,27 @@
                             @endforeach
                         </div>
                     @endif
+                </div>
+            @elseif($file->isPlayableVideo() && $file->screenshots->count() > 1)
+                {{-- For playable videos: show contact sheets below player as a gallery strip --}}
+                <div class="mb-6">
+                    <details class="group">
+                        <summary class="cursor-pointer text-sm text-gray-400 hover:text-amber-400 inline-flex items-center gap-2 select-none">
+                            <svg class="w-4 h-4 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                            {{ __('Show contact sheets') }} ({{ $file->screenshots->count() }})
+                        </summary>
+                        <div class="flex space-x-2 mt-3 overflow-x-auto pb-2">
+                            @foreach($file->screenshots as $screenshot)
+                                <a href="{{ $screenshot->url }}" target="_blank" rel="noopener">
+                                    <img src="{{ $screenshot->thumbnail_url }}" alt=""
+                                         class="h-32 object-cover rounded border border-gray-700 hover:border-amber-400 transition-colors"
+                                         loading="lazy">
+                                </a>
+                            @endforeach
+                        </div>
+                    </details>
                 </div>
             @endif
 

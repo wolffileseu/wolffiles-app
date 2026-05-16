@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Jobs\TranscodeVideoJob;
 use App\Models\File;
 use App\Models\FileScreenshot;
 use App\Services\BspExtractorService;
@@ -90,6 +91,10 @@ class AnalyzeUploadedFile implements ShouldQueue
 
             // Extract BSP for 3D map preview
             $this->extractBspForPreview($tempPath);
+
+            // Trigger video transcoding job if this file contains a video.
+            // This runs async on the queue (not blocking the upload UX).
+            $this->dispatchTranscodeIfVideo();
 
         } finally {
             // Clean up AFTER images are processed
@@ -312,5 +317,41 @@ class AnalyzeUploadedFile implements ShouldQueue
             $file->isDir() ? @rmdir($file->getRealPath()) : @unlink($file->getRealPath());
         }
         @rmdir($dir);
+    }
+
+    /**
+     * Dispatch the TranscodeVideoJob if this file contains a video.
+     * Sets status='pending' so the frontend shows a "processing" banner immediately.
+     */
+    private function dispatchTranscodeIfVideo(): void
+    {
+        $videoExts = ['mkv', 'mp4', 'avi', 'wmv', 'mpg', 'mpeg', 'flv', 'mov', 'webm', 'm4v'];
+        $ext = strtolower($this->file->file_extension ?? '');
+
+        $isDirectVideo = in_array($ext, $videoExts, true);
+        $archiveContainsVideo = false;
+
+        if (!$isDirectVideo && in_array($ext, ['zip', 'pk3'], true)) {
+            $fileTypes = $this->file->extracted_metadata['file_types'] ?? [];
+            foreach ($videoExts as $vExt) {
+                if (!empty($fileTypes[$vExt])) {
+                    $archiveContainsVideo = true;
+                    break;
+                }
+            }
+        }
+
+        if (!$isDirectVideo && !$archiveContainsVideo) {
+            return;
+        }
+
+        $this->file->update([
+            'playable_status' => 'pending',
+            'playable_error' => null,
+        ]);
+
+        TranscodeVideoJob::dispatch($this->file->id)->onQueue('default');
+
+        \Log::info("AnalyzeUploadedFile: dispatched TranscodeVideoJob for file {$this->file->id}");
     }
 }
