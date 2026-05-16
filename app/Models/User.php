@@ -35,6 +35,7 @@ class User extends Authenticatable implements FilamentUser
         'name', 'email', 'password', 'avatar', 'discord_id',
         'discord_username', 'telegram_username', 'clan', 'favorite_games', 'bio', 'website', 'locale',
         'is_active', 'last_login_at', 'notification_preferences', 'profile_data', 'data_export_ready',
+        'total_uploads', 'is_trusted_uploader',
     ];
 
     protected $hidden = ['password', 'remember_token'];

@@ -125,7 +125,10 @@ class FileObserver
             }
         }
 
-        $user->update(['total_uploads' => $approvedCount]);
+        $user->update([
+            'total_uploads' => $approvedCount,
+            'is_trusted_uploader' => $approvedCount >= 10 ? 1 : $user->is_trusted_uploader,
+        ]);
     }
 
     protected function scanForWaypoints(File $file): void
