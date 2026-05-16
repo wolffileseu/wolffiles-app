@@ -38,8 +38,9 @@ class FileUploadApiController extends Controller
             $request->merge(['original_author' => $request->input('author')]);
         }
 
-        $validated = $request->validate([
-            'file'              => 'required|file|max:512000',          // 500 MB
+        $isMultipart = $request->filled('file_s3_key');
+
+        $rules = [
             'title'             => 'required|string|max:255',
             'description'       => 'nullable|string|max:5000',
             'category_id'       => 'required|integer|exists:categories,id',
@@ -48,38 +49,96 @@ class FileUploadApiController extends Controller
             'game'              => 'nullable|string|in:auto,et,rtcw',
             'tags'              => 'nullable|array|max:30',
             'tags.*'            => 'string|max:80',
-            'screenshot'        => 'nullable|image|max:10240',           // 10 MB
+            'screenshot'        => 'nullable|image|max:10240',           // 10 MB (legacy single)
             'screenshots'       => 'nullable|array|max:10',
             'screenshots.*'     => 'image|mimes:jpg,jpeg,png,webp|max:10240',
-        ]);
+        ];
 
-        $uploadedFile = $request->file('file');
-        $user         = $request->user();
+        if ($isMultipart) {
+            // App used multipart upload — file is already in S3
+            $rules['file_s3_key']       = 'required|string|max:500';
+            $rules['file_filename']     = 'required|string|max:255';
+            $rules['file_size']         = 'required|integer|min:1';
+            $rules['file_hash']         = 'nullable|string|size:64';
+            $rules['file_content_type'] = 'nullable|string|max:200';
+        } else {
+            // Classic upload — file is in the request body
+            $rules['file'] = 'required|file|max:512000';                 // 500 MB
+        }
 
-        Log::info('[FileUploadApi] incoming upload', [
-            'user_id'      => $user->id,
-            'title'        => $validated['title'],
-            'file_size'    => $uploadedFile->getSize(),
-            'game'         => $request->input('game', 'auto'),
-            'tags_count'   => is_array($request->input('tags')) ? count($request->input('tags')) : 0,
-            'screenshots'  => $request->hasFile('screenshots')
-                                ? count($request->file('screenshots'))
-                                : ($request->hasFile('screenshot') ? 1 : 0),
-        ]);
+        $validated = $request->validate($rules);
+
+        $user = $request->user();
 
         // ── Game mapping ─────────────────────────────────────────────────────
         // App sends "auto" / "et" / "rtcw" — DB stores "ET" / "RtCW" or null (auto-detect later)
         $game = match ($request->input('game', 'auto')) {
             'et'   => 'ET',
             'rtcw' => 'RtCW',
-            default => null, // auto = let the indexer/extractor figure it out
+            default => null,
         };
 
-        // ── Store main file to S3 ───────────────────────────────────────────
-        $storedPath = $uploadedFile->store('files/' . date('Y/m'), 's3');
-        $extension  = strtolower($uploadedFile->getClientOriginalExtension());
+        if ($isMultipart) {
+            // ── Multipart path: file is already in S3 ───────────────────────
+            $storedPath  = $validated['file_s3_key'];
+            $fileName    = $validated['file_filename'];
+            $fileSize    = (int) $validated['file_size'];
+            $fileHash    = $validated['file_hash'] ?? null;
+            $mimeType    = $validated['file_content_type'] ?? 'application/octet-stream';
+            $extension   = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // ── Create DB record ─────────────────────────────────────────────────
+            Log::info('[FileUploadApi] incoming upload (multipart)', [
+                'user_id'     => $user->id,
+                'title'       => $validated['title'],
+                'file_size'   => $fileSize,
+                'file_hash'   => $fileHash,
+                's3_key'      => $storedPath,
+                'game'        => $request->input('game', 'auto'),
+                'tags_count'  => is_array($request->input('tags')) ? count($request->input('tags')) : 0,
+                'screenshots' => $request->hasFile('screenshots')
+                                    ? count($request->file('screenshots'))
+                                    : ($request->hasFile('screenshot') ? 1 : 0),
+            ]);
+
+            // ── Duplicate check via hash (if provided) ──────────────────────
+            if ($fileHash) {
+                $duplicate = File::where('file_hash', $fileHash)->whereNull('deleted_at')->first();
+                if ($duplicate) {
+                    return response()->json([
+                        'error'   => 'duplicate',
+                        'message' => 'A file with the same content already exists',
+                        'existing' => [
+                            'id'    => $duplicate->id,
+                            'slug'  => $duplicate->slug,
+                            'title' => $duplicate->title,
+                        ],
+                    ], 409);
+                }
+            }
+        } else {
+            // ── Classic path: file is in request body ───────────────────────
+            $uploadedFile = $request->file('file');
+
+            Log::info('[FileUploadApi] incoming upload (classic)', [
+                'user_id'     => $user->id,
+                'title'       => $validated['title'],
+                'file_size'   => $uploadedFile->getSize(),
+                'game'        => $request->input('game', 'auto'),
+                'tags_count'  => is_array($request->input('tags')) ? count($request->input('tags')) : 0,
+                'screenshots' => $request->hasFile('screenshots')
+                                    ? count($request->file('screenshots'))
+                                    : ($request->hasFile('screenshot') ? 1 : 0),
+            ]);
+
+            $storedPath = $uploadedFile->store('files/' . date('Y/m'), 's3');
+            $fileName   = $uploadedFile->getClientOriginalName();
+            $fileSize   = $uploadedFile->getSize();
+            $fileHash   = null; // will be computed by AnalyzeUploadedFile job
+            $mimeType   = $uploadedFile->getMimeType();
+            $extension  = strtolower($uploadedFile->getClientOriginalExtension());
+        }
+
+        // ── Create DB record (both paths) ────────────────────────────────────
         $file = File::create([
             'user_id'         => $user->id,
             'category_id'     => $validated['category_id'],
@@ -90,11 +149,12 @@ class FileUploadApiController extends Controller
             'original_author' => $validated['original_author'] ?? null,
             'game'            => $game,
             'file_path'       => $storedPath,
-            'file_name'       => $uploadedFile->getClientOriginalName(),
+            'file_name'       => $fileName,
             'file_extension'  => $extension,
-            'file_size'       => $uploadedFile->getSize(),
-            'mime_type'       => $uploadedFile->getMimeType(),
-            'status'          => 'pending', // trusted-user auto-approve handled by File events/observers
+            'file_size'       => $fileSize,
+            'file_hash'       => $fileHash,
+            'mime_type'       => $mimeType,
+            'status'          => 'pending',
         ]);
 
         // Auto-approve for trusted users (same logic as web upload)

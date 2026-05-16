@@ -1,7 +1,25 @@
 <x-layouts.app title="Upload File">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-3xl font-bold text-white mb-2">Upload a File</h1>
-        <p class="text-gray-400 mb-8">Upload a file to share with the community. Our team will review it before publishing.</p>
+
+        {{-- Desktop App Banner --}}
+        <div class="mb-6 bg-gradient-to-r from-amber-900/40 to-amber-700/30 border border-amber-600/40 rounded-lg p-4 flex items-start sm:items-center gap-4 flex-col sm:flex-row">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">
+                    🐺
+                </div>
+                <div class="min-w-0">
+                    <p class="text-white font-semibold leading-tight">{{ __('upload.desktop_banner_title') }}</p>
+                    <p class="text-gray-300 text-sm leading-snug">{{ __('upload.desktop_banner_text') }}</p>
+                </div>
+            </div>
+            <button type="button" onclick="wfDesktopModalOpen()"
+                    class="flex-shrink-0 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap text-sm w-full sm:w-auto">
+                {{ __('upload.desktop_banner_button') }}
+            </button>
+        </div>
+
+        <h1 class="text-3xl font-bold text-white mb-2">{{ __('upload.page_heading') }}</h1>
+        <p class="text-gray-400 mb-8">{{ __('upload.page_subtitle') }}</p>
 
         <form method="POST" action="{{ route('files.store') }}" enctype="multipart/form-data"
               class="bg-gray-800 rounded-lg border border-gray-700 p-8 space-y-6">
@@ -179,4 +197,89 @@
             </button>
         </form>
     </div>
+
+        {{-- Desktop App Modal --}}
+        <div id="wf-desktop-modal"
+             class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+             onclick="if(event.target===this)wfDesktopModalClose()">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+
+                {{-- Header --}}
+                <div class="flex items-start justify-between p-6 border-b border-gray-700">
+                    <h2 class="text-xl font-bold text-white pr-4">{{ __('upload.desktop_modal_title') }}</h2>
+                    <button type="button" onclick="wfDesktopModalClose()"
+                            class="flex-shrink-0 text-gray-400 hover:text-white transition-colors -mt-1 -mr-1 p-1"
+                            aria-label="Close">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+
+                {{-- Content --}}
+                <div class="p-6 space-y-4">
+                    <p class="text-gray-300">{{ __('upload.desktop_modal_intro') }}</p>
+
+                    <ul class="space-y-2 text-gray-200">
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 flex-shrink-0">▸</span>
+                            <span>{{ __('upload.desktop_modal_feature1') }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 flex-shrink-0">▸</span>
+                            <span>{{ __('upload.desktop_modal_feature2') }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 flex-shrink-0">▸</span>
+                            <span>{{ __('upload.desktop_modal_feature3') }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 flex-shrink-0">▸</span>
+                            <span>{{ __('upload.desktop_modal_feature4') }}</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <span class="text-amber-400 flex-shrink-0">▸</span>
+                            <span>{{ __('upload.desktop_modal_feature5') }}</span>
+                        </li>
+                    </ul>
+
+                    <div class="bg-gray-900/60 rounded-lg p-3 text-sm text-gray-400">
+                        <strong class="text-gray-300">⚙️</strong> {{ __('upload.desktop_modal_requirements') }}
+                    </div>
+
+                    <p class="text-xs text-gray-500 italic">{{ __('upload.desktop_modal_note') }}</p>
+                </div>
+
+                {{-- Actions --}}
+                <div class="flex flex-col sm:flex-row gap-3 p-6 border-t border-gray-700 bg-gray-800/50">
+                    <a href="https://github.com/wolffileseu/wolffiles-uploader/releases/latest"
+                       target="_blank" rel="noopener noreferrer"
+                       class="flex-1 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold px-4 py-3 rounded-lg transition-colors text-center inline-flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        {{ __('upload.desktop_modal_download') }}
+                    </a>
+                    <button type="button" onclick="wfDesktopModalClose()"
+                            class="sm:flex-shrink-0 bg-gray-700 hover:bg-gray-600 text-white font-medium px-4 py-3 rounded-lg transition-colors">
+                        {{ __('upload.desktop_modal_close') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+    <script>
+        function wfDesktopModalOpen() {
+            const m = document.getElementById('wf-desktop-modal');
+            if (m) m.classList.remove('hidden');
+        }
+        function wfDesktopModalClose() {
+            const m = document.getElementById('wf-desktop-modal');
+            if (m) m.classList.add('hidden');
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') wfDesktopModalClose();
+        });
+    </script>
 </x-layouts.app>

@@ -71,6 +71,15 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/files/my', [FileUploadApiController::class, 'myFiles'])
             ->name('api.files.my');
+
+        // Multipart upload API for the desktop uploader and other Sanctum clients.
+        // Mirrors /upload-api/* (which uses session auth for the web frontend).
+        Route::prefix('upload-api')->name('api.upload.')->group(function () {
+            Route::post('/init',     [\App\Http\Controllers\MultipartUploadController::class, 'init'])->name('init');
+            Route::post('/sign',     [\App\Http\Controllers\MultipartUploadController::class, 'sign'])->name('sign');
+            Route::post('/complete', [\App\Http\Controllers\MultipartUploadController::class, 'complete'])->name('complete');
+            Route::post('/abort',    [\App\Http\Controllers\MultipartUploadController::class, 'abort'])->name('abort');
+        });
     });
 
     // Kategorien (öffentlich)
