@@ -43,4 +43,5 @@ public/tmp/
 
 # RtCW asset pool (extracted from PK3s via scripts/setup-rtcw-pool.sh)
 /public/rtcw-assets
+/public/et-assets
 /storage/app/rtcw-paks
