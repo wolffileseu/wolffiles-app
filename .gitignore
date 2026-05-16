@@ -40,3 +40,7 @@ storage/backups/
 # Mystery RAR-extracted files leaking into public/
 public/*.pk3
 public/tmp/
+
+# RtCW asset pool (extracted from PK3s via scripts/setup-rtcw-pool.sh)
+/public/rtcw-assets
+/storage/app/rtcw-paks

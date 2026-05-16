@@ -9,6 +9,8 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Forms\Form;
+use App\Services\TextureResolutionChecker;
+use Filament\Notifications\Notification;
 
 class MissingTextureResource extends Resource
 {
@@ -100,6 +102,18 @@ class MissingTextureResource extends Resource
                     ->label(fn($record) => $record->resolved ? 'Unresolve' : 'Resolve')
                     ->icon(fn($record) => $record->resolved ? 'heroicon-o-arrow-uturn-left' : 'heroicon-o-check')
                     ->action(fn($record) => $record->update(['resolved' => !$record->resolved])),
+                Tables\Actions\Action::make('recheck')
+                    ->label('Re-check')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->action(function ($record) {
+                        $checker = app(TextureResolutionChecker::class);
+                        if ($checker->recheckMissingTexture($record)) {
+                            Notification::make()->title('Resolved!')->success()->send();
+                        } else {
+                            Notification::make()->title('Still missing')->warning()->send();
+                        }
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
@@ -107,6 +121,22 @@ class MissingTextureResource extends Resource
                     ->label('Mark resolved')
                     ->icon('heroicon-o-check')
                     ->action(fn($records) => $records->each->update(['resolved' => true]))
+                    ->deselectRecordsAfterCompletion(),
+                Tables\Actions\BulkAction::make('recheckBulk')
+                    ->label('Re-check selected')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->action(function ($records) {
+                        $checker = app(TextureResolutionChecker::class);
+                        $resolved = 0;
+                        foreach ($records as $r) {
+                            if ($checker->recheckMissingTexture($r)) $resolved++;
+                        }
+                        Notification::make()
+                            ->title("Rechecked {$records->count()}, resolved {$resolved}")
+                            ->success()
+                            ->send();
+                    })
                     ->deselectRecordsAfterCompletion(),
                 Tables\Actions\DeleteBulkAction::make(),
             ]);

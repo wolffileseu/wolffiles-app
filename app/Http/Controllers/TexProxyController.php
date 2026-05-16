@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\File;
 use App\Models\MissingTexture;
 use App\Services\GameAssetMapper;
-use Illuminate\Http\Request;
+use App\Services\ShaderResolver;
+use App\Services\SkyboxResolver;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -19,11 +20,12 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  *   1. S3 map-specific assets: bsp/{file_id}/assets/{path} (case-insensitive)
  *   2. Game-specific local asset pool: public/{et|rtcw}-assets/{path}
  *      with extension probing (.jpg .png .tga)
- *   3. Placeholder PNG (HTTP 200, X-Texture-Missing: 1) + missing_textures log
+ *   3. Skybox cubemap detection: try {path}_ft.jpg etc. (Q3 sky convention)
+ *   4. Shader resolver: parse .shader files, map shader-name to real texture
+ *   5. Placeholder PNG (HTTP 200, X-Texture-Missing: 1) + missing_textures log
  */
 class TexProxyController extends Controller
 {
-    /** Cache TTLs in seconds */
     private const HIT_CACHE_TTL = 604800;      // 1 week for found textures
     private const MISS_LOG_DEDUP_TTL = 86400;  // log each (file,path) miss only once per day
 
@@ -35,9 +37,13 @@ class TexProxyController extends Controller
         'webp' => 'image/webp',
     ];
 
+    public function __construct(
+        private SkyboxResolver $skyboxResolver,
+        private ShaderResolver $shaderResolver,
+    ) {}
+
     public function __invoke(int $fileId, string $path)
     {
-        // Path safety
         if (str_contains($path, '..') || str_contains($path, "\0")) {
             abort(400, 'invalid path');
         }
@@ -53,8 +59,20 @@ class TexProxyController extends Controller
             return $response;
         }
 
-        // 3. Log + Placeholder
-        $this->logMissing($fileId, $path);
+        $game = $this->resolveGameForFile($fileId);
+
+        // 3. Skybox cubemap detection (returns one of the 6 faces)
+        if ($response = $this->trySkybox($fileId, $path, $game)) {
+            return $response;
+        }
+
+        // 4. Shader resolver (parses .shader files)
+        if ($response = $this->tryShader($fileId, $path, $game)) {
+            return $response;
+        }
+
+        // 5. Placeholder + log
+        $this->logMissing($fileId, $path, $game);
         return $this->placeholder();
     }
 
@@ -65,7 +83,6 @@ class TexProxyController extends Controller
             $s3Path = "bsp/{$fileId}/assets/{$path}";
 
             if (!$s3->exists($s3Path)) {
-                // Case-insensitive fallback (slow path)
                 $allFiles = $s3->allFiles("bsp/{$fileId}/assets");
                 $searchPath = strtolower($path);
                 $found = null;
@@ -76,18 +93,19 @@ class TexProxyController extends Controller
                         break;
                     }
                 }
-                if (!$found) {
-                    return null;
-                }
+                if (!$found) return null;
                 $s3Path = $found;
             }
 
             $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             $mime = self::MIME[$ext] ?? 'application/octet-stream';
 
+            $this->autoResolveMiss($fileId, $path, 's3');
+
+
             return response($s3->get($s3Path), 200, [
-                'Content-Type'  => $mime,
-                'Cache-Control' => 'public, max-age=' . self::HIT_CACHE_TTL,
+                'Content-Type'     => $mime,
+                'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
                 'X-Texture-Source' => 's3',
             ]);
         } catch (\Throwable $e) {
@@ -101,15 +119,10 @@ class TexProxyController extends Controller
         $game = $this->resolveGameForFile($fileId);
 
         $fullPath = GameAssetMapper::filesystemPath($game, $path);
-        if (!$fullPath) {
-            return null;
-        }
+        if (!$fullPath) return null;
 
-        // Try exact path first
         $resolved = is_file($fullPath) ? $fullPath : null;
 
-        // Extension probing: textures often referenced without .jpg suffix
-        // or as .jpg but only .png/.tga exists
         if (!$resolved) {
             $base = preg_replace('/\.[^.\/]+$/', '', $fullPath);
             foreach (['jpg', 'png', 'tga'] as $ext) {
@@ -121,43 +134,129 @@ class TexProxyController extends Controller
             }
         }
 
-        if (!$resolved) {
-            return null;
-        }
+        if (!$resolved) return null;
 
         $ext = strtolower(pathinfo($resolved, PATHINFO_EXTENSION));
         $mime = self::MIME[$ext] ?? 'application/octet-stream';
 
+        $this->autoResolveMiss($fileId, $path, 'pool-');
+
+
         return response()->file($resolved, [
-            'Content-Type'  => $mime,
-            'Cache-Control' => 'public, max-age=' . self::HIT_CACHE_TTL,
+            'Content-Type'     => $mime,
+            'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
             'X-Texture-Source' => 'pool-' . GameAssetMapper::folderFor($game),
         ]);
+    }
+
+    private function trySkybox(int $fileId, string $path, ?string $game)
+    {
+        $result = $this->skyboxResolver->resolve($fileId, $path, $game);
+        if (!$result) return null;
+
+        $mime = self::MIME[$result['ext']] ?? 'application/octet-stream';
+
+        if ($result['source'] === 's3') {
+            $data = Storage::disk('s3')->get($result['path']);
+            if ($data === null) return null;
+            $this->autoResolveMiss($fileId, $path, 'skybox-s3');
+
+            return response($data, 200, [
+                'Content-Type'     => $mime,
+                'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+                'X-Texture-Source' => 'skybox-s3',
+            ]);
+        }
+
+        $this->autoResolveMiss($fileId, $path, 'skybox-pool');
+
+
+        return response()->file($result['path'], [
+            'Content-Type'     => $mime,
+            'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+            'X-Texture-Source' => 'skybox-pool',
+        ]);
+    }
+
+    private function tryShader(int $fileId, string $path, ?string $game)
+    {
+        $resolvedStem = $this->shaderResolver->resolve($fileId, $path, $game);
+        if (!$resolvedStem) return null;
+
+        $resolvedStem = ltrim($resolvedStem, '/');
+        $requestStem  = preg_replace('/\.[^.\/]+$/', '', $path);
+        $isSelfRef    = (strtolower($resolvedStem) === strtolower($requestStem));
+
+        // Try S3 + pool with all common extensions (case-insensitive on S3)
+        $candidates = [];
+        foreach (['jpg', 'jpeg', 'png', 'tga'] as $ext) {
+            $candidates[] = $resolvedStem . '.' . $ext;
+        }
+
+        // 1) S3 case-insensitive lookup
+        try {
+            $s3 = Storage::disk('s3');
+            $assets = Cache::remember(
+                "s3-list:{$fileId}",
+                300,
+                fn () => $s3->allFiles("bsp/{$fileId}/assets")
+            );
+            $lowerMap = [];
+            foreach ($assets as $f) {
+                $rel = substr($f, strlen("bsp/{$fileId}/assets/"));
+                $lowerMap[strtolower($rel)] = $f;
+            }
+
+            foreach ($candidates as $cand) {
+                $key = strtolower($cand);
+                if (isset($lowerMap[$key])) {
+                    $ext = strtolower(pathinfo($lowerMap[$key], PATHINFO_EXTENSION));
+                    $mime = self::MIME[$ext] ?? 'application/octet-stream';
+                    return response($s3->get($lowerMap[$key]), 200, [
+                        'Content-Type'     => $mime,
+                        'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+                        'X-Texture-Source' => $isSelfRef ? 'shader-s3-selfref' : 'shader-s3',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {
+            // continue to pool
+        }
+
+        // 2) Game pool with extension probing
+        foreach ($candidates as $cand) {
+            $full = GameAssetMapper::filesystemPath($game, $cand);
+            if ($full && is_file($full)) {
+                $ext = strtolower(pathinfo($full, PATHINFO_EXTENSION));
+                $mime = self::MIME[$ext] ?? 'application/octet-stream';
+                return response()->file($full, [
+                    'Content-Type'     => $mime,
+                    'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+                    'X-Texture-Source' => $isSelfRef ? 'shader-pool-selfref' : 'shader-pool',
+                ]);
+            }
+        }
+
+        return null;
     }
 
     private function placeholder(): BinaryFileResponse
     {
         return response()->file(public_path('img/missing-texture.png'), [
             'Content-Type'      => 'image/png',
-            'Cache-Control'     => 'public, max-age=300', // short cache so re-resolve works after upload
+            'Cache-Control'     => 'public, max-age=300',
             'X-Texture-Missing' => '1',
         ]);
     }
 
-    private function logMissing(int $fileId, string $path): void
+    private function logMissing(int $fileId, string $path, ?string $game): void
     {
-        // Dedup: only DB-touch once per (file,path) per day
         $cacheKey = "miss:{$fileId}:" . sha1($path);
-        if (Cache::has($cacheKey)) {
-            return;
-        }
+        if (Cache::has($cacheKey)) return;
         Cache::put($cacheKey, 1, self::MISS_LOG_DEDUP_TTL);
 
         try {
-            $game = $this->resolveGameForFile($fileId);
-            $row = MissingTexture::firstOrNew(
-                ['file_id' => $fileId, 'texture_path' => $path]
-            );
+            $row = MissingTexture::firstOrNew(['file_id' => $fileId, 'texture_path' => $path]);
             if (!$row->exists) {
                 $row->game = $game;
                 $row->first_seen_at = now();
@@ -177,5 +276,26 @@ class TexProxyController extends Controller
         return Cache::remember("file-game:{$fileId}", 3600, function () use ($fileId) {
             return File::where('id', $fileId)->value('game');
         });
+    }
+
+    /**
+     * If a previously-logged MissingTexture entry exists for this (file,path),
+     * mark it as resolved with a note about which fallback succeeded.
+     */
+    private function autoResolveMiss(int $fileId, string $path, string $sourceLabel): void
+    {
+        try {
+            $m = \App\Models\MissingTexture::where('file_id', $fileId)
+                ->where('texture_path', $path)
+                ->where('resolved', false)
+                ->first();
+            if ($m) {
+                $m->resolved = true;
+                $m->notes = trim(($m->notes ?? '') . ' [auto-resolved via ' . $sourceLabel . ' on ' . now()->toDateTimeString() . ']');
+                $m->save();
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("TexProxy auto-resolve failed [{$fileId}/{$path}]: {$e->getMessage()}");
+        }
     }
 }
