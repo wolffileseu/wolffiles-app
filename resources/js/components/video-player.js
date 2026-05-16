@@ -1,23 +1,18 @@
 import Plyr from 'plyr';
 
 /**
- * Alpine.js component for the Wolffiles video player.
+ * Alpine.js video player component with YouTube-style scrub previews.
  *
- * Usage in Blade:
- *   <div x-data="videoPlayer()" x-init="init($refs.video)">
- *     <video x-ref="video" playsinline controls
- *            poster="{{ $posterUrl }}"
- *            data-poster="{{ $posterUrl }}">
- *       <source src="{{ route('files.stream', $file->slug) }}" type="video/mp4">
- *     </video>
- *   </div>
+ * @param videoEl   The <video> DOM element
+ * @param scrubVttUrl  Optional URL to a WebVTT thumbnail track
  */
 export default function videoPlayer() {
     return {
         player: null,
-        init(videoEl) {
+        init(videoEl, scrubVttUrl = null) {
             if (!videoEl) return;
-            this.player = new Plyr(videoEl, {
+
+            const opts = {
                 controls: [
                     'play-large',
                     'play',
@@ -39,9 +34,18 @@ export default function videoPlayer() {
                 fullscreen: { enabled: true, fallback: true, iosNative: true },
                 ratio: '16:9',
                 storage: { enabled: true, key: 'wolffiles-plyr' },
-            });
+            };
 
-            // Auto-pause if another video on the page starts (future-proofing)
+            // Enable YouTube-style scrub thumbnails if we have a VTT
+            if (scrubVttUrl) {
+                opts.previewThumbnails = {
+                    enabled: true,
+                    src: scrubVttUrl,
+                };
+            }
+
+            this.player = new Plyr(videoEl, opts);
+
             this.player.on('play', () => {
                 document.querySelectorAll('video').forEach((v) => {
                     if (v !== videoEl && !v.paused) v.pause();

@@ -23,7 +23,13 @@
             $streamUrl = route('files.stream', $file->slug);
         @endphp
 
-        <div class="mb-6" x-data="videoPlayer()" x-init="init($refs.video)" x-cloak>
+        @php
+            $scrubVttUrl = $file->playable_duration_seconds && $file->primaryScreenshot
+                ? route('files.scrub-vtt', $file->slug)
+                : null;
+        @endphp
+
+        <div class="mb-6" x-data="videoPlayer()" x-init="init($refs.video, @js($scrubVttUrl))" x-cloak>
             <video
                 x-ref="video"
                 playsinline

@@ -181,6 +181,69 @@ class FileController extends Controller
         return redirect($url);
     }
     /**
+     * Generate a WebVTT file for scrub-preview thumbnails (YouTube-style).
+     * Maps timecodes to crop regions in the existing contact sheet image.
+     */
+    public function scrubVtt(File $file)
+    {
+        abort_unless($file->status === 'approved', 404);
+        abort_unless($file->isPlayableVideo(), 404);
+        abort_unless($file->playable_duration_seconds > 0, 404, 'No duration available');
+
+        $sheet = $file->primaryScreenshot;
+        abort_unless($sheet, 404, 'No contact sheet available');
+
+        // Contact sheets are generated as 5x5 grid, 320x180 per tile
+        // (matches AnalyzeUploadedFile + GenerateVideoThumbnails command)
+        $cols = 5;
+        $rows = 5;
+        $tileW = 320;
+        $tileH = 180;
+        $totalTiles = $cols * $rows;
+
+        $duration = (int) $file->playable_duration_seconds;
+        $secondsPerTile = $duration / $totalTiles;
+
+        // Sheet URL (CDN/S3 — must be publicly accessible to the browser)
+        $sheetUrl = $sheet->url;
+
+        $vtt = "WEBVTT
+
+";
+        for ($i = 0; $i < $totalTiles; $i++) {
+            $startSec = (int) round($i * $secondsPerTile);
+            $endSec = (int) round(($i + 1) * $secondsPerTile);
+            if ($endSec > $duration) {
+                $endSec = $duration;
+            }
+            $col = $i % $cols;
+            $row = (int) floor($i / $cols);
+            $x = $col * $tileW;
+            $y = $row * $tileH;
+
+            $vtt .= $this->formatVttTime($startSec) . " --> " . $this->formatVttTime($endSec) . "
+";
+            $vtt .= $sheetUrl . "#xywh=" . $x . "," . $y . "," . $tileW . "," . $tileH . "
+
+";
+        }
+
+        return response($vtt, 200, [
+            'Content-Type' => 'text/vtt; charset=UTF-8',
+            'Cache-Control' => 'public, max-age=86400',
+            'Access-Control-Allow-Origin' => '*',
+        ]);
+    }
+
+    private function formatVttTime(int $totalSeconds): string
+    {
+        $h = (int) floor($totalSeconds / 3600);
+        $m = (int) floor(($totalSeconds % 3600) / 60);
+        $s = $totalSeconds % 60;
+        return sprintf('%02d:%02d:%02d.000', $h, $m, $s);
+    }
+
+    /**
      * Stream the playable video version (inline, no download counter).
      * Returns a signed S3 redirect with 6h TTL.
      */

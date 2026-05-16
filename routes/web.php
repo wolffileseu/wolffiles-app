@@ -109,6 +109,7 @@ Route::get('/files', [FileController::class, 'index'])->name('files.index');
 Route::get('/files/{file}', [FileController::class, 'show'])->name('files.show');
 Route::get('/files/{file}/download', [FileController::class, 'download'])->name('files.download');
 Route::get('/files/{file}/stream', [\App\Http\Controllers\Frontend\FileController::class, 'stream'])->name('files.stream');
+Route::get('/files/{file}/scrub.vtt', [\App\Http\Controllers\Frontend\FileController::class, 'scrubVtt'])->name('files.scrub-vtt');
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
