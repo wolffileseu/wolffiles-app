@@ -66,6 +66,13 @@ class FileController extends Controller
     public function show(File $file)
     {
         abort_unless($file->status === 'approved', 404);
+
+        // Embed mode — minimal player/card view for iframe embedding.
+        if (request()->boolean('embed')) {
+            $file->load(['category.parent', 'primaryScreenshot']);
+            return view('frontend.files.embed', ['file' => $file]);
+        }
+
         $file->incrementViews();
         $file->load(['category.parent', 'screenshots', 'user', 'tags', 'comments.user']);
         TrackRecentlyViewed::addFile($file->id);
