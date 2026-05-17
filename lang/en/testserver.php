@@ -75,7 +75,7 @@ return [
     'session_copied'             => 'Copied!',
     'session_cancel_confirm'     => 'Really end the session?',
     'session_cancel_success'     => 'Session is ending, server will reset in a few seconds.',
-    'session_connect_help'       => 'Open ET, press `~` for the console and type: /connect :address;password :password',
+    'session_connect_help'       => 'Open ET, press `~` to open the console, then type: /password :password and /connect :address',
     'session_minutes_short'      => 'min',
     'session_seconds_short'      => 'sec',
 
@@ -92,4 +92,6 @@ return [
     // MAP-DETAIL SIDEBAR
     'sidebar_test_map_button'    => 'Test map',
     'sidebar_test_map_hint'      => ':min-min session on a free test server',
+    'intro_text' => 'Test maps and mods live on our testservers. Pick a free server and start a session right away.',
+    'fair_play_notice' => 'Please play fair. Sessions are time-limited. Misuse will result in IP bans.',
 ];

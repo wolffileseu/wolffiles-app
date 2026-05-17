@@ -75,7 +75,7 @@ return [
     'session_copied'             => 'Kopiert!',
     'session_cancel_confirm'     => 'Session wirklich beenden?',
     'session_cancel_success'     => 'Session wird beendet, Server resetted in wenigen Sekunden.',
-    'session_connect_help'       => 'Öffne ET, drücke `~` für die Konsole und tippe: /connect :address;password :password',
+    'session_connect_help'       => 'Öffne ET, drücke `~` für die Konsole und tippe: /password :password und dann /connect :address',
     'session_minutes_short'      => 'Min',
     'session_seconds_short'      => 'Sek',
 
@@ -92,4 +92,6 @@ return [
     // ───────── MAP-DETAIL SIDEBAR ─────────
     'sidebar_test_map_button'    => 'Map testen',
     'sidebar_test_map_hint'      => ':min-Min-Session auf freiem Testserver',
+    'intro_text' => 'Teste hier Maps und Mods live auf unseren Testservern. Wähle einen freien Server und starte sofort eine Session.',
+    'fair_play_notice' => 'Bitte fair spielen. Sessions sind zeitlich begrenzt. Bei Missbrauch wird die IP gesperrt.',
 ];

@@ -179,7 +179,7 @@ class TestserverService
 
         $vars = [
             'MAP'             => $mapName,
-            'MOD'             => $session->mod_name,
+            'MOD'             => $session->mod_name === 'etmain' ? '' : $session->mod_name,
             'CONFIG_FILE'     => $configFile,
             'SERVER_PASSWORD' => $session->connect_password,
             'SERVER_NAME'     => "^7Wolffiles.eu ^8| ^7Testserver ^5#" . $server->slot_number,
@@ -246,7 +246,7 @@ class TestserverService
         // 2. Server-Variablen auf Default zurücksetzen
         $this->setStartupVariables($uuid, [
             'MAP'             => $server->default_map,
-            'MOD'             => $server->default_mod,
+            'MOD'             => $server->default_mod === 'etmain' ? '' : $server->default_mod,
             'CONFIG_FILE'     => $server->default_config,
             'SERVER_PASSWORD' => '',
             'SERVER_NAME'     => "^7Wolffiles.eu ^8| ^7Testserver ^5#" . $server->slot_number . " ^2(frei)",
@@ -387,6 +387,8 @@ class TestserverService
             array_filter($beforeFiles, fn($f) => str_ends_with(strtolower($f['name']), '.pk3')),
             'name'
         );
+        // Default-BSP-Source ist das Original-File. Archive-Branches überschreiben das.
+        $bspSourcePath = $file->file_path;
 
         if ($ext === 'pk3') {
             // ── DIRECT-PK3: kein Decompress nötig ──
@@ -503,8 +505,141 @@ class TestserverService
             sleep(1);
             $this->deleteFilesFromContainer($server->pterodactyl_uuid, '/etmain', [$zipFilename]);
 
+        } elseif (in_array($ext, ['rar', '7z', 'zip'], true)) {
+            // ── ARCHIVE: PK3 extrahieren + per S3-Pull in Container ──
+            $md = is_array($file->extracted_metadata)
+                ? $file->extracted_metadata
+                : json_decode($file->extracted_metadata ?? '[]', true);
+            $containedPk3s = $md['contained_pk3s'] ?? [];
+
+            if (empty($containedPk3s)) {
+                return ['success' => false, 'error' => 'Archive enthaelt keine PK3 (nur Waypoints/Skripte)'];
+            }
+
+            $pk3InArchive = $containedPk3s[0];
+            $pk3Filename  = basename($pk3InArchive);
+            \Log::info('Map-Loader: Archive enthaelt PK3', ['archive' => $file->file_path, 'pk3' => $pk3InArchive]);
+
+            // 1. Extract PK3 lokal
+            $extracted = $this->extractPk3FromArchive($file->file_path, $pk3InArchive, $ext);
+            if (!$extracted || !file_exists($extracted)) {
+                return ['success' => false, 'error' => 'PK3 konnte nicht aus Archiv extrahiert werden'];
+            }
+
+            // 2. Extracted PK3 nach S3 hochladen (fuer FastDL + Pterodactyl-Pull)
+            $s3PathForFastdl = 'fastdl/extracted/' . $pk3Filename;
+            try {
+                \Storage::disk('s3')->put($s3PathForFastdl, file_get_contents($extracted));
+            } catch (\Throwable $e) {
+                @unlink($extracted);
+                \Log::error('S3-Upload extracted PK3 failed: ' . $e->getMessage());
+                return ['success' => false, 'error' => 'S3-Upload der PK3 fehlgeschlagen'];
+            }
+
+            $extractedSize = filesize($extracted) ?: 0;
+            @unlink($extracted);
+
+            // 3. Pterodactyl Pull von der S3-URL (gleiches Pattern wie direct-PK3)
+            $signedUrl2 = \Storage::disk('s3')->temporaryUrl($s3PathForFastdl, now()->addMinutes(10));
+            $pullOk = $this->pullFileToContainer(
+                $server->pterodactyl_uuid,
+                $signedUrl2,
+                '/etmain',
+                $pk3Filename
+            );
+            if (!$pullOk) {
+                return ['success' => false, 'error' => 'Pterodactyl Pull-API failed (Archive-PK3)'];
+            }
+            \Log::info('Map-Loader: Archive-PK3 gepullt', ['file' => $pk3Filename]);
+            sleep(3);
+
+            // BSP-Name aus der extrahierten PK3 lesen, nicht aus dem RAR/ZIP
+            $bspSourcePath = $s3PathForFastdl;
+
+            // 4. Auto-Sync FastDL-Eintrag
+            $etBaseDir = \DB::table('fastdl_directories')
+                ->join('fastdl_games', 'fastdl_games.id', '=', 'fastdl_directories.game_id')
+                ->where('fastdl_games.slug', 'et')
+                ->where('fastdl_directories.is_base', 1)
+                ->select('fastdl_directories.id')
+                ->first();
+            if ($etBaseDir) {
+                $existing = \DB::table('fastdl_files')
+                    ->where('directory_id', $etBaseDir->id)
+                    ->where('filename', $pk3Filename)
+                    ->first();
+                if (!$existing) {
+                    \DB::table('fastdl_files')->insert([
+                        'directory_id' => $etBaseDir->id,
+                        'filename' => $pk3Filename,
+                        's3_path' => $s3PathForFastdl,
+                        'file_size' => $extractedSize,
+                        'source' => 'archive_extract',
+                        'wolffiles_file_id' => $file->id,
+                        'is_active' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                    \Log::info('Map-Loader: Auto-Sync FastDL fuer Archive', ['filename' => $pk3Filename]);
+                }
+            }
+
         } else {
-            return ['success' => false, 'error' => "Unsupported file extension: .{$ext}"];
+            // Unbekannte Extension
+            // (oft Bot-Waypoints, Installer). Wir versuchen einen
+            // FastDL-Eintrag der Map zu finden ueber den slug.
+            $fastdlAlt = \DB::table('fastdl_files')
+                ->where('filename', 'like', '%' . str_replace(['-', '_'], '%', $mapSlug) . '%.pk3')
+                ->where('is_active', 1)
+                ->orderByDesc('id')
+                ->first();
+            if ($fastdlAlt) {
+                \Log::info('Map-Loader: Found alt-FastDL fuer .' . $ext . ' upload', [
+                    'slug' => $mapSlug,
+                    'alt_filename' => $fastdlAlt->filename,
+                ]);
+                $signedUrl = \Storage::disk('s3')->temporaryUrl(
+                    $fastdlAlt->s3_path,
+                    now()->addMinutes(10)
+                );
+                $pullOk = $this->pullFileToContainer(
+                    $server->pterodactyl_uuid,
+                    $signedUrl,
+                    '/etmain',
+                    $fastdlAlt->filename
+                );
+                if ($pullOk) {
+                    sleep(3);
+                    $afterFiles = $this->listContainerFiles($server->pterodactyl_uuid, '/etmain');
+                    $afterPk3s = array_filter($afterFiles, fn($f) => str_ends_with(strtolower($f['name']), '.pk3'));
+                    $newPk3s = array_filter($afterPk3s, fn($f) => !in_array($f['name'], $beforePk3Names));
+                    $newPk3Names = array_values(array_column($newPk3s, 'name'));
+                    $totalBytes = array_sum(array_column($newPk3s, 'size'));
+                    $bspName = $this->extractBspNameFromPk3($fastdlAlt->s3_path) ?: $mapSlug;
+                    TestserverLoadedMap::updateOrCreate(
+                        ['testserver_id' => $server->id],
+                        [
+                            'map_slug' => $mapSlug,
+                            'bsp_name' => $bspName,
+                            'file_id'  => $file->id,
+                            'pk3_filenames' => $newPk3Names,
+                            'total_bytes'   => $totalBytes,
+                            'source'        => 's3-alt',
+                            'loaded_at'     => now(),
+                            'last_used_at'  => now(),
+                            'use_count'     => 1,
+                        ]
+                    );
+                    return [
+                        'success' => true,
+                        'cached'  => false,
+                        'source'  => 's3-alt',
+                        'pk3s'    => $newPk3Names,
+                        'size_mb' => round($totalBytes / 1024 / 1024, 1),
+                    ];
+                }
+            }
+            return ['success' => false, 'error' => "Diese Map liegt nur als .{$ext} vor (vermutlich Waypoints/Mappack). Bitte Map-Page wechseln auf die PK3-Version."];
         }
 
         // Welche PK3s sind neu hinzugekommen?
@@ -514,11 +649,11 @@ class TestserverService
         $newPk3Names = array_values(array_column($newPk3s, 'name'));
         $totalBytes = array_sum(array_column($newPk3s, 'size'));
 
-        // BSP-Name aus PK3 extrahieren
-        $bspName = $this->extractBspNameFromPk3($file->file_path);
+        // BSP-Name aus PK3 extrahieren (nutzt bspSourcePath - bei Archives die extrahierte PK3)
+        $bspName = $this->extractBspNameFromPk3($bspSourcePath);
         if (!$bspName) {
             $bspName = $mapSlug;
-            \Log::warning("Map-Loader: BSP-Name fallback auf slug", ['slug' => $mapSlug]);
+            \Log::warning("Map-Loader: BSP-Name fallback auf slug", ['slug' => $mapSlug, 'source' => $bspSourcePath]);
         }
 
         // DB-Tracking aktualisieren
@@ -604,6 +739,114 @@ class TestserverService
         } catch (\Throwable $e) {
             \Log::error('guessOriginalPk3Name failed: ' . $e->getMessage());
             return $bspName . '.pk3';
+        }
+    }
+
+
+    /**
+     * Extrahiert eine PK3 aus einem .rar/.7z/.zip Archiv (von S3).
+     * Returns: lokaler temp-Pfad zur extrahierten PK3, oder null.
+     */
+    protected function extractPk3FromArchive(string $s3ArchivePath, string $pk3NameInArchive, string $archiveExt): ?string
+    {
+        try {
+            // 1. Archive von S3 nach /tmp downloaden
+            $url = \Storage::disk('s3')->temporaryUrl($s3ArchivePath, now()->addMinutes(5));
+            $tmpArchive = tempnam(sys_get_temp_dir(), 'archive_') . '.' . $archiveExt;
+            $bytes = @file_get_contents($url);
+            if (!$bytes) {
+                \Log::error('extractPk3FromArchive: Download from S3 failed', ['path' => $s3ArchivePath]);
+                return null;
+            }
+            file_put_contents($tmpArchive, $bytes);
+
+            // 2. Extract-Verzeichnis vorbereiten
+            $extractDir = sys_get_temp_dir() . '/pk3_extract_' . uniqid();
+            mkdir($extractDir, 0755, true);
+
+            // 3. Je nach Format extrahieren
+            $cmd = null;
+            if ($archiveExt === 'rar') {
+                // unrar e <archive> <file> <dest>/
+                $cmd = sprintf('cd %s && /usr/bin/unrar e -y %s %s 2>&1',
+                    escapeshellarg($extractDir),
+                    escapeshellarg($tmpArchive),
+                    escapeshellarg($pk3NameInArchive)
+                );
+            } elseif ($archiveExt === '7z') {
+                $cmd = sprintf('cd %s && /usr/bin/7z e %s %s 2>&1',
+                    escapeshellarg($extractDir),
+                    escapeshellarg($tmpArchive),
+                    escapeshellarg($pk3NameInArchive)
+                );
+            } elseif ($archiveExt === 'zip') {
+                $cmd = sprintf('/usr/bin/unzip -j %s %s -d %s 2>&1',
+                    escapeshellarg($tmpArchive),
+                    escapeshellarg($pk3NameInArchive),
+                    escapeshellarg($extractDir)
+                );
+            }
+
+            if (!$cmd) {
+                @unlink($tmpArchive);
+                @rmdir($extractDir);
+                return null;
+            }
+
+            $output = [];
+            $rc = 0;
+            exec($cmd, $output, $rc);
+            @unlink($tmpArchive);
+
+            $extractedPath = $extractDir . '/' . basename($pk3NameInArchive);
+            if (!file_exists($extractedPath)) {
+                \Log::error('extractPk3FromArchive: PK3 not found after extract', [
+                    'expected' => $extractedPath,
+                    'cmd' => $cmd,
+                    'rc' => $rc,
+                    'output' => implode("\n", $output),
+                ]);
+                @rmdir($extractDir);
+                return null;
+            }
+
+            // Datei aus tempdir an finalen tempnam-Ort verschieben damit Cleanup geht
+            $finalTmp = tempnam(sys_get_temp_dir(), 'extracted_pk3_');
+            rename($extractedPath, $finalTmp);
+            @rmdir($extractDir);
+
+            return $finalTmp;
+        } catch (\Throwable $e) {
+            \Log::error('extractPk3FromArchive failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Uploadet eine lokale Datei in einen Pterodactyl-Container (POST /files/write).
+     */
+    protected function uploadFileToContainer(string $uuid, string $containerDir, string $filename, string $localPath): bool
+    {
+        try {
+            $baseUrl = rtrim(config('services.pterodactyl.url'), '/');
+            $apiKey  = config('services.pterodactyl.api_key');
+
+            $url = $baseUrl . '/api/client/servers/' . $uuid . '/files/write?file=' . urlencode($containerDir . '/' . $filename);
+            $contents = file_get_contents($localPath);
+            if ($contents === false) return false;
+
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . $apiKey,
+                'Accept' => 'Application/vnd.pterodactyl.v1+json',
+                'Content-Type' => 'application/octet-stream',
+            ])->withBody($contents, 'application/octet-stream')
+              ->timeout(120)
+              ->put($url);
+
+            return $response->status() === 204;
+        } catch (\Throwable $e) {
+            \Log::error('uploadFileToContainer failed: ' . $e->getMessage());
+            return false;
         }
     }
 

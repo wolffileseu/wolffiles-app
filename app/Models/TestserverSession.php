@@ -162,8 +162,10 @@ class TestserverSession extends Model
 
     public function getEtConnectUriAttribute(): string
     {
+        // ETLegacy protocol handler: et://<host>[:port][/password]
+        // see etlegacy/src/client/cl_main.c -> CL_Connect_f
         return 'et://' . $this->connect_address
-            . '/connect;password ' . $this->connect_password;
+            . '/' . rawurlencode((string) $this->connect_password);
     }
 
     public function getRouteKeyName(): string

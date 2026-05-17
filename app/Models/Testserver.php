@@ -77,7 +77,11 @@ class Testserver extends Model
 
     public function scopePublic($query)
     {
-        return $query->where('enabled', true)->where('public_visible', true);
+        // Admin sieht auch hidden server, alle anderen nur public_visible
+        if (!(auth()->user()?->isAdmin() ?? false)) {
+            $query->where('public_visible', true);
+        }
+        return $query->where('enabled', true);
     }
 
     public function scopeAvailable($query)
@@ -101,7 +105,7 @@ class Testserver extends Model
 
     public function getConnectStringAttribute(): string
     {
-        return $this->connect_ip . ':' . $this->connect_port;
+        return ($this->connect_hostname ?: $this->connect_ip) . ':' . $this->connect_port;
     }
 
     public function getStatusBadgeAttribute(): string

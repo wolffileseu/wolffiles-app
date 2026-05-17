@@ -75,7 +75,7 @@ return [
     'session_copied'             => 'Gekopieerd!',
     'session_cancel_confirm'     => 'Sessie echt beëindigen?',
     'session_cancel_success'     => 'Sessie wordt beëindigd, server wordt over enkele seconden gereset.',
-    'session_connect_help'       => 'Open ET, druk op `~` voor de console en typ: /connect :address;password :password',
+    'session_connect_help'       => 'Open ET, druk op `~` voor de console en typ: /password :password en /connect :address',
     'session_minutes_short'      => 'min',
     'session_seconds_short'      => 'sec',
 
@@ -92,4 +92,6 @@ return [
     // MAP-DETAIL SIDEBAR
     'sidebar_test_map_button'    => 'Map testen',
     'sidebar_test_map_hint'      => ':min-min-sessie op een vrije testserver',
+    'intro_text' => 'Test maps en mods live op onze testservers. Kies een vrije server en start direct een sessie.',
+    'fair_play_notice' => 'Speel eerlijk. Sessies zijn beperkt in tijd. Misbruik leidt tot een IP-ban.',
 ];

@@ -92,4 +92,6 @@ return [
     // MAP-DETAIL SIDEBAR
     'sidebar_test_map_button'    => 'Map test et',
     'sidebar_test_map_hint'      => 'Boş test sunucusunda :min dakikalık oturum',
+    'intro_text' => 'Haritaları ve modları test sunucularımızda canlı olarak deneyin. Boş bir sunucu seç ve hemen oturumu başlat.',
+    'fair_play_notice' => 'Lütfen adil oynayın. Oturumlar zaman sınırlıdır. Suistimal IP yasağına yol açar.',
 ];

@@ -107,7 +107,7 @@
             </div>
 
             {{-- ET-Protocol Connect-Button --}}
-            <a :href="`et://${connectAddress}/connect;password ${connectPassword}`"
+            <a :href="`et://${connectAddress}/${encodeURIComponent(connectPassword)}`"
                class="block w-full text-center px-4 py-4 bg-emerald-600 hover:bg-emerald-500
                       text-white font-bold rounded-lg text-lg transition-colors mb-3">
                 🎯 {{ __('testserver.session_btn_connect') }}
