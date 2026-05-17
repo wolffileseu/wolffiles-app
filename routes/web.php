@@ -480,3 +480,6 @@ Route::get('/__omnibot_trigger/{id}', function (int $id) {
         'pid' => getmypid(),
     ]);
 });
+
+// Testserver System (public testing) 
+require __DIR__ . '/testserver-routes.php';

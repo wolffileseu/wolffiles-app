@@ -712,6 +712,9 @@
 
         {{-- Sidebar --}}
         <div class="lg:col-span-1 space-y-6">
+            {{-- Test Server Button (Maps only) --}}
+            @include('frontend.files.partials._testserver_button', ['file' => $file])
+
             {{-- Download Box --}}
             <div class="bg-gray-800 rounded-lg border border-gray-700 p-6">
                 <a href="{{ route('files.download', $file) }}"
