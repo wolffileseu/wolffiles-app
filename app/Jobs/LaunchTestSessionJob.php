@@ -49,6 +49,9 @@ class LaunchTestSessionJob implements ShouldQueue
 
         $service->lockServer($server);
 
+        // Wenn aktive Spieler (Idle-Mode), 30s Warning + kick
+        $service->warnAndKickPlayers($server->pterodactyl_uuid);
+
         // ★ NEU: Map in Container laden BEVOR Restart
         Log::info("LaunchJob: Loading map '{$session->map_slug}' for session #{$session->id}");
         $mapResult = $service->ensureMapLoaded($server, $session->map_slug);

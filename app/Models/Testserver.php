@@ -75,6 +75,42 @@ class Testserver extends Model
         return $query->where('enabled', true);
     }
 
+
+    /**
+     * Auto-Onboarding: Wenn Server enabled+public_visible wird (z.B. via Filament),
+     * automatisch in Idle-Mode bringen + Tracker-Discovery triggern.
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (self $server) {
+            // Nur wenn enabled+public und gerade nicht in active-session
+            if (!$server->enabled || !$server->public_visible) {
+                return;
+            }
+            if (in_array($server->status, ['active', 'reserving', 'expiring'], true)) {
+                return;
+            }
+
+            // Nur reagieren wenn enabled oder public_visible jetzt erst gesetzt wurde
+            $changed = $server->wasChanged(['enabled', 'public_visible']);
+            if (!$changed) return;
+
+            \Log::info('Testserver auto-onboard triggered', [
+                'slot' => $server->slot_number,
+                'name' => $server->name,
+            ]);
+
+            // Idle-Mode triggern (async via Queue, nicht blockierend)
+            dispatch(function () use ($server) {
+                $svc = app(\App\Services\TestserverService::class);
+                $svc->enterIdleMode($server);
+
+                // Tracker-Discovery so dass Server in deinem eigenen Tracker auftaucht
+                \Illuminate\Support\Facades\Artisan::call('tracker:discover-servers');
+            })->onQueue('default')->afterCommit();
+        });
+    }
+
     public function scopePublic($query)
     {
         // Admin sieht auch hidden server, alle anderen nur public_visible

@@ -252,8 +252,9 @@ class TestserverService
             'SERVER_NAME'     => "^7Wolffiles.eu ^8| ^7Testserver ^5#" . $server->slot_number . " ^2(frei)",
         ]);
 
-        // 3. Server stoppen (Container bleibt, ist nur idle)
-        $this->powerSignal($uuid, 'stop');
+        // 3. Server in Idle-Mode bringen (random Map + Mod, kein Password)
+        //    Server bleibt running im Master-Browser sichtbar
+        $this->enterIdleMode($server);
 
         // 4. Finalisieren
         $session->update(['status' => $reason]); // expired | cancelled | failed
@@ -847,6 +848,229 @@ class TestserverService
         } catch (\Throwable $e) {
             \Log::error('uploadFileToContainer failed: ' . $e->getMessage());
             return false;
+        }
+    }
+
+
+
+    /**
+     * Aktuelle Spielerzahl auf dem Server (via Pterodactyl resources API).
+     */
+    public function getPlayerCount(string $uuid): int
+    {
+        try {
+            // ETLegacy exposed via UDP - wir parsen rcon "status" oder UDP getinfo
+            // Einfachster Weg: getstatus via UDP
+            $info = $this->getServerInfo($uuid);
+            return (int) ($info['clients'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Holt Server-Info via UDP getinfo (clients, hostname, map, etc.)
+     */
+    public function getServerInfo(string $uuid): array
+    {
+        try {
+            $server = \App\Models\Testserver::where('pterodactyl_uuid', $uuid)->first();
+            if (!$server) return [];
+
+            $sock = @stream_socket_client(
+                "udp://{$server->connect_ip}:{$server->connect_port}",
+                $errno, $errstr, 2
+            );
+            if (!$sock) return [];
+
+            fwrite($sock, "\xff\xff\xff\xffgetinfo\n");
+            stream_set_timeout($sock, 2);
+            $resp = fread($sock, 4096);
+            fclose($sock);
+
+            // Parse response: \xff\xff\xff\xffinfoResponse\n\key\value\key\value\
+            $parsed = [];
+            if (preg_match('/infoResponse\s+\\(.*)/s', $resp, $m)) {
+                $pairs = explode('\\', $m[1]);
+                for ($i = 0; $i < count($pairs) - 1; $i += 2) {
+                    if (!empty($pairs[$i])) {
+                        $parsed[$pairs[$i]] = $pairs[$i + 1] ?? '';
+                    }
+                }
+            }
+            return $parsed;
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * 30s Warning broadcasten + alle Spieler kicken.
+     * Aufrufen VOR applySessionAndRestart wenn Idle-Server reserviert wird.
+     */
+    public function warnAndKickPlayers(string $uuid): void
+    {
+        try {
+            $playerCount = $this->getPlayerCount($uuid);
+            if ($playerCount === 0) {
+                \Log::info('warnAndKickPlayers: skip (no players)', ['uuid' => $uuid]);
+                return;
+            }
+
+            \Log::info('warnAndKickPlayers: triggering 30s warning', [
+                'uuid' => $uuid,
+                'players' => $playerCount,
+            ]);
+
+            $this->sendCommand($uuid, 'say ^1[!] ^7Server wird in ^330s ^7fuer Map-Test reserviert.');
+            sleep(10);
+            $this->sendCommand($uuid, 'say ^1[!] ^7Noch ^320s ^7- bitte verlasse den Server.');
+            sleep(10);
+            $this->sendCommand($uuid, 'say ^1[!] ^7Noch ^310s^7! Du wirst gleich gekickt.');
+            sleep(10);
+
+            // Alle Clients kicken
+            $this->sendCommand($uuid, 'clientkick all');
+            sleep(2);
+
+            \Log::info('warnAndKickPlayers: done');
+        } catch (\Throwable $e) {
+            \Log::error('warnAndKickPlayers failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Server in Idle-Mode bringen: random map + random mod, kein password,
+     * Server bleibt running -> im Server-Browser sichtbar
+     */
+    public function enterIdleMode(\App\Models\Testserver $server): bool
+    {
+        try {
+            // 1. Random Mod aus erlaubten Mods (KEIN Duplikat mit anderen Idle-Servern)
+            $allowedMods = $server->allowed_mod_slugs ?: ['legacy'];
+
+            // Welche Mods laufen GERADE auf anderen idle-Servern?
+            $modsInUse = \App\Models\Testserver::where('id', '!=', $server->id)
+                ->where('enabled', true)
+                ->where('status', 'idle')
+                ->whereNotNull('current_idle_mod')
+                ->pluck('current_idle_mod')
+                ->toArray();
+
+            // Verfügbare Mods = erlaubt - bereits-in-use
+            $available = array_diff($allowedMods, $modsInUse);
+
+            // Fallback: wenn alle Mods schon belegt, nimm random aus allowed
+            if (empty($available)) {
+                $available = $allowedMods;
+            }
+
+            $randomMod = $available[array_rand($available)];
+
+            // Tracking-Feld für nächsten Server setzen (sofort persistieren!)
+            $server->current_idle_mod = $randomMod;
+            $server->save();
+
+            // 2. Random Map aus FastDL-Pool (mit Filter nach Mod-Compatibility)
+            // Vanilla-Maps sind immer ok (Mappack, etc), Mod-spezifische Maps brauchen die richtige Engine
+            $randomMap = $this->pickRandomIdleMap($randomMod);
+            if (!$randomMap) {
+                $randomMap = 'oasis'; // Fallback - immer im pak0 enthalten
+            }
+
+            \Log::info('Testserver: enterIdleMode', [
+                'server' => $server->name,
+                'slot'   => $server->slot_number,
+                'mod'    => $randomMod,
+                'map'    => $randomMap,
+            ]);
+
+            // 3. Map laden falls nicht-vanilla
+            $vanillaMaps = ['oasis','goldrush','radar','railgun','battery','fueldump','siwa','airport','beach','et_ice'];
+            if (!in_array(strtolower($randomMap), $vanillaMaps, true)) {
+                // Map-Loader triggern - schickt PK3 in den Container
+                $loadResult = $this->ensureMapLoaded($server, $randomMap);
+                if (!$loadResult['success']) {
+                    \Log::warning('Idle-Mode: Map-Load failed, fallback auf vanilla', [
+                        'attempted' => $randomMap,
+                        'error' => $loadResult['error'] ?? 'unknown',
+                    ]);
+                    $randomMap = 'oasis';
+                }
+            }
+
+            // 4. BSP-Name aus loaded_maps holen falls schon geladen
+            $loaded = \App\Models\TestserverLoadedMap::where('testserver_id', $server->id)->first();
+            $mapForPtero = $loaded?->bsp_name ?: $randomMap;
+
+            // 5. Mod-Config-File holen
+            $modModel = \App\Models\TestserverMod::where('slug', $randomMod)->first();
+            $configFile = $modModel?->default_config_file ?: 'etl_server.cfg';
+            $fsGameDir  = $modModel?->fs_game_dir ?: $randomMod;
+
+            // 6. Startup-Variables setzen (kein Password!)
+            $this->setStartupVariables($server->pterodactyl_uuid, [
+                'MAP'             => $mapForPtero,
+                'MOD'             => $fsGameDir === 'etmain' ? '' : $fsGameDir,
+                'CONFIG_FILE'     => $configFile,
+                'SERVER_PASSWORD' => '',
+                'SERVER_NAME'     => "^7Wolffiles.eu ^8| ^7Public Test ^5#" . $server->slot_number . " ^aMap: " . $mapForPtero,
+            ]);
+
+            // 7. Restart (oder Start falls offline)
+            $state = $this->getServerState($server->pterodactyl_uuid);
+            if ($state === 'running') {
+                $this->powerSignal($server->pterodactyl_uuid, 'restart');
+            } else {
+                $this->powerSignal($server->pterodactyl_uuid, 'start');
+            }
+
+            return true;
+        } catch (\Throwable $e) {
+            \Log::error('enterIdleMode failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Random ET-Map aus dem FastDL-Pool (PK3-Files).
+     * Returns: map_slug (für DB-lookup) oder null.
+     */
+    protected function pickRandomIdleMap(string $mod = 'legacy'): ?string
+    {
+        $etGame = \DB::table('fastdl_games')->where('slug', 'et')->first();
+        if (!$etGame) return null;
+
+        $etDirs = \DB::table('fastdl_directories')
+            ->where('game_id', $etGame->id)
+            ->pluck('id');
+
+        // Random Map mit zugeordneter Wolffiles-Map-Page
+        $row = \DB::table('fastdl_files as f')
+            ->join('files as w', 'w.id', '=', 'f.wolffiles_file_id')
+            ->whereIn('f.directory_id', $etDirs)
+            ->where('f.filename', 'like', '%.pk3')
+            ->where('f.is_active', 1)
+            ->where('w.status', 'approved')
+            ->inRandomOrder()
+            ->select('w.slug')
+            ->limit(1)
+            ->value('slug');
+
+        return $row;
+    }
+
+    /**
+     * Aktueller Pterodactyl-Server-State (running/starting/stopping/offline)
+     */
+    protected function getServerState(string $uuid): string
+    {
+        try {
+            $r = \Illuminate\Support\Facades\Http::withHeaders($this->headers())
+                ->get("{$this->baseUrl}/api/client/servers/{$uuid}/resources");
+            return $r->json('attributes.current_state') ?? 'unknown';
+        } catch (\Throwable $e) {
+            return 'unknown';
         }
     }
 
