@@ -8,9 +8,10 @@
     $sourceText   = $translation?->wikitext ?? $article->wikitext ?? $article->content;
 
     $parser  = WikitextParser::make([
-        'locale'     => $locale,
-        'article_id' => $article->id,
-        'namespace'  => $article->namespace,
+        'locale'       => $locale,
+        'article_id'   => $article->id,
+        'article_slug' => $article->slug,
+        'namespace'    => $article->namespace,
     ]);
     $parsed  = $parser->parse((string) $sourceText);
     $bodyHtml = $cachedHtml ?: $parsed->html;
@@ -29,7 +30,7 @@
         </div>
     @endif
 
-    <div class="wiki-bodycontent">
+    <div class="wiki-bodycontent @auth @can('update', $article) wiki-can-edit @endcan @endauth">
         {!! $bodyHtml !!}
     </div>
 

@@ -4,9 +4,11 @@ namespace App\Providers;
 
 use App\Models\File;
 use App\Observers\FileObserver;
+use App\Observers\WikiArticleObserver;
 use App\Observers\TelegramObserver;
 use Illuminate\Support\ServiceProvider;
 use App\Models\User;
+use App\Models\WikiArticle;
 use App\Models\Comment;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
@@ -53,6 +55,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         File::observe(FileObserver::class);
+        WikiArticle::observe(WikiArticleObserver::class);
 
         // PM (Direct Messages) view composer: provides $dmUnreadCount in layouts
         View::composer(

@@ -12,7 +12,7 @@
                class="wiki-tab {{ $pageType === 'article' ? 'is-active' : '' }}">
                 Artikel
             </a>
-            <a href="#talk"
+            <a href="{{ route('wiki.talk', $article->slug) }}"
                class="wiki-tab {{ $pageType === 'talk' ? 'is-active' : '' }}">
                 Diskussion
                 @if($article->talkThreads->count() > 0)
@@ -39,7 +39,7 @@
                     </a>
                 @endcan
             @endauth
-            <a href="{{ route('wiki.history', $article) }}"
+            <a href="{{ route('wiki.history', $article->slug) }}"
                class="wiki-tab {{ $activeTab === 'history' ? 'is-active' : '' }}">
                 Versionsgeschichte
             </a>

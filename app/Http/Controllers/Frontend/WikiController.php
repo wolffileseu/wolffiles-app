@@ -128,10 +128,55 @@ class WikiController extends Controller
             ->with('success', __('messages.wiki_updated') ?: 'Article updated and submitted for review!');
     }
 
-    public function history(WikiArticle $wikiArticle)
+    public function history(string $slug)
     {
-        $revisions = $wikiArticle->revisions()->with('user')->paginate(20);
-        return view('frontend.wiki.history', compact('wikiArticle', 'revisions'));
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $revisions = $article->revisions()->with('user')->paginate(50);
+        return view('frontend.wiki.history', ['article' => $article, 'revisions' => $revisions]);
+    }
+
+    public function diff(string $slug, int $rev1, int $rev2)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $left = $article->revisions()->where('revision_number', $rev1)->firstOrFail();
+        $right = $article->revisions()->where('revision_number', $rev2)->firstOrFail();
+
+        // immer chronologisch: kleinere Rev links
+        if ($left->revision_number > $right->revision_number) {
+            [$left, $right] = [$right, $left];
+        }
+
+        $diff = new \App\Services\Wiki\WikitextDiff();
+        $diffHtml = $diff->renderSideBySide(
+            (string) ($left->content ?? ''),
+            (string) ($right->content ?? '')
+        );
+        $stats = $diff->stats((string) ($left->content ?? ''), (string) ($right->content ?? ''));
+
+        return view('frontend.wiki.diff', compact('article', 'left', 'right', 'diffHtml', 'stats'));
+    }
+
+    public function restore(string $slug, int $rev)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $this->authorize('update', $article);
+
+        $revision = $article->revisions()->where('revision_number', $rev)->firstOrFail();
+
+        // Restore: Title + content; falls revision wikitext-Spalte hatte, die auch
+        $article->update([
+            'title'   => $revision->title,
+            'content' => $revision->content,
+        ]);
+
+        // Neue Revision mit Hinweis
+        $article->createRevision(
+            auth()->id() ?? $article->user_id,
+            "Wiederhergestellt aus Revision #{$rev}"
+        );
+
+        return redirect()->route('wiki.show', $article->slug)
+            ->with('success', "Artikel auf Revision #{$rev} zurückgesetzt.");
     }
 
     /**
@@ -208,4 +253,128 @@ class WikiController extends Controller
 
         return view('frontend.wiki.special.whatlinkshere', compact('article', 'incoming', 'redirects'));
     }
+
+    // ============= TALK-PAGES =============
+
+    public function talk(string $slug)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $threads = $article->talkThreads()
+            ->with(['creator', 'messages.user'])
+            ->paginate(30);
+        return view('frontend.wiki.talk', compact('article', 'threads'));
+    }
+
+    public function newThreadForm(string $slug)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        return view('frontend.wiki.talk-new', compact('article'));
+    }
+
+    public function storeThread(Request $request, string $slug)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $data = $request->validate([
+            'title'    => 'required|string|max:255',
+            'wikitext' => 'required|string|max:50000',
+        ]);
+
+        $parser = \App\Services\Wiki\WikitextParser::make([
+            'locale'     => 'de',
+            'article_id' => $article->id,
+            'namespace'  => 'talk',
+        ]);
+        $parsed = $parser->parse($data['wikitext']);
+
+        $thread = \App\Models\WikiTalkThread::create([
+            'wiki_article_id' => $article->id,
+            'title'           => $data['title'],
+            'created_by'      => auth()->id(),
+            'last_reply_at'   => now(),
+        ]);
+
+        \App\Models\WikiTalkMessage::create([
+            'wiki_talk_thread_id' => $thread->id,
+            'user_id'             => auth()->id(),
+            'wikitext'            => $data['wikitext'],
+            'content_html'        => $parsed->html,
+        ]);
+
+        return redirect()->route('wiki.talk', $article->slug)
+            ->with('success', 'Diskussion gestartet.');
+    }
+
+    public function reply(Request $request, string $slug, int $thread)
+    {
+        $article = WikiArticle::where('slug', $slug)->firstOrFail();
+        $threadModel = \App\Models\WikiTalkThread::where('wiki_article_id', $article->id)->findOrFail($thread);
+        $data = $request->validate([
+            'wikitext'    => 'required|string|max:50000',
+            'reply_to_id' => 'nullable|integer|exists:wiki_talk_messages,id',
+        ]);
+
+        $parser = \App\Services\Wiki\WikitextParser::make([
+            'locale'     => 'de',
+            'article_id' => $article->id,
+            'namespace'  => 'talk',
+        ]);
+        $parsed = $parser->parse($data['wikitext']);
+
+        \App\Models\WikiTalkMessage::create([
+            'wiki_talk_thread_id' => $threadModel->id,
+            'user_id'             => auth()->id(),
+            'wikitext'            => $data['wikitext'],
+            'content_html'        => $parsed->html,
+            'reply_to_id'         => $data['reply_to_id'] ?? null,
+        ]);
+
+        $threadModel->update(['last_reply_at' => now()]);
+
+        return redirect()->route('wiki.talk', $article->slug) . '#thread-' . $threadModel->id;
+    }
+
+    public function toggleResolve(string $slug, int $thread)
+    {
+        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+                                                  ->findOrFail($thread);
+        if (!auth()->user()->hasRole('admin') && auth()->id() !== $threadModel->created_by) {
+            abort(403);
+        }
+        $threadModel->update(['is_resolved' => !$threadModel->is_resolved]);
+        return back();
+    }
+
+    public function togglePin(string $slug, int $thread)
+    {
+        $this->ensureAdmin();
+        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+                                                  ->findOrFail($thread);
+        $threadModel->update(['is_pinned' => !$threadModel->is_pinned]);
+        return back();
+    }
+
+    public function deleteThread(string $slug, int $thread)
+    {
+        $this->ensureAdmin();
+        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+                                                  ->findOrFail($thread);
+        $threadModel->delete();
+        return redirect()->route('wiki.talk', $slug)->with('success', 'Thread gelöscht.');
+    }
+
+    public function deleteMessage(string $slug, int $message)
+    {
+        $this->ensureAdmin();
+        $msg = \App\Models\WikiTalkMessage::findOrFail($message);
+        $msg->delete();
+        return back();
+    }
+
+    private function ensureAdmin(): void
+    {
+        if (!auth()->check() || !auth()->user()->hasRole('admin')) {
+            abort(403, 'Admin only.');
+        }
+    }
+
 }

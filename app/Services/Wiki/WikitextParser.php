@@ -9,6 +9,7 @@ class WikitextParser
 {
     private string $locale;
     private ?int $articleId;
+    private ?string $articleSlug;
     private string $namespace;
 
     private array $stash = [];
@@ -16,19 +17,21 @@ class WikitextParser
 
     private ParseResult $result;
 
-    public function __construct(string $locale = 'de', ?int $articleId = null, string $namespace = 'main')
+    public function __construct(string $locale = 'de', ?int $articleId = null, string $namespace = 'main', ?string $articleSlug = null)
     {
-        $this->locale    = $locale;
-        $this->articleId = $articleId;
-        $this->namespace = $namespace;
+        $this->locale       = $locale;
+        $this->articleId    = $articleId;
+        $this->articleSlug  = $articleSlug;
+        $this->namespace    = $namespace;
     }
 
     public static function make(array $context = []): self
     {
         return new self(
-            $context['locale']     ?? 'de',
-            $context['article_id'] ?? null,
-            $context['namespace']  ?? 'main',
+            $context['locale']       ?? 'de',
+            $context['article_id']   ?? null,
+            $context['namespace']    ?? 'main',
+            $context['article_slug'] ?? null,
         );
     }
 
@@ -231,10 +234,12 @@ class WikitextParser
                 ];
 
                 $editLink = '';
-                if ($self->articleIdInternal()) {
-                    $editLink = '<span class="wiki-editsection">[<a href="#" '
+                $slug = $self->articleSlugInternal();
+                if ($slug) {
+                    $editUrl = '/admin/wiki-articles/' . rawurlencode($slug) . '/edit#section-' . $sectionCounter;
+                    $editLink = '<span class="wiki-editsection">[<a href="' . htmlspecialchars($editUrl, ENT_QUOTES, 'UTF-8') . '" '
                         . 'data-section="' . $sectionCounter . '" '
-                        . 'class="wiki-editsection-link">edit</a>]</span>';
+                        . 'class="wiki-editsection-link">bearbeiten</a>]</span>';
                 }
 
                 return '<h' . $level . ' id="' . $anchor . '" class="wiki-heading">'
@@ -248,6 +253,11 @@ class WikitextParser
     public function articleIdInternal(): ?int
     {
         return $this->articleId;
+    }
+
+    public function articleSlugInternal(): ?string
+    {
+        return $this->articleSlug;
     }
 
     private function parseLists(string $text): string

@@ -205,7 +205,9 @@
     color: var(--wiki-text-muted);
     font-weight: normal;
     font-family: -apple-system, sans-serif;
+    display: none;  /* per default versteckt — sichtbar wenn .wiki-can-edit am Parent */
 }
+.wiki-bodycontent.wiki-can-edit .wiki-editsection { display: inline; }
 .wiki-editsection a { color: var(--wiki-link); text-decoration: none; }
 .wiki-editsection a:hover { text-decoration: underline; }
 

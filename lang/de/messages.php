@@ -102,7 +102,7 @@ return [
     'cc_total_maps' => 'Maps gesamt',
     'cc_type_mapname' => 'Map-Name eingeben...',
     'change_password' => 'Passwort ändern',
-    'claim_profile' => '[TODO:de] This is me!',
+    'claim_profile' => '',
     'claimed_by' => '[TODO:de] Linked to',
     'clan_created' => '[TODO:de] Clan created',
     'comment_deleted' => '[TODO:de] Comment deleted',
@@ -875,8 +875,6 @@ return [
     'dm_unblocked' => ':name wurde freigegeben.',
     'dm_user' => 'User',
     'uploaded_by' => 'Hochgeladen von',
-
-    // Bot/Map relations (issue #12)
     'related_bot_files' => 'Verfügbare Bot-Files',
     'related_bot_files_hint' => 'Bot- und Waypoint-Dateien für diese Map.',
     'related_maps' => 'Zugehörige Maps',
@@ -885,9 +883,6 @@ return [
     'likely_match' => 'wahrscheinlicher Treffer',
     'relation_verified' => 'Manuell verifizierte Verknüpfung',
     'relation_low_confidence' => 'Automatisch erkannt - bitte prüfen',
-
-
-    // #13 Cvar filter labels
     'tracker_filter_ff' => 'Friendly Fire',
     'tracker_filter_antilag' => 'Antilag',
     'tracker_filter_balanced' => 'Faire Teams',

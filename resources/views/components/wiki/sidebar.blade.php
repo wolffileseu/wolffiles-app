@@ -28,7 +28,7 @@
     <h6>Werkzeuge</h6>
     <ul>
         <li><a href="{{ route('wiki.special.whatlinkshere', $article->slug) }}">🔗 Was linkt hierher</a></li>
-        <li><a href="{{ route('wiki.history', $article) }}">📜 Versionsgeschichte</a></li>
+        <li><a href="{{ route('wiki.history', $article->slug) }}">📜 Versionsgeschichte</a></li>
         <li><a href="#" title="Permalink">🔗 Permalink</a></li>
         @auth
             @can('update', $article)
