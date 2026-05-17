@@ -396,6 +396,74 @@ class TestserverService
                 ->where('is_active', 1)
                 ->orderByDesc('id')
                 ->first();
+
+            // Self-Healing: Wenn kein FastDL-Eintrag, BSP-Name aus PK3 extrahieren + Auto-Sync
+            if (!$fastdl) {
+                $bsp = $this->extractBspNameFromPk3($file->file_path);
+                if ($bsp) {
+                    // Filename = BSP-Name + .pk3 (mit Original-Casing soweit möglich)
+                    $autoFilename = $this->guessOriginalPk3Name($file->file_path, $bsp);
+                    \Log::info('Map-Loader: Auto-Sync FastDL-Eintrag', [
+                        'wolffiles_file_id' => $file->id,
+                        'bsp' => $bsp,
+                        'filename' => $autoFilename,
+                    ]);
+                    // FastDL Base-Directory für ET finden
+                    $etBaseDir = \DB::table('fastdl_directories')
+                        ->join('fastdl_games', 'fastdl_games.id', '=', 'fastdl_directories.game_id')
+                        ->where('fastdl_games.slug', 'et')
+                        ->where('fastdl_directories.is_base', 1)
+                        ->select('fastdl_directories.id')
+                        ->first();
+                    if ($etBaseDir) {
+                        // Check ob's schon einen Eintrag mit diesem Filename gibt (andere Map-Version)
+                        $existing = \DB::table('fastdl_files')
+                            ->where('directory_id', $etBaseDir->id)
+                            ->where('filename', $autoFilename)
+                            ->first();
+                        if ($existing) {
+                            // Existiert schon - aktualisieren falls neuere Version
+                            $existingFile = \App\Models\File::find($existing->wolffiles_file_id);
+                            if (!$existingFile || $file->created_at > $existingFile->created_at) {
+                                \DB::table('fastdl_files')
+                                    ->where('id', $existing->id)
+                                    ->update([
+                                        's3_path' => $file->file_path,
+                                        'file_size' => $file->file_size ?? 0,
+                                        'source' => 'auto_loader',
+                                        'wolffiles_file_id' => $file->id,
+                                        'is_active' => 1,
+                                        'updated_at' => now(),
+                                    ]);
+                                \Log::info('Map-Loader: FastDL-Eintrag UPDATED (neuere Version)', [
+                                    'fastdl_id' => $existing->id,
+                                    'old_wolf_id' => $existing->wolffiles_file_id,
+                                    'new_wolf_id' => $file->id,
+                                ]);
+                            } else {
+                                \Log::info('Map-Loader: FastDL-Eintrag existiert (alt-er ist neuer)', [
+                                    'fastdl_id' => $existing->id,
+                                ]);
+                            }
+                            $fastdl = \DB::table('fastdl_files')->find($existing->id);
+                        } else {
+                            $newId = \DB::table('fastdl_files')->insertGetId([
+                                'directory_id' => $etBaseDir->id,
+                                'filename' => $autoFilename,
+                                's3_path' => $file->file_path,
+                                'file_size' => $file->file_size ?? 0,
+                                'source' => 'auto_loader',
+                                'wolffiles_file_id' => $file->id,
+                                'is_active' => 1,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                            $fastdl = \DB::table('fastdl_files')->find($newId);
+                        }
+                    }
+                }
+            }
+
             $pk3Filename = $fastdl?->filename ?: basename($file->file_path);
             $pullOk = $this->pullFileToContainer(
                 $server->pterodactyl_uuid,
@@ -497,6 +565,48 @@ class TestserverService
      * Returns: lowercase BSP-Name ohne maps/-Prefix und .bsp-Suffix
      *          z.B. "(um)arena" oder "ae_wizerness"
      */
+
+    /**
+     * Versucht den originalen PK3-Filename aus dem S3-PK3 zu lesen (mit Original-Casing).
+     * Falls extraction failed, fallback auf $bspName + .pk3.
+     */
+    protected function guessOriginalPk3Name(string $s3Pk3Path, string $bspName): string
+    {
+        try {
+            $url = \Storage::disk('s3')->temporaryUrl($s3Pk3Path, now()->addMinutes(2));
+            $tmp = tempnam(sys_get_temp_dir(), 'pk3_name_');
+            $bytes = @file_get_contents($url);
+            if (!$bytes) {
+                @unlink($tmp);
+                return $bspName . '.pk3';
+            }
+            file_put_contents($tmp, $bytes);
+
+            $pk3 = new \ZipArchive();
+            if ($pk3->open($tmp) !== true) {
+                @unlink($tmp);
+                return $bspName . '.pk3';
+            }
+
+            // Original-Casing aus BSP-Filename im PK3 holen
+            $realBspName = null;
+            for ($i = 0; $i < $pk3->numFiles; $i++) {
+                $name = $pk3->getNameIndex($i);
+                if (preg_match('#^maps/(.+)\\.bsp$#i', $name, $m)) {
+                    $realBspName = $m[1]; // Original-Casing!
+                    break;
+                }
+            }
+            $pk3->close();
+            @unlink($tmp);
+
+            return ($realBspName ?: $bspName) . '.pk3';
+        } catch (\Throwable $e) {
+            \Log::error('guessOriginalPk3Name failed: ' . $e->getMessage());
+            return $bspName . '.pk3';
+        }
+    }
+
     protected function extractBspNameFromPk3(string $s3FilePath): ?string
     {
         try {
