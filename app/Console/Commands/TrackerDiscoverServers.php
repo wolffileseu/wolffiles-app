@@ -41,6 +41,7 @@ class TrackerDiscoverServers extends Command
         $totalNew = 0;
         $totalExisting = 0;
         $totalSkipped = 0;
+        $totalWakeups = 0;
         foreach ($results as $slug => $data) {
             $game = TrackerGame::where('slug', $slug)->first();
             if (!$game) continue;
@@ -58,6 +59,19 @@ class TrackerDiscoverServers extends Command
                     if ($existing->status === 'removed') {
                         $existing->update(['status' => 'active']);
                     }
+
+                    // Wake-up trigger: master sees this server, meaning it just
+                    // re-registered — it's almost certainly back online. Force
+                    // an immediate poll instead of waiting for the backoff cap
+                    // (up to 15min). Works for all games (ET, RtCW, RtCW-Coop).
+                    if (!$existing->is_online
+                        && $existing->next_poll_at
+                        && $existing->next_poll_at->isFuture()
+                    ) {
+                        $existing->update(['next_poll_at' => now()]);
+                        $totalWakeups++;
+                    }
+
                     $totalExisting++;
                 } else {
                     $geo = GeoIpService::lookup($serverData['ip']);
@@ -77,7 +91,7 @@ class TrackerDiscoverServers extends Command
                 }
             }
         }
-        $this->info(" Discovery complete: {$totalNew} new, {$totalExisting} existing, {$totalSkipped} skipped (spam IPs)");
+        $this->info(" Discovery complete: {$totalNew} new, {$totalExisting} existing, {$totalWakeups} woken up, {$totalSkipped} skipped (spam IPs)");
         return 0;
     }
 }

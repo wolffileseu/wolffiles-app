@@ -320,13 +320,12 @@ class ServerPollerService
      * Public API — used by PollServerJob and may be used by admin actions
      * or future force-poll workflows.
      *
-     * Staircase:
-     *   1 fail   → 5 min     (300 s)
-     *   2 fails  → 15 min    (900 s)
-     *   3 fails  → 1 hour    (3600 s)
-     *   4 fails  → 24 hours  (86400 s)
-     *   5 fails  → 48 hours  (172800 s)
-     *   6+ fails → 1 week    (604800 s)
+     * Staircase (flat, max 15min — game servers can recover any moment):
+     *   1 fail   → 1 min   (60 s)
+     *   2 fails  → 2 min   (120 s)
+     *   3 fails  → 5 min   (300 s)
+     *   4 fails  → 10 min  (600 s)
+     *   5+ fails → 15 min  (900 s)   — hard cap
      *
      * Enhanced-tracker servers (recent UDP within 1h) are capped at 3 min
      * regardless of failure count — they've proven they're alive recently.
@@ -348,12 +347,11 @@ class ServerPollerService
         $failures = max(1, (int) $server->poll_failures);
 
         $base = match (true) {
-            $failures >= 6  => 604800,  // 1 week
-            $failures === 5 => 172800,  // 48 h
-            $failures === 4 => 86400,   // 24 h
-            $failures === 3 => 3600,    // 1 h
-            $failures === 2 => 900,     // 15 min
-            default         => 300,     // 5 min — fail #1
+            $failures >= 5  => 900,     // 15 min — hard cap
+            $failures === 4 => 600,     // 10 min
+            $failures === 3 => 300,     // 5 min
+            $failures === 2 => 120,     // 2 min
+            default         => 60,      // 1 min — fail #1
         };
 
         if ($hasRecentEnhanced) {
