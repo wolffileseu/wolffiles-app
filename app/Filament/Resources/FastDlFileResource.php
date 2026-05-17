@@ -6,6 +6,7 @@ use App\Filament\Resources\FastDlFileResource\Pages;
 use App\Models\FastDl\FastDlFile;
 use App\Models\FastDl\FastDlDirectory;
 use Filament\Forms;
+use Filament\Forms\Get;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -41,6 +42,7 @@ class FastDlFileResource extends Resource
                     ->label('Upload PK3')
                     ->disk('s3')
                     ->directory('fastdl')
+                    ->preserveFilenames()
                     
                     ->maxSize(102400)
                     ->helperText('Max 100MB. The file will be stored on S3.'),

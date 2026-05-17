@@ -66,7 +66,11 @@ class FastDlController extends Controller
         ]);
 
         // Redirect to S3
-        return redirect(Storage::disk('s3')->temporaryUrl($file->s3_path, now()->addMinutes(10)));
+        return redirect(Storage::disk('s3')->temporaryUrl(
+            $file->s3_path,
+            now()->addMinutes(10),
+            ['ResponseContentDisposition' => 'attachment; filename="' . $file->filename . '"']
+        ));
     }
 
     private function serveClanFile(FastDlClan $clan, string $dirSlug, string $filename)
@@ -88,7 +92,11 @@ class FastDlController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            return redirect(Storage::disk('s3')->temporaryUrl($clanFile->s3_path, now()->addMinutes(10)));
+            return redirect(Storage::disk('s3')->temporaryUrl(
+                $clanFile->s3_path,
+                now()->addMinutes(10),
+                ['ResponseContentDisposition' => 'attachment; filename="' . $clanFile->filename . '"']
+            ));
         }
 
         // 2. Check base directory (if include_base)
@@ -102,7 +110,11 @@ class FastDlController extends Controller
 
                 if ($file) {
                     $file->increment('download_count');
-                    return redirect(Storage::disk('s3')->temporaryUrl($file->s3_path, now()->addMinutes(10)));
+                    return redirect(Storage::disk('s3')->temporaryUrl(
+            $file->s3_path,
+            now()->addMinutes(10),
+            ['ResponseContentDisposition' => 'attachment; filename="' . $file->filename . '"']
+        ));
                 }
             }
         }
@@ -123,7 +135,11 @@ class FastDlController extends Controller
 
             if ($file) {
                 $file->increment('download_count');
-                return redirect(Storage::disk('s3')->temporaryUrl($file->s3_path, now()->addMinutes(10)));
+                return redirect(Storage::disk('s3')->temporaryUrl(
+            $file->s3_path,
+            now()->addMinutes(10),
+            ['ResponseContentDisposition' => 'attachment; filename="' . $file->filename . '"']
+        ));
             }
         }
 
