@@ -48,6 +48,7 @@ class Testserver extends Model
         'pterodactyl_server_id' => 'integer',
         'pterodactyl_egg_id' => 'integer',
         'allowed_mod_slugs' => 'array',
+        'last_rotation_at' => 'datetime',
     ];
 
     /* ─────────────────────────────────────────

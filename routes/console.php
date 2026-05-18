@@ -84,3 +84,4 @@ Schedule::command('tracker:cleanup-bots --force')->dailyAt('04:15')->withoutOver
 // (default 180 days). Conversations with active reports or evidence
 // snapshots are skipped.
 Schedule::command('pm:purge-retention')->dailyAt('03:45')->withoutOverlapping();
+Schedule::command('testserver:rotate-idle')->everyTwoHours()->withoutOverlapping();

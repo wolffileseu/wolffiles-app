@@ -1045,13 +1045,14 @@ class TestserverService
             ->where('game_id', $etGame->id)
             ->pluck('id');
 
-        // Random Map mit zugeordneter Wolffiles-Map-Page
+        // Random Map mit zugeordneter Wolffiles-Map-Page (ohne Blacklist-Crashes)
         $row = \DB::table('fastdl_files as f')
             ->join('files as w', 'w.id', '=', 'f.wolffiles_file_id')
             ->whereIn('f.directory_id', $etDirs)
             ->where('f.filename', 'like', '%.pk3')
             ->where('f.is_active', 1)
             ->where('w.status', 'approved')
+            ->where('w.idle_pool_blacklisted', 0)
             ->inRandomOrder()
             ->select('w.slug')
             ->limit(1)
