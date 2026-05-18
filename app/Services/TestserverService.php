@@ -960,12 +960,19 @@ class TestserverService
             // Verfügbare Mods = erlaubt - bereits-in-use
             $available = array_diff($allowedMods, $modsInUse);
 
-            // Fallback: wenn alle Mods schon belegt, nimm random aus allowed
+            // Fallback: wenn alle Mods schon belegt, nimm den am wenigsten benutzten
             if (empty($available)) {
-                $available = $allowedMods;
+                $usage = array_count_values($modsInUse);
+                $usageByMod = [];
+                foreach ($allowedMods as $m) {
+                    $usageByMod[$m] = $usage[$m] ?? 0;
+                }
+                $minUsage = min($usageByMod);
+                $leastUsed = array_keys($usageByMod, $minUsage);
+                $randomMod = $leastUsed[array_rand($leastUsed)];
+            } else {
+                $randomMod = $available[array_rand($available)];
             }
-
-            $randomMod = $available[array_rand($available)];
 
             // Tracking-Feld für nächsten Server setzen (sofort persistieren!)
             $server->current_idle_mod = $randomMod;
@@ -1045,20 +1052,40 @@ class TestserverService
             ->where('game_id', $etGame->id)
             ->pluck('id');
 
-        // Random Map mit zugeordneter Wolffiles-Map-Page (ohne Blacklist-Crashes)
-        $row = \DB::table('fastdl_files as f')
+        $query = \DB::table('fastdl_files as f')
             ->join('files as w', 'w.id', '=', 'f.wolffiles_file_id')
             ->whereIn('f.directory_id', $etDirs)
             ->where('f.filename', 'like', '%.pk3')
             ->where('f.is_active', 1)
             ->where('w.status', 'approved')
-            ->where('w.idle_pool_blacklisted', 0)
-            ->inRandomOrder()
-            ->select('w.slug')
-            ->limit(1)
-            ->value('slug');
+            ->where('w.idle_pool_blacklisted', 0);
 
-        return $row;
+        // Trickjump-Mods (etjump, etrun, tjmod) bekommen nur Maps mit "trickjump"-Tag
+        $tjMods = ['etjump', 'etrun', 'tjmod'];
+        $isTjMod = in_array($mod, $tjMods, true);
+
+        if ($isTjMod) {
+            $tjFileIds = \DB::table('taggables as t')
+                ->join('tags', 'tags.id', '=', 't.tag_id')
+                ->where('tags.slug', 'trickjump')
+                ->where('t.taggable_type', \App\Models\File::class)
+                ->pluck('t.taggable_id');
+
+            if ($tjFileIds->isEmpty()) {
+                \Log::warning('Idle-Mode: Keine Trickjump-Maps in DB', ['mod' => $mod]);
+                return null;
+            }
+
+            $query->whereIn('w.id', $tjFileIds);
+        }
+
+        $slug = $query->inRandomOrder()->select('w.slug')->limit(1)->value('slug');
+
+        if (!$slug && $isTjMod) {
+            \Log::warning('Idle-Mode: TJ-Map-Pool leer nach Filter (kein FastDL-Match?)', ['mod' => $mod]);
+        }
+
+        return $slug;
     }
 
     /**

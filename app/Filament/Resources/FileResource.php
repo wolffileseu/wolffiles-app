@@ -38,8 +38,14 @@ class FileResource extends Resource
                     Forms\Components\TextInput::make('title')->required()->maxLength(255),
                     Forms\Components\TextInput::make('slug')->maxLength(255)->unique(ignoreRecord: true),
                     Forms\Components\Select::make('category_id')
-                        ->relationship('category', 'name')
+                        ->relationship(
+                            name: 'category',
+                            titleAttribute: 'name',
+                            modifyQueryUsing: fn ($query) => $query->with('parent')->orderBy('parent_id')->orderBy('sort_order')->orderBy('name'),
+                        )
+                        ->getOptionLabelFromRecordUsing(fn ($record) => $record->parent ? "{$record->parent->name} → {$record->name}" : $record->name)
                         ->searchable()
+                        ->preload()
                         ->required(),
                     Forms\Components\Select::make('user_id')
                         ->relationship('user', 'name')
@@ -189,7 +195,12 @@ class FileResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected']),
                 Tables\Filters\SelectFilter::make('category_id')
-                    ->relationship('category', 'name')
+                    ->relationship(
+                        name: 'category',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn ($query) => $query->with('parent')->orderBy('parent_id')->orderBy('sort_order')->orderBy('name'),
+                    )
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->parent ? "{$record->parent->name} → {$record->name}" : $record->name)
                     ->label('Category'),
                 Tables\Filters\SelectFilter::make('game')
                     ->options([
