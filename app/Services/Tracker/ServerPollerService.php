@@ -336,6 +336,12 @@ class ServerPollerService
      */
     public function offlinePollInterval(TrackerServer $server): int
     {
+        // Admin override — bypasses failure backoff. Use with care: a
+        // dead server set to interval=30 will burn 2 polls/min forever.
+        if ($server->custom_poll_interval !== null) {
+            return max(15, min(3600, (int) $server->custom_poll_interval));
+        }
+
         $hasRecentEnhanced = $server->is_enhanced_tracker
             && !$server->enhanced_disabled
             && $server->enhanced_last_event_at
@@ -373,6 +379,10 @@ class ServerPollerService
      */
     public function onlinePollInterval(TrackerServer $server): int
     {
+        if ($server->custom_poll_interval !== null) {
+            return max(15, min(3600, (int) $server->custom_poll_interval));
+        }
+
         return match (true) {
             $server->current_players >= 15 => 30,
             $server->current_players >= 5  => 60,

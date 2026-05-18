@@ -27,6 +27,14 @@ class PollServerJob implements ShouldQueue
         $server = TrackerServer::find($this->serverId);
         if (!$server) return;
 
+        // Admin pause — skip poll, push next_poll_at out so the scheduler
+        // stops dispatching. On unpause, the next scheduler tick (or a
+        // manual "Poll Now") picks it back up immediately.
+        if ($server->polling_paused) {
+            $server->update(['next_poll_at' => now()->addHour()]);
+            return;
+        }
+
         $queryService = new ServerQueryService(2, 1);
         $playerTracker = new PlayerTrackingService();
         $poller = new ServerPollerService($queryService, $playerTracker);

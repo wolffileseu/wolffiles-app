@@ -47,6 +47,31 @@ class TrackerServerResource extends Resource
                         ->default('active'),
                 ])->columns(3),
 
+            Forms\Components\Section::make('Polling')
+                ->schema([
+                    Forms\Components\TextInput::make('custom_poll_interval')
+                        ->label('Custom Poll Interval')
+                        ->numeric()
+                        ->minValue(15)
+                        ->maxValue(3600)
+                        ->suffix('seconds')
+                        ->placeholder('Auto')
+                        ->helperText('Overrides online cadence AND offline backoff. 15–3600 s. Leave empty for default.'),
+                    Forms\Components\Toggle::make('polling_paused')
+                        ->label('Pause Polling')
+                        ->helperText('Server stays in DB but is not polled.'),
+                    Forms\Components\Placeholder::make('last_poll_display')
+                        ->label('Last Poll')
+                        ->content(fn ($record) => $record?->last_poll_at?->diffForHumans() ?? '—'),
+                    Forms\Components\Placeholder::make('next_poll_display')
+                        ->label('Next Poll')
+                        ->content(fn ($record) => $record?->next_poll_at?->diffForHumans() ?? '—'),
+                    Forms\Components\Placeholder::make('failures_display')
+                        ->label('Consecutive Failures')
+                        ->content(fn ($record) => (string) ($record?->poll_failures ?? 0)),
+                ])
+                ->columns(3),
+
             Forms\Components\Section::make('Location')
                 ->schema([
                     Forms\Components\TextInput::make('country')->maxLength(100),

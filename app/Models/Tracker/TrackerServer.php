@@ -40,6 +40,7 @@ class TrackerServer extends Model
         'latency_ms', 'private_slots', 'bot_count',
         'friendly_fire', 'antilag', 'balanced_teams',
         'heavy_weapon_restriction', 'anticheat', 'os_support',
+        'custom_poll_interval', 'polling_paused',
     ];
 
     protected function casts(): array
@@ -52,6 +53,7 @@ class TrackerServer extends Model
             'punkbuster' => 'boolean',
             'is_ranked' => 'boolean',
             'is_manually_added' => 'boolean',
+            'polling_paused' => 'boolean',
             'last_seen_at' => 'datetime',
             'first_seen_at' => 'datetime',
             'last_poll_at' => 'datetime',
