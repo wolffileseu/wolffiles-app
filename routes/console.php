@@ -84,4 +84,12 @@ Schedule::command('tracker:cleanup-bots --force')->dailyAt('04:15')->withoutOver
 // (default 180 days). Conversations with active reports or evidence
 // snapshots are skipped.
 Schedule::command('pm:purge-retention')->dailyAt('03:45')->withoutOverlapping();
+
+// =====================================================================
+// Queue maintenance: prune failed_jobs older than 72h
+// Prevents the table from growing unbounded after silent job failures
+// (see incident 2026-05-23: 1.2M rows, 10.7 GB, full poll outage)
+// =====================================================================
+Schedule::command('queue:prune-failed --hours=72')->dailyAt('04:30')->withoutOverlapping();
+
 Schedule::command('testserver:rotate-idle')->everyTwoHours()->withoutOverlapping();
