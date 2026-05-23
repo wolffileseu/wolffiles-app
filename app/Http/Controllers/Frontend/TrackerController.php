@@ -60,6 +60,9 @@ class TrackerController extends Controller
             'balanced'    => $request->boolean('balanced'),
             'anticheat'   => $request->boolean('anticheat'),
             'hwrestrict'  => $request->boolean('hwrestrict'),
+            'enhanced'    => $request->boolean('enhanced'),
+            'live_enhanced' => $request->boolean('live_enhanced'),
+            'engine_family' => $request->input('engine_family'),
             'sort'        => $request->get('sort', 'players'),
             'dir'         => $request->get('dir', 'desc'),
             'page'        => $request->get('page', 1),
@@ -124,6 +127,12 @@ class TrackerController extends Controller
             $query->whereIn('gametype', $gametypes);
         }
 
+        // Engine Family filter (multi)
+        $engineFamilyFilter = $asArray($request->input('engine_family'));
+        if (!empty($engineFamilyFilter)) {
+            $query->whereIn('engine_family', $engineFamilyFilter);
+        }
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -156,6 +165,19 @@ class TrackerController extends Controller
             $query->where('heavy_weapon_restriction', '>', 0);
         }
 
+        // Enhanced Tracker (boolean): currently enabled and not disabled
+        if ($request->boolean('enhanced', false)) {
+            $query->where('is_enhanced_tracker', true)
+                  ->where(function ($q) {
+                      $q->whereNull('enhanced_disabled')->orWhere('enhanced_disabled', false);
+                  });
+        }
+
+        // Live Enhanced Events: last enhanced event received within 24h
+        if ($request->boolean('live_enhanced', false)) {
+            $query->where('enhanced_last_event_at', '>=', now()->subDay());
+        }
+
         // Sort
         $sort = $request->get('sort', 'players');
         $dir  = $request->get('dir', 'desc') === 'asc' ? 'asc' : 'desc';
@@ -166,6 +188,7 @@ class TrackerController extends Controller
             'game'     => $query->orderBy('game_id', $dir),
             'mod'      => $query->orderBy('mod_name', $dir),
             'gametype' => $query->orderBy('gametype', $dir),
+            'engine'   => $query->orderBy('engine_family', $dir)->orderBy('engine_version', $dir),
             'ping'     => $query->orderByRaw('latency_ms IS NULL, latency_ms ' . $dir),
             'players'  => $query->orderByRaw('(current_players - COALESCE(bot_count, 0)) ' . $dir),
             default    => $query->orderByRaw('(current_players - COALESCE(bot_count, 0)) DESC'),
@@ -202,7 +225,19 @@ class TrackerController extends Controller
             ->orderBy('gametype')
             ->pluck('gametype');
 
-            return compact('servers', 'games', 'countries', 'mods', 'gametypes');
+        // Engine families with counts (sorted by popularity, label from parser)
+        $engineFamilies = TrackerServer::active()
+            ->whereNotNull('engine_family')
+            ->selectRaw('engine_family, COUNT(*) as cnt')
+            ->groupBy('engine_family')
+            ->orderByDesc('cnt')
+            ->get()
+            ->map(function ($row) {
+                $row->label = \App\Services\Tracker\EngineVersionParser::FAMILY_LABELS[$row->engine_family] ?? $row->engine_family;
+                return $row;
+            });
+
+            return compact('servers', 'games', 'countries', 'mods', 'gametypes', 'engineFamilies');
         });
 
         return view('frontend.tracker.servers', $payload);

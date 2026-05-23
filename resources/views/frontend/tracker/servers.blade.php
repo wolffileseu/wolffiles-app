@@ -21,6 +21,7 @@
     $selCountries = $parseMulti(request('country'));
     $selMods      = $parseMulti(request('mod'));
     $selGametypes = $parseMulti(request('gametype'));
+    $selEngineFamilies = $parseMulti(request('engine_family'));
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 py-8">
@@ -63,7 +64,7 @@
     </div>
 
     {{-- Filters --}}
-    <div x-data="{ filtersOpen: {{ (!empty($selCountries) || !empty($selMods) || !empty($selGametypes) || request('map')) ? 'true' : 'false' }} }" class="mb-6">
+    <div x-data="{ filtersOpen: {{ (!empty($selCountries) || !empty($selMods) || !empty($selGametypes) || !empty($selEngineFamilies) || request('map')) ? 'true' : 'false' }} }" class="mb-6">
         <div class="flex flex-wrap gap-3 items-center">
             <form method="GET" action="{{ route('tracker.servers') }}" class="flex-1 min-w-[200px]">
                 @foreach(request()->except(['search', 'page']) as $key => $value)
@@ -105,10 +106,20 @@
                class="px-3 py-2 rounded-lg text-sm transition {{ request('hwrestrict') ? 'bg-green-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
                 {{ __('messages.tracker_filter_hwrestrict') }}
             </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['enhanced' => request('enhanced') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('enhanced') ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}"
+               title="{{ __('messages.tracker_filter_enhanced_title') }}">
+                🛰 {{ __('messages.tracker_filter_enhanced') }}
+            </a>
+            <a href="{{ route('tracker.servers', array_merge(request()->except('page'), ['live_enhanced' => request('live_enhanced') ? null : 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('live_enhanced') ? 'bg-amber-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}"
+               title="{{ __('messages.tracker_filter_live_enhanced_title') }}">
+                📡 {{ __('messages.tracker_filter_live_enhanced') }}
+            </a>
             <button @click="filtersOpen = !filtersOpen" class="px-3 py-2 rounded-lg text-sm bg-gray-700 text-gray-300 hover:bg-gray-600 transition">
                 {{ __('messages.more_filters') }}
-                @if(count($selCountries) + count($selMods) + count($selGametypes) > 0)
-                    <span class="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">{{ count($selCountries) + count($selMods) + count($selGametypes) }}</span>
+                @if(count($selCountries) + count($selMods) + count($selGametypes) + count($selEngineFamilies) > 0)
+                    <span class="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">{{ count($selCountries) + count($selMods) + count($selGametypes) + count($selEngineFamilies) }}</span>
                 @endif
             </button>
             <button id="autoRefreshBtn" onclick="toggleAutoRefresh(this)"
@@ -123,6 +134,8 @@
                 @if(request('game'))   <input type="hidden" name="game"   value="{{ request('game') }}">   @endif
                 @if(request('online')) <input type="hidden" name="online" value="1">                       @endif
                 @if(request('players'))<input type="hidden" name="players" value="1">                      @endif
+                @if(request('enhanced')) <input type="hidden" name="enhanced" value="1">                    @endif
+                @if(request('live_enhanced')) <input type="hidden" name="live_enhanced" value="1">         @endif
                 @if(request('search')) <input type="hidden" name="search" value="{{ request('search') }}"> @endif
                 @if(request('sort'))   <input type="hidden" name="sort"   value="{{ request('sort') }}">   @endif
                 @if(request('dir'))    <input type="hidden" name="dir"    value="{{ request('dir') }}">    @endif
@@ -134,15 +147,19 @@
                            class="w-full bg-gray-700 border-gray-600 rounded text-sm text-white px-3 py-1.5">
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {{-- Countries (multi) --}}
-                    <div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {{-- Countries (multi, searchable) --}}
+                    <div x-data="{ q: '' }">
                         <label class="text-gray-400 text-xs block mb-2">{{ __('messages.country') }}
                             @if(count($selCountries)) <span class="text-amber-400">({{ count($selCountries) }})</span> @endif
                         </label>
+                        <input type="text" x-model="q" placeholder="{{ __('messages.search_in_country') }}"
+                               class="w-full bg-gray-700 border border-gray-600 rounded text-xs text-white px-2 py-1 mb-1.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
                             @foreach($countries as $c)
-                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer"
+                                       data-search="{{ strtolower($c->country . ' ' . $c->country_code) }}"
+                                       x-show="q === '' || $el.dataset.search.includes(q.toLowerCase())">
                                     <input type="checkbox" name="country_multi[]" value="{{ $c->country_code }}"
                                            {{ in_array($c->country_code, $selCountries) ? 'checked' : '' }}
                                            class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
@@ -152,14 +169,18 @@
                         </div>
                     </div>
 
-                    {{-- Mods (multi) --}}
-                    <div>
+                    {{-- Mods (multi, searchable) --}}
+                    <div x-data="{ q: '' }">
                         <label class="text-gray-400 text-xs block mb-2">{{ __('messages.mod') }}
                             @if(count($selMods)) <span class="text-amber-400">({{ count($selMods) }})</span> @endif
                         </label>
+                        <input type="text" x-model="q" placeholder="{{ __('messages.search_in_mod') }}"
+                               class="w-full bg-gray-700 border border-gray-600 rounded text-xs text-white px-2 py-1 mb-1.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
                             @foreach($mods as $mod)
-                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer"
+                                       data-search="{{ strtolower($mod) }}"
+                                       x-show="q === '' || $el.dataset.search.includes(q.toLowerCase())">
                                     <input type="checkbox" name="mod_multi[]" value="{{ $mod }}"
                                            {{ in_array($mod, $selMods) ? 'checked' : '' }}
                                            class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
@@ -169,18 +190,43 @@
                         </div>
                     </div>
 
-                    {{-- Gametypes (multi) --}}
-                    <div>
+                    {{-- Gametypes (multi, searchable) --}}
+                    <div x-data="{ q: '' }">
                         <label class="text-gray-400 text-xs block mb-2">Gametype
                             @if(count($selGametypes)) <span class="text-amber-400">({{ count($selGametypes) }})</span> @endif
                         </label>
+                        <input type="text" x-model="q" placeholder="{{ __('messages.search_in_gametype') }}"
+                               class="w-full bg-gray-700 border border-gray-600 rounded text-xs text-white px-2 py-1 mb-1.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                         <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
                             @foreach($gametypes as $gt)
-                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer">
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer"
+                                       data-search="{{ strtolower(\App\Services\Tracker\GametypeService::label($gt) . ' ' . $gt) }}"
+                                       x-show="q === '' || $el.dataset.search.includes(q.toLowerCase())">
                                     <input type="checkbox" name="gametype_multi[]" value="{{ $gt }}"
                                            {{ in_array($gt, $selGametypes) ? 'checked' : '' }}
                                            class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
                                     <span>{{ \App\Services\Tracker\GametypeService::label($gt) }} <span class="text-gray-500">({{ $gt }})</span></span>
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Engine Family (multi, searchable) --}}
+                    <div x-data="{ q: '' }">
+                        <label class="text-gray-400 text-xs block mb-2">{{ __('messages.engine_family') }}
+                            @if(count($selEngineFamilies)) <span class="text-amber-400">({{ count($selEngineFamilies) }})</span> @endif
+                        </label>
+                        <input type="text" x-model="q" placeholder="{{ __('messages.search_in_engine') }}"
+                               class="w-full bg-gray-700 border border-gray-600 rounded text-xs text-white px-2 py-1 mb-1.5 focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                        <div class="max-h-48 overflow-y-auto bg-gray-900/50 rounded p-2 space-y-1">
+                            @foreach(($engineFamilies ?? collect()) as $ef)
+                                <label class="flex items-center text-sm text-gray-200 hover:bg-gray-700/50 rounded px-1.5 py-0.5 cursor-pointer"
+                                       data-search="{{ strtolower($ef->label . ' ' . $ef->engine_family) }}"
+                                       x-show="q === '' || $el.dataset.search.includes(q.toLowerCase())">
+                                    <input type="checkbox" name="engine_family_multi[]" value="{{ $ef->engine_family }}"
+                                           {{ in_array($ef->engine_family, $selEngineFamilies) ? 'checked' : '' }}
+                                           class="mr-2 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500">
+                                    <span>{{ $ef->label }} <span class="text-gray-500">({{ $ef->cnt }})</span></span>
                                 </label>
                             @endforeach
                         </div>
@@ -312,7 +358,7 @@
 <script>
 document.getElementById('filterForm')?.addEventListener('submit', function(e) {
     const form = e.target;
-    ['country', 'mod', 'gametype'].forEach(field => {
+    ['country', 'mod', 'gametype', 'engine_family'].forEach(field => {
         const checked = form.querySelectorAll(`input[name="${field}_multi[]"]:checked`);
         const values = Array.from(checked).map(el => el.value);
         // Remove any existing hidden input for this field

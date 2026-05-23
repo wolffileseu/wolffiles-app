@@ -30,7 +30,7 @@
             </p>
             
             <div class="mt-3 flex items-stretch gap-2 max-w-xl">
-                <code id="enhanced-banner-code" class="flex-1 rounded bg-gray-900 text-emerald-300 px-3 py-2 font-mono text-xs sm:text-sm truncate">set sv_tracker "et-tracker.trackbase.net:4444;tracker.wolffiles.eu:4444"</code>
+                <code id="enhanced-banner-code" class="flex-1 rounded bg-gray-900 text-emerald-300 px-3 py-2 font-mono text-xs sm:text-sm truncate">set sv_tracker "et-tracker.trackbase.net:4444 tracker.wolffiles.eu:4444"</code>
                 <button id="enhanced-banner-copy-btn"
                         onclick="copyEnhancedBannerCode()"
                         class="flex-shrink-0 rounded bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 text-sm font-medium transition flex items-center gap-1.5">
@@ -42,10 +42,10 @@
             </div>
 
             <p class="mt-3 text-xs text-gray-400">
-                {{ __('Requires multi-tracker support in your ET:Legacy build —') }} <code class="font-mono">sv_tracker</code> {{ __('accepts a `;`-separated list of endpoints.') }}
-                <a href="https://github.com/etlegacy/etlegacy/pull/3432" target="_blank" rel="noopener" 
+                {{ __('Requires multi-tracker support in your ET:Legacy build —') }} <code class="font-mono">sv_tracker</code> {{ __('accepts a space-separated list of endpoints.') }}
+                <a href="https://github.com/etlegacy/etlegacy/wiki/Changelog#server" target="_blank" rel="noopener" 
                    class="text-emerald-400 hover:underline">
-                    {{ __('See upstream PR') }} →
+                    {{ __('See changelog') }} →
                 </a>
             </p>
         </div>
@@ -74,7 +74,7 @@ function dismissEnhancedBanner() {
 }
 
 function copyEnhancedBannerCode() {
-    const text = 'set sv_tracker "et-tracker.trackbase.net:4444;tracker.wolffiles.eu:4444"';
+    const text = 'set sv_tracker "et-tracker.trackbase.net:4444 tracker.wolffiles.eu:4444"';
     const btn = document.getElementById('enhanced-banner-copy-btn');
     const span = btn.querySelector('span');
     const original = span.textContent;

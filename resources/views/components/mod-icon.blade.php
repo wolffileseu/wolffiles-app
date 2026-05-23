@@ -14,7 +14,7 @@
     // Manual aliases for common mod-name variants that don't match their file directly
     $aliases = [
         'etlegacy'      => 'legacy',
-        'main'          => 'etmain',
+        //'main'          => 'etmain',
         'silentmod'     => 'silent',
         'noquarter'     => 'nq',
         'truecombat'    => 'tc',

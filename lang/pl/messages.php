@@ -888,4 +888,13 @@ return [
     'likely_match' => '[TODO:pl] likely match',
     'relation_verified' => '[TODO:pl] Manually verified link',
     'relation_low_confidence' => '[TODO:pl] Auto-detected - please verify',
+    'tracker_filter_enhanced' => 'Enhanced Tracker',
+    'tracker_filter_enhanced_title' => 'Pokaż tylko serwery z włączonym Enhanced Tracker',
+    'tracker_filter_live_enhanced' => 'Live Events',
+    'tracker_filter_live_enhanced_title' => 'Serwery, które wysłały zdarzenia Enhanced w ciągu ostatnich 24h',
+    'engine_family' => 'Silnik',
+    'search_in_country' => 'Szukaj kraju…',
+    'search_in_mod' => 'Szukaj moda…',
+    'search_in_gametype' => 'Szukaj trybu…',
+    'search_in_engine' => 'Szukaj silnika…',
 ];

@@ -888,4 +888,13 @@ return [
     'likely_match' => '[TODO:nl] likely match',
     'relation_verified' => '[TODO:nl] Manually verified link',
     'relation_low_confidence' => '[TODO:nl] Auto-detected - please verify',
+    'tracker_filter_enhanced' => 'Enhanced Tracker',
+    'tracker_filter_enhanced_title' => 'Alleen servers met Enhanced Tracker ingeschakeld',
+    'tracker_filter_live_enhanced' => 'Live Events',
+    'tracker_filter_live_enhanced_title' => 'Servers die de afgelopen 24u Enhanced events hebben verzonden',
+    'engine_family' => 'Engine',
+    'search_in_country' => 'Land zoeken…',
+    'search_in_mod' => 'Mod zoeken…',
+    'search_in_gametype' => 'Gametype zoeken…',
+    'search_in_engine' => 'Engine zoeken…',
 ];

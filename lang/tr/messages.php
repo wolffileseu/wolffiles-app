@@ -888,4 +888,13 @@ return [
     'likely_match' => '',
     'relation_verified' => '[TODO:tr] Manually verified link',
     'relation_low_confidence' => '[TODO:tr] Auto-detected - please verify',
+    'tracker_filter_enhanced' => 'Enhanced Tracker',
+    'tracker_filter_enhanced_title' => 'Yalnızca Enhanced Tracker etkin sunucuları göster',
+    'tracker_filter_live_enhanced' => 'Canlı Olaylar',
+    'tracker_filter_live_enhanced_title' => 'Son 24 saatte Enhanced olayı gönderen sunucular',
+    'engine_family' => 'Motor',
+    'search_in_country' => 'Ülke ara…',
+    'search_in_mod' => 'Mod ara…',
+    'search_in_gametype' => 'Oyun tipi ara…',
+    'search_in_engine' => 'Motor ara…',
 ];

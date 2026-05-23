@@ -888,4 +888,13 @@ return [
     'tracker_filter_balanced' => 'Balanced Teams',
     'tracker_filter_anticheat' => 'Anticheat',
     'tracker_filter_hwrestrict' => 'Weapon Limit',
+    'tracker_filter_enhanced' => 'Enhanced Tracker',
+    'tracker_filter_enhanced_title' => 'Show only servers with Enhanced Tracker enabled',
+    'tracker_filter_live_enhanced' => 'Live Events',
+    'tracker_filter_live_enhanced_title' => 'Servers that sent Enhanced events in the last 24h',
+    'engine_family' => 'Engine',
+    'search_in_country' => 'Search country…',
+    'search_in_mod' => 'Search mod…',
+    'search_in_gametype' => 'Search gametype…',
+    'search_in_engine' => 'Search engine…',
 ];

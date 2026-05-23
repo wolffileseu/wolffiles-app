@@ -888,4 +888,13 @@ return [
     'likely_match' => '[TODO:fr] likely match',
     'relation_verified' => '[TODO:fr] Manually verified link',
     'relation_low_confidence' => '[TODO:fr] Auto-detected - please verify',
+    'tracker_filter_enhanced' => 'Tracker Enhanced',
+    'tracker_filter_enhanced_title' => 'Afficher uniquement les serveurs avec Tracker Enhanced activé',
+    'tracker_filter_live_enhanced' => 'Événements live',
+    'tracker_filter_live_enhanced_title' => 'Serveurs ayant envoyé des événements Enhanced dans les dernières 24h',
+    'engine_family' => 'Moteur',
+    'search_in_country' => 'Rechercher un pays…',
+    'search_in_mod' => 'Rechercher un mod…',
+    'search_in_gametype' => 'Rechercher un gametype…',
+    'search_in_engine' => 'Rechercher un moteur…',
 ];

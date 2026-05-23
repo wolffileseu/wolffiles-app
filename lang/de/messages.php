@@ -888,4 +888,13 @@ return [
     'tracker_filter_balanced' => 'Faire Teams',
     'tracker_filter_anticheat' => 'Anticheat',
     'tracker_filter_hwrestrict' => 'Waffenlimit',
+    'tracker_filter_enhanced' => 'Enhanced Tracker',
+    'tracker_filter_enhanced_title' => 'Nur Server mit aktiviertem Enhanced Tracker anzeigen',
+    'tracker_filter_live_enhanced' => 'Live Events',
+    'tracker_filter_live_enhanced_title' => 'Server, die in den letzten 24h Enhanced Events gesendet haben',
+    'engine_family' => 'Engine',
+    'search_in_country' => 'Land suchen…',
+    'search_in_mod' => 'Mod suchen…',
+    'search_in_gametype' => 'Gametype suchen…',
+    'search_in_engine' => 'Engine suchen…',
 ];
