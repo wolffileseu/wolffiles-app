@@ -41,6 +41,7 @@ class TrackerServer extends Model
         'friendly_fire', 'antilag', 'balanced_teams',
         'heavy_weapon_restriction', 'anticheat', 'os_support',
         'custom_poll_interval', 'polling_paused',
+        'engine_family', 'engine_version', 'engine_platform', 'engine_build_date', 'engine_is_dev_build', 'engine_display',
     ];
 
     protected function casts(): array
@@ -54,6 +55,8 @@ class TrackerServer extends Model
             'is_ranked' => 'boolean',
             'is_manually_added' => 'boolean',
             'polling_paused' => 'boolean',
+            'engine_is_dev_build' => 'boolean',
+            'engine_build_date' => 'date',
             'last_seen_at' => 'datetime',
             'first_seen_at' => 'datetime',
             'last_poll_at' => 'datetime',

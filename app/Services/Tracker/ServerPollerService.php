@@ -13,11 +13,13 @@ class ServerPollerService
 {
     private ServerQueryService $queryService;
     private PlayerTrackingService $playerTracker;
+    private EngineVersionParser $engineParser;
 
-    public function __construct(ServerQueryService $queryService, PlayerTrackingService $playerTracker)
+    public function __construct(ServerQueryService $queryService, PlayerTrackingService $playerTracker, EngineVersionParser $engineParser)
     {
         $this->queryService = $queryService;
         $this->playerTracker = $playerTracker;
+        $this->engineParser = $engineParser;
     }
 
     /**
@@ -91,6 +93,7 @@ class ServerPollerService
         $pure = isset($settings['sv_pure']) ? (bool)$settings['sv_pure'] : $server->sv_pure;
         $punkbuster = isset($settings['sv_punkbuster']) ? (bool)$settings['sv_punkbuster'] : $server->punkbuster;
         $os = $settings['sv_os'] ?? $settings['sys_cpustring'] ?? $settings['mod_build'] ?? $settings['version'] ?? $server->os;
+        $engineInfo = $this->engineParser->parse($os);
 
         // Auto-detect game type for protocol 84 (ET 2.60b vs ETL)
         if ($server->game && (int)$server->game->protocol_version === 84) {
@@ -167,6 +170,12 @@ class ServerPollerService
             'sv_pure' => $pure,
             'punkbuster' => $punkbuster,
             'os' => $os,
+            'engine_family'       => $engineInfo['engine_family'],
+            'engine_version'      => $engineInfo['engine_version'],
+            'engine_platform'     => $engineInfo['engine_platform'],
+            'engine_build_date'   => $engineInfo['engine_build_date'],
+            'engine_is_dev_build' => $engineInfo['engine_is_dev_build'],
+            'engine_display'      => $engineInfo['engine_display'],
             'os_support' => $osSupport,
             'latency_ms' => $latencyMs,
             'is_online' => true,
