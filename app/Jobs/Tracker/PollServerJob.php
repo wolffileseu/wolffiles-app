@@ -6,6 +6,7 @@ use App\Models\Tracker\TrackerServer;
 use App\Services\Tracker\PlayerTrackingService;
 use App\Services\Tracker\ServerPollerService;
 use App\Services\Tracker\ServerQueryService;
+use App\Services\Tracker\EngineVersionParser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,7 +38,8 @@ class PollServerJob implements ShouldQueue
 
         $queryService = new ServerQueryService(2, 1);
         $playerTracker = new PlayerTrackingService();
-        $poller = new ServerPollerService($queryService, $playerTracker);
+        $engineParser = new EngineVersionParser();
+        $poller = new ServerPollerService($queryService, $playerTracker, $engineParser);
 
         $success = $poller->pollServer($server);
 
