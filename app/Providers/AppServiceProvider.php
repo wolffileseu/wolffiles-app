@@ -27,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
         User::observe(TelegramObserver::class);
         File::observe(TelegramObserver::class);
 
+        // Uploader API tree cache invalidation
+        \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
+
         // Resource Policies
         Gate::policy(\App\Models\File::class, \App\Policies\FilePolicy::class);
         Gate::policy(\App\Models\Category::class, \App\Policies\CategoryPolicy::class);

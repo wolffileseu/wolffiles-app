@@ -483,3 +483,17 @@ Route::get('/__omnibot_trigger/{id}', function (int $id) {
 
 // Testserver System (public testing) 
 require __DIR__ . '/testserver-routes.php';
+
+// -- Wolffiles Uploader: redirect legacy .appinstaller URL to GitHub releases --
+// The desktop app (<=1.1.2) hardcodes this URL as the "Download Update" target.
+// We keep the URL alive as a 302 to the latest GitHub release so existing
+// installations can find their way to new versions.
+Route::get('/downloads/wolffiles-uploader.appinstaller', function () {
+    return redirect('https://github.com/wolffileseu/wolffiles-uploader/releases/latest', 302);
+})->name('uploader.appinstaller.legacy');
+
+// Convenience alias for users / docs / Discord posts.
+Route::get('/downloads/wolffiles-uploader', function () {
+    return redirect('https://github.com/wolffileseu/wolffiles-uploader/releases/latest', 302);
+})->name('uploader.download');
+

@@ -46,7 +46,7 @@ class FileUploadApiController extends Controller
             'category_id'       => 'required|integer|exists:categories,id',
             'version'           => 'nullable|string|max:50',
             'original_author'   => 'nullable|string|max:255',
-            'game'              => 'nullable|string|in:auto,et,rtcw',
+            'game'              => 'nullable|string|max:50',
             'tags'              => 'nullable|array|max:30',
             'tags.*'            => 'string|max:80',
             'screenshot'        => 'nullable|image|max:10240',           // 10 MB (legacy single)
@@ -72,11 +72,24 @@ class FileUploadApiController extends Controller
 
         // ── Game mapping ─────────────────────────────────────────────────────
         // App sends "auto" / "et" / "rtcw" — DB stores "ET" / "RtCW" or null (auto-detect later)
-        $game = match ($request->input('game', 'auto')) {
-            'et'   => 'ET',
-            'rtcw' => 'RtCW',
-            default => null,
-        };
+        // Client may send: "auto" -> null; a slug -> look up name; a name -> verify.
+        // Anything unknown falls back to null so FileAnalyzerService can detect.
+        $rawGame = trim((string) $request->input('game', 'auto'));
+        $game = null;
+
+        if ($rawGame !== '' && strtolower($rawGame) !== 'auto') {
+            $gameRow = \App\Models\Category::query()
+                ->whereNull('parent_id')
+                ->where('type', 'game')
+                ->where('is_active', 1)
+                ->where(function ($q) use ($rawGame) {
+                    $q->where('slug', $rawGame)
+                      ->orWhere('name', $rawGame);
+                })
+                ->first(['name']);
+
+            $game = $gameRow?->name; // canonical display name
+        }
 
         if ($isMultipart) {
             // ── Multipart path: file is already in S3 ───────────────────────

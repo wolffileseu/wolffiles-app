@@ -86,6 +86,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/categories', [\App\Http\Controllers\Api\CategoryApiController::class, 'index'])
         ->name('api.categories.index');
 
+    // Uploader Tree (Game → Categories für Wolffiles Uploader Desktop App)
+    Route::get('/uploader/tree', [\App\Http\Controllers\Api\UploaderTreeController::class, 'tree'])
+        ->name('api.uploader.tree');
+
 });
 
 
