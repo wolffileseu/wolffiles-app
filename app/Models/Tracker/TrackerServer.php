@@ -31,7 +31,7 @@ class TrackerServer extends Model
     protected $fillable = [
         'game_id', 'ip', 'port', 'hostname', 'hostname_clean', 'hostname_html',
         'country', 'country_code', 'city', 'latitude', 'longitude',
-        'current_map', 'current_players', 'max_players', 'gametype',
+        'current_map', 'current_map_started_at', 'current_players', 'max_players', 'gametype',
         'mod_name', 'mod_version', 'is_private', 'needs_password',
         'os', 'sv_pure', 'punkbuster', 'is_ranked',
         'is_online', 'is_manually_added', 'added_by', 'status',
@@ -61,6 +61,7 @@ class TrackerServer extends Model
             'first_seen_at' => 'datetime',
             'last_poll_at' => 'datetime',
             'next_poll_at' => 'datetime',
+            'current_map_started_at' => 'datetime',
             'is_enhanced_tracker' => 'boolean',
             'enhanced_disabled' => 'boolean',
             'enhanced_first_seen_at' => 'datetime',

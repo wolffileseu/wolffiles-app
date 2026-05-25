@@ -148,11 +148,28 @@ class ServerPollerService
         // g_oss bitfield: bit 0=Windows (1), bit 1=Mac (2), bit 2=Linux (4)
         $osSupport = isset($settings['g_oss']) ? ((int) $settings['g_oss']) & 0b111 : null;
 
+        // Map-change detection: stamp current_map_started_at when we observe a map change.
+        // Three cases:
+        // 1) $mapChanged=true -> now() (real change OR first poll where current_map was null).
+        // 2) $mapChanged=false AND existing timestamp -> preserve it (steady state, survives offline gaps).
+        // 3) $mapChanged=false AND null timestamp -> bootstrap with last_poll_at as lower bound.
+        //    Honest "we know it's been this map at least since then"; auto-corrects on next real change.
+        //    Without this branch, servers already running before deploy would stay NULL until map changes.
+        $mapChanged = $server->current_map !== $map;
+        if ($mapChanged) {
+            $mapStartedAt = now();
+        } elseif ($server->current_map_started_at !== null) {
+            $mapStartedAt = $server->current_map_started_at;
+        } else {
+            $mapStartedAt = $server->last_poll_at ?? now();
+        }
+
         $server->update([
             'hostname' => $hostname,
             'hostname_clean' => ColorCodeService::toClean($hostname),
             'hostname_html' => ColorCodeService::toHtml($hostname),
             'current_map' => $map,
+            'current_map_started_at' => $mapStartedAt,
             'current_players' => $totalPlayers,
             'max_players' => $maxPlayers,
             'private_slots' => $privateSlots,
