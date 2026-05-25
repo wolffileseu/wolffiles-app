@@ -591,7 +591,7 @@ return [
     'search' => 'Rechercher',
     'search_placeholder' => 'Rechercher des cartes, mods, skins…',
     'search_player' => 'Rechercher un joueur…',
-    'search_server' => 'Rechercher un serveur, IP ou carte…',
+    'search_server' => 'Rechercher un serveur, IP, IP:port ou carte…',
     'security' => 'Sécurité',
     'select' => 'Sélectionner',
     'send' => 'Envoyer le message',
@@ -897,4 +897,8 @@ return [
     'search_in_mod' => 'Rechercher un mod…',
     'search_in_gametype' => 'Rechercher un gametype…',
     'search_in_engine' => 'Rechercher un moteur…',
+    'tracker_map_playing_for' => 'En cours depuis :min min',
+    'tracker_map_remaining' => ':min min restantes',
+    'tracker_map_length' => 'Durée de la map : :min min',
+    'tracker_map_ending_soon' => 'Bientôt terminée',
 ];

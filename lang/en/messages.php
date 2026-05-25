@@ -591,7 +591,7 @@ return [
     'search' => 'Search',
     'search_placeholder' => 'Search maps, mods, skins...',
     'search_player' => 'Search player name...',
-    'search_server' => 'Search server, IP, or map...',
+    'search_server' => 'Search server, IP, IP:port, or map…',
     'security' => 'Security',
     'select' => 'Auswählen',
     'send' => 'Nachricht senden',
@@ -897,4 +897,8 @@ return [
     'search_in_mod' => 'Search mod…',
     'search_in_gametype' => 'Search gametype…',
     'search_in_engine' => 'Search engine…',
+    'tracker_map_playing_for' => 'Playing for :min min',
+    'tracker_map_remaining' => ':min min remaining',
+    'tracker_map_length' => 'Map length: :min min',
+    'tracker_map_ending_soon' => 'Ending soon',
 ];

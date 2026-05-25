@@ -133,14 +133,34 @@ class TrackerController extends Controller
             $query->whereIn('engine_family', $engineFamilyFilter);
         }
 
-        // Search
+        // Search (supports plain text, IP, or IP:port)
         if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('hostname_clean', 'like', "%{$search}%")
-                  ->orWhere('ip', 'like', "%{$search}%")
-                  ->orWhere('current_map', 'like', "%{$search}%");
-            });
+            $search = trim($request->search);
+
+            if (str_contains($search, ':')) {
+                [$ipPart, $portPart] = array_pad(explode(':', $search, 2), 2, '');
+                $ipPart = trim($ipPart);
+                $portPart = trim($portPart);
+
+                $query->where(function ($q) use ($ipPart, $portPart) {
+                    if ($ipPart !== '') {
+                        $q->where('ip', 'like', "%{$ipPart}%");
+                    }
+                    if ($portPart !== '' && ctype_digit($portPart)) {
+                        $q->where('port', (int) $portPart);
+                    }
+                });
+            } else {
+                $query->where(function ($q) use ($search) {
+                    $q->where('hostname_clean', 'like', "%{$search}%")
+                      ->orWhere('ip', 'like', "%{$search}%")
+                      ->orWhere('current_map', 'like', "%{$search}%");
+
+                    if (ctype_digit($search)) {
+                        $q->orWhere('port', (int) $search);
+                    }
+                });
+            }
         }
 
         // No password
@@ -1056,7 +1076,7 @@ class TrackerController extends Controller
 
     public function serverLiveData(TrackerServer $server)
     {
-        $server->load('game');
+        $server->load(['game', 'settings']);
 
         // ---- Real human players: from tracker_player_sessions + snapshots ----
         $sessions = $server->sessions()
@@ -1150,6 +1170,13 @@ class TrackerController extends Controller
             'players' => $allPlayers,
             'last_seen' => $server->last_seen_at?->diffForHumans(),
             'map_file_slug' => \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? null,
+            // Phase 1b: map progress for live elapsed/remaining/timelimit display.
+            // Sending elapsed seconds (server-computed) instead of ISO string lets the
+            // client tick locally between fetches without depending on client clock accuracy.
+            'map_elapsed_seconds' => $server->current_map_started_at
+                ? max(0, now()->getTimestamp() - $server->current_map_started_at->getTimestamp())
+                : null,
+            'timelimit_minutes' => ((int) ($server->settings->firstWhere('key', 'timelimit')?->value ?? 0)) ?: null,
         ]);
     }
 

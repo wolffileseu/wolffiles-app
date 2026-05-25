@@ -85,6 +85,26 @@
                     <template x-if="currentMapSlug"><a :href="'/files/' + currentMapSlug" class="text-amber-400 hover:text-amber-300" x-text="currentMap"></a></template><template x-if="currentMapSlug === ''"><span class="text-gray-300" x-text="currentMap"></span></template>
                 </div>
                 <div class="text-gray-400 text-sm mt-1">{{ \App\Services\Tracker\GametypeService::label($server->gametype, $server->game_id) }}</div>
+
+                {{-- Phase 1b: Map progress (elapsed / remaining / timelimit / percent) --}}
+                <template x-if="isOnline && mapElapsedSeconds !== null">
+                    <div class="mt-3 pt-3 border-t border-gray-700/50">
+                        <div class="text-sm text-gray-300 mb-2" x-text="formatPlayingFor(mapElapsedSeconds)"></div>
+                        <template x-if="timelimitMinutes">
+                            <div>
+                                <div class="w-full h-1.5 bg-gray-900 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-1000 ease-linear"
+                                         :class="mapProgressPercent >= 95 ? 'bg-red-500' : 'bg-amber-500'"
+                                         :style="'width: ' + Math.min(100, mapProgressPercent) + '%'"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-gray-400 mt-1.5 font-mono">
+                                    <span x-text="mapProgressPercent >= 95 ? i18n.endingSoon : formatRemaining(mapElapsedSeconds, timelimitMinutes)"></span>
+                                    <span x-text="formatLengthAndPercent(timelimitMinutes, mapProgressPercent)"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
             </div>
 
             {{-- Current Players --}}
@@ -775,9 +795,40 @@ function serverLive() {
         gametype: '{{ $server->gametype ?? '' }}',
         players: [],
         polling: null,
+        // Phase 1b: map progress state, i18n strings, computed getter, formatters
+        mapElapsedSeconds: @json($server->current_map_started_at ? max(0, now()->timestamp - $server->current_map_started_at->timestamp) : null),
+        timelimitMinutes: @json(((int) ($server->settings->firstWhere('key', 'timelimit')?->value ?? 0)) ?: null),
+        tickInterval: null,
+        i18n: {
+            playingFor: @json(__('messages.tracker_map_playing_for')),
+            remaining: @json(__('messages.tracker_map_remaining')),
+            length: @json(__('messages.tracker_map_length')),
+            endingSoon: @json(__('messages.tracker_map_ending_soon')),
+        },
+        get mapProgressPercent() {
+            if (!this.timelimitMinutes || this.mapElapsedSeconds === null) return 0;
+            return (this.mapElapsedSeconds / (this.timelimitMinutes * 60)) * 100;
+        },
+        formatPlayingFor(seconds) {
+            return this.i18n.playingFor.replace(':min', Math.floor(seconds / 60));
+        },
+        formatRemaining(elapsedSec, limitMin) {
+            const remainingMin = Math.max(0, limitMin - Math.floor(elapsedSec / 60));
+            return this.i18n.remaining.replace(':min', remainingMin);
+        },
+        formatLengthAndPercent(limitMin, percent) {
+            return this.i18n.length.replace(':min', limitMin) + ' · ' + Math.min(100, Math.round(percent)) + '%';
+        },
         startPolling() {
             setTimeout(() => this.refresh(), 500);
             this.polling = setInterval(() => this.refresh(), 30000);
+            // Phase 1b: local 1s tick advances elapsed between server fetches.
+            // refresh() resyncs from server, so client clock drift is irrelevant.
+            this.tickInterval = setInterval(() => {
+                if (this.isOnline && this.mapElapsedSeconds !== null) {
+                    this.mapElapsedSeconds++;
+                }
+            }, 1000);
         },
         async refresh() {
             try {
@@ -791,9 +842,15 @@ function serverLive() {
                 this.currentMapSlug = d.map_file_slug || "";
                 this.gametype = d.gametype || '';
                 this.players = d.players;
+                // Phase 1b: resync map progress from server (drift correction)
+                this.mapElapsedSeconds = d.map_elapsed_seconds;
+                this.timelimitMinutes = d.timelimit_minutes;
             } catch(e) {}
         },
-        destroy() { clearInterval(this.polling); }
+        destroy() {
+            clearInterval(this.polling);
+            clearInterval(this.tickInterval);
+        }
     }
 }
 </script>

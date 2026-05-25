@@ -591,7 +591,7 @@ return [
     'search' => 'Suchen',
     'search_placeholder' => '[TODO:de] Search maps, mods, skins...',
     'search_player' => '[TODO:de] Search player name...',
-    'search_server' => '[TODO:de] Search server, IP, or map...',
+    'search_server' => 'Server, IP, IP:Port oder Map suchen…',
     'security' => 'Sicherheit',
     'select' => 'Auswählen',
     'send' => 'Nachricht senden',
@@ -897,4 +897,8 @@ return [
     'search_in_mod' => 'Mod suchen…',
     'search_in_gametype' => 'Gametype suchen…',
     'search_in_engine' => 'Engine suchen…',
+    'tracker_map_playing_for' => 'Läuft seit :min Min.',
+    'tracker_map_remaining' => 'Noch :min Min.',
+    'tracker_map_length' => 'Maplänge: :min Min.',
+    'tracker_map_ending_soon' => 'Endet gleich',
 ];

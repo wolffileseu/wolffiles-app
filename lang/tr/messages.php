@@ -591,7 +591,7 @@ return [
     'search' => '[TODO:tr] Search',
     'search_placeholder' => '[TODO:tr] Search maps, mods, skins...',
     'search_player' => '[TODO:tr] Search player name...',
-    'search_server' => '[TODO:tr] Search server, IP, or map...',
+    'search_server' => 'Sunucu, IP, IP:port veya harita ara…',
     'security' => 'Güvenlik',
     'select' => '[TODO:tr] Select',
     'send' => '[TODO:tr] Send Message',
@@ -897,4 +897,8 @@ return [
     'search_in_mod' => 'Mod ara…',
     'search_in_gametype' => 'Oyun tipi ara…',
     'search_in_engine' => 'Motor ara…',
+    'tracker_map_playing_for' => ':min dakikadır oynuyor',
+    'tracker_map_remaining' => ':min dakika kaldı',
+    'tracker_map_length' => 'Harita süresi: :min dk',
+    'tracker_map_ending_soon' => 'Yakında bitiyor',
 ];
