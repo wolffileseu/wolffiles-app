@@ -1,5 +1,22 @@
 <?php
 
+Route::domain('bug.wolffiles.eu')->name('bug.')->group(function () {
+    $c = \App\Http\Controllers\BugTracker\BugTrackerController::class;
+
+    Route::get('/',                                    [$c, 'index'])->name('index');
+    Route::get('/project/{slug}',                      [$c, 'project'])->name('project');
+    Route::get('/{projectSlug}/{number}',              [$c, 'show'])
+        ->where('number', '[0-9]+')->name('show');
+
+    Route::middleware('auth')->group(function () use ($c) {
+        Route::get('/new/{projectSlug?}',              [$c, 'create'])->name('create');
+        Route::post('/new',                            [$c, 'store'])->name('store');
+        Route::post('/{projectSlug}/{number}/comment', [$c, 'comment'])
+            ->where('number', '[0-9]+')->name('comment');
+    });
+});
+
+
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\FileController;
 use App\Http\Controllers\Frontend\CategoryController;

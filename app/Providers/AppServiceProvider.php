@@ -22,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \App\Models\BugTracker\Task::observe(\App\Observers\BugTracker\TaskObserver::class);
+        \App\Models\BugTracker\Comment::observe(\App\Observers\BugTracker\CommentObserver::class);
         // Telegram notifications
         Comment::observe(TelegramObserver::class);
         User::observe(TelegramObserver::class);
