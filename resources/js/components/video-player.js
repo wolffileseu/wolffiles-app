@@ -1,3 +1,4 @@
+import 'plyr/dist/plyr.css';
 import Plyr from 'plyr';
 
 /**

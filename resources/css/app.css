@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 /* Plyr video player */
-@import 'plyr/dist/plyr.css';
 
 /* Prevent FOUC on Alpine.js x-cloak elements */
 [x-cloak] {
