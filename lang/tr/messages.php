@@ -901,4 +901,9 @@ return [
     'tracker_map_remaining' => ':min dakika kaldı',
     'tracker_map_length' => 'Harita süresi: :min dk',
     'tracker_map_ending_soon' => 'Yakında bitiyor',
+    'tracker_force_poll' => 'Şimdi kontrol et',
+    'tracker_force_poll_hint' => 'Sunucuyu hemen yeniden sorgula',
+    'tracker_force_poll_queued' => 'Sorgu gönderildi, yenileniyor…',
+    'tracker_force_poll_cooldown' => 'Lütfen bekleyin (:sec sn)',
+    'tracker_force_poll_error' => 'Hata – lütfen daha sonra tekrar deneyin',
 ];

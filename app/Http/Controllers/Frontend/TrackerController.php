@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Models\Tracker\TrackerGame;
 use App\Models\Tracker\TrackerServer;
+use App\Jobs\Tracker\PollServerJob;
+use Illuminate\Support\Facades\Log;
 use App\Models\Tracker\TrackerPlayer;
 use App\Models\Tracker\TrackerClan;
 use App\Models\Tracker\TrackerMap;
@@ -1072,6 +1074,43 @@ class TrackerController extends Controller
         });
 
         return response()->json($data);
+    }
+
+    /**
+     * Phase 2: Authenticated users can force-poll an offline server.
+     *
+     * - auth + throttle:5,1 middleware on the route
+     * - 30s cooldown per (user, server) tuple via cache
+     * - Dispatches PollServerJob on tracker-high queue (same as Filament admin action)
+     */
+    public function forcePoll(\Illuminate\Http\Request $request, TrackerServer $server)
+    {
+        $userId = $request->user()->id;
+        $cooldownKey = "force_poll:user:{$userId}:server:{$server->id}";
+        $cooldownSeconds = 30;
+
+        if (Cache::has($cooldownKey)) {
+            return response()->json([
+                'queued' => false,
+                'reason' => 'cooldown',
+                'retry_after' => Cache::get($cooldownKey) - now()->timestamp,
+            ], 429);
+        }
+
+        Cache::put($cooldownKey, now()->addSeconds($cooldownSeconds)->timestamp, $cooldownSeconds);
+
+        PollServerJob::dispatch($server->id)->onQueue('tracker-high');
+
+        Log::info('Force-poll dispatched by user', [
+            'user_id' => $userId,
+            'server_id' => $server->id,
+            'server_address' => "{$server->ip}:{$server->port}",
+        ]);
+
+        return response()->json([
+            'queued' => true,
+            'cooldown_seconds' => $cooldownSeconds,
+        ]);
     }
 
     public function serverLiveData(TrackerServer $server)

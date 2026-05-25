@@ -58,6 +58,40 @@
                         {{ __('messages.tracker_connect') }}
                     </a>
                 @endif
+                {{-- Phase 2: Force-poll button (only for offline servers, authenticated users) --}}
+                @auth
+                    @if(!$server->is_online)
+                        @php
+                            $forcePollConfig = [
+                                'url' => route('tracker.server.force_poll', $server),
+                                'csrf' => csrf_token(),
+                                'labels' => [
+                                    'idle' => __('messages.tracker_force_poll'),
+                                    'hint' => __('messages.tracker_force_poll_hint'),
+                                    'queued' => __('messages.tracker_force_poll_queued'),
+                                    'cooldown' => __('messages.tracker_force_poll_cooldown'),
+                                    'error' => __('messages.tracker_force_poll_error'),
+                                ],
+                            ];
+                        @endphp
+                        <div x-data="forcePoll({{ json_encode($forcePollConfig) }})" class="mt-2">
+                            <button @click="trigger()"
+                                    :disabled="state !== 'idle'"
+                                    :title="labels.hint"
+                                    :class="state === 'idle' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'"
+                                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded text-sm font-medium transition">
+                                <svg x-show="state === 'queued'" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                </svg>
+                                <svg x-show="state === 'idle' || state === 'cooldown' || state === 'error'" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                <span x-text="buttonLabel"></span>
+                            </button>
+                        </div>
+                    @endif
+                @endauth
                 @auth
                     @if(!$server->claimed_by_user_id)
                         <a href="{{ route('tracker.claim.server', $server) }}" class="mt-2 inline-block bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-1.5 rounded text-sm font-medium transition">
@@ -852,6 +886,66 @@ function serverLive() {
             clearInterval(this.tickInterval);
         }
     }
+}
+
+// Phase 2: Force-poll Alpine component
+function forcePoll(config) {
+    return {
+        url: config.url,
+        csrf: config.csrf,
+        labels: config.labels,
+        state: 'idle',         // idle | queued | cooldown | error
+        countdown: 0,
+        countdownInterval: null,
+        get buttonLabel() {
+            if (this.state === 'queued')   return this.labels.queued;
+            if (this.state === 'cooldown') return this.labels.cooldown.replace(':sec', this.countdown);
+            if (this.state === 'error')    return this.labels.error;
+            return this.labels.idle;
+        },
+        async trigger() {
+            if (this.state !== 'idle') return;
+            this.state = 'queued';
+            try {
+                const res = await fetch(this.url, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': this.csrf,
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await res.json().catch(() => ({}));
+                if (res.status === 429 || data.reason === 'cooldown') {
+                    this.startCooldown(data.retry_after || 30);
+                    return;
+                }
+                if (!res.ok || !data.queued) {
+                    this.state = 'error';
+                    setTimeout(() => { this.state = 'idle'; }, 3000);
+                    return;
+                }
+                // Queued OK. Reload page after 5s so the user sees the fresh state.
+                setTimeout(() => { window.location.reload(); }, 5000);
+            } catch (e) {
+                this.state = 'error';
+                setTimeout(() => { this.state = 'idle'; }, 3000);
+            }
+        },
+        startCooldown(seconds) {
+            this.state = 'cooldown';
+            this.countdown = Math.max(1, Math.ceil(seconds));
+            this.countdownInterval = setInterval(() => {
+                this.countdown--;
+                if (this.countdown <= 0) {
+                    clearInterval(this.countdownInterval);
+                    this.state = 'idle';
+                }
+            }, 1000);
+        },
+        destroy() {
+            clearInterval(this.countdownInterval);
+        },
+    };
 }
 </script>
 

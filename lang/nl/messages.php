@@ -901,4 +901,9 @@ return [
     'tracker_map_remaining' => 'Nog :min min',
     'tracker_map_length' => 'Maplengte: :min min',
     'tracker_map_ending_soon' => 'Eindigt zo',
+    'tracker_force_poll' => 'Nu controleren',
+    'tracker_force_poll_hint' => 'Server direct opnieuw opvragen',
+    'tracker_force_poll_queued' => 'Verzoek verstuurd, herladen…',
+    'tracker_force_poll_cooldown' => 'Even wachten (:sec s)',
+    'tracker_force_poll_error' => 'Fout – probeer het later opnieuw',
 ];

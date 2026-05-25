@@ -271,6 +271,7 @@ Route::get('/players/{player}/servers', [TrackerController::class, 'playerServer
 
 Route::post('/players/{player}/claim', [TrackerController::class, 'claimPlayer'])->middleware('auth')->name('tracker.player.claim');
 Route::post('/players/{player}/unclaim', [TrackerController::class, 'unclaimPlayer'])->middleware('auth')->name('tracker.player.unclaim');
+Route::post('/servers/{server}/force-poll', [TrackerController::class, 'forcePoll'])->middleware(['auth', 'throttle:5,1'])->name('tracker.server.force_poll');
 
 // Auth routes (Laravel Breeze)
 require __DIR__ . '/auth.php';

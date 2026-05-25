@@ -901,4 +901,9 @@ return [
     'tracker_map_remaining' => ':min min restantes',
     'tracker_map_length' => 'Durée de la map : :min min',
     'tracker_map_ending_soon' => 'Bientôt terminée',
+    'tracker_force_poll' => 'Vérifier maintenant',
+    'tracker_force_poll_hint' => 'Interroger le serveur immédiatement',
+    'tracker_force_poll_queued' => 'Requête envoyée, rechargement…',
+    'tracker_force_poll_cooldown' => 'Veuillez patienter (:sec s)',
+    'tracker_force_poll_error' => 'Erreur – veuillez réessayer plus tard',
 ];
