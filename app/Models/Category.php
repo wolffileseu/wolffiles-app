@@ -25,7 +25,7 @@ class Category extends Model
 
     protected $fillable = [
         'parent_id', 'name', 'slug', 'description', 'icon', 'image',
-        'sort_order', 'is_active', 'type', 'name_translations',
+        'sort_order', 'is_active', 'is_visible', 'type', 'name_translations',
         'description_translations', 'files_count',
     ];
 
@@ -33,6 +33,7 @@ class Category extends Model
     {
         return [
             'is_active' => 'boolean',
+        'is_visible' => 'boolean',
             'name_translations' => 'array',
             'description_translations' => 'array',
         ];
@@ -113,4 +114,16 @@ class Category extends Model
         }
         return $count;
     }
+
+    protected static function booted(): void
+    {
+        $clearCaches = function () {
+            \Illuminate\Support\Facades\Cache::forget('api.categories.v2');
+            \Illuminate\Support\Facades\Cache::forget('api.uploader.tree.v1');
+        };
+
+        static::saved($clearCaches);
+        static::deleted($clearCaches);
+    }
+
 }

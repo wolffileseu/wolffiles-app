@@ -40,7 +40,7 @@ class LuaScriptController extends Controller
         };
 
         $scripts = $query->paginate(24)->withQueryString();
-        $categories = Category::where('type', 'lua')->where('is_active', true)->orderBy('sort_order')->get();
+        $categories = Category::where('type', 'lua')->where('is_active', true)->where('is_visible', true)->orderBy('sort_order')->get();
 
         return view('frontend.lua.index', compact('scripts', 'categories'));
     }

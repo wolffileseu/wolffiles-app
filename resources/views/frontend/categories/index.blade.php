@@ -23,15 +23,13 @@
                         <a href="{{ route('categories.show', $category) }}"
                            class="flex items-center justify-between p-5 hover:bg-gray-750 transition-colors group">
                             <div class="flex items-center space-x-4">
-                                @if($category->icon)
-                                    <span class="text-3xl">{{ $category->icon }}</span>
-                                @else
+                                <x-category-icon :category="$category">
                                     <div class="w-10 h-10 bg-amber-600/20 rounded-lg flex items-center justify-center">
                                         <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
                                         </svg>
                                     </div>
-                                @endif
+                                </x-category-icon>
                                 <div>
                                     <h2 class="text-xl font-semibold text-white group-hover:text-amber-400 transition-colors">
                                         {{ $category->name_translations[app()->getLocale()] ?? $category->name }}

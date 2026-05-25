@@ -14,8 +14,10 @@ class CategoryController extends Controller
     {
         $categories = Category::whereNull('parent_id')
             ->where('is_active', true)
+            ->where('is_visible', true)
             ->with(['children' => function ($q) {
                 $q->where('is_active', true)
+                  ->where('is_visible', true)
                   ->withCount(['files as approved_files_count' => function ($q2) {
                       $q2->where('status', 'approved');
                   }])

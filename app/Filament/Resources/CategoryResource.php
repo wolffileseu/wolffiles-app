@@ -35,13 +35,14 @@ class CategoryResource extends Resource
                 ->nullable(),
             Forms\Components\Textarea::make('description'),
             Forms\Components\Select::make('type')
-                ->options(['file' => 'File', 'lua' => 'LUA Script', 'game' => 'Game'])
+                ->options(['file' => 'File', 'lua' => 'LUA Script', 'game' => 'Game', 'demo' => 'Demo'])
                 ->default('file')
                 ->required(),
             Forms\Components\TextInput::make('icon')->maxLength(255),
-            Forms\Components\FileUpload::make('image')->disk('s3')->directory('categories')->image(),
+            Forms\Components\FileUpload::make('image')->disk('s3')->directory('categories')->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])->maxSize(5120),
             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
-            Forms\Components\Toggle::make('is_active')->default(true),
+            Forms\Components\Toggle::make('is_active')->default(true)->helperText('Required to use this category (uploads + listings)'),
+            Forms\Components\Toggle::make('is_visible')->default(true)->label('Show in listings')->helperText('When off: usable for uploads, but hidden from public category pages'),
             Forms\Components\KeyValue::make('name_translations')->label('Translations (locale → name)'),
         ]);
     }
@@ -56,7 +57,8 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('files_count')->label('Files')->sortable(),
                 Tables\Columns\TextColumn::make('sort_order')->sortable(),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
+                Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),
+                Tables\Columns\IconColumn::make('is_visible')->boolean()->label('Visible'),
             ])
             ->defaultSort('sort_order')
             ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
