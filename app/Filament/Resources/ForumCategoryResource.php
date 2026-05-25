@@ -75,11 +75,13 @@ class ForumCategoryResource extends Resource
 
                 Forms\Components\FileUpload::make('icon_image')
                     ->label('Eigenes Icon (Bild)')
-                    ->image()
+                    
                     ->disk('s3')
                     ->directory('forum/icons')
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                     ->maxSize(512)
-                    ->helperText('Max 512KB. Wird bevorzugt wenn gesetzt.'),
+                    ->imagePreviewHeight('80')
+                    ->helperText('Max 512KB. JPG, PNG, GIF, WebP. Wird bevorzugt wenn gesetzt.'),
 
                 Forms\Components\ColorPicker::make('color')
                     ->label('Farbe')

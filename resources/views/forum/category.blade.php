@@ -32,10 +32,10 @@
         </div>
 
         @if($subcategories->isNotEmpty())
-        <div class="mb-6 border border-gray-700 rounded-lg divide-y divide-gray-700">
+        <div class="mb-6 bg-gray-900 border border-gray-700 rounded-lg divide-y divide-gray-700">
             @foreach($subcategories as $sub)
             <a href="{{ route('forum.category', $sub) }}"
-               class="flex items-center justify-between px-5 py-3 hover:bg-gray-800/50 transition block">
+               class="flex items-center justify-between px-5 py-3 hover:bg-gray-800 transition block">
                 <div class="flex items-center gap-3">
                     <div class="w-2 h-2 rounded-full" style="background-color: {{ $sub->color }}"></div>
                     <span class="text-white font-medium">{{ $sub->translated_name }}</span>
@@ -47,7 +47,7 @@
         </div>
         @endif
 
-        <div class="border border-gray-700 rounded-lg overflow-hidden">
+        <div class="bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
             <div class="hidden sm:grid grid-cols-12 gap-4 px-5 py-3 bg-gray-800 text-xs uppercase text-gray-400 font-semibold">
                 <div class="col-span-6">Thread</div>
                 <div class="col-span-1 text-center">{{ __('messages.forum_replies') }}</div>
@@ -55,9 +55,9 @@
                 <div class="col-span-4 text-right">{{ __('messages.forum_last_reply') }}</div>
             </div>
 
-            <div class="divide-y divide-gray-700">
+            <div class="bg-gray-900 divide-y divide-gray-700">
                 @forelse($threads as $thread)
-                <div class="sm:grid sm:grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-800/30 transition items-center">
+                <div class="sm:grid sm:grid-cols-12 gap-4 px-5 py-4 hover:bg-gray-800 transition items-center">
                     <div class="sm:col-span-6">
                         <div class="flex items-center gap-2 flex-wrap">
                             @if($thread->is_pinned)

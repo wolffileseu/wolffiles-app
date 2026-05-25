@@ -12,7 +12,9 @@
         <div class="mb-8">
             <div class="bg-gray-800 border border-gray-700 rounded-t-lg px-6 py-4">
                 <div class="flex items-center gap-3">
-                    @if($category->icon)
+                    @if($category->icon_image_url)
+                        <img src="{{ $category->icon_image_url }}" alt="" class="w-7 h-7 object-contain">
+                    @elseif($category->icon)
                         <i class="{{ $category->icon }} text-xl" style="color: {{ $category->color }}"></i>
                     @else
                         <div class="w-3 h-3 rounded-full" style="background-color: {{ $category->color }}"></div>
@@ -24,14 +26,16 @@
                 @endif
             </div>
 
-            <div class="border border-t-0 border-gray-700 rounded-b-lg divide-y divide-gray-700">
+            <div class="bg-gray-900 border border-t-0 border-gray-700 rounded-b-lg divide-y divide-gray-700">
                 @forelse($category->children as $sub)
                 <a href="{{ route('forum.category', $sub) }}"
-                   class="flex items-center justify-between px-6 py-4 hover:bg-gray-800/50 transition group block">
+                   class="flex items-center justify-between px-6 py-4 hover:bg-gray-800 transition group block">
                     <div class="flex items-center gap-4">
-                        <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                        <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
                              style="background-color: {{ $sub->color }}20">
-                            @if($sub->icon)
+                            @if($sub->icon_image_url)
+                                <img src="{{ $sub->icon_image_url }}" alt="" class="w-8 h-8 object-contain">
+                            @elseif($sub->icon)
                                 <i class="{{ $sub->icon }}" style="color: {{ $sub->color }}"></i>
                             @else
                                 <i class="fas fa-comments" style="color: {{ $sub->color }}"></i>
