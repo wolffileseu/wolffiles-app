@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\File;
+use App\Models\MotwHistory;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -33,8 +34,8 @@ class MapOfTheWeek extends Command
         $this->info("Strategy: {$strategy}");
         $this->info("Game: {$game}");
 
-        // Get history of recently featured files
-        $history = cache()->get(self::HISTORY_CACHE_KEY, []);
+        // Get history of recently featured files (persistent DB-backed history)
+        $history = MotwHistory::recentFileIds(self::HISTORY_SIZE);
 
         // Build query — only maps with screenshots
         $query = File::approved()
@@ -81,8 +82,8 @@ class MapOfTheWeek extends Command
 
             // Reset history if we've exhausted all options
             if (count($history) > 0) {
-                $this->info('Resetting history and trying again...');
-                cache()->forget(self::HISTORY_CACHE_KEY);
+                $this->info('History exhausted, clearing for next attempt...');
+                MotwHistory::truncate();
                 return $this->handle();
             }
 
@@ -122,10 +123,8 @@ class MapOfTheWeek extends Command
         $newFeatured->featured_at = now();
         $newFeatured->syncOriginal();
 
-        // Update history
-        $history[] = $newFeatured->id;
-        $history = array_slice($history, -self::HISTORY_SIZE);
-        cache()->put(self::HISTORY_CACHE_KEY, $history, now()->addMonths(6));
+        // Update history (persistent in DB — survives cache:clear)
+        MotwHistory::record($newFeatured, $strategy, $game);
 
         $this->newLine();
         $this->info("✅ Map of the Week: {$newFeatured->title}");
