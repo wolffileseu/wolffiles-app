@@ -227,8 +227,9 @@ class ClanManageController extends Controller
             return response()->json([]);
         }
 
-        // Players already assigned to this clan (active or inactive)
+        // Players already actively assigned (soft-removed players can be re-added)
         $existingPlayerIds = TrackerClanMember::where('clan_id', $clan->trackerClan->id)
+            ->where('is_active', true)
             ->pluck('player_id')->all();
 
         $players = \App\Models\Tracker\TrackerPlayer::where('status', 'active')

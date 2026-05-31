@@ -127,11 +127,55 @@
         </div>
         @endif
 
+        @if($isAdmin)
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5"
+             x-data="{ q: '', results: [], picked: null, loading: false, async search() { if (this.q.length < 2) { this.results = []; this.picked = null; return; } this.loading = true; try { const r = await fetch('{{ route('clan.manage.member.search', $clan->slug) }}?q=' + encodeURIComponent(this.q)); this.results = await r.json(); } finally { this.loading = false; } }, pick(p) { this.picked = p; this.q = p.name; this.results = []; } }">
+            <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-3">Add Member</h3>
+            <form method="POST" action="{{ route('clan.manage.member.add', $clan->slug) }}" @submit="if(!picked){ $event.preventDefault(); alert('Please pick a player from the suggestions.'); }">
+                @csrf
+                <input type="hidden" name="player_id" :value="picked?.id ?? ''">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-start">
+                    <div class="md:col-span-6 relative">
+                        <input x-model="q" @input.debounce.250ms="search()" type="text" autocomplete="off" placeholder="Search player name (min 2 chars)..."
+                               class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
+                        <div x-show="results.length > 0" x-cloak class="absolute z-20 left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                            <template x-for="p in results" :key="p.id">
+                                <button type="button" @click="pick(p)" class="w-full px-3 py-2 text-left hover:bg-gray-800 flex items-center gap-2 text-sm">
+                                    <template x-if="p.country"><img :src="`https://flagcdn.com/${p.country.toLowerCase()}.svg`" class="w-4 h-3" :alt="p.country"></template>
+                                    <span class="text-amber-400 flex-1" x-html="p.name_html || p.name"></span>
+                                    <span class="text-gray-500 text-xs">ELO <span x-text="p.elo"></span></span>
+                                </button>
+                            </template>
+                        </div>
+                        <div x-show="loading" x-cloak class="text-xs text-gray-500 mt-1">Searching...</div>
+                        <div x-show="picked" x-cloak class="text-xs text-green-400 mt-1">Selected: <span x-text="picked?.name"></span> <button type="button" @click="picked=null; q=''" class="text-gray-500 hover:text-gray-300 ml-1">(clear)</button></div>
+                    </div>
+                    <div class="md:col-span-3">
+                        <select name="role_label" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-2 py-2 rounded-lg text-sm">
+                            <option value="">— Role —</option>
+                            @foreach($roleLabels as $rl)<option value="{{ $rl }}">{{ $rl }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <select name="squad_id" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-2 py-2 rounded-lg text-sm">
+                            <option value="">— Squad —</option>
+                            @foreach($squads as $squad)<option value="{{ $squad->id }}">{{ $squad->name }}</option>@endforeach
+                        </select>
+                    </div>
+                    <div class="md:col-span-1">
+                        <button type="submit" class="w-full px-3 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm">+</button>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Pick a player from the live search. Already-assigned players are excluded automatically.</p>
+            </form>
+        </div>
+        @endif
+
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 overflow-hidden">
             <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700"><h3 class="text-white font-semibold">Member Roster — assign roles & squads</h3></div>
             <table class="w-full text-sm">
                 <thead class="text-gray-400 text-left bg-gray-900/30">
-                    <tr><th class="px-4 py-2">Player</th><th class="px-4 py-2">Role Label</th><th class="px-4 py-2">Squad</th><th class="px-4 py-2 w-20">Order</th><th class="px-4 py-2"></th></tr>
+                    <tr><th class="px-4 py-2">Player</th><th class="px-4 py-2">Role Label</th><th class="px-4 py-2">Squad</th><th class="px-4 py-2 w-20">Order</th><th class="px-4 py-2"></th><th class="px-4 py-2 w-10"></th></tr>
                 </thead>
                 <tbody class="divide-y divide-gray-700/50">
                     @foreach($members as $m)
@@ -154,6 +198,14 @@
                             <td class="px-4 py-2"><input name="sort_order" type="number" value="{{ $m->sort_order }}" class="w-16 bg-gray-900 border border-gray-600 text-gray-200 px-2 py-1 rounded text-xs"></td>
                             <td class="px-4 py-2"><button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-amber-400 rounded text-xs">Save</button></td>
                         </form>
+                        <td class="px-4 py-2">
+                            @if($manager->role === 'owner')
+                            <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->slug, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan?')">
+                                @csrf @method('DELETE')
+                                <button class="text-red-400 hover:text-red-300 text-sm" title="Remove member">&times;</button>
+                            </form>
+                            @endif
+                        </td>
                     </tr>
                     @endforeach
                 </tbody>
