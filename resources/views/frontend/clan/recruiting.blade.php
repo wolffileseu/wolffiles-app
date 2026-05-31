@@ -32,7 +32,7 @@
                     <div class="w-12 h-12 bg-gray-700 rounded-lg flex items-center justify-center text-amber-400 font-bold text-sm">{{ strtoupper(substr($clan->tag ?? '?', 0, 3)) }}</div>
                 @endif
                 <div class="flex-1 min-w-0">
-                    <div class="text-white font-semibold truncate">[{{ $clan->tag }}] {{ $clan->name }}</div>
+                    <div class="text-white font-semibold truncate">{{ $clan->display_tag }} {{ $clan->name }}</div>
                     <div class="text-xs text-gray-500 mt-0.5">
                         @if($clan->location){{ $clan->location }}@endif
                         @if($clan->location && $clan->founded) · @endif

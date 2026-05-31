@@ -13,7 +13,7 @@
                 <select name="clan" onchange="this.form.submit()" class="bg-gray-800 border border-gray-700 text-gray-300 rounded px-3 py-1.5 text-sm">
                     <option value="">{{ __('messages.all_clans') }}</option>
                     @foreach($clans as $clan)
-                        <option value="{{ $clan->id }}" {{ request('clan') == $clan->id ? 'selected' : '' }}>[{{ $clan->tag }}] {{ $clan->name }}</option>
+                        <option value="{{ $clan->id }}" {{ request('clan') == $clan->id ? 'selected' : '' }}>{{ $clan->display_tag }} {{ $clan->name }}</option>
                     @endforeach
                 </select>
                 @if(request('type') || request('clan'))
@@ -54,7 +54,7 @@
                 <article class="bg-gray-800 rounded-lg border border-gray-700 p-5 hover:border-gray-600 transition-colors">
                     <div class="flex items-start gap-4">
                         @if($post->featured_image)
-                            <img src="{{ Storage::disk('s3')->url($post->featured_image) }}" alt="" class="w-28 h-18 object-cover rounded flex-shrink-0">
+                            <img src="{{ Storage::disk('s3')->url($post->featured_image) }}" alt="{{ $post->title }}" class="w-28 h-18 object-cover rounded flex-shrink-0">
                         @endif
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-wrap items-center gap-2 mb-2">

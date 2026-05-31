@@ -59,6 +59,7 @@ class ClanManageController extends Controller
         $this->gate($clan); // editor+ allowed
         $data = $request->validate([
             'name'                => 'required|string|max:255',
+            'tag_display'         => 'nullable|string|max:50',
             'description'         => 'nullable|string|max:20000',
             'rules'               => 'nullable|string|max:20000',
             'location'            => 'nullable|string|max:255',

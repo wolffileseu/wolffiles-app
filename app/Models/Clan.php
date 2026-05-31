@@ -16,7 +16,7 @@ class Clan extends Model
         "name", "tag", "slug", "description", "website",
         "logo", "banner", "contact_discord", "contact_email", "ts_address",
         "rules", "location", "founded", "is_active",
-        "tracker_clan_id", "is_published", "is_recruiting", "recruitment_summary", "view_count",
+        "tracker_clan_id", "tag_display", "is_published", "is_recruiting", "recruitment_summary", "view_count",
     ];
 
     protected $casts = [
@@ -64,6 +64,11 @@ class Clan extends Model
     public function isOwnedBy(?User $user): bool {
         $m = $this->managerFor($user);
         return $m && $m->role === ClanManager::ROLE_OWNER;
+    }
+
+    // --- Accessors ---
+    public function getDisplayTagAttribute(): string {
+        return $this->tag_display ?: ("[" . $this->tag . "]");
     }
 
     // --- Scopes ---

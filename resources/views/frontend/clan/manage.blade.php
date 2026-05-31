@@ -11,7 +11,7 @@
     <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
         <div>
             <a href="{{ $tc ? route('tracker.clan.show', $tc) : '#' }}" class="text-amber-400 hover:text-amber-300 text-sm">&larr; View public page</a>
-            <h1 class="text-2xl font-bold text-white mt-1"><span class="text-amber-500">[{{ $clan->tag }}]</span> {{ $clan->name }} <span class="text-gray-500 text-base font-normal">&middot; Manage</span></h1>
+            <h1 class="text-2xl font-bold text-white mt-1"><span class="text-amber-500">{{ $clan->display_tag }}</span> {{ $clan->name }} <span class="text-gray-500 text-base font-normal">&middot; Manage</span></h1>
         </div>
         <span class="px-3 py-1.5 bg-gray-700 text-amber-400 rounded-lg text-xs uppercase tracking-wide border border-amber-500/30">Your role: {{ $manager->role }}</span>
     </div>
@@ -41,9 +41,16 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-5">
                     <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 space-y-4">
-                        <div>
-                            <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Clan Name</label>
-                            <input name="name" value="{{ old('name', $clan->name) }}" required class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Clan Name</label>
+                                <input name="name" value="{{ old('name', $clan->name) }}" required class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
+                            </div>
+                            <div>
+                                <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Tag Display</label>
+                                <input name="tag_display" value="{{ old('tag_display', $clan->tag_display) }}" placeholder="[RoG] / =RoG= / .RoG" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">
+                                <p class="mt-1 text-xs text-gray-500">Wie soll dein Clan-Tag aussehen? z.B. [RoG], =RoG=, .RoG. Leer = Standard [tag].</p>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">About (Markdown + BBCode)</label>

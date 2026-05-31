@@ -1,6 +1,6 @@
 <x-layouts.app :title="'[' . $clan->tag_clean . '] ' . ($clan->name ?? $clan->tag_clean)">
 @php
-    $tagDisplay = $clan->tag_clean;
+    $tagDisplay = $registered?->tag_display ?: ("[" . $clan->tag_clean . "]");
     $clanName   = $registered->name ?? $clan->name ?? 'Unknown Clan';
     $isClaimed  = (bool) $registered;
     $canManage  = $managerRole && in_array($managerRole, [\App\Models\ClanManager::ROLE_OWNER, \App\Models\ClanManager::ROLE_ADMIN, \App\Models\ClanManager::ROLE_EDITOR]);
@@ -36,7 +36,7 @@
             <div class="flex-1 min-w-[220px] pb-1">
                 <div class="flex items-center gap-3 flex-wrap">
                     <h1 class="text-2xl md:text-3xl font-bold text-white">
-                        <span class="text-amber-500">[{{ $tagDisplay }}]</span> {{ $clanName }}
+                        <span class="text-amber-500">{{ $tagDisplay }}</span> {{ $clanName }}
                     </h1>
                     @if($isClaimed && ($clan->is_verified || $registered->is_active))
                         <span class="px-2.5 py-1 bg-green-900/30 text-green-400 rounded-md text-xs border border-green-500/30">&#x2713; Verified Clan</span>
@@ -141,7 +141,7 @@
             </div>
             <div class="bg-amber-900/10 border border-amber-500/20 rounded-lg p-4 text-sm text-gray-400">
                 This clan was automatically detected from player name tags. If you represent
-                <span class="text-amber-400">[{{ $tagDisplay }}]</span>, claim it to unlock a full editable page with news, rules, servers and recruitment.
+                <span class="text-amber-400">{{ $tagDisplay }}</span>, claim it to unlock a full editable page with news, rules, servers and recruitment.
             </div>
             @endunless
         </div>
@@ -152,7 +152,7 @@
                 <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700"><h2 class="text-white font-semibold">Clan Info</h2></div>
                 <table class="w-full text-sm">
                     <tbody class="divide-y divide-gray-700/50">
-                        <tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Clantag</td><td class="px-4 py-2.5"><span class="text-amber-400">[{{ $tagDisplay }}]</span></td></tr>
+                        <tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Clantag</td><td class="px-4 py-2.5"><span class="text-amber-400">{{ $tagDisplay }}</span></td></tr>
                         @if($registered?->location)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Location</td><td class="px-4 py-2.5 text-gray-300">{{ $registered->location }}</td></tr>@endif
                         <tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Members</td><td class="px-4 py-2.5 text-gray-300">{{ $clan->member_count }}</td></tr>
                         @if($isClaimed)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Recruiting</td><td class="px-4 py-2.5">@if($registered->is_recruiting)<span class="text-green-400">YES</span>@else<span class="text-gray-500">NO</span>@endif</td></tr>@endif
