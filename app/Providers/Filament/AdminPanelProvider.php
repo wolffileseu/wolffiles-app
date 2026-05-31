@@ -132,4 +132,13 @@ class AdminPanelProvider extends PanelProvider
             ->maxContentWidth('full')
             ->globalSearchKeyBindings(['command+k', 'ctrl+k']);
     }
+
+    public function boot(): void
+    {
+        \Filament\Support\Facades\FilamentView::registerRenderHook(
+            \Filament\View\PanelsRenderHook::HEAD_END,
+            fn (): string => \Illuminate\Support\Facades\Blade::render("@vite('resources/js/wikitext-editor.js')"),
+        );
+    }
+
 }

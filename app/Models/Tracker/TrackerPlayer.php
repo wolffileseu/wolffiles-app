@@ -47,9 +47,9 @@ class TrackerPlayer extends Model
     public function eloHistory(): HasMany { return $this->hasMany(TrackerEloHistory::class, 'player_id'); }
     public function clanMemberships(): HasMany { return $this->hasMany(TrackerClanMember::class, 'player_id'); }
     public function bans(): HasMany { return $this->hasMany(TrackerBan::class, 'player_id'); }
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo { return $this->belongsTo(\App\Models\User::class, 'user_id'); }
-    public function isClaimedBy(?\App\Models\User $user): bool { return $user && $this->user_id === $user->id; }
-    public function isClaimed(): bool { return $this->user_id !== null; }
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
+    public function isClaimedBy(?\App\Models\User $user): bool { return $user && $this->claimed_by_user_id === $user->id; }
+    public function isClaimed(): bool { return $this->claimed_by_user_id !== null; }
 
     public function scopeActive($query) { return $query->where('status', 'active'); }
     public function scopeTopElo($query) { return $query->orderByDesc('elo_rating'); }

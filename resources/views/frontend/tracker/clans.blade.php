@@ -28,7 +28,7 @@
                     <div class="text-white font-semibold group-hover:text-amber-400">[{{ $clan->tag_clean }}] {{ $clan->name ?? '' }}</div>
                     @if($clan->country_code)
                     <div class="flex items-center gap-1 mt-0.5">
-                        <img src="https://flagcdn.com/{{ strtolower($clan->country_code) }}.svg" class="w-3 h-2" alt="">
+                        <img src="https://flagcdn.com/{{ strtolower($clan->country_code) }}.svg" class="w-3 h-2" alt="{{ strtoupper($clan->country_code) }} flag">
                         <span class="text-gray-500 text-xs">{{ $clan->country ?? strtoupper($clan->country_code) }}</span>
                     </div>
                     @endif

@@ -75,7 +75,10 @@ class ClanDetectionService
                             ]
                         );
                         if ($clan->wasRecentlyCreated) $stats['clans_created']++;
-                        $clan->update(['last_seen_at' => now()]);
+                        // Locked clans (claimed/edited) are never auto-updated
+                        if (!$clan->is_locked) {
+                            $clan->update(['last_seen_at' => now()]);
+                        }
 
                         TrackerClanMember::updateOrCreate(
                             ['clan_id' => $clan->id, 'player_id' => $player->id],

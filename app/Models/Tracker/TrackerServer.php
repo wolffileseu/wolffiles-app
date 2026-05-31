@@ -35,6 +35,8 @@ class TrackerServer extends Model
         'mod_name', 'mod_version', 'is_private', 'needs_password',
         'os', 'sv_pure', 'punkbuster', 'is_ranked',
         'is_online', 'is_manually_added', 'added_by', 'status',
+        'claimed_by_user_id', 'claimed_by_clan_id', 'is_verified', 'is_locked',
+        'description', 'rules', 'server_website', 'server_discord', 'server_email', 'server_banner_url',
         'total_players_tracked', 'total_unique_players', 'uptime_percentage',
         'last_seen_at', 'first_seen_at', 'last_poll_at', 'next_poll_at', 'poll_failures',
         'latency_ms', 'private_slots', 'bot_count',
@@ -54,6 +56,8 @@ class TrackerServer extends Model
             'punkbuster' => 'boolean',
             'is_ranked' => 'boolean',
             'is_manually_added' => 'boolean',
+            'is_verified' => 'boolean',
+            'is_locked' => 'boolean',
             'polling_paused' => 'boolean',
             'engine_is_dev_build' => 'boolean',
             'engine_build_date' => 'date',
@@ -71,6 +75,8 @@ class TrackerServer extends Model
 
     public function game(): BelongsTo { return $this->belongsTo(TrackerGame::class, 'game_id'); }
     public function addedBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'added_by'); }
+    public function claimedByUser(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
+    public function clan(): BelongsTo { return $this->belongsTo(\App\Models\Clan::class, 'claimed_by_clan_id'); }
     public function settings(): HasMany { return $this->hasMany(TrackerServerSetting::class, 'server_id'); }
     public function history(): HasMany { return $this->hasMany(TrackerServerHistory::class, 'server_id'); }
     public function mapStats(): HasMany { return $this->hasMany(TrackerServerMapStat::class, 'server_id'); }

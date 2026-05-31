@@ -269,8 +269,6 @@ Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name(
 // === PLAYER SERVERS (Commit 2) ===
 Route::get('/players/{player}/servers', [TrackerController::class, 'playerServers'])->name('tracker.player.servers');
 
-Route::post('/players/{player}/claim', [TrackerController::class, 'claimPlayer'])->middleware('auth')->name('tracker.player.claim');
-Route::post('/players/{player}/unclaim', [TrackerController::class, 'unclaimPlayer'])->middleware('auth')->name('tracker.player.unclaim');
 Route::post('/servers/{server}/force-poll', [TrackerController::class, 'forcePoll'])->middleware(['auth', 'throttle:5,1'])->name('tracker.server.force_poll');
 
 // Auth routes (Laravel Breeze)
@@ -380,6 +378,38 @@ Route::middleware('auth')->group(function () {
     // Clan claims
     Route::get('/tracker/clans/{clan}/claim', [TrackerClaimController::class, 'claimClan'])->name('tracker.claim.clan');
     Route::post('/tracker/clans/{clan}/claim', [TrackerClaimController::class, 'storeClanClaim'])->name('tracker.claim.clan.store');
+
+// --- Clan Pages (Phase 4) ---
+// clan = slug (registered Clan). Management gated im Controller via ClanManager-Rolle.
+Route::middleware('auth')->group(function () {
+    // Bewerbung absenden (jeder eingeloggte User)
+    Route::post('/clan/{clan:slug}/apply', function (\Illuminate\Http\Request $request, \App\Models\Clan $clan) {
+        $data = $request->validate([
+            'player_name' => 'required|string|max:255',
+            'contact'     => 'nullable|string|max:255',
+            'message'     => 'required|string|min:5|max:2000',
+        ]);
+        \App\Models\ClanApplication::create(array_merge($data, [
+            'clan_id'           => $clan->id,
+            'applicant_user_id' => auth()->id(),
+            'status'            => \App\Models\ClanApplication::STATUS_PENDING,
+        ]));
+        return back()->with('success', __('Your application has been submitted.'));
+    })->name('clan.apply');
+
+    // Management-Dashboard
+    Route::get('/clan/{clan:slug}/manage', [\App\Http\Controllers\Frontend\ClanManageController::class, 'index'])->name('clan.manage');
+    Route::put('/clan/{clan:slug}/content', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateContent'])->name('clan.manage.content');
+    Route::put('/clan/{clan:slug}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateMember'])->name('clan.manage.member');
+    Route::post('/clan/{clan:slug}/squads', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeSquad'])->name('clan.manage.squad.store');
+    Route::delete('/clan/{clan:slug}/squads/{squad}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteSquad'])->name('clan.manage.squad.delete');
+    Route::post('/clan/{clan:slug}/managers', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeManager'])->name('clan.manage.manager.store');
+    Route::put('/clan/{clan:slug}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateManager'])->name('clan.manage.manager.update');
+    Route::delete('/clan/{clan:slug}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteManager'])->name('clan.manage.manager.delete');
+    Route::post('/clan/{clan:slug}/news', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeNews'])->name('clan.manage.news.store');
+    Route::delete('/clan/{clan:slug}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
+    Route::put('/clan/{clan:slug}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');
+});
 
     // My claims
     Route::get('/tracker/my-claims', [TrackerClaimController::class, 'myClaims'])->name('tracker.my-claims');

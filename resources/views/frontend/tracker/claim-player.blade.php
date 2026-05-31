@@ -6,7 +6,7 @@
         <h1 class="text-2xl font-bold text-amber-500 mb-2">Claim Player Profile</h1>
         <div class="flex items-center gap-3 bg-gray-700/50 rounded-lg p-4">
             @if($player->country_code)
-            <img src="https://flagcdn.com/{{ strtolower($player->country_code) }}.svg" class="w-5 h-3 rounded-sm" alt="">
+            <img src="https://flagcdn.com/{{ strtolower($player->country_code) }}.svg" class="w-5 h-3 rounded-sm" alt="{{ strtoupper($player->country_code) }} flag">
             @endif
             <span class="text-white font-semibold">{!! $player->name_html ?? e($player->name_clean ?? 'Unknown') !!}</span>
             <span class="text-gray-400 text-sm ml-auto">ELO {{ number_format($player->elo_rating) }}</span>

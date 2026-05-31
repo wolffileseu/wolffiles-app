@@ -102,7 +102,9 @@ class TrackerClaim extends Model
                 if ($this->clan_website) $updates['website'] = $this->clan_website;
                 if ($this->clan_discord) $updates['discord'] = $this->clan_discord;
                 if ($this->clan_description) $updates['description'] = $this->clan_description;
+                $updates['is_locked'] = true; // stop auto-overwrite by ClanDetectionService
                 $clan->update($updates);
+                $this->linkRegisteredClan($clan);
             }
         } elseif ($this->claimable_type === 'server') {
             $server = TrackerServer::find($this->claimable_id);
@@ -131,6 +133,37 @@ class TrackerClaim extends Model
                 'review_note' => 'Auto-rejected: another claim was approved.',
                 'reviewed_at' => now(),
             ]);
+    }
+
+    /**
+     * Create or link a registered Clan (clans table) for a claimed tracker clan,
+     * and make the claiming user the owner. Idempotent.
+     */
+    protected function linkRegisteredClan(TrackerClan $trackerClan): void
+    {
+        $registered = \App\Models\Clan::firstOrNew(['tracker_clan_id' => $trackerClan->id]);
+        $registered->fill([
+            'tracker_clan_id' => $trackerClan->id,
+            'name'            => $registered->name ?: ($trackerClan->name ?: $trackerClan->tag_clean),
+            'tag'             => $registered->tag ?: $trackerClan->tag_clean,
+            'description'     => $registered->description ?: $trackerClan->description,
+            'website'         => $registered->website ?: $trackerClan->website,
+            'contact_discord' => $registered->contact_discord ?: $trackerClan->discord,
+            'is_active'       => true,
+            'is_published'    => $registered->exists ? $registered->is_published : false,
+        ]);
+        if (empty($registered->slug)) {
+            $base = \Illuminate\Support\Str::slug($registered->name) ?: 'clan';
+            $slug = $base; $i = 2;
+            while (\App\Models\Clan::where('slug', $slug)->where('id', '!=', $registered->id ?? 0)->exists()) { $slug = $base.'-'.$i; $i++; }
+            $registered->slug = $slug;
+        }
+        $registered->save();
+
+        \App\Models\ClanManager::firstOrCreate(
+            ['clan_id' => $registered->id, 'user_id' => $this->user_id],
+            ['role' => \App\Models\ClanManager::ROLE_OWNER]
+        );
     }
 
     /**

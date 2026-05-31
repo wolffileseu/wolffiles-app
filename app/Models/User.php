@@ -108,6 +108,13 @@ class User extends Authenticatable implements FilamentUser
         return $this->files()->where('status', 'approved');
     }
 
+    // --- Clan-Pages / Claim relations ---
+    public function claimedPlayers(): HasMany { return $this->hasMany(\App\Models\Tracker\TrackerPlayer::class, 'claimed_by_user_id'); }
+    public function claimedServers(): HasMany { return $this->hasMany(\App\Models\Tracker\TrackerServer::class, 'claimed_by_user_id'); }
+    public function clanManagerRoles(): HasMany { return $this->hasMany(\App\Models\ClanManager::class); }
+    public function managedClans(): BelongsToMany { return $this->belongsToMany(\App\Models\Clan::class, 'clan_managers')->withPivot('role')->withTimestamps(); }
+    public function clanApplications(): HasMany { return $this->hasMany(\App\Models\ClanApplication::class, 'applicant_user_id'); }
+
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {

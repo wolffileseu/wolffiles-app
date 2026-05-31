@@ -1,7 +1,10 @@
 <?php
 namespace App\Models;
 
+use App\Models\Tracker\TrackerClan;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -11,11 +14,16 @@ class Clan extends Model
 
     protected $fillable = [
         "name", "tag", "slug", "description", "website",
-        "logo", "contact_discord", "contact_email", "is_active",
+        "logo", "banner", "contact_discord", "contact_email", "ts_address",
+        "rules", "location", "founded", "is_active",
+        "tracker_clan_id", "is_published", "is_recruiting", "recruitment_summary", "view_count",
     ];
 
     protected $casts = [
         "is_active" => "boolean",
+        "is_published" => "boolean",
+        "is_recruiting" => "boolean",
+        "view_count" => "integer",
     ];
 
     protected static function boot()
@@ -28,18 +36,37 @@ class Clan extends Model
         });
     }
 
-    public function apiKeys()
-    {
-        return $this->hasMany(ClanApiKey::class);
+    public function getRouteKeyName(): string { return "slug"; }
+
+    // --- bestehende Relations ---
+    public function apiKeys(): HasMany { return $this->hasMany(ClanApiKey::class); }
+    public function activeApiKeys(): HasMany { return $this->hasMany(ClanApiKey::class)->where("is_active", true); }
+    public function posts(): HasMany { return $this->hasMany(Post::class); }
+
+    // --- NEU: Verknüpfungen ---
+    public function trackerClan(): BelongsTo { return $this->belongsTo(TrackerClan::class, "tracker_clan_id"); }
+    public function managers(): HasMany { return $this->hasMany(ClanManager::class); }
+    public function applications(): HasMany { return $this->hasMany(ClanApplication::class); }
+
+    public function news(): HasMany {
+        return $this->hasMany(Post::class)->where("type", Post::TYPE_NEWS)->where("is_published", true)->latest("published_at");
+    }
+    public function recruitmentPosts(): HasMany {
+        return $this->hasMany(Post::class)->where("type", Post::TYPE_RECRUITMENT)->where("is_published", true)->latest("published_at");
     }
 
-    public function posts()
-    {
-        return $this->hasMany(Post::class);
+    // --- Rechte-Helfer ---
+    public function managerFor(?User $user): ?ClanManager {
+        if (!$user) return null;
+        return $this->managers->firstWhere("user_id", $user->id);
+    }
+    public function isManagedBy(?User $user): bool { return (bool) $this->managerFor($user); }
+    public function isOwnedBy(?User $user): bool {
+        $m = $this->managerFor($user);
+        return $m && $m->role === ClanManager::ROLE_OWNER;
     }
 
-    public function activeApiKeys()
-    {
-        return $this->hasMany(ClanApiKey::class)->where("is_active", true);
-    }
+    // --- Scopes ---
+    public function scopePublished($q) { return $q->where("is_published", true)->where("is_active", true); }
+    public function scopeRecruiting($q) { return $q->where("is_recruiting", true); }
 }

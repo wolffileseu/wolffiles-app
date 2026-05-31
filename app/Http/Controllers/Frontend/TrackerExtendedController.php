@@ -214,14 +214,22 @@ class TrackerExtendedController extends Controller
         return view('frontend.tracker.clans', compact('clans', 'sort'));
     }
 
+    /**
+     * Clan detail page.
+     *
+     * Two states:
+     *   - Auto clan (no registered clans-row yet)  -> lean auto view + Claim button
+     *   - Claimed clan (has registered clans-row)  -> full editable page
+     */
     public function clanShow(TrackerClan $clan)
     {
-        $clan->load(['activeMembers.player']);
+        $clan->load(['activeMembers.player', 'activeMembers.squad', 'squads']);
 
+        // Top players by ELO (used by the lean/auto roster)
         $topPlayers = TrackerPlayer::whereIn('id', $clan->activeMembers->pluck('player_id'))
             ->where('status', 'active')
             ->orderByDesc('elo_rating')
-            ->limit(20)->get();
+            ->limit(50)->get();
 
         $recentActivity = DB::table('tracker_player_sessions')
             ->whereIn('player_id', $clan->activeMembers->pluck('player_id'))
@@ -229,10 +237,67 @@ class TrackerExtendedController extends Controller
             ->select(DB::raw('DATE(started_at) as date'), DB::raw('COUNT(*) as sessions'), DB::raw('SUM(duration_minutes) as minutes'))
             ->groupBy('date')->orderBy('date')->get();
 
-        return view('frontend.tracker.clan-show', compact('clan', 'topPlayers', 'recentActivity'));
-    }
+        // --- Registered clan (clans table) = the editable page owner ---
+        $registered = \App\Models\Clan::where('tracker_clan_id', $clan->id)->first();
 
-    // ── Player Compare ──
+        $news = collect();
+        $recruitmentPost = null;
+        $clanServers = collect();
+        $membersBySquad = collect();
+        $unassignedMembers = collect();
+        $managerRole = null;
+        $userHasApplied = false;
+
+        if ($registered) {
+            // Published news posts
+            $news = \App\Models\Post::where('clan_id', $registered->id)
+                ->where('type', \App\Models\Post::TYPE_NEWS)
+                ->where('is_published', true)
+                ->latest('published_at')
+                ->limit(10)->get();
+
+            // Latest published recruitment post (for the Apply tab body)
+            $recruitmentPost = \App\Models\Post::where('clan_id', $registered->id)
+                ->where('type', \App\Models\Post::TYPE_RECRUITMENT)
+                ->where('is_published', true)
+                ->latest('published_at')->first();
+
+            // Servers claimed by this clan
+            $clanServers = TrackerServer::where('claimed_by_clan_id', $registered->id)
+                ->orderByDesc('is_online')
+                ->orderByDesc('current_players')
+                ->get();
+
+            // Roster grouped by squad (uses role_label + squad)
+            $allMembers = $clan->activeMembers->load('player', 'squad')
+                ->sortBy([['sort_order', 'asc']])
+                ->filter(fn ($m) => $m->player !== null);
+
+            $membersBySquad = $allMembers->filter(fn ($m) => $m->squad_id)
+                ->groupBy(fn ($m) => optional($m->squad)->name ?? 'Squad');
+            $unassignedMembers = $allMembers->filter(fn ($m) => ! $m->squad_id);
+
+            // Current viewer management role (owner/admin/editor) for the manage button
+            if (auth()->check()) {
+                $managerRole = \App\Models\ClanManager::where('clan_id', $registered->id)
+                    ->where('user_id', auth()->id())->value('role');
+
+                $userHasApplied = \App\Models\ClanApplication::where('clan_id', $registered->id)
+                    ->where('applicant_user_id', auth()->id())
+                    ->where('status', \App\Models\ClanApplication::STATUS_PENDING)
+                    ->exists();
+            }
+
+            // View counter (registered clans only)
+            $registered->increment('view_count');
+        }
+
+        return view('frontend.tracker.clan-show', compact(
+            'clan', 'topPlayers', 'recentActivity',
+            'registered', 'news', 'recruitmentPost', 'clanServers',
+            'membersBySquad', 'unassignedMembers', 'managerRole', 'userHasApplied'
+        ));
+    }
     public function playerCompare(Request $request)
     {
         $player1 = $request->has('p1') ? TrackerPlayer::find($request->get('p1')) : null;
