@@ -333,8 +333,9 @@ class TrackerExtendedController extends Controller
             // Servers claimed by this clan
             $autoIds = $registered->autoDetectedServersQuery()->where('is_visible_for_clan', true)->pluck('id');
             $clanServers = TrackerServer::where(function($q) use ($registered, $autoIds) {
-                    $q->where('claimed_by_clan_id', $registered->id)
-                      ->orWhereIn('id', $autoIds);
+                    $q->where(function($qq) use ($registered) {
+                        $qq->where('claimed_by_clan_id', $registered->id)->where('is_visible_for_clan', true);
+                    })->orWhereIn('id', $autoIds);
                 })
                 ->orderByDesc('is_online')
                 ->orderByDesc('current_players')

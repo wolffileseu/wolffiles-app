@@ -119,6 +119,7 @@ class TrackerClaim extends Model
                     ->value('clan_id');
                 if ($ownedClanId) {
                     $updates['claimed_by_clan_id'] = $ownedClanId;
+                    $updates['is_visible_for_clan'] = true;
                 }
                 // Server details are stored in clan_* fields (reused)
                 if ($this->clan_description) $updates['description'] = $this->clan_description;

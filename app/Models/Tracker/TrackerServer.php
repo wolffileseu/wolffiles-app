@@ -35,7 +35,7 @@ class TrackerServer extends Model
         'mod_name', 'mod_version', 'is_private', 'needs_password',
         'os', 'sv_pure', 'punkbuster', 'is_ranked',
         'is_online', 'is_manually_added', 'added_by', 'status',
-        'claimed_by_user_id', 'claimed_by_clan_id', 'is_verified', 'is_locked',
+        'claimed_by_user_id', 'claimed_by_clan_id', 'is_visible_for_clan', 'is_verified', 'is_locked',
         'description', 'rules', 'server_website', 'server_discord', 'server_email', 'server_banner_url',
         'total_players_tracked', 'total_unique_players', 'uptime_percentage',
         'last_seen_at', 'first_seen_at', 'last_poll_at', 'next_poll_at', 'poll_failures',
