@@ -24,6 +24,7 @@
     <div class="flex gap-1 border-b border-gray-700 mb-6 flex-wrap">
         <button @click="tab='content'" :class="tab==='content' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Content</button>
         <button @click="tab='members'" :class="tab==='members' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Members<span class="text-gray-600 ml-1">{{ $members->count() }}</span></button>
+        <button @click="tab='servers'" :class="tab==='servers' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Servers<span class="text-gray-600 ml-1">{{ $claimedServers->count() + $autoDetectedServers->count() }}</span></button>
         <button @click="tab='news'" :class="tab==='news' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">News<span class="text-gray-600 ml-1">{{ $news->count() }}</span></button>
         @if($isAdmin)
         <button @click="tab='managers'" :class="tab==='managers' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Managers<span class="text-gray-600 ml-1">{{ $clan->managers->count() }}</span></button>
@@ -205,6 +206,79 @@
                                 <button class="text-red-400 hover:text-red-300 text-sm" title="Remove member">&times;</button>
                             </form>
                             @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+    </div>
+
+    {{-- ========================= SERVERS ========================= --}}
+    <div x-show="tab==='servers'" x-cloak class="space-y-5">
+        <div class="bg-amber-900/10 border border-amber-500/20 rounded-lg p-4 text-sm text-gray-300">
+            <div class="font-semibold text-amber-400 mb-1">How clan servers work</div>
+            Auto-detected matches are based on your clan tag display: <span class="font-mono text-amber-400">{{ $clan->display_tag }}</span>.
+            Any server whose hostname starts with this prefix appears below. Toggle <span class="text-amber-400">Show on public page</span> for the ones you want to adopt.
+            Server owners can also <span class="text-amber-400">claim</span> their server via the tracker for a stronger link.
+        </div>
+
+        @if($claimedServers->isEmpty() && $autoDetectedServers->isEmpty())
+            <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 text-center text-gray-500 text-sm">
+                No servers match this clan. Either claim a server in the tracker, or set a clearer tag display in the Content tab.
+            </div>
+        @else
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="text-gray-400 text-left bg-gray-900/30 text-xs uppercase tracking-wide">
+                    <tr>
+                        <th class="px-4 py-2">Server</th>
+                        <th class="px-4 py-2">Source</th>
+                        <th class="px-4 py-2">Status</th>
+                        <th class="px-4 py-2 w-40 text-right">Public Page</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700/50">
+                    @foreach($claimedServers as $s)
+                    <tr class="hover:bg-gray-700/30">
+                        <td class="px-4 py-2">
+                            <a href="{{ route('tracker.server.show', $s) }}" class="font-mono text-amber-400 hover:text-amber-300">{!! $s->hostname_html ?? e($s->hostname_clean) !!}</a>
+                            <div class="text-xs text-gray-500 font-mono">{{ $s->ip }}:{{ $s->port }}</div>
+                        </td>
+                        <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wide bg-green-900/30 text-green-400 border border-green-500/30">&#128737; Claimed</span></td>
+                        <td class="px-4 py-2">
+                            @if($s->is_online)<span class="text-green-400 text-xs">&#9679; Online</span>@else<span class="text-gray-500 text-xs">&#9675; Offline</span>@endif
+                        </td>
+                        <td class="px-4 py-2 text-right">
+                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->slug, $s->id]) }}" class="inline">
+                                @csrf
+                                <input type="hidden" name="visible" value="{{ $s->is_visible_for_clan ? 0 : 1 }}">
+                                <button class="px-3 py-1 rounded text-xs {{ $s->is_visible_for_clan ? 'bg-amber-500 text-gray-900 hover:bg-amber-400' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                                    {{ $s->is_visible_for_clan ? 'Visible' : 'Hidden' }}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                    @foreach($autoDetectedServers as $s)
+                    <tr class="hover:bg-gray-700/30">
+                        <td class="px-4 py-2">
+                            <a href="{{ route('tracker.server.show', $s) }}" class="font-mono text-amber-400 hover:text-amber-300">{!! $s->hostname_html ?? e($s->hostname_clean) !!}</a>
+                            <div class="text-xs text-gray-500 font-mono">{{ $s->ip }}:{{ $s->port }}</div>
+                        </td>
+                        <td class="px-4 py-2"><span class="px-2 py-0.5 rounded text-[10px] uppercase tracking-wide bg-blue-900/30 text-blue-400 border border-blue-500/30">&#129302; Auto-detected</span></td>
+                        <td class="px-4 py-2">
+                            @if($s->is_online)<span class="text-green-400 text-xs">&#9679; Online</span>@else<span class="text-gray-500 text-xs">&#9675; Offline</span>@endif
+                        </td>
+                        <td class="px-4 py-2 text-right">
+                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->slug, $s->id]) }}" class="inline">
+                                @csrf
+                                <input type="hidden" name="visible" value="{{ $s->is_visible_for_clan ? 0 : 1 }}">
+                                <button class="px-3 py-1 rounded text-xs {{ $s->is_visible_for_clan ? 'bg-amber-500 text-gray-900 hover:bg-amber-400' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                                    {{ $s->is_visible_for_clan ? 'Adopted' : 'Adopt' }}
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @endforeach

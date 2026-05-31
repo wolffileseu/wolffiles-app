@@ -50,7 +50,11 @@ class ClanManageController extends Controller
         $apiKeys = \App\Models\ClanApiKey::where('clan_id', $clan->id)->orderByDesc('id')->get();
         $hasPendingApiKey = $apiKeys->contains(fn($k) => str_starts_with($k->getAttributes()['key'] ?? '', 'PENDING:'));
 
-        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey'));
+        // Servers: claimed + auto-detected (by tag prefix on hostname)
+        $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_clan_id', $clan->id)->orderBy('hostname_clean')->get();
+        $autoDetectedServers = $clan->autoDetectedServersQuery()->orderBy('hostname_clean')->get();
+
+        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey', 'claimedServers', 'autoDetectedServers'));
     }
 
     /** Save page content (about, rules, info, links). */
@@ -214,6 +218,22 @@ class ClanManageController extends Controller
             'reviewed_at'         => now(),
         ]);
         return back()->with('success', __('Application :status.', ['status' => $data['decision']]));
+    }
+
+    /** Toggle visibility of an auto-detected server on the clan's public page. */
+    public function toggleServerVisibility(\Illuminate\Http\Request $request, Clan $clan, \App\Models\Tracker\TrackerServer $server)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+
+        // Server must either be claimed by this clan OR match the auto-detect pattern
+        $isClaimed = $server->claimed_by_clan_id === $clan->id;
+        $matchesAuto = $clan->autoDetectedServersQuery()->where('tracker_servers.id', $server->id)->exists();
+
+        abort_unless($isClaimed || $matchesAuto, 403, 'This server does not belong to your clan.');
+
+        $server->update(['is_visible_for_clan' => $request->boolean('visible')]);
+
+        return back()->with('success', __('Server visibility updated.'));
     }
 
     /** Live search for tracker_players (JSON, for autocomplete in members tab). */

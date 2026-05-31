@@ -113,6 +113,13 @@ class TrackerClaim extends Model
                     'claimed_by_user_id' => $this->user_id,
                     'is_verified' => true,
                 ];
+                // Auto-link to clan if the claiming user is owner/admin of a registered clan
+                $ownedClanId = \App\Models\ClanManager::where('user_id', $this->user_id)
+                    ->whereIn('role', ['owner', 'admin'])
+                    ->value('clan_id');
+                if ($ownedClanId) {
+                    $updates['claimed_by_clan_id'] = $ownedClanId;
+                }
                 // Server details are stored in clan_* fields (reused)
                 if ($this->clan_description) $updates['description'] = $this->clan_description;
                 if ($this->clan_website) $updates['server_website'] = $this->clan_website;

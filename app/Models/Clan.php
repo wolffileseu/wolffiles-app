@@ -71,6 +71,23 @@ class Clan extends Model
         return $this->tag_display ?: ("[" . $this->tag . "]");
     }
 
+    /** Returns the server hostname prefix pattern this clan auto-matches (e.g. "[RoG]" or "=RoG="). */
+    public function getServerMatchPrefixAttribute(): string {
+        return $this->tag_display ?: ("[" . $this->tag . "]");
+    }
+
+    /** Query auto-detected unclaimed servers whose hostname starts with this clan's match prefix. */
+    public function autoDetectedServersQuery() {
+        $prefix = $this->server_match_prefix;
+        $like = addcslashes($prefix, '%_\\') . '%';
+        return \App\Models\Tracker\TrackerServer::query()
+            ->whereNull('claimed_by_clan_id')
+            ->where(function($q) use ($like) {
+                $q->where('hostname_clean', 'LIKE', $like)
+                  ->orWhere('hostname', 'LIKE', $like);
+            });
+    }
+
     // --- Scopes ---
     public function scopePublished($q) { return $q->where("is_published", true)->where("is_active", true); }
     public function scopeRecruiting($q) { return $q->where("is_recruiting", true); }

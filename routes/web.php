@@ -418,6 +418,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/clan/{clan:slug}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
     Route::post('/clan/{clan:slug}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
     Route::delete('/clan/{clan:slug}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
+    Route::post('/clan/{clan:slug}/servers/{server}/toggle', [\App\Http\Controllers\Frontend\ClanManageController::class, 'toggleServerVisibility'])->name('clan.manage.server.toggle');
 });
 
     // My claims
