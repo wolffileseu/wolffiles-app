@@ -346,6 +346,7 @@ Route::get('/tracker/weapons/{slug}', [\App\Http\Controllers\Frontend\WeaponLead
     ->name('tracker.weapons.show');
 Route::get('/tracker/rankings/players', [TrackerExtendedController::class, 'playerRankings'])->name('tracker.rankings.players');
 Route::get('/tracker/clans', [TrackerExtendedController::class, 'clans'])->name('tracker.clans');
+Route::get('/clans/recruiting', [TrackerExtendedController::class, 'recruiting'])->name('clans.recruiting');
 Route::get('/tracker/clans/{clan}', [TrackerExtendedController::class, 'clanShow'])->name('tracker.clan.show');
 Route::get('/tracker/compare', [TrackerExtendedController::class, 'playerCompare'])->name('tracker.compare');
 
@@ -410,6 +411,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/clan/{clan:slug}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
     Route::put('/clan/{clan:slug}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');
     Route::post('/clan/{clan:slug}/api-key/request', [\App\Http\Controllers\Frontend\ClanManageController::class, 'requestApiKey'])->name('clan.manage.api-key.request');
+    Route::get('/clan/{clan:slug}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
+    Route::post('/clan/{clan:slug}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
+    Route::delete('/clan/{clan:slug}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
 });
 
     // My claims

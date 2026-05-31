@@ -216,6 +216,89 @@ class ClanManageController extends Controller
         return back()->with('success', __('Application :status.', ['status' => $data['decision']]));
     }
 
+    /** Live search for tracker_players (JSON, for autocomplete in members tab). */
+    public function searchPlayers(Request $request, Clan $clan)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+        abort_unless($clan->trackerClan, 422);
+
+        $q = trim((string) $request->get('q', ''));
+        if (mb_strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        // Players already assigned to this clan (active or inactive)
+        $existingPlayerIds = TrackerClanMember::where('clan_id', $clan->trackerClan->id)
+            ->pluck('player_id')->all();
+
+        $players = \App\Models\Tracker\TrackerPlayer::where('status', 'active')
+            ->where('name_clean', 'LIKE', "%{$q}%")
+            ->whereNotIn('id', $existingPlayerIds)
+            ->orderByDesc('total_play_time_minutes')
+            ->limit(15)
+            ->get(['id', 'name_clean', 'name_html', 'country_code', 'elo_rating']);
+
+        return response()->json($players->map(fn($p) => [
+            'id' => $p->id,
+            'name' => $p->name_clean,
+            'name_html' => $p->name_html,
+            'country' => $p->country_code,
+            'elo' => (int) ($p->elo_rating ?? 0),
+        ]));
+    }
+
+    /** Manually add a tracker_player as clan member. */
+    public function addMember(Request $request, Clan $clan)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+        abort_unless($clan->trackerClan, 422);
+
+        $data = $request->validate([
+            'player_id'  => 'required|integer|exists:tracker_players,id',
+            'role_label' => 'nullable|string|max:50',
+            'squad_id'   => 'nullable|integer|exists:tracker_clan_squads,id',
+        ]);
+
+        // Re-activate if previously soft-removed
+        $existing = TrackerClanMember::where('clan_id', $clan->trackerClan->id)
+            ->where('player_id', $data['player_id'])
+            ->first();
+
+        if ($existing) {
+            $existing->update([
+                'is_active'  => true,
+                'is_manual'  => true,
+                'role_label' => $data['role_label'] ?? $existing->role_label,
+                'squad_id'   => $data['squad_id'] ?? $existing->squad_id,
+            ]);
+            return back()->with('success', __('Member re-added.'));
+        }
+
+        TrackerClanMember::create([
+            'clan_id'    => $clan->trackerClan->id,
+            'player_id'  => $data['player_id'],
+            'role'       => 'member',
+            'role_label' => $data['role_label'] ?? null,
+            'squad_id'   => $data['squad_id'] ?? null,
+            'is_manual'  => true,
+            'is_active'  => true,
+            'sort_order' => 0,
+            'joined_at'  => now(),
+        ]);
+
+        return back()->with('success', __('Member added.'));
+    }
+
+    /** Remove (soft) a clan member. Owner only. */
+    public function removeMember(Clan $clan, TrackerClanMember $member)
+    {
+        $this->gate($clan, ['owner']);
+        abort_unless($clan->trackerClan && $member->clan_id === $clan->trackerClan->id, 404);
+
+        $member->update(['is_active' => false]);
+        return back()->with('success', __('Member removed.'));
+    }
+
     /** Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */
     public function requestApiKey(Request $request, Clan $clan)
     {

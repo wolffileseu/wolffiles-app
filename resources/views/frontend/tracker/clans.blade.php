@@ -19,13 +19,31 @@
         </div>
     </div>
 
+    {{-- Filter row --}}
+    <div class="flex flex-wrap gap-2 mb-4">
+        <a href="{{ route('tracker.clans', array_merge(request()->except(['filter','page']))) }}"
+           class="px-3 py-1.5 rounded-lg text-xs transition {{ empty($filter) ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700' }}">All clans</a>
+        <a href="{{ route('tracker.clans', array_merge(request()->except('page'),['filter'=>'registered'])) }}"
+           class="px-3 py-1.5 rounded-lg text-xs transition {{ ($filter ?? '')==='registered' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700' }}">&#10003; Registered only</a>
+        <a href="{{ route('tracker.clans', array_merge(request()->except('page'),['filter'=>'recruiting'])) }}"
+           class="px-3 py-1.5 rounded-lg text-xs transition {{ ($filter ?? '')==='recruiting' ? 'bg-amber-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700' }}">&#127919; Recruiting now</a>
+    </div>
+
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @forelse($clans as $clan)
         <a href="{{ route('tracker.clan.show', $clan) }}" class="bg-gray-800 rounded-lg p-5 hover:bg-gray-750 transition group border border-gray-700/50 hover:border-amber-500/30">
             <div class="flex items-center gap-3 mb-3">
                 <div class="w-10 h-10 bg-gray-700 rounded-lg flex items-center justify-center text-amber-400 font-bold text-sm">{{ strtoupper(substr($clan->tag_clean, 0, 3)) }}</div>
                 <div>
-                    <div class="text-white font-semibold group-hover:text-amber-400">[{{ $clan->tag_clean }}] {{ $clan->name ?? '' }}</div>
+                    <div class="text-white font-semibold group-hover:text-amber-400">{{ $clan->registeredClan?->display_tag ?? '[' . $clan->tag_clean . ']' }} {{ $clan->registeredClan?->name ?? $clan->name ?? '' }}</div>
+                    @if($clan->registeredClan)
+                    <div class="flex gap-1 mt-1">
+                        <span class="px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide bg-green-900/30 text-green-400 border border-green-500/30">&#10003; Registered</span>
+                        @if($clan->registeredClan->is_recruiting && $clan->registeredClan->is_published)
+                        <span class="px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide bg-amber-900/30 text-amber-400 border border-amber-500/30">Recruiting</span>
+                        @endif
+                    </div>
+                    @endif
                     @if($clan->country_code)
                     <div class="flex items-center gap-1 mt-0.5">
                         <img src="https://flagcdn.com/{{ strtolower($clan->country_code) }}.svg" class="w-3 h-2" alt="{{ strtoupper($clan->country_code) }} flag">
@@ -44,7 +62,7 @@
             @endif
         </a>
         @empty
-        <div class="col-span-full text-center py-12 text-gray-500">No clans found. Run: php artisan tracker:detect-clans</div>
+        <div class="col-span-full text-center py-12 text-gray-500">No clans match your filters.</div>
         @endforelse
     </div>
     @if($clans->hasPages()) <div class="mt-6">{{ $clans->links() }}</div> @endif

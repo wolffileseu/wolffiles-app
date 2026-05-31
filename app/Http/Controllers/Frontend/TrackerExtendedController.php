@@ -195,10 +195,17 @@ class TrackerExtendedController extends Controller
     // ── Clans ──
     public function clans(Request $request)
     {
-        $query = TrackerClan::where('status', 'active');
+        $query = TrackerClan::where('status', 'active')->with('registeredClan');
 
         if ($search = $request->get('search')) {
             $query->where(fn($q) => $q->where('tag_clean', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%"));
+        }
+
+        $filter = $request->get('filter');
+        if ($filter === 'recruiting') {
+            $query->whereHas('registeredClan', fn($q) => $q->where('is_recruiting', true)->where('is_published', true));
+        } elseif ($filter === 'registered') {
+            $query->whereHas('registeredClan', fn($q) => $q->where('is_published', true));
         }
 
         $sort = $request->get('sort', 'members');
@@ -211,7 +218,7 @@ class TrackerExtendedController extends Controller
         };
 
         $clans = $query->where('member_count', '>', 0)->paginate(50)->withQueryString();
-        return view('frontend.tracker.clans', compact('clans', 'sort'));
+        return view('frontend.tracker.clans', compact('clans', 'sort', 'filter'));
     }
 
     /**
