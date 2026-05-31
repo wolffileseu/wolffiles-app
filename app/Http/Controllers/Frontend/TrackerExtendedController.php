@@ -221,6 +221,19 @@ class TrackerExtendedController extends Controller
      *   - Auto clan (no registered clans-row yet)  -> lean auto view + Claim button
      *   - Claimed clan (has registered clans-row)  -> full editable page
      */
+    public function recruiting()
+    {
+        $clans = \App\Models\Clan::query()
+            ->where('is_published', true)
+            ->where('is_recruiting', true)
+            ->with(['trackerClan', 'news' => fn($q) => $q->limit(1)])
+            ->withCount('news')
+            ->orderByDesc('updated_at')
+            ->paginate(12);
+
+        return view('frontend.clan.recruiting', compact('clans'));
+    }
+
     public function clanShow(TrackerClan $clan)
     {
         $clan->load(['activeMembers.player', 'activeMembers.squad', 'squads']);
