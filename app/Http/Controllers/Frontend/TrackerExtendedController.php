@@ -241,6 +241,54 @@ class TrackerExtendedController extends Controller
         return view('frontend.clan.recruiting', compact('clans'));
     }
 
+    public function proposeClanForm()
+    {
+        // User's existing proposals
+        $mine = \App\Models\ClanProposal::where('user_id', auth()->id())
+            ->orderByDesc('id')->limit(5)->get();
+        return view('frontend.clan.propose', compact('mine'));
+    }
+
+    public function storeProposal(\Illuminate\Http\Request $request)
+    {
+        $data = $request->validate([
+            'tag'         => 'required|string|max:50',
+            'tag_clean'   => 'required|string|max:50|regex:/^[A-Za-z0-9!@#$%^&*\-\|\.]+$/',
+            'name'        => 'nullable|string|max:255',
+            'description' => 'nullable|string|max:2000',
+            'website'     => 'nullable|url|max:255',
+            'discord'     => 'nullable|string|max:255',
+        ], [
+            'tag_clean.regex' => 'Tag (clean) may contain letters, numbers, and basic symbols only.',
+        ]);
+
+        // Anti-spam: max 1 pending proposal per user
+        $hasPending = \App\Models\ClanProposal::where('user_id', auth()->id())
+            ->where('status', \App\Models\ClanProposal::STATUS_PENDING)->exists();
+        if ($hasPending) {
+            return back()->withInput()->with('error', __('You already have a pending proposal. Please wait for it to be reviewed.'));
+        }
+
+        // Hint if a tracker_clan already exists with same tag_clean
+        $existing = TrackerClan::where('tag_clean', $data['tag_clean'])->first();
+
+        \App\Models\ClanProposal::create([
+            'user_id'     => auth()->id(),
+            'tag'         => $data['tag'],
+            'tag_clean'   => $data['tag_clean'],
+            'name'        => $data['name'] ?? null,
+            'description' => $data['description'] ?? null,
+            'website'     => $data['website'] ?? null,
+            'discord'     => $data['discord'] ?? null,
+        ]);
+
+        $msg = __('Proposal submitted. An admin will review it.');
+        if ($existing) {
+            $msg .= ' ' . __('Note: a clan with this tag is already in the tracker (auto-detected).');
+        }
+        return redirect()->route('clans.propose')->with('success', $msg);
+    }
+
     public function clanShow(TrackerClan $clan)
     {
         $clan->load(['activeMembers.player', 'activeMembers.squad', 'squads']);

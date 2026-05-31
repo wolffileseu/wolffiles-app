@@ -347,6 +347,10 @@ Route::get('/tracker/weapons/{slug}', [\App\Http\Controllers\Frontend\WeaponLead
 Route::get('/tracker/rankings/players', [TrackerExtendedController::class, 'playerRankings'])->name('tracker.rankings.players');
 Route::get('/tracker/clans', [TrackerExtendedController::class, 'clans'])->name('tracker.clans');
 Route::get('/clans/recruiting', [TrackerExtendedController::class, 'recruiting'])->name('clans.recruiting');
+Route::middleware('auth')->group(function () {
+    Route::get('/clans/propose', [TrackerExtendedController::class, 'proposeClanForm'])->name('clans.propose');
+    Route::post('/clans/propose', [TrackerExtendedController::class, 'storeProposal'])->middleware('throttle:3,60')->name('clans.propose.store');
+});
 Route::get('/tracker/clans/{clan}', [TrackerExtendedController::class, 'clanShow'])->name('tracker.clan.show');
 Route::get('/tracker/compare', [TrackerExtendedController::class, 'playerCompare'])->name('tracker.compare');
 

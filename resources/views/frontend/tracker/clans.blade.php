@@ -2,7 +2,10 @@
 <div class="max-w-7xl mx-auto px-4 py-8">
     <div class="flex flex-wrap items-center justify-between mb-6">
         <div><h1 class="text-3xl font-bold text-amber-500">Clans</h1><p class="text-gray-400 mt-1">Community clans and teams</p></div>
-        <a href="{{ route('tracker.index') }}" class="text-amber-400 hover:text-amber-300">&larr; Back to Tracker</a>
+        <div class="flex gap-3">
+            @auth<a href="{{ route('clans.propose') }}" class="text-amber-400 hover:text-amber-300 text-sm">+ Propose missing clan</a>@endauth
+            <a href="{{ route('tracker.index') }}" class="text-amber-400 hover:text-amber-300">&larr; Back to Tracker</a>
+        </div>
     </div>
 
     <div class="flex flex-wrap gap-3 mb-6">
