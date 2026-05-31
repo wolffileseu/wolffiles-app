@@ -409,6 +409,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/clan/{clan:slug}/news', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeNews'])->name('clan.manage.news.store');
     Route::delete('/clan/{clan:slug}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
     Route::put('/clan/{clan:slug}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');
+    Route::post('/clan/{clan:slug}/api-key/request', [\App\Http\Controllers\Frontend\ClanManageController::class, 'requestApiKey'])->name('clan.manage.api-key.request');
 });
 
     // My claims

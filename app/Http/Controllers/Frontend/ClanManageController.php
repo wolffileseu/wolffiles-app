@@ -47,7 +47,10 @@ class ClanManageController extends Controller
             ->orderByRaw("FIELD(status,'pending','accepted','rejected','withdrawn')")
             ->latest()->get();
 
-        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications'));
+        $apiKeys = \App\Models\ClanApiKey::where('clan_id', $clan->id)->orderByDesc('id')->get();
+        $hasPendingApiKey = $apiKeys->contains(fn($k) => str_starts_with($k->getAttributes()['key'] ?? '', 'PENDING:'));
+
+        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey'));
     }
 
     /** Save page content (about, rules, info, links). */
@@ -210,5 +213,27 @@ class ClanManageController extends Controller
             'reviewed_at'         => now(),
         ]);
         return back()->with('success', __('Application :status.', ['status' => $data['decision']]));
+    }
+
+    /** Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */
+    public function requestApiKey(Request $request, Clan $clan)
+    {
+        $this->gate($clan, ['owner']);
+
+        $pending = \App\Models\ClanApiKey::where('clan_id', $clan->id)
+            ->where('key', 'LIKE', 'PENDING:%')
+            ->exists();
+        if ($pending) {
+            return back()->with('error', __('A key request is already pending review.'));
+        }
+
+        \App\Models\ClanApiKey::create([
+            'clan_id'   => $clan->id,
+            'key'       => 'PENDING:' . Str::uuid(),
+            'label'     => 'Requested by ' . auth()->user()->name . ' on ' . now()->toDateString(),
+            'is_active' => false,
+        ]);
+
+        return back()->with('success', __('Key request submitted. An admin will review it.'));
     }
 }

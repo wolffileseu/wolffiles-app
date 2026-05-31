@@ -29,6 +29,9 @@
         <button @click="tab='managers'" :class="tab==='managers' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Managers<span class="text-gray-600 ml-1">{{ $clan->managers->count() }}</span></button>
         <button @click="tab='apps'" :class="tab==='apps' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Applications<span class="text-gray-600 ml-1">{{ $applications->where('status','pending')->count() }}</span></button>
         @endif
+        @if($manager->role === 'owner')
+        <button @click="tab='api'" :class="tab==='api' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">API Keys<span class="text-gray-600 ml-1">{{ $apiKeys->count() }}</span></button>
+        @endif
     </div>
 
     {{-- ========================= CONTENT ========================= --}}
@@ -253,6 +256,76 @@
         @empty
         <p class="text-gray-500 text-sm">No applications yet.</p>
         @endforelse
+    </div>
+    @endif
+
+    {{-- ========================= API KEYS (owner only) ========================= --}}
+    @if($manager->role === 'owner')
+    <div x-show="tab==='api'" x-cloak class="space-y-4">
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5">
+            <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-2">ClanNews Tool</h3>
+            <p class="text-sm text-gray-400 mb-3">Use this API key with the <a href="https://github.com/wolffileseu/clan-news-tool/releases/latest" target="_blank" rel="noopener" class="text-amber-400 hover:text-amber-300 underline">ClanNews Tool</a> to post news, events, matches, and recruitment posts directly from your desktop.</p>
+            <div class="text-xs text-gray-500 font-mono">Endpoints: /api/v1/clan/{me,news,event,match,recruitment}</div>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 overflow-hidden">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-900/50 text-gray-400 text-xs uppercase tracking-wide">
+                    <tr>
+                        <th class="px-4 py-2.5 text-left">Label</th>
+                        <th class="px-4 py-2.5 text-left">Key</th>
+                        <th class="px-4 py-2.5 text-left">Status</th>
+                        <th class="px-4 py-2.5 text-left">Last used</th>
+                        <th class="px-4 py-2.5 text-left">Expires</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-700/50">
+                    @forelse($apiKeys as $k)
+                        @php
+                            $rawKey = $k->getAttributes()['key'] ?? '';
+                            $isPending = str_starts_with($rawKey, 'PENDING:');
+                            $isExpired = $k->expires_at && $k->expires_at->isPast();
+                        @endphp
+                        <tr class="text-gray-200">
+                            <td class="px-4 py-3">{{ $k->label ?? '—' }}</td>
+                            <td class="px-4 py-3 font-mono text-xs">
+                                @if($isPending)
+                                    <span class="text-amber-400">⏳ Awaiting admin review</span>
+                                @else
+                                    <span class="select-all break-all">{{ $rawKey }}</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3">
+                                @if($isPending)
+                                    <span class="px-2 py-0.5 rounded-full text-xs border text-amber-400 border-amber-500/40 bg-amber-900/10">Pending</span>
+                                @elseif($isExpired)
+                                    <span class="px-2 py-0.5 rounded-full text-xs border text-gray-400 border-gray-500/40 bg-gray-900/10">Expired</span>
+                                @elseif($k->is_active)
+                                    <span class="px-2 py-0.5 rounded-full text-xs border text-green-400 border-green-500/40 bg-green-900/10">Active</span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full text-xs border text-red-400 border-red-500/40 bg-red-900/10">Disabled</span>
+                                @endif
+                            </td>
+                            <td class="px-4 py-3 text-gray-400 text-xs">{{ $k->last_used_at?->diffForHumans() ?? 'Never' }}</td>
+                            <td class="px-4 py-3 text-gray-400 text-xs">{{ $k->expires_at?->format('Y-m-d') ?? 'Never' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500 text-sm">No API keys yet. Request one below.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 flex items-center justify-between gap-4">
+            <div>
+                <h4 class="text-white font-semibold text-sm">Request a new API key</h4>
+                <p class="text-xs text-gray-400 mt-1">@if($hasPendingApiKey)You already have a pending request. An admin will review it.@else An admin will review and issue your key.@endif</p>
+            </div>
+            <form method="POST" action="{{ route('clan.manage.api-key.request', $clan->slug) }}">
+                @csrf
+                <button type="submit" @if($hasPendingApiKey) disabled @endif class="px-4 py-2 rounded-lg text-sm font-semibold transition @if($hasPendingApiKey) bg-gray-700 text-gray-500 cursor-not-allowed @else bg-amber-500 hover:bg-amber-400 text-gray-900 @endif">Request key</button>
+            </form>
+        </div>
     </div>
     @endif
 
