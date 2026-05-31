@@ -81,4 +81,6 @@ return [
     'last_played'       => 'Laatst',
     'unique_players'    => 'Spelers',
 
+    'Also requires' => 'Vereist ook',
+    'so statistics are sent at all.' => 'zodat er statistieken worden verzonden.',
 ];

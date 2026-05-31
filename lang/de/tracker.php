@@ -81,4 +81,6 @@ return [
     'last_played'       => 'Zuletzt',
     'unique_players'    => 'Spieler',
 
+    'Also requires' => 'Außerdem muss',
+    'so statistics are sent at all.' => 'gesetzt sein, damit überhaupt Statistiken gesendet werden.',
 ];

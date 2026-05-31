@@ -81,4 +81,6 @@ return [
     'last_played'       => 'Son',
     'unique_players'    => 'Oyuncular',
 
+    'Also requires' => 'Ayrıca',
+    'so statistics are sent at all.' => 'ayarlı olmalı, aksi halde istatistik gönderilmez.',
 ];

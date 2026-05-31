@@ -48,6 +48,9 @@
                     {{ __('See changelog') }} →
                 </a>
             </p>
+            <p class="mt-2 text-xs text-amber-400/90">
+                {{ __('Also requires') }} <code class="font-mono">sv_advert "3"</code> {{ __('so statistics are sent at all.') }}
+            </p>
         </div>
     </div>
 </div>
