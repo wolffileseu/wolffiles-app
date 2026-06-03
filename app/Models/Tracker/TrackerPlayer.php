@@ -29,6 +29,8 @@ class TrackerPlayer extends Model
         'total_sessions', 'total_xp',
         'elo_rating', 'elo_peak', 'elo_games', 'level', 'status',
         'claimed_by_user_id', 'is_verified',
+        'display_name', 'tagline', 'bio', 'avatar_url', 'banner_url',
+        'youtube_url', 'twitch_url', 'discord_url', 'twitter_url', 'website_url',
     ];
 
     protected function casts(): array

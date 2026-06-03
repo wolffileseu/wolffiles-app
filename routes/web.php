@@ -263,6 +263,12 @@ Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name(
 // === PLAYER SERVERS (Commit 2) ===
 Route::get('/players/{player}/servers', [TrackerController::class, 'playerServers'])->name('tracker.player.servers');
 
+// === PLAYER PROFILE MANAGEMENT (claimed players only) ===
+Route::middleware('auth')->group(function () {
+    Route::get('/players/{player}/manage', [\App\Http\Controllers\Frontend\PlayerManageController::class, 'index'])->name('tracker.player.manage');
+    Route::put('/players/{player}/profile', [\App\Http\Controllers\Frontend\PlayerManageController::class, 'updateProfile'])->name('tracker.player.manage.profile');
+});
+
 Route::post('/servers/{server}/force-poll', [TrackerController::class, 'forcePoll'])->middleware(['auth', 'throttle:5,1'])->name('tracker.server.force_poll');
 
 // Auth routes (Laravel Breeze)

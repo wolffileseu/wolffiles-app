@@ -9,7 +9,13 @@
             <div>
                 <div class="flex items-center gap-3">
                     <h1 class="text-2xl font-bold text-white flex items-center gap-2 flex-wrap">
+                        @if($player->avatar_url)
+                            <img src="{{ $player->avatar_url }}" class="w-10 h-10 rounded-full object-cover border-2 border-amber-500/40 inline-block flex-shrink-0" alt="Avatar">
+                        @endif
                         <span>{!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}</span>
+                        @if($player->display_name)
+                            <span class="text-gray-400 text-base font-normal">&middot; {{ $player->display_name }}</span>
+                        @endif
                         @if($player->has_enhanced_data)
                             <x-tracker-enhanced-badge size="md" />
                         @endif
@@ -88,6 +94,8 @@
                 <a href="{{ route('tracker.claim.player', $player) }}" class="px-3 py-1.5 bg-gray-700 text-amber-400 rounded-lg text-xs hover:bg-gray-600 transition border border-amber-500/30">&#x1f6e1;&#xfe0f; Claim Profile</a>
                 @elseif($player->claimed_by_user_id === auth()->id())
                 <span class="px-3 py-1.5 bg-green-900/30 text-green-400 rounded-lg text-xs border border-green-500/30">&#x2713; Your Profile</span>
+                <a href="{{ route('tracker.player.manage', $player) }}" class="ml-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-xs transition">&#9881; Manage</a>
+                <a href="{{ route('profile.show', auth()->user()) }}" class="ml-1 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-xs transition border border-gray-600">&larr; My Profile</a>
                 @else
                 <span class="px-3 py-1.5 bg-gray-700 text-gray-500 rounded-lg text-xs">&#x2713; Claimed</span>
                 @endif
@@ -96,6 +104,45 @@
             </div>
         </div>
     </div>
+
+    {{-- ============================================================
+         PLAYER PROFILE: Tagline, Bio, Social Links
+    ============================================================ --}}
+    @php
+        $hasSocial = $player->youtube_url || $player->twitch_url || $player->discord_url || $player->twitter_url || $player->website_url;
+        $hasProfile = $player->tagline || $player->bio || $hasSocial;
+    @endphp
+    @if($hasProfile)
+    <div class="bg-gray-800 rounded-lg p-6 mb-6 space-y-4">
+        @if($player->tagline)
+            <p class="text-amber-400 text-lg italic">"{{ $player->tagline }}"</p>
+        @endif
+
+        @if($player->bio)
+            <div class="prose prose-invert prose-sm max-w-none text-gray-300">{!! \App\Helpers\BBCode::parse($player->bio) !!}</div>
+        @endif
+
+        @if($hasSocial)
+        <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-700">
+            @if($player->youtube_url)
+                <a href="{{ $player->youtube_url }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-red-900/40 text-gray-300 hover:text-red-400 rounded-lg text-xs transition border border-gray-700"><i class="fab fa-youtube text-red-500"></i> YouTube</a>
+            @endif
+            @if($player->twitch_url)
+                <a href="{{ $player->twitch_url }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-purple-900/40 text-gray-300 hover:text-purple-400 rounded-lg text-xs transition border border-gray-700"><i class="fab fa-twitch text-purple-500"></i> Twitch</a>
+            @endif
+            @if($player->discord_url)
+                <a href="@if(str_starts_with($player->discord_url, 'http')){{ $player->discord_url }}@else#@endif" @if(str_starts_with($player->discord_url, 'http')) target="_blank" rel="noopener nofollow" @endif class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-indigo-900/40 text-gray-300 hover:text-indigo-400 rounded-lg text-xs transition border border-gray-700"><i class="fab fa-discord text-indigo-400"></i> {{ str_starts_with($player->discord_url, 'http') ? 'Discord' : $player->discord_url }}</a>
+            @endif
+            @if($player->twitter_url)
+                <a href="{{ $player->twitter_url }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-blue-900/40 text-gray-300 hover:text-blue-400 rounded-lg text-xs transition border border-gray-700"><i class="fab fa-twitter text-blue-400"></i> Twitter</a>
+            @endif
+            @if($player->website_url)
+                <a href="{{ $player->website_url }}" target="_blank" rel="noopener nofollow" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 hover:bg-amber-900/40 text-gray-300 hover:text-amber-400 rounded-lg text-xs transition border border-gray-700"><i class="fas fa-globe text-gray-400"></i> Website</a>
+            @endif
+        </div>
+        @endif
+    </div>
+    @endif
 
     {{-- Stats Cards --}}
     {{-- =========================================== --}}
