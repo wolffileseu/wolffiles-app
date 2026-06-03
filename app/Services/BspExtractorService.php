@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Services\ArchiveHelper;
 
 class BspExtractorService
 {
@@ -18,7 +19,7 @@ class BspExtractorService
         $ext = strtolower($file->file_extension ?? pathinfo($file->file_name, PATHINFO_EXTENSION));
 
         // Only process archives that could contain maps
-        if (!in_array($ext, ['pk3', 'zip'])) {
+        if (!in_array($ext, ['pk3', 'zip', 'rar'])) {
             return null;
         }
 
@@ -48,6 +49,8 @@ class BspExtractorService
                 $pk3Path = $archivePath;
             } elseif ($ext === 'zip') {
                 $pk3Path = $this->findPk3InZip($archivePath, $tempDir);
+            } elseif ($ext === 'rar') {
+                $pk3Path = $this->findPk3InRar($archivePath, $tempDir);
             }
 
             if (!$pk3Path) return null;
@@ -127,6 +130,81 @@ class BspExtractorService
         foreach ($iterator as $file) {
             if (str_ends_with(strtolower($file->getFilename()), '.pk3')) {
                 return $file->getRealPath();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Find and extract PK3 from a RAR file
+     */
+    private function findPk3InRar(string $rarPath, string $tempDir): ?string
+    {
+        $extractDir = $tempDir . '/rar_pk3';
+        @mkdir($extractDir, 0755, true);
+
+        // Primary path: use the same ArchiveHelper the analyzer uses.
+        // The system 7z lacks the RAR codec and unrar-free cannot read RAR4/5.
+        try {
+            $archive = new ArchiveHelper($rarPath);
+            if ($archive->open()) {
+                foreach ($archive->listEntries() as $entry) {
+                    $name = $entry['name'] ?? '';
+                    if (!str_ends_with(strtolower($name), '.pk3')) continue;
+
+                    $out = $extractDir . '/' . basename($name);
+
+                    $data = $archive->getFromName($name);
+                    if (!empty($data)) {
+                        file_put_contents($out, $data);
+                    } else {
+                        // RAR/7z: fall back to extractTo for this single entry
+                        $archive->extractTo($extractDir, $name);
+                        if (!file_exists($out)) {
+                            // entry may extract with its full inner path
+                            $found = glob($extractDir . '/*.pk3') ?: [];
+                            if (!empty($found)) $out = $found[0];
+                        }
+                    }
+
+                    if (file_exists($out) && filesize($out) > 0) {
+                        $archive->close();
+                        return $out;
+                    }
+                }
+                $archive->close();
+            }
+        } catch (\Throwable $e) {
+            \Log::warning("findPk3InRar ArchiveHelper failed [{$rarPath}]: {$e->getMessage()}");
+        }
+
+        // 7z first: the box ships unrar-free which cannot read RAR5 archives.
+        if (!empty(trim(shell_exec('which 7z 2>/dev/null') ?? ''))) {
+            $cmd = sprintf('7z e -y -o%s %s "*.pk3" 2>&1',
+                escapeshellarg($extractDir),
+                escapeshellarg($rarPath)
+            );
+            shell_exec($cmd);
+        } elseif (!empty(trim(shell_exec('which 7za 2>/dev/null') ?? ''))) {
+            $cmd = sprintf('7za e -y -o%s %s "*.pk3" 2>&1',
+                escapeshellarg($extractDir),
+                escapeshellarg($rarPath)
+            );
+            shell_exec($cmd);
+        } else {
+            \Log::warning('findPk3InRar: no 7z/7za binary available');
+            return null;
+        }
+
+        if (!is_dir($extractDir)) return null;
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($extractDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+        );
+        foreach ($iterator as $f) {
+            if (str_ends_with(strtolower($f->getFilename()), '.pk3')) {
+                return $f->getRealPath();
             }
         }
 
