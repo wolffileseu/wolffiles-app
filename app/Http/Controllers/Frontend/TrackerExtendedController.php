@@ -228,7 +228,9 @@ class TrackerExtendedController extends Controller
             default    => $query->orderByDesc('member_count'),
         };
 
-        $clans = $query->where('member_count', '>', 0)->paginate(50)->withQueryString();
+        $clans = $query->where(function ($q) {
+            $q->where('member_count', '>', 0)->orWhere('is_verified', true);
+        })->paginate(50)->withQueryString();
         return view('frontend.tracker.clans', compact('clans', 'sort', 'filter'));
     }
 
@@ -264,7 +266,7 @@ class TrackerExtendedController extends Controller
     {
         $data = $request->validate([
             'tag'         => 'required|string|max:50',
-            'tag_clean'   => 'required|string|max:50|regex:/^[A-Za-z0-9!@#$%^&*\-\|\.]+$/',
+            'tag_clean'   => ['required','string','max:50','regex:/^[A-Za-z0-9!@#$%^&*+=()<>\\[\\]_\\-\\|\\.~]+$/u'],
             'name'        => 'nullable|string|max:255',
             'description' => 'nullable|string|max:2000',
             'website'     => 'nullable|url|max:255',
@@ -505,7 +507,9 @@ class TrackerExtendedController extends Controller
 
     public function apiClans(Request $request)
     {
-        $query = TrackerClan::where('status', 'active')->where('member_count', '>', 0);
+        $query = TrackerClan::where('status', 'active')->where(function ($q) {
+            $q->where('member_count', '>', 0)->orWhere('is_verified', true);
+        });
         if ($q = $request->get('q')) $query->where(fn($qr) => $qr->where('tag_clean', 'LIKE', "%{$q}%")->orWhere('name', 'LIKE', "%{$q}%"));
         return response()->json($query->orderByDesc('member_count')->paginate($request->get('limit', 50)));
     }
