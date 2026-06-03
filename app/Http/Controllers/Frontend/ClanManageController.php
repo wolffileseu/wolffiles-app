@@ -61,8 +61,19 @@ class ClanManageController extends Controller
     public function updateContent(Request $request, Clan $clan)
     {
         $this->gate($clan); // editor+ allowed
+
+        // Slug-change is locked for 30 days after each change
+        $reservedSlugs = ['manage','propose','recruiting','create','edit','delete','admin','new','tracker','clans'];
+        $slugLocked = $clan->slug_changed_at && $clan->slug_changed_at->diffInDays(now()) < 30;
+
         $data = $request->validate([
             'name'                => 'required|string|max:255',
+            'slug'                => [
+                'required','string','min:2','max:50',
+                'regex:/^[a-z][a-z0-9-]+$/',
+                'not_in:'.implode(',',$reservedSlugs),
+                \Illuminate\Validation\Rule::unique('clans','slug')->ignore($clan->id),
+            ],
             'tag_display'         => 'nullable|string|max:50',
             'description'         => 'nullable|string|max:20000',
             'rules'               => 'nullable|string|max:20000',
@@ -76,9 +87,25 @@ class ClanManageController extends Controller
             'is_recruiting'       => 'nullable|boolean',
             'recruitment_summary' => 'nullable|string|max:5000',
             'is_published'        => 'nullable|boolean',
+        ], [
+            'slug.regex' => 'Slug must start with a letter and contain only lowercase letters, numbers, and dashes.',
+            'slug.not_in' => 'This slug is reserved. Please choose another.',
+            'slug.unique' => 'This slug is already taken by another clan.',
         ]);
         $data['is_recruiting'] = $request->boolean('is_recruiting');
         $data['is_published']  = $request->boolean('is_published');
+
+        // If slug changed: enforce 30-day lock + stamp slug_changed_at
+        if ($data['slug'] !== $clan->slug) {
+            if ($slugLocked) {
+                $daysLeft = 30 - (int) $clan->slug_changed_at->diffInDays(now());
+                return back()->withInput()->with('error', __('Slug change is locked for :n more day(s).', ['n' => $daysLeft]));
+            }
+            $data['slug_changed_at'] = now();
+        } else {
+            unset($data['slug']); // no change, do not touch slug_changed_at
+        }
+
         $clan->update($data);
 
         return back()->with('success', __('Clan page updated.'));

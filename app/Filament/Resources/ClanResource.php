@@ -44,8 +44,11 @@ class ClanResource extends Resource
                 Forms\Components\TextInput::make('tag')->required()->maxLength(10)
                     ->prefix('[')->suffix(']')
                     ->helperText('Display tag. To match more name patterns, edit tracker_clan.tag_clean instead.'),
-                Forms\Components\TextInput::make('slug')->required()->maxLength(255)
-                    ->helperText('URL slug, must be unique.'),
+                Forms\Components\TextInput::make('slug')->required()->maxLength(50)
+                    ->regex('/^[a-z][a-z0-9-]+$/')
+                    ->rule('not_in:manage,propose,recruiting,create,edit,delete,admin,new,tracker,clans')
+                    ->unique(ignoreRecord: true)
+                    ->helperText('URL slug. Admin bypass: no 30-day lock here, change freely.'),
             ])->columns(2),
 
             // ---------- Status ----------

@@ -24,6 +24,7 @@ class Clan extends Model
         "is_published" => "boolean",
         "is_recruiting" => "boolean",
         "view_count" => "integer",
+        'slug_changed_at' => 'datetime',
     ];
 
     protected static function boot()

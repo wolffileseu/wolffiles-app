@@ -37,7 +37,7 @@
 
     {{-- ========================= CONTENT ========================= --}}
     <div x-show="tab==='content'">
-        <form method="POST" action="{{ route('clan.manage.content', $clan->slug) }}" class="space-y-5">
+        <form method="POST" action="{{ route('clan.manage.content', $clan->tracker_clan_id) }}" class="space-y-5">
             @csrf @method('PUT')
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-5">
@@ -52,6 +52,21 @@
                                 <input name="tag_display" value="{{ old('tag_display', $clan->tag_display) }}" placeholder="[RoG] / =RoG= / .RoG" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">
                                 <p class="mt-1 text-xs text-gray-500">Wie soll dein Clan-Tag aussehen? z.B. [RoG], =RoG=, .RoG. Leer = Standard [tag].</p>
                             </div>
+                        </div>
+                        @php $slugLocked = $clan->slug_changed_at && $clan->slug_changed_at->diffInDays(now()) < 30; $daysLeft = $slugLocked ? 30 - (int) $clan->slug_changed_at->diffInDays(now()) : 0; @endphp
+                        <div>
+                            <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Public URL Slug</label>
+                            <div class="flex items-center gap-1">
+                                <span class="text-gray-500 text-sm font-mono">/clan/</span>
+                                <input name="slug" value="{{ old('slug', $clan->slug) }}" required {{ $slugLocked ? 'disabled' : '' }} pattern="^[a-z][a-z0-9-]+$" placeholder="rog" class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500 {{ $slugLocked ? 'opacity-50 cursor-not-allowed' : '' }}">
+                            </div>
+                            <p class="mt-1 text-xs {{ $slugLocked ? 'text-amber-400' : 'text-gray-500' }}">
+                                @if($slugLocked)
+                                    🔒 Slug change locked for {{ $daysLeft }} more day(s). Last changed {{ $clan->slug_changed_at->diffForHumans() }}.
+                                @else
+                                    Public URL: <span class="font-mono text-amber-400">wolffiles.eu/clan/{{ $clan->slug ?: 'your-slug' }}</span> — lowercase letters, numbers, dashes only. After change, locked for 30 days.
+                                @endif
+                            </p>
                         </div>
                         <div>
                             <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">About (Markdown + BBCode)</label>
@@ -114,13 +129,13 @@
                 @forelse($squads as $squad)
                 <span class="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-900 border border-gray-600 rounded-lg text-sm text-gray-300">
                     {{ $squad->name }}
-                    <form method="POST" action="{{ route('clan.manage.squad.delete', [$clan->slug, $squad->id]) }}" onsubmit="return confirm('Delete squad?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300">&times;</button></form>
+                    <form method="POST" action="{{ route('clan.manage.squad.delete', [$clan->tracker_clan_id, $squad->id]) }}" onsubmit="return confirm('Delete squad?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300">&times;</button></form>
                 </span>
                 @empty
                 <span class="text-gray-500 text-sm">No squads yet.</span>
                 @endforelse
             </div>
-            <form method="POST" action="{{ route('clan.manage.squad.store', $clan->slug) }}" class="flex gap-2">
+            <form method="POST" action="{{ route('clan.manage.squad.store', $clan->tracker_clan_id) }}" class="flex gap-2">
                 @csrf
                 <input name="name" placeholder="New squad name..." required class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
                 <button class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm">+ Add</button>
@@ -130,9 +145,9 @@
 
         @if($isAdmin)
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5"
-             x-data="{ q: '', results: [], picked: null, loading: false, async search() { if (this.q.length < 2) { this.results = []; this.picked = null; return; } this.loading = true; try { const r = await fetch('{{ route('clan.manage.member.search', $clan->slug) }}?q=' + encodeURIComponent(this.q)); this.results = await r.json(); } finally { this.loading = false; } }, pick(p) { this.picked = p; this.q = p.name; this.results = []; } }">
+             x-data="{ q: '', results: [], picked: null, loading: false, async search() { if (this.q.length < 2) { this.results = []; this.picked = null; return; } this.loading = true; try { const r = await fetch('{{ route('clan.manage.member.search', $clan->tracker_clan_id) }}?q=' + encodeURIComponent(this.q)); this.results = await r.json(); } finally { this.loading = false; } }, pick(p) { this.picked = p; this.q = p.name; this.results = []; } }">
             <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-3">Add Member</h3>
-            <form method="POST" action="{{ route('clan.manage.member.add', $clan->slug) }}" @submit="if(!picked){ $event.preventDefault(); alert('Please pick a player from the suggestions.'); }">
+            <form method="POST" action="{{ route('clan.manage.member.add', $clan->tracker_clan_id) }}" @submit="if(!picked){ $event.preventDefault(); alert('Please pick a player from the suggestions.'); }">
                 @csrf
                 <input type="hidden" name="player_id" :value="picked?.id ?? ''">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-start">
@@ -182,7 +197,7 @@
                     @foreach($members as $m)
                     <tr class="hover:bg-gray-700/30">
                         <td class="px-4 py-2 font-mono text-amber-400">{!! $m->player->name_html ?? e($m->player->name_clean ?? 'Unknown') !!}</td>
-                        <form method="POST" action="{{ route('clan.manage.member', [$clan->slug, $m->id]) }}">
+                        <form method="POST" action="{{ route('clan.manage.member', [$clan->tracker_clan_id, $m->id]) }}">
                             @csrf @method('PUT')
                             <td class="px-4 py-2">
                                 <select name="role_label" class="bg-gray-900 border border-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
@@ -201,7 +216,7 @@
                         </form>
                         <td class="px-4 py-2">
                             @if($manager->role === 'owner')
-                            <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->slug, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan?')">
+                            <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->tracker_clan_id, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan?')">
                                 @csrf @method('DELETE')
                                 <button class="text-red-400 hover:text-red-300 text-sm" title="Remove member">&times;</button>
                             </form>
@@ -251,7 +266,7 @@
                             @if($s->is_online)<span class="text-green-400 text-xs">&#9679; Online</span>@else<span class="text-gray-500 text-xs">&#9675; Offline</span>@endif
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->slug, $s->id]) }}" class="inline">
+                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->tracker_clan_id, $s->id]) }}" class="inline">
                                 @csrf
                                 <input type="hidden" name="visible" value="{{ $s->is_visible_for_clan ? 0 : 1 }}">
                                 <button class="px-3 py-1 rounded text-xs {{ $s->is_visible_for_clan ? 'bg-amber-500 text-gray-900 hover:bg-amber-400' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
@@ -272,7 +287,7 @@
                             @if($s->is_online)<span class="text-green-400 text-xs">&#9679; Online</span>@else<span class="text-gray-500 text-xs">&#9675; Offline</span>@endif
                         </td>
                         <td class="px-4 py-2 text-right">
-                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->slug, $s->id]) }}" class="inline">
+                            <form method="POST" action="{{ route('clan.manage.server.toggle', [$clan->tracker_clan_id, $s->id]) }}" class="inline">
                                 @csrf
                                 <input type="hidden" name="visible" value="{{ $s->is_visible_for_clan ? 0 : 1 }}">
                                 <button class="px-3 py-1 rounded text-xs {{ $s->is_visible_for_clan ? 'bg-amber-500 text-gray-900 hover:bg-amber-400' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
@@ -297,7 +312,7 @@
                     <h4 class="text-white font-semibold">{{ $post->title }} @unless($post->is_published)<span class="text-xs text-amber-400">(draft)</span>@endunless</h4>
                     <div class="text-xs text-gray-500 font-mono">{{ $post->created_at->diffForHumans() }}</div>
                 </div>
-                <form method="POST" action="{{ route('clan.manage.news.delete', [$clan->slug, $post->id]) }}" onsubmit="return confirm('Delete this news post?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-sm">Delete</button></form>
+                <form method="POST" action="{{ route('clan.manage.news.delete', [$clan->tracker_clan_id, $post->id]) }}" onsubmit="return confirm('Delete this news post?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-sm">Delete</button></form>
             </div>
             @empty
             <p class="text-gray-500 text-sm">No news yet.</p>
@@ -305,7 +320,7 @@
         </div>
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 self-start">
             <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-3">Post News</h3>
-            <form method="POST" action="{{ route('clan.manage.news.store', $clan->slug) }}" class="space-y-3">
+            <form method="POST" action="{{ route('clan.manage.news.store', $clan->tracker_clan_id) }}" class="space-y-3">
                 @csrf
                 <input name="title" placeholder="Title" required class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
                 <input name="excerpt" placeholder="Short excerpt (optional)" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
@@ -329,7 +344,7 @@
                             @if($mgr->role === 'owner')
                                 <span class="px-2 py-0.5 rounded-full text-xs uppercase tracking-wide border text-amber-400 border-amber-500/40 bg-amber-900/10">owner</span>
                             @elseif($isOwner)
-                                <form method="POST" action="{{ route('clan.manage.manager.update', [$clan->slug, $mgr->id]) }}" class="inline">
+                                <form method="POST" action="{{ route('clan.manage.manager.update', [$clan->tracker_clan_id, $mgr->id]) }}" class="inline">
                                     @csrf @method('PUT')
                                     <select name="role" onchange="this.form.submit()" class="bg-gray-900 border border-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
                                         <option value="admin" {{ $mgr->role==='admin'?'selected':'' }}>admin</option>
@@ -342,7 +357,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             @if($mgr->role !== 'owner')
-                            <form method="POST" action="{{ route('clan.manage.manager.delete', [$clan->slug, $mgr->id]) }}" onsubmit="return confirm('Remove this manager?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-xs">Remove</button></form>
+                            <form method="POST" action="{{ route('clan.manage.manager.delete', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Remove this manager?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-xs">Remove</button></form>
                             @endif
                         </td>
                     </tr>
@@ -352,7 +367,7 @@
         </div>
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 self-start">
             <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-3">Add Manager</h3>
-            <form method="POST" action="{{ route('clan.manage.manager.store', $clan->slug) }}" class="space-y-3">
+            <form method="POST" action="{{ route('clan.manage.manager.store', $clan->tracker_clan_id) }}" class="space-y-3">
                 @csrf
                 <input name="identifier" placeholder="Username or email" required class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
                 <select name="role" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm">
@@ -381,8 +396,8 @@
             </div>
             @if($app->status === 'pending')
             <div class="flex flex-col gap-2 shrink-0">
-                <form method="POST" action="{{ route('clan.manage.app.review', [$clan->slug, $app->id]) }}">@csrf @method('PUT')<input type="hidden" name="decision" value="accepted"><button class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded text-xs w-full">Accept</button></form>
-                <form method="POST" action="{{ route('clan.manage.app.review', [$clan->slug, $app->id]) }}">@csrf @method('PUT')<input type="hidden" name="decision" value="rejected"><button class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs w-full">Reject</button></form>
+                <form method="POST" action="{{ route('clan.manage.app.review', [$clan->tracker_clan_id, $app->id]) }}">@csrf @method('PUT')<input type="hidden" name="decision" value="accepted"><button class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded text-xs w-full">Accept</button></form>
+                <form method="POST" action="{{ route('clan.manage.app.review', [$clan->tracker_clan_id, $app->id]) }}">@csrf @method('PUT')<input type="hidden" name="decision" value="rejected"><button class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs w-full">Reject</button></form>
             </div>
             @endif
         </div>
@@ -454,7 +469,7 @@
                 <h4 class="text-white font-semibold text-sm">Request a new API key</h4>
                 <p class="text-xs text-gray-400 mt-1">@if($hasPendingApiKey)You already have a pending request. An admin will review it.@else An admin will review and issue your key.@endif</p>
             </div>
-            <form method="POST" action="{{ route('clan.manage.api-key.request', $clan->slug) }}">
+            <form method="POST" action="{{ route('clan.manage.api-key.request', $clan->tracker_clan_id) }}">
                 @csrf
                 <button type="submit" @if($hasPendingApiKey) disabled @endif class="px-4 py-2 rounded-lg text-sm font-semibold transition @if($hasPendingApiKey) bg-gray-700 text-gray-500 cursor-not-allowed @else bg-amber-500 hover:bg-amber-400 text-gray-900 @endif">Request key</button>
             </form>

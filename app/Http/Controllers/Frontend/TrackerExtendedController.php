@@ -289,6 +289,23 @@ class TrackerExtendedController extends Controller
         return redirect()->route('clans.propose')->with('success', $msg);
     }
 
+    /**
+     * Public clan page with flexible identifier:
+     * - numeric: matched against tracker_clans.id
+     * - string: matched against clans.slug, returns the linked tracker_clan
+     */
+    public function clanShowByIdentifier(string $identifier)
+    {
+        if (ctype_digit($identifier)) {
+            $clan = \App\Models\Tracker\TrackerClan::find((int) $identifier);
+        } else {
+            $registered = \App\Models\Clan::where('slug', $identifier)->first();
+            $clan = $registered?->trackerClan;
+        }
+        abort_unless($clan, 404);
+        return $this->clanShow($clan);
+    }
+
     public function clanShow(TrackerClan $clan)
     {
         $clan->load(['activeMembers.player', 'activeMembers.squad', 'squads']);
