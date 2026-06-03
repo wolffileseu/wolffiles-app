@@ -39,6 +39,7 @@ class TelegramSettings extends Page
         'news_posted' => '📰 News Published',
         'map_of_week' => '🗺️ Map of the Week',
         'report' => '🚩 New Report',
+        'claim_submitted' => '🔔 New Claim Pending Approval',
     ];
 
     public function mount(): void

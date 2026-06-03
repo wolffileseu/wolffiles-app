@@ -59,7 +59,7 @@
                         <button @click="tab='apply'" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm transition">&#9166; Apply</button>
                     @endif
                     @if($canManage)
-                        <a href="{{ route('clan.manage', $registered->slug) }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm transition">&#9881; Manage</a>
+                        <a href="{{ route('clan.manage', $registered->tracker_clan_id) }}" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm transition">&#9881; Manage</a>
                     @elseif(!$isClaimed && !$clan->claimed_by_user_id)
                         <a href="{{ route('tracker.claim.clan', $clan) }}" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-amber-400 rounded-lg text-sm border border-amber-500/30 transition">&#x1f3f0; Claim Clan</a>
                     @endif

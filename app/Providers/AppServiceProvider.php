@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Uploader API tree cache invalidation
         \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
+        \App\Models\Tracker\TrackerClaim::observe(\App\Observers\TrackerClaimObserver::class);
 
         // Resource Policies
         Gate::policy(\App\Models\File::class, \App\Policies\FilePolicy::class);

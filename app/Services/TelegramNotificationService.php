@@ -233,6 +233,43 @@ class TelegramNotificationService
         );
     }
 
+    public function notifyClaimSubmitted($claim): void
+    {
+        if (!$this->shouldNotify('claim_submitted')) return;
+
+        $typeLabel = match($claim->claimable_type) {
+            'player' => '🎮 Player',
+            'clan'   => '🏛️ Clan',
+            'server' => '🖥️ Server',
+            default  => '📋 ' . $claim->claimable_type,
+        };
+
+        $targetName = '#' . $claim->claimable_id;
+        try {
+            if ($claim->claimable_type === 'player') {
+                $p = \App\Models\Tracker\TrackerPlayer::find($claim->claimable_id);
+                if ($p) $targetName = ($p->name_clean ?? $p->name) . ' (#' . $claim->claimable_id . ')';
+            } elseif ($claim->claimable_type === 'clan') {
+                $c = \App\Models\Tracker\TrackerClan::find($claim->claimable_id);
+                if ($c) $targetName = '[' . $c->tag . '] ' . $c->name . ' (#' . $claim->claimable_id . ')';
+            } elseif ($claim->claimable_type === 'server') {
+                $s = \App\Models\Tracker\TrackerServer::find($claim->claimable_id);
+                if ($s) $targetName = ($s->hostname_clean ?? $s->ip) . ' (#' . $claim->claimable_id . ')';
+            }
+        } catch (\Throwable $e) {
+            // Fallback to ID-only if lookup fails — never block notification
+        }
+
+        $this->send(
+            "🔔 <b>New Claim Pending Approval</b>\n\n"
+            . "{$typeLabel}\n"
+            . "🎯 <b>" . htmlspecialchars($targetName) . "</b>\n"
+            . "👤 By: " . htmlspecialchars($claim->user->name ?? 'Unknown') . "\n"
+            . "📅 " . optional($claim->created_at)->format('Y-m-d H:i') . "\n\n"
+            . "🔗 <a href=\"" . url("/admin/tracker-claims/{$claim->id}/edit") . "\">Review in Admin</a>"
+        );
+    }
+
     /**
      * Test the connection - sends to all configured chat IDs
      */

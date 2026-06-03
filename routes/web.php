@@ -16,7 +16,6 @@ Route::domain('bug.wolffiles.eu')->name('bug.')->group(function () {
     });
 });
 
-
 use App\Http\Controllers\Frontend\HomeController;
 use App\Http\Controllers\Frontend\FileController;
 use App\Http\Controllers\Frontend\CategoryController;
@@ -102,10 +101,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/tutorials/{tutorial}/vote', [TutorialController::class, 'vote'])->name('tutorials.vote');
 });
 
-
 // Home
 Route::get('/', [HomeController::class, 'index'])->name('home');
-
 
 // ===== Demos =====
 Route::get('/demos', [DemoController::class, 'index'])->name('demos.index');
@@ -119,7 +116,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/demo/upload', [DemoController::class, 'upload'])->name('demos.upload');
     Route::post('/demo/upload', [DemoController::class, 'store'])->name('demos.store');
 });
-
 
 // Files
 Route::get('/files', [FileController::class, 'index'])->name('files.index');
@@ -145,7 +141,6 @@ Route::middleware('auth')->group(function () {
 
 // Erweiterte Suche
 Route::get('/search', [SearchController::class, 'index'])->name('search');
-
 
 
 
@@ -206,7 +201,6 @@ Route::post('/files/{file}/rate-criterion', function (\Illuminate\Http\Request $
     );
     return response()->json(['ok' => true]);
 })->name('files.rateCriterion');
-
 
     // File interactions
     Route::post('/files/{file}/rate', [FileController::class, 'rate'])->name('files.rate');
@@ -297,6 +291,22 @@ Route::get('/bsp-proxy/{file_id}', function (int $file_id) {
 // Texture proxy for 3D map viewer (S3 -> game-pool -> placeholder)
 Route::get('/tex-proxy/{file_id}/{path}', App\Http\Controllers\TexProxyController::class)
     ->where('path', '.*')->name('tex.proxy');
+
+// Shader-Liste einer Map (Autoloader fuer den 3D-Viewer)
+Route::get('/bsp-shaders/{file_id}', function (int $file_id) {
+    $urls = \Illuminate\Support\Facades\Cache::remember("bsp-shader-list:{$file_id}", 3600, function () use ($file_id) {
+        $out = [];
+        try {
+            foreach (\Illuminate\Support\Facades\Storage::disk('s3')->files("bsp/{$file_id}/assets/scripts") as $f) {
+                if (\Illuminate\Support\Str::endsWith(strtolower($f), '.shader')) {
+                    $out[] = '/tex-proxy/'.$file_id.'/'.substr($f, strlen("bsp/{$file_id}/assets/"));
+                }
+            }
+        } catch (\Throwable $e) {}
+        return $out;
+    });
+    return response()->json($urls);
+})->name('bsp.shaders');
 // Public API Documentation
 Route::get('/api-docs', function () {
     return view('frontend.api-docs');
@@ -376,7 +386,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/servers/{server}/rate', [TrackerExtendedController::class, 'rateServer'])->name('tracker.server.rate');
 });
 
-
 // ===== Tracker Claims =====
 use App\Http\Controllers\Frontend\TrackerClaimController;
 use App\Http\Controllers\Frontend\TrackerClaimAdminController;
@@ -396,10 +405,10 @@ Route::middleware('auth')->group(function () {
 // clan = slug (registered Clan). Management gated im Controller via ClanManager-Rolle.
 Route::middleware('auth')->group(function () {
     // Bewerbung absenden (jeder eingeloggte User)
-    Route::bind('clan', function ($value) {
+    Route::bind('managedClan', function ($value) {
         return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
     });
-    Route::post('/clan/{clan}/apply', function (\Illuminate\Http\Request $request, \App\Models\Clan $clan) {
+    Route::post('/clan/{managedClan}/apply', function (\Illuminate\Http\Request $request, \App\Models\Clan $managedClan) {
         $data = $request->validate([
             'player_name' => 'required|string|max:255',
             'contact'     => 'nullable|string|max:255',
@@ -415,42 +424,39 @@ Route::middleware('auth')->group(function () {
 
     // Management-Dashboard
     // Bind {clan} param in this group to Clan resolved by tracker_clan_id
-    Route::bind('clan', function ($value) {
+    Route::bind('managedClan', function ($value) {
         return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
     });
 
         // Bind {clan} to Clan via tracker_clan_id (user-facing ID)
-        Route::bind('clan', function ($value) {
+        Route::bind('managedClan', function ($value) {
             return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
         });
 
-                Route::get('/clan/{clan}/manage', [\App\Http\Controllers\Frontend\ClanManageController::class, 'index'])->name('clan.manage');
-    Route::put('/clan/{clan}/content', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateContent'])->name('clan.manage.content');
-    Route::put('/clan/{clan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateMember'])->name('clan.manage.member');
-    Route::post('/clan/{clan}/squads', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeSquad'])->name('clan.manage.squad.store');
-    Route::delete('/clan/{clan}/squads/{squad}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteSquad'])->name('clan.manage.squad.delete');
-    Route::post('/clan/{clan}/managers', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeManager'])->name('clan.manage.manager.store');
-    Route::put('/clan/{clan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateManager'])->name('clan.manage.manager.update');
-    Route::delete('/clan/{clan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteManager'])->name('clan.manage.manager.delete');
-    Route::post('/clan/{clan}/managers/{manager}/transfer-ownership', [\App\Http\Controllers\Frontend\ClanManageController::class, 'transferOwnership'])->name('clan.manage.manager.transfer');
-    Route::post('/clan/{clan}/news', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeNews'])->name('clan.manage.news.store');
-    Route::delete('/clan/{clan}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
-    Route::put('/clan/{clan}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');
-    Route::post('/clan/{clan}/api-key/request', [\App\Http\Controllers\Frontend\ClanManageController::class, 'requestApiKey'])->name('clan.manage.api-key.request');
-    Route::get('/clan/{clan}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
-    Route::post('/clan/{clan}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
-    Route::delete('/clan/{clan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
+                Route::get('/clan/{managedClan}/manage', [\App\Http\Controllers\Frontend\ClanManageController::class, 'index'])->name('clan.manage');
+    Route::put('/clan/{managedClan}/content', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateContent'])->name('clan.manage.content');
+    Route::put('/clan/{managedClan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateMember'])->name('clan.manage.member');
+    Route::post('/clan/{managedClan}/squads', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeSquad'])->name('clan.manage.squad.store');
+    Route::delete('/clan/{managedClan}/squads/{squad}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteSquad'])->name('clan.manage.squad.delete');
+    Route::post('/clan/{managedClan}/managers', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeManager'])->name('clan.manage.manager.store');
+    Route::put('/clan/{managedClan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateManager'])->name('clan.manage.manager.update');
+    Route::delete('/clan/{managedClan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteManager'])->name('clan.manage.manager.delete');
+    Route::post('/clan/{managedClan}/managers/{manager}/transfer-ownership', [\App\Http\Controllers\Frontend\ClanManageController::class, 'transferOwnership'])->name('clan.manage.manager.transfer');
+    Route::post('/clan/{managedClan}/news', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeNews'])->name('clan.manage.news.store');
+    Route::delete('/clan/{managedClan}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
+    Route::put('/clan/{managedClan}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');
+    Route::post('/clan/{managedClan}/api-key/request', [\App\Http\Controllers\Frontend\ClanManageController::class, 'requestApiKey'])->name('clan.manage.api-key.request');
+    Route::get('/clan/{managedClan}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
+    Route::post('/clan/{managedClan}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
+    Route::delete('/clan/{managedClan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
 
     // Member block-list
-    Route::post('/clan/{clan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');
-    Route::post('/clan/{clan}/blocks', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addBlock'])->name('clan.manage.block.add');
-    Route::delete('/clan/{clan}/blocks/{block}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeBlock'])->name('clan.manage.block.remove');
+    Route::post('/clan/{managedClan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');
+    Route::post('/clan/{managedClan}/blocks', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addBlock'])->name('clan.manage.block.add');
+    Route::delete('/clan/{managedClan}/blocks/{block}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeBlock'])->name('clan.manage.block.remove');
 
     // Member block-list
-    Route::post('/clan/{clan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');
-    Route::post('/clan/{clan}/blocks', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addBlock'])->name('clan.manage.block.add');
-    Route::delete('/clan/{clan}/blocks/{block}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeBlock'])->name('clan.manage.block.remove');
-    Route::post('/clan/{clan}/servers/{server}/toggle', [\App\Http\Controllers\Frontend\ClanManageController::class, 'toggleServerVisibility'])->name('clan.manage.server.toggle');
+    Route::post('/clan/{managedClan}/servers/{server}/toggle', [\App\Http\Controllers\Frontend\ClanManageController::class, 'toggleServerVisibility'])->name('clan.manage.server.toggle');
 
     // Server Manage Dashboard (claimed servers)
     Route::get('/servers/{server}/manage', [\App\Http\Controllers\Frontend\ServerManageController::class, 'index'])->name('server.manage');
@@ -530,7 +536,6 @@ Route::get('/tracker/server/{server}/embed', [\App\Http\Controllers\Tracker\Bann
     ->name('tracker.server.embed');
 Route::get('/tracker/player/{player}/embed', [\App\Http\Controllers\Tracker\BannerController::class, 'playerEmbed'])
     ->name('tracker.player.embed');
-
 
 // ============================================================
 // Multipart Upload API (for Uppy.io browser-direct uploads to S3)

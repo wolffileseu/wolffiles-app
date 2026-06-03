@@ -16,61 +16,61 @@ use Illuminate\Support\Str;
 class ClanManageController extends Controller
 {
     /** Resolve the manager record or abort. */
-    protected function gate(Clan $clan, array $allowedRoles = ['owner', 'admin', 'editor']): ClanManager
+    protected function gate(Clan $managedClan, array $allowedRoles = ['owner', 'admin', 'editor']): ClanManager
     {
-        $manager = $clan->managers()->where('user_id', auth()->id())->first();
+        $manager = $managedClan->managers()->where('user_id', auth()->id())->first();
         abort_unless($manager && in_array($manager->role, $allowedRoles), 403);
         return $manager;
     }
 
     /** Dashboard. */
-    public function index(Clan $clan)
+    public function index(Clan $managedClan)
     {
-        $manager = $this->gate($clan);
-        $clan->load(['trackerClan.squads', 'managers.user']);
+        $manager = $this->gate($managedClan);
+        $managedClan->load(['trackerClan.squads', 'managers.user']);
 
         $members = collect();
         $squads = collect();
-        if ($clan->trackerClan) {
+        if ($managedClan->trackerClan) {
             $members = TrackerClanMember::with('player', 'squad')
-                ->where('clan_id', $clan->trackerClan->id)
+                ->where('clan_id', $managedClan->trackerClan->id)
                 ->where('is_active', true)
                 ->get()
                 ->filter(fn ($m) => $m->player !== null)
                 ->sortBy('sort_order');
-            $squads = $clan->trackerClan->squads;
+            $squads = $managedClan->trackerClan->squads;
         }
 
-        $news = Post::where('clan_id', $clan->id)->where('type', Post::TYPE_NEWS)->latest()->limit(20)->get();
+        $news = Post::where('clan_id', $managedClan->id)->where('type', Post::TYPE_NEWS)->latest()->limit(20)->get();
         $applications = ClanApplication::with('applicant')
-            ->where('clan_id', $clan->id)
+            ->where('clan_id', $managedClan->id)
             ->orderByRaw("FIELD(status,'pending','accepted','rejected','withdrawn')")
             ->latest()->get();
 
-        $apiKeys = \App\Models\ClanApiKey::where('clan_id', $clan->id)->orderByDesc('id')->get();
+        $apiKeys = \App\Models\ClanApiKey::where('clan_id', $managedClan->id)->orderByDesc('id')->get();
         $hasPendingApiKey = $apiKeys->contains(fn($k) => str_starts_with($k->getAttributes()['key'] ?? '', 'PENDING:'));
 
         // Servers: claimed + auto-detected (by tag prefix on hostname)
-        $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_clan_id', $clan->id)->orderBy('hostname_clean')->get();
-        $autoDetectedServers = $clan->autoDetectedServersQuery()->orderBy('hostname_clean')->get();
+        $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_clan_id', $managedClan->id)->orderBy('hostname_clean')->get();
+        $autoDetectedServers = $managedClan->autoDetectedServersQuery()->orderBy('hostname_clean')->get();
 
         // Block-list
-        $blocks = \App\Models\ClanMemberBlock::where('clan_id', $clan->id)
+        $blocks = \App\Models\ClanMemberBlock::where('clan_id', $managedClan->id)
             ->with(['targetPlayer', 'blockedBy'])
             ->latest()
             ->get();
 
-        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey', 'claimedServers', 'autoDetectedServers', 'blocks'));
+        return view('frontend.clan.manage', array_merge(compact('manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey', 'claimedServers', 'autoDetectedServers', 'blocks'), ['clan' => $managedClan]));
     }
 
     /** Save page content (about, rules, info, links). */
-    public function updateContent(Request $request, Clan $clan)
+    public function updateContent(Request $request, Clan $managedClan)
     {
-        $this->gate($clan); // editor+ allowed
+        $this->gate($managedClan); // editor+ allowed
 
         // Slug-change is locked for 30 days after each change
         $reservedSlugs = ['manage','propose','recruiting','create','edit','delete','admin','new','tracker','clans'];
-        $slugLocked = $clan->slug_changed_at && $clan->slug_changed_at->diffInDays(now()) < 30;
+        $slugLocked = $managedClan->slug_changed_at && $managedClan->slug_changed_at->diffInDays(now()) < 30;
 
         $data = $request->validate([
             'name'                => 'required|string|max:255',
@@ -78,7 +78,7 @@ class ClanManageController extends Controller
                 'required','string','min:2','max:50',
                 'regex:/^[a-z][a-z0-9-]+$/',
                 'not_in:'.implode(',',$reservedSlugs),
-                \Illuminate\Validation\Rule::unique('clans','slug')->ignore($clan->id),
+                \Illuminate\Validation\Rule::unique('clans','slug')->ignore($managedClan->id),
             ],
             'tag_display'         => 'nullable|string|max:50',
             'description'         => 'nullable|string|max:20000',
@@ -102,9 +102,9 @@ class ClanManageController extends Controller
         $data['is_published']  = $request->boolean('is_published');
 
         // If slug changed: enforce 30-day lock + stamp slug_changed_at
-        if ($data['slug'] !== $clan->slug) {
+        if ($data['slug'] !== $managedClan->slug) {
             if ($slugLocked) {
-                $daysLeft = 30 - (int) $clan->slug_changed_at->diffInDays(now());
+                $daysLeft = 30 - (int) $managedClan->slug_changed_at->diffInDays(now());
                 return back()->withInput()->with('error', __('Slug change is locked for :n more day(s).', ['n' => $daysLeft]));
             }
             $data['slug_changed_at'] = now();
@@ -112,16 +112,16 @@ class ClanManageController extends Controller
             unset($data['slug']); // no change, do not touch slug_changed_at
         }
 
-        $clan->update($data);
+        $managedClan->update($data);
 
         return back()->with('success', __('Clan page updated.'));
     }
 
     /** Update a single member's role_label + squad. */
-    public function updateMember(Request $request, Clan $clan, TrackerClanMember $member)
+    public function updateMember(Request $request, Clan $managedClan, TrackerClanMember $member)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan && $member->clan_id === $clan->trackerClan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan && $member->clan_id === $managedClan->trackerClan->id, 404);
         $data = $request->validate([
             'role_label' => 'nullable|string|max:50',
             'squad_id'   => 'nullable|integer|exists:tracker_clan_squads,id',
@@ -136,13 +136,13 @@ class ClanManageController extends Controller
     }
 
     /** Create a squad. */
-    public function storeSquad(Request $request, Clan $clan)
+    public function storeSquad(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan, 422);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan, 422);
         $data = $request->validate(['name' => 'required|string|max:100']);
         TrackerClanSquad::create([
-            'clan_id'    => $clan->trackerClan->id,
+            'clan_id'    => $managedClan->trackerClan->id,
             'name'       => $data['name'],
             'sort_order' => 0,
         ]);
@@ -150,18 +150,18 @@ class ClanManageController extends Controller
     }
 
     /** Delete a squad (members fall back to unassigned). */
-    public function deleteSquad(Clan $clan, TrackerClanSquad $squad)
+    public function deleteSquad(Clan $managedClan, TrackerClanSquad $squad)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan && $squad->clan_id === $clan->trackerClan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan && $squad->clan_id === $managedClan->trackerClan->id, 404);
         $squad->delete();
         return back()->with('success', __('Squad deleted.'));
     }
 
     /** Invite a manager by username/email. */
-    public function storeManager(Request $request, Clan $clan)
+    public function storeManager(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner', 'admin']);
+        $this->gate($managedClan, ['owner', 'admin']);
         $data = $request->validate([
             'identifier' => 'required|string|max:255',
             'role'       => 'required|in:admin,editor',
@@ -170,11 +170,11 @@ class ClanManageController extends Controller
         if (! $user) {
             return back()->with('error', __('User not found.'));
         }
-        if ($clan->managers()->where('user_id', $user->id)->exists()) {
+        if ($managedClan->managers()->where('user_id', $user->id)->exists()) {
             return back()->with('error', __('User is already a manager.'));
         }
         ClanManager::create([
-            'clan_id'            => $clan->id,
+            'clan_id'            => $managedClan->id,
             'user_id'            => $user->id,
             'role'               => $data['role'],
             'invited_by_user_id' => auth()->id(),
@@ -183,10 +183,10 @@ class ClanManageController extends Controller
     }
 
     /** Change a manager's role (owner only). */
-    public function updateManager(Request $request, Clan $clan, ClanManager $manager)
+    public function updateManager(Request $request, Clan $managedClan, ClanManager $manager)
     {
-        $this->gate($clan, ['owner']);
-        abort_unless($manager->clan_id === $clan->id, 404);
+        $this->gate($managedClan, ['owner']);
+        abort_unless($manager->clan_id === $managedClan->id, 404);
         if ($manager->role === ClanManager::ROLE_OWNER) {
             return back()->with('error', __('Cannot change the owner role here.'));
         }
@@ -196,10 +196,10 @@ class ClanManageController extends Controller
     }
 
     /** Remove a manager (owner/admin; cannot remove owner or self-owner). */
-    public function deleteManager(Clan $clan, ClanManager $manager)
+    public function deleteManager(Clan $managedClan, ClanManager $manager)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($manager->clan_id === $clan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($manager->clan_id === $managedClan->id, 404);
         if ($manager->role === ClanManager::ROLE_OWNER) {
             return back()->with('error', __('Cannot remove the owner.'));
         }
@@ -208,9 +208,9 @@ class ClanManageController extends Controller
     }
 
     /** Post clan news (goes live immediately for clan-managed news). */
-    public function storeNews(Request $request, Clan $clan)
+    public function storeNews(Request $request, Clan $managedClan)
     {
-        $this->gate($clan); // editor+
+        $this->gate($managedClan); // editor+
         $data = $request->validate([
             'title'   => 'required|string|max:255',
             'content' => 'required|string|max:50000',
@@ -218,7 +218,7 @@ class ClanManageController extends Controller
         ]);
         Post::create([
             'user_id'      => auth()->id(),
-            'clan_id'      => $clan->id,
+            'clan_id'      => $managedClan->id,
             'type'         => Post::TYPE_NEWS,
             'title'        => $data['title'],
             'slug'         => Str::slug($data['title']) . '-' . Str::random(6),
@@ -231,19 +231,19 @@ class ClanManageController extends Controller
     }
 
     /** Delete a news post. */
-    public function deleteNews(Clan $clan, Post $post)
+    public function deleteNews(Clan $managedClan, Post $post)
     {
-        $this->gate($clan);
-        abort_unless($post->clan_id === $clan->id, 404);
+        $this->gate($managedClan);
+        abort_unless($post->clan_id === $managedClan->id, 404);
         $post->delete();
         return back()->with('success', __('News deleted.'));
     }
 
     /** Accept/reject an application. */
-    public function reviewApplication(Request $request, Clan $clan, ClanApplication $application)
+    public function reviewApplication(Request $request, Clan $managedClan, ClanApplication $application)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($application->clan_id === $clan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($application->clan_id === $managedClan->id, 404);
         $data = $request->validate(['decision' => 'required|in:accepted,rejected']);
         $application->update([
             'status'              => $data['decision'],
@@ -254,14 +254,14 @@ class ClanManageController extends Controller
     }
 
     /** Transfer ownership of the clan to another existing manager. Owner only. */
-    public function transferOwnership(Clan $clan, ClanManager $manager)
+    public function transferOwnership(Clan $managedClan, ClanManager $manager)
     {
-        $this->gate($clan, ['owner']);
-        abort_unless($manager->clan_id === $clan->id, 404);
+        $this->gate($managedClan, ['owner']);
+        abort_unless($manager->clan_id === $managedClan->id, 404);
         abort_if($manager->role === ClanManager::ROLE_OWNER, 422, __('This person is already the owner.'));
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($clan, $manager) {
-            $currentOwner = $clan->managers()->where('role', ClanManager::ROLE_OWNER)->first();
+        \Illuminate\Support\Facades\DB::transaction(function () use ($managedClan, $manager) {
+            $currentOwner = $managedClan->managers()->where('role', ClanManager::ROLE_OWNER)->first();
             if ($currentOwner) {
                 $currentOwner->update(['role' => ClanManager::ROLE_EDITOR]);
             }
@@ -272,13 +272,13 @@ class ClanManageController extends Controller
     }
 
     /** Toggle visibility of an auto-detected server on the clan's public page. */
-    public function toggleServerVisibility(\Illuminate\Http\Request $request, Clan $clan, \App\Models\Tracker\TrackerServer $server)
+    public function toggleServerVisibility(\Illuminate\Http\Request $request, Clan $managedClan, \App\Models\Tracker\TrackerServer $server)
     {
-        $this->gate($clan, ['owner', 'admin']);
+        $this->gate($managedClan, ['owner', 'admin']);
 
         // Server must either be claimed by this clan OR match the auto-detect pattern
-        $isClaimed = $server->claimed_by_clan_id === $clan->id;
-        $matchesAuto = $clan->autoDetectedServersQuery()->where('tracker_servers.id', $server->id)->exists();
+        $isClaimed = $server->claimed_by_clan_id === $managedClan->id;
+        $matchesAuto = $managedClan->autoDetectedServersQuery()->where('tracker_servers.id', $server->id)->exists();
 
         abort_unless($isClaimed || $matchesAuto, 403, 'This server does not belong to your clan.');
 
@@ -288,10 +288,10 @@ class ClanManageController extends Controller
     }
 
     /** Live search for tracker_players (JSON, for autocomplete in members tab). */
-    public function searchPlayers(Request $request, Clan $clan)
+    public function searchPlayers(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan, 422);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan, 422);
 
         $q = trim((string) $request->get('q', ''));
         if (mb_strlen($q) < 2) {
@@ -299,7 +299,7 @@ class ClanManageController extends Controller
         }
 
         // Players already actively assigned (soft-removed players can be re-added)
-        $existingPlayerIds = TrackerClanMember::where('clan_id', $clan->trackerClan->id)
+        $existingPlayerIds = TrackerClanMember::where('clan_id', $managedClan->trackerClan->id)
             ->where('is_active', true)
             ->pluck('player_id')->all();
 
@@ -320,10 +320,10 @@ class ClanManageController extends Controller
     }
 
     /** Manually add a tracker_player as clan member. */
-    public function addMember(Request $request, Clan $clan)
+    public function addMember(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan, 422);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan, 422);
 
         $data = $request->validate([
             'player_id'  => 'required|integer|exists:tracker_players,id',
@@ -332,7 +332,7 @@ class ClanManageController extends Controller
         ]);
 
         // Re-activate if previously soft-removed
-        $existing = TrackerClanMember::where('clan_id', $clan->trackerClan->id)
+        $existing = TrackerClanMember::where('clan_id', $managedClan->trackerClan->id)
             ->where('player_id', $data['player_id'])
             ->first();
 
@@ -347,7 +347,7 @@ class ClanManageController extends Controller
         }
 
         TrackerClanMember::create([
-            'clan_id'    => $clan->trackerClan->id,
+            'clan_id'    => $managedClan->trackerClan->id,
             'player_id'  => $data['player_id'],
             'role'       => 'member',
             'role_label' => $data['role_label'] ?? null,
@@ -362,20 +362,20 @@ class ClanManageController extends Controller
     }
 
     /** Remove (soft) a clan member. Owner only. */
-    public function removeMember(Clan $clan, TrackerClanMember $member)
+    public function removeMember(Clan $managedClan, TrackerClanMember $member)
     {
-        $this->gate($clan, ['owner']);
-        abort_unless($clan->trackerClan && $member->clan_id === $clan->trackerClan->id, 404);
+        $this->gate($managedClan, ['owner']);
+        abort_unless($managedClan->trackerClan && $member->clan_id === $managedClan->trackerClan->id, 404);
 
         $member->update(['is_active' => false]);
         return back()->with('success', __('Member removed.'));
     }
 
     /** Block a member: removes them AND adds them to the block-list to prevent re-pool. */
-    public function blockMember(Request $request, Clan $clan, TrackerClanMember $member)
+    public function blockMember(Request $request, Clan $managedClan, TrackerClanMember $member)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($clan->trackerClan && $member->clan_id === $clan->trackerClan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($managedClan->trackerClan && $member->clan_id === $managedClan->trackerClan->id, 404);
 
         $data = $request->validate([
             'block_type' => 'required|in:player_id,name,both',
@@ -385,17 +385,17 @@ class ClanManageController extends Controller
         $player = $member->player;
         abort_unless($player, 404);
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($clan, $member, $player, $data) {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($managedClan, $member, $player, $data) {
             $member->update(['is_active' => false]);
             if (in_array($data['block_type'], ['player_id', 'both'])) {
                 \App\Models\ClanMemberBlock::updateOrCreate(
-                    ['clan_id' => $clan->id, 'block_type' => 'player_id', 'target_player_id' => $player->id],
+                    ['clan_id' => $managedClan->id, 'block_type' => 'player_id', 'target_player_id' => $player->id],
                     ['target_name' => null, 'blocked_by_user_id' => auth()->id(), 'reason' => $data['reason'] ?? null]
                 );
             }
             if (in_array($data['block_type'], ['name', 'both'])) {
                 \App\Models\ClanMemberBlock::updateOrCreate(
-                    ['clan_id' => $clan->id, 'block_type' => 'name', 'target_name' => $player->name_clean ?? $player->name ?? ''],
+                    ['clan_id' => $managedClan->id, 'block_type' => 'name', 'target_name' => $player->name_clean ?? $player->name ?? ''],
                     ['target_player_id' => null, 'blocked_by_user_id' => auth()->id(), 'reason' => $data['reason'] ?? null]
                 );
             }
@@ -405,9 +405,9 @@ class ClanManageController extends Controller
     }
 
     /** Manually add a block (for users that haven't been auto-pooled yet). */
-    public function addBlock(Request $request, Clan $clan)
+    public function addBlock(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner', 'admin']);
+        $this->gate($managedClan, ['owner', 'admin']);
 
         $data = $request->validate([
             'block_type'       => 'required|in:player_id,name',
@@ -425,7 +425,7 @@ class ClanManageController extends Controller
 
         \App\Models\ClanMemberBlock::updateOrCreate(
             [
-                'clan_id'           => $clan->id,
+                'clan_id'           => $managedClan->id,
                 'block_type'        => $data['block_type'],
                 'target_player_id'  => $data['block_type'] === 'player_id' ? $data['target_player_id'] : null,
                 'target_name'       => $data['block_type'] === 'name' ? $data['target_name'] : null,
@@ -437,20 +437,20 @@ class ClanManageController extends Controller
     }
 
     /** Remove a block entry. */
-    public function removeBlock(Clan $clan, \App\Models\ClanMemberBlock $block)
+    public function removeBlock(Clan $managedClan, \App\Models\ClanMemberBlock $block)
     {
-        $this->gate($clan, ['owner', 'admin']);
-        abort_unless($block->clan_id === $clan->id, 404);
+        $this->gate($managedClan, ['owner', 'admin']);
+        abort_unless($block->clan_id === $managedClan->id, 404);
         $block->delete();
         return back()->with('success', __('Block removed.'));
     }
 
     /** Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */
-    public function requestApiKey(Request $request, Clan $clan)
+    public function requestApiKey(Request $request, Clan $managedClan)
     {
-        $this->gate($clan, ['owner']);
+        $this->gate($managedClan, ['owner']);
 
-        $pending = \App\Models\ClanApiKey::where('clan_id', $clan->id)
+        $pending = \App\Models\ClanApiKey::where('clan_id', $managedClan->id)
             ->where('key', 'LIKE', 'PENDING:%')
             ->exists();
         if ($pending) {
@@ -458,7 +458,7 @@ class ClanManageController extends Controller
         }
 
         \App\Models\ClanApiKey::create([
-            'clan_id'   => $clan->id,
+            'clan_id'   => $managedClan->id,
             'key'       => 'PENDING:' . Str::uuid(),
             'label'     => 'Requested by ' . auth()->user()->name . ' on ' . now()->toDateString(),
             'is_active' => false,
