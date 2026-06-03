@@ -30,7 +30,7 @@
                     <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">URL Slug (optional)</label>
                     <div class="flex items-center gap-1">
                         <span class="text-gray-500 text-sm font-mono">/servers/</span>
-                        <input name="slug" value="{{ old('slug', $server->slug) }}" {{ $slugLocked ? 'disabled' : '' }} pattern="^[a-z][a-z0-9-]+$" placeholder="e.g. baroga-etpub" class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500 {{ $slugLocked ? 'opacity-50 cursor-not-allowed' : '' }}">
+                        <input name="slug" value="{{ old('slug', $server->slug) }}" {{ $slugLocked ? 'readonly' : '' }} pattern="^[a-z][a-z0-9-]+$" placeholder="e.g. baroga-etpub" class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500 {{ $slugLocked ? 'opacity-50 cursor-not-allowed' : '' }}">
                     </div>
                     <p class="mt-1 text-xs {{ $slugLocked ? 'text-amber-400' : 'text-gray-500' }}">
                         @if($slugLocked)
@@ -47,11 +47,13 @@
                 <h3 class="text-white font-semibold text-sm uppercase tracking-wide">Page Content</h3>
                 <div>
                     <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Description (Markdown + BBCode)</label>
-                    <textarea name="description" rows="5" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('description', $server->description) }}</textarea>
+                    <x-bbcode-toolbar target="server-description-editor" />
+                    <textarea id="server-description-editor" name="description" rows="5" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('description', $server->description) }}</textarea>
                 </div>
                 <div>
                     <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Server Rules (Markdown + BBCode)</label>
-                    <textarea name="rules" rows="6" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('rules', $server->rules) }}</textarea>
+                    <x-bbcode-toolbar target="server-rules-editor" />
+                    <textarea id="server-rules-editor" name="rules" rows="6" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('rules', $server->rules) }}</textarea>
                 </div>
             </div>
 

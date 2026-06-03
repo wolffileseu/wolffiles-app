@@ -92,6 +92,10 @@ class BBCode
             ['tag' => 'list', 'icon' => 'fas fa-list', 'title' => 'List'],
             ['tag' => 'youtube', 'icon' => 'fab fa-youtube', 'title' => 'YouTube'],
             ['tag' => 'hr', 'icon' => 'fas fa-minus', 'title' => 'Line', 'selfClosing' => true],
+            ['tag' => 'center', 'icon' => 'fas fa-align-center', 'title' => 'Center'],
+            ['tag' => 'color', 'icon' => 'fas fa-palette', 'title' => 'Color', 'picker' => 'color'],
+            ['tag' => 'size', 'icon' => 'fas fa-text-height', 'title' => 'Size', 'picker' => 'size'],
+            ['tag' => 'highlight', 'icon' => 'fas fa-highlighter', 'title' => 'Highlight'],
         ];
     }
 }

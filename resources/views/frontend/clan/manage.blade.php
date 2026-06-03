@@ -58,7 +58,7 @@
                             <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Public URL Slug</label>
                             <div class="flex items-center gap-1">
                                 <span class="text-gray-500 text-sm font-mono">/clan/</span>
-                                <input name="slug" value="{{ old('slug', $clan->slug) }}" required {{ $slugLocked ? 'disabled' : '' }} pattern="^[a-z][a-z0-9-]+$" placeholder="rog" class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500 {{ $slugLocked ? 'opacity-50 cursor-not-allowed' : '' }}">
+                                <input name="slug" value="{{ old('slug', $clan->slug) }}" required {{ $slugLocked ? 'readonly' : '' }} pattern="^[a-z][a-z0-9-]+$" placeholder="rog" class="flex-1 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500 {{ $slugLocked ? 'opacity-50 cursor-not-allowed' : '' }}">
                             </div>
                             <p class="mt-1 text-xs {{ $slugLocked ? 'text-amber-400' : 'text-gray-500' }}">
                                 @if($slugLocked)
@@ -70,11 +70,13 @@
                         </div>
                         <div>
                             <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">About (Markdown + BBCode)</label>
-                            <textarea name="description" rows="6" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('description', $clan->description) }}</textarea>
+                            <x-bbcode-toolbar target="clan-description-editor" />
+                            <textarea id="clan-description-editor" name="description" rows="6" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('description', $clan->description) }}</textarea>
                         </div>
                         <div>
                             <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Server Rules</label>
-                            <textarea name="rules" rows="5" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('rules', $clan->rules) }}</textarea>
+                            <x-bbcode-toolbar target="clan-rules-editor" />
+                            <textarea id="clan-rules-editor" name="rules" rows="5" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('rules', $clan->rules) }}</textarea>
                         </div>
                     </div>
 
@@ -154,7 +156,7 @@
                     <div class="md:col-span-6 relative">
                         <input x-model="q" @input.debounce.250ms="search()" type="text" autocomplete="off" placeholder="Search player name (min 2 chars)..."
                                class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
-                        <div x-show="results.length > 0" x-cloak class="absolute z-20 left-0 right-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-64 overflow-y-auto">
+                        <div x-show="results.length > 0" x-cloak class="absolute z-20 left-0 mt-1 bg-gray-900 border border-gray-700 rounded-lg shadow-xl max-h-96 w-[420px] overflow-y-auto">
                             <template x-for="p in results" :key="p.id">
                                 <button type="button" @click="pick(p)" class="w-full px-3 py-2 text-left hover:bg-gray-800 flex items-center gap-2 text-sm">
                                     <template x-if="p.country"><img :src="`https://flagcdn.com/${p.country.toLowerCase()}.svg`" class="w-4 h-3" :alt="p.country"></template>
