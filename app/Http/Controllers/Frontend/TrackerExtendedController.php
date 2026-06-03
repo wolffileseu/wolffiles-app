@@ -198,7 +198,18 @@ class TrackerExtendedController extends Controller
         $query = TrackerClan::where('status', 'active')->with('registeredClan');
 
         if ($search = $request->get('search')) {
-            $query->where(fn($q) => $q->where('tag_clean', 'LIKE', "%{$search}%")->orWhere('name', 'LIKE', "%{$search}%"));
+            $query->where(function ($q) use ($search) {
+                $q->where('tag_clean', 'LIKE', "%{$search}%")
+                  ->orWhere('tag', 'LIKE', "%{$search}%")
+                  ->orWhere('name', 'LIKE', "%{$search}%")
+                  ->orWhereHas('registeredClan', function ($rc) use ($search) {
+                      $rc->where('name', 'LIKE', "%{$search}%")
+                         ->orWhere('slug', 'LIKE', "%{$search}%")
+                         ->orWhere('tag_display', 'LIKE', "%{$search}%")
+                         ->orWhere('description', 'LIKE', "%{$search}%")
+                         ->orWhere('location', 'LIKE', "%{$search}%");
+                  });
+            });
         }
 
         $filter = $request->get('filter');
