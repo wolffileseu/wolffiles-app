@@ -432,6 +432,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/clan/{clan}/managers', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeManager'])->name('clan.manage.manager.store');
     Route::put('/clan/{clan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateManager'])->name('clan.manage.manager.update');
     Route::delete('/clan/{clan}/managers/{manager}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteManager'])->name('clan.manage.manager.delete');
+    Route::post('/clan/{clan}/managers/{manager}/transfer-ownership', [\App\Http\Controllers\Frontend\ClanManageController::class, 'transferOwnership'])->name('clan.manage.manager.transfer');
     Route::post('/clan/{clan}/news', [\App\Http\Controllers\Frontend\ClanManageController::class, 'storeNews'])->name('clan.manage.news.store');
     Route::delete('/clan/{clan}/news/{post}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'deleteNews'])->name('clan.manage.news.delete');
     Route::put('/clan/{clan}/applications/{application}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'reviewApplication'])->name('clan.manage.app.review');

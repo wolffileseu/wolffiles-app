@@ -356,9 +356,17 @@
                             @endif
                         </td>
                         <td class="px-4 py-3 text-right">
-                            @if($mgr->role !== 'owner')
-                            <form method="POST" action="{{ route('clan.manage.manager.delete', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Remove this manager?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-xs">Remove</button></form>
+                            <div class="flex gap-2 justify-end items-center">
+                            @if($isOwner && $mgr->role !== 'owner' && $mgr->user_id !== auth()->id())
+                                <form method="POST" action="{{ route('clan.manage.manager.transfer', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Transfer ownership to {{ $mgr->user->name ?? 'this user' }}? You will become an editor. Only the new owner can transfer back.')">
+                                    @csrf
+                                    <button class="text-amber-400 hover:text-amber-300 text-xs" title="Transfer ownership">Transfer</button>
+                                </form>
                             @endif
+                            @if($mgr->role !== 'owner')
+                                <form method="POST" action="{{ route('clan.manage.manager.delete', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Remove this manager?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-xs">Remove</button></form>
+                            @endif
+                            </div>
                         </td>
                     </tr>
                     @endforeach

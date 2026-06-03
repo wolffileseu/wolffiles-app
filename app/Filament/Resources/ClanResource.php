@@ -145,7 +145,9 @@ class ClanResource extends Resource
 
     public static function getRelations(): array
     {
-        return [];
+        return [
+            \App\Filament\Resources\ClanResource\RelationManagers\ManagersRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

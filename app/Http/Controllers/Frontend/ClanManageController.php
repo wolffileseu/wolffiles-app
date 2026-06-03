@@ -247,6 +247,24 @@ class ClanManageController extends Controller
         return back()->with('success', __('Application :status.', ['status' => $data['decision']]));
     }
 
+    /** Transfer ownership of the clan to another existing manager. Owner only. */
+    public function transferOwnership(Clan $clan, ClanManager $manager)
+    {
+        $this->gate($clan, ['owner']);
+        abort_unless($manager->clan_id === $clan->id, 404);
+        abort_if($manager->role === ClanManager::ROLE_OWNER, 422, __('This person is already the owner.'));
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($clan, $manager) {
+            $currentOwner = $clan->managers()->where('role', ClanManager::ROLE_OWNER)->first();
+            if ($currentOwner) {
+                $currentOwner->update(['role' => ClanManager::ROLE_EDITOR]);
+            }
+            $manager->update(['role' => ClanManager::ROLE_OWNER]);
+        });
+
+        return back()->with('success', __('Ownership transferred to :name. You are now an editor.', ['name' => $manager->user->name ?? 'the new owner']));
+    }
+
     /** Toggle visibility of an auto-detected server on the clan's public page. */
     public function toggleServerVisibility(\Illuminate\Http\Request $request, Clan $clan, \App\Models\Tracker\TrackerServer $server)
     {
