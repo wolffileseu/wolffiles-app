@@ -23,7 +23,25 @@ class ProfileController extends Controller
         $uploadHeatmap = $user->files()->where('status', 'approved')->selectRaw('DATE(created_at) as date, COUNT(*) as count')->groupBy('date')->pluck('count', 'date')->toArray();
         $uploads = $user->files()->where('status', 'approved')->with(['category', 'screenshots'])->orderByDesc('created_at')->paginate(12);
         $luaScripts = $user->luaScripts()->where('status', 'approved')->orderByDesc('created_at')->get();
-        return view('frontend.profile.show', compact('user', 'uploads', 'luaScripts', 'uploadHeatmap'));
+
+        // Claimed entities (players, clans, servers)
+        $claimedPlayers = \App\Models\Tracker\TrackerPlayer::where('claimed_by_user_id', $user->id)
+            ->orderByDesc('last_seen_at')
+            ->limit(24)
+            ->get();
+
+        $claimedClans = \App\Models\Clan::whereIn('id', function ($q) use ($user) {
+                $q->select('clan_id')->from('clan_managers')->where('user_id', $user->id);
+            })
+            ->with('trackerClan')
+            ->get();
+
+        $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_user_id', $user->id)
+            ->orderByDesc('is_online')
+            ->orderByDesc('last_seen_at')
+            ->get();
+
+        return view('frontend.profile.show', compact('user', 'uploads', 'luaScripts', 'uploadHeatmap', 'claimedPlayers', 'claimedClans', 'claimedServers'));
     }
 
     public function favorites()

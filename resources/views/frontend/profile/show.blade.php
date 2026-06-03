@@ -85,6 +85,12 @@
                 LUA <span class="text-xs px-2 py-0.5 rounded-full font-mono border border-gray-700 bg-gray-800 text-gray-400">{{ $luaScripts->count() }}</span>
             </button>
             @endif
+            @php $claimedTotal = $claimedPlayers->count() + $claimedClans->count() + $claimedServers->count(); @endphp
+            @if($claimedTotal > 0)
+            <button onclick="showTab('claimed')" id="tab-claimed" class="tab-btn px-5 py-3 text-sm font-medium text-gray-400 flex items-center gap-1.5">
+                Claimed <span class="text-xs px-2 py-0.5 rounded-full font-mono border border-gray-700 bg-gray-800 text-gray-400">{{ $claimedTotal }}</span>
+            </button>
+            @endif
         </div>
     </div>
 </div>
@@ -301,13 +307,105 @@
             </div>
             @endif
 
+            {{-- ============================================================
+                 CLAIMED ENTITIES — Players, Clans, Servers
+            ============================================================ --}}
+            @if($claimedTotal > 0)
+            <div id="pane-claimed" class="hidden space-y-6">
+
+                @if($claimedPlayers->isNotEmpty())
+                <div class="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                    <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700">
+                        <h3 class="text-white font-semibold text-sm uppercase tracking-wide"><i class="fas fa-user mr-2 text-amber-400"></i>Claimed Players ({{ $claimedPlayers->count() }})</h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        @foreach($claimedPlayers as $p)
+                        <a href="{{ route('tracker.player.show', $p) }}" class="fcard flex items-center gap-3 bg-gray-900 border border-gray-700 rounded-lg p-3 hover:border-amber-500">
+                            @if($p->country_code)
+                                <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-6 h-4 rounded-sm flex-shrink-0" alt="{{ $p->country_code }}">
+                            @endif
+                            <div class="min-w-0 flex-1">
+                                <div class="text-amber-400 font-mono text-sm truncate">{{ $p->name_clean ?? $p->name }}</div>
+                                <div class="text-xs text-gray-500">ELO {{ number_format($p->elo ?? 0) }} · Last seen {{ optional($p->last_seen_at)->diffForHumans() ?? 'never' }}</div>
+                            </div>
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if($claimedClans->isNotEmpty())
+                <div class="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                    <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700">
+                        <h3 class="text-white font-semibold text-sm uppercase tracking-wide"><i class="fas fa-flag mr-2 text-amber-400"></i>Claimed Clans ({{ $claimedClans->count() }})</h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach($claimedClans as $c)
+                        <div class="fcard bg-gray-900 border border-gray-700 rounded-lg p-3 hover:border-amber-500">
+                            <div class="flex items-start gap-3">
+                                @if($c->logo)
+                                    <img src="{{ $c->logo }}" class="w-12 h-12 rounded-lg object-cover bg-gray-800 flex-shrink-0" alt="">
+                                @else
+                                    <div class="w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-amber-400 font-mono text-xs flex-shrink-0">{{ Str::upper(Str::substr($c->tag_display ?? '['.$c->tag.']', 0, 4)) }}</div>
+                                @endif
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-amber-400 font-mono text-sm">{{ $c->tag_display ?? '['.$c->tag.']' }}</span>
+                                        <span class="text-white text-sm truncate">{{ $c->name }}</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">{{ $c->location ?? '—' }} · Founded {{ $c->founded ?? '—' }}</div>
+                                    <div class="flex gap-2 mt-2">
+                                        @if($c->trackerClan)
+                                            <a href="{{ route('clan.show', $c->trackerClan->id) }}" class="text-xs text-amber-400 hover:text-amber-300">View</a>
+                                        @endif
+                                        @if($user->id === auth()->id() && $c->trackerClan)
+                                            <a href="{{ route('clan.manage', $c->trackerClan->id) }}" class="text-xs text-amber-400 hover:text-amber-300">Manage</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                @if($claimedServers->isNotEmpty())
+                <div class="bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+                    <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700">
+                        <h3 class="text-white font-semibold text-sm uppercase tracking-wide"><i class="fas fa-server mr-2 text-amber-400"></i>Claimed Servers ({{ $claimedServers->count() }})</h3>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach($claimedServers as $sv)
+                        <div class="fcard bg-gray-900 border border-gray-700 rounded-lg p-3 hover:border-amber-500">
+                            <div class="flex items-start gap-3">
+                                <span class="inline-block w-2.5 h-2.5 mt-2 rounded-full flex-shrink-0 {{ $sv->is_online ? 'bg-green-500' : 'bg-gray-600' }}" title="{{ $sv->is_online ? 'Online' : 'Offline' }}"></span>
+                                <div class="min-w-0 flex-1">
+                                    <div class="text-white text-sm font-medium truncate">{{ $sv->hostname_clean ?? $sv->hostname ?? $sv->ip }}</div>
+                                    <div class="text-xs text-gray-500 font-mono">{{ $sv->ip }}:{{ $sv->port }}</div>
+                                    <div class="flex gap-2 mt-2">
+                                        <a href="{{ route('tracker.server.show', $sv->slug ?: $sv->id) }}" class="text-xs text-amber-400 hover:text-amber-300">View</a>
+                                        @if($user->id === auth()->id())
+                                            <a href="{{ route('server.manage', $sv->id) }}" class="text-xs text-amber-400 hover:text-amber-300">Manage</a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
+            @endif
+
         </main>
     </div>
 </div>
 
 <script>
 function showTab(name) {
-    ['overview','uploads','lua'].forEach(function(t) {
+    ['overview','uploads','lua','claimed'].forEach(function(t) {
         var pane = document.getElementById('pane-'+t);
         var tab  = document.getElementById('tab-'+t);
         if (!pane || !tab) return;

@@ -24,7 +24,16 @@
                         @endif
                     </h1>
                     @if($player->active_clan)
-                        <span class="bg-gray-700 px-2 py-0.5 rounded text-sm text-gray-300">{{ $player->active_clan->tag }}</span>
+                        @php
+                            $ac = $player->active_clan;
+                            $acReg = $ac->registeredClan;
+                            $acTagDisplay = $acReg?->tag_display ?: ('[' . $ac->tag_clean . ']');
+                        @endphp
+                        <a href="{{ route('clan.show', $ac->id) }}"
+                           class="inline-flex items-center px-2 py-0.5 rounded text-sm font-mono border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition"
+                           title="{{ $ac->name ?: $ac->tag_clean }}">
+                            {{ $acTagDisplay }}
+                        </a>
                     @endif
                 </div>
                 <div class="flex flex-wrap gap-4 mt-2 text-sm text-gray-400">

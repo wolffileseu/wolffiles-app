@@ -28,6 +28,7 @@ class TrackerPlayer extends Model
         'total_play_time_minutes', 'total_kills', 'total_deaths',
         'total_sessions', 'total_xp',
         'elo_rating', 'elo_peak', 'elo_games', 'level', 'status',
+        'claimed_by_user_id', 'is_verified',
     ];
 
     protected function casts(): array
