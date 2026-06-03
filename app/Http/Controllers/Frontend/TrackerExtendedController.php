@@ -214,9 +214,9 @@ class TrackerExtendedController extends Controller
 
         $filter = $request->get('filter');
         if ($filter === 'recruiting') {
-            $query->whereHas('registeredClan', fn($q) => $q->where('is_recruiting', true)->where('is_published', true));
+            $query->whereHas('registeredClan', fn($q) => $q->where('is_recruiting', true));
         } elseif ($filter === 'registered') {
-            $query->whereHas('registeredClan', fn($q) => $q->where('is_published', true));
+            $query->whereHas('registeredClan');
         }
 
         $sort = $request->get('sort', 'members');
