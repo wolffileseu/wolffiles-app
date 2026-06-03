@@ -28,9 +28,9 @@ class BBCode
             // Link ohne Text
             '/\[url\](https?:\/\/[^\[]+)\[\/url\]/is' => '<a href="$1" class="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="nofollow noopener">$1</a>',
             // Bild
-            '/\[img\](https?:\/\/[^\[]+)\[\/img\]/is' => '<img src="$1" alt="image" class="max-w-full rounded-lg my-2" loading="lazy">',
+            '/\[img\](https?:\/\/[^\[]+)\[\/img\]/is' => '<img src="$1" alt="image" class="max-w-full rounded-lg my-2 mx-auto" loading="lazy">',
             // Bild mit Größe
-            '/\[img width=([0-9]+)\](https?:\/\/[^\[]+)\[\/img\]/is' => '<img src="$2" alt="image" style="max-width:$1px" class="rounded-lg my-2" loading="lazy">',
+            '/\[img width=([0-9]+)\](https?:\/\/[^\[]+)\[\/img\]/is' => '<img src="$2" alt="image" style="max-width:$1px" class="rounded-lg my-2 mx-auto" loading="lazy">',
             // Code inline
             '/\[code\](.*?)\[\/code\]/is' => '<code class="bg-gray-900 text-green-400 px-2 py-1 rounded text-sm font-mono">$1</code>',
             // Code Block
@@ -53,8 +53,17 @@ class BBCode
             '/\[hr\]/i' => '<hr class="border-gray-700 my-4">',
             // YouTube
             '/\[youtube\](?:https?:\/\/(?:www\.)?youtube\.com\/watch\?v=|https?:\/\/youtu\.be\/)([a-zA-Z0-9_-]+)(?:[^\[]*)\[\/youtube\]/is' => '<div class="my-2 aspect-video max-w-lg"><iframe src="https://www.youtube-nocookie.com/embed/$1" class="w-full h-full rounded-lg" frameborder="0" allowfullscreen></iframe></div>',
+            // Linksbündig
+            '/\[left\](.*?)\[\/left\]/is' => '<div class="text-left">$1</div>',
+            // Rechtsbündig
+            '/\[right\](.*?)\[\/right\]/is' => '<div class="text-right">$1</div>',
             // Zentriert
             '/\[center\](.*?)\[\/center\]/is' => '<div class="text-center">$1</div>',
+            // Hervorheben
+            '/\[highlight\](.*?)\[\/highlight\]/is' => '<mark class="bg-yellow-200 text-gray-900 px-1 rounded">$1</mark>',
+            // E-Mail
+            '/\[email\]([^\[]+)\[\/email\]/is' => '<a href="mailto:$1" class="text-blue-400 hover:text-blue-300 underline">$1</a>',
+            '/\[email=([^\]]+)\](.*?)\[\/email\]/is' => '<a href="mailto:$1" class="text-blue-400 hover:text-blue-300 underline">$2</a>',
         ];
 
         foreach ($patterns as $pattern => $replacement) {
