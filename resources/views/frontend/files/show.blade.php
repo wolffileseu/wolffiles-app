@@ -25,7 +25,7 @@
                     @if($file->screenshots->count() > 1)
                         <div class="flex space-x-2 mt-4 overflow-x-auto">
                             @foreach($file->screenshots as $screenshot)
-                                <img src="{{ $screenshot->thumbnail_url }}" alt=""
+                                <img src="{{ $screenshot->thumbnail_url }}" alt="{{ $file->title }} screenshot"
                                      class="w-24 h-16 object-cover rounded cursor-pointer border-2 border-transparent hover:border-amber-400" width="96" height="64"
                                      loading="lazy"
                                      onclick="document.getElementById('mainImage').src='{{ $screenshot->url }}'">
@@ -46,7 +46,7 @@
                         <div class="flex space-x-2 mt-3 overflow-x-auto pb-2">
                             @foreach($file->screenshots as $screenshot)
                                 <a href="{{ $screenshot->url }}" target="_blank" rel="noopener">
-                                    <img src="{{ $screenshot->thumbnail_url }}" alt=""
+                                    <img src="{{ $screenshot->thumbnail_url }}" alt="{{ $file->title }} screenshot"
                                          class="h-32 object-cover rounded border border-gray-700 hover:border-amber-400 transition-colors"
                                          loading="lazy">
                                 </a>
@@ -179,12 +179,13 @@
                     <script>
                         window.q3bspBaseFolder = @json(App\Services\GameAssetMapper::urlFor($file->game) ?? '/et-assets');
                     </script>
-                    <script src="/js/bsp-viewer/game-shim.js"></script>
-                    <script src="/js/bsp-viewer/gl-matrix-min.js"></script>
-                    <script src="/js/bsp-viewer/q3shader.js"></script>
-                    <script src="/js/bsp-viewer/q3glshader.js"></script>
-                    <script src="/js/bsp-viewer/q3bsp.js"></script>
-                    <script src="/js/bsp-viewer/q3movement.js"></script>
+                    <script src="/js/bsp-viewer/game-shim.js?v={{ @filemtime(public_path('js/bsp-viewer/game-shim.js')) }}"></script>
+                    <script src="/js/bsp-viewer/gl-matrix-min.js?v={{ @filemtime(public_path('js/bsp-viewer/gl-matrix-min.js')) }}"></script>
+                    <script src="/js/bsp-viewer/q3shader.js?v={{ @filemtime(public_path('js/bsp-viewer/q3shader.js')) }}"></script>
+                    <script src="/js/bsp-viewer/q3glshader.js?v={{ @filemtime(public_path('js/bsp-viewer/q3glshader.js')) }}"></script>
+                    <script src="/js/bsp-viewer/q3bsp.js?v={{ @filemtime(public_path('js/bsp-viewer/q3bsp.js')) }}"></script>
+                    <script src="/js/bsp-viewer/q3movement.js?v={{ @filemtime(public_path('js/bsp-viewer/q3movement.js')) }}"></script>
+                    <script src="/js/bsp-viewer/bsp-walk.js?v={{ @filemtime(public_path('js/bsp-viewer/bsp-walk.js')) }}"></script>
                     <script>
                     // Wolffiles.eu BSP 3D Map Viewer — Optimized Controls v2
                     var bspViewer = {
@@ -304,7 +305,7 @@
                             bU.addEventListener('touchstart',function(e){e.preventDefault();bspViewer.keys[' ']=true;},{passive:false});bU.addEventListener('touchend',function(e){e.preventDefault();bspViewer.keys[' ']=false;},{passive:false});
                             bD.addEventListener('touchstart',function(e){e.preventDefault();bspViewer.keys['c']=true;},{passive:false});bD.addEventListener('touchend',function(e){e.preventDefault();bspViewer.keys['c']=false;},{passive:false});
                             document.getElementById('bsp-btn-sprint').addEventListener('touchstart',function(e){e.preventDefault();bspViewer.keys['shift']=!bspViewer.keys['shift'];this.style.borderColor=bspViewer.keys['shift']?'rgba(251,191,36,0.8)':'rgba(107,114,128,0.4)';this.style.color=bspViewer.keys['shift']?'#fbbf24':'#9ca3af';},{passive:false});
-                            document.getElementById('bsp-btn-noclip').addEventListener('touchstart',function(e){e.preventDefault();bspViewer.noclip=!bspViewer.noclip;var el=document.getElementById('bsp-noclip');if(el)el.textContent='Noclip: '+(bspViewer.noclip?'ON':'OFF');this.textContent=bspViewer.noclip?'NOCLIP':'CLIP';if(!bspViewer.noclip&&bspViewer.mover){bspViewer.mover.position=[bspViewer.cameraPosition[0],bspViewer.cameraPosition[1],bspViewer.cameraPosition[2]];bspViewer.mover.velocity=[0,0,0];}},{passive:false});
+                            document.getElementById('bsp-btn-noclip').addEventListener('touchstart',function(e){e.preventDefault();bspViewer.noclip=!bspViewer.noclip;var el=document.getElementById('bsp-noclip');if(el)el.textContent='Noclip: '+(bspViewer.noclip?'ON':'OFF');this.textContent=bspViewer.noclip?'NOCLIP':'CLIP';if(!bspViewer.noclip&&bspViewer.walk){bspViewer.walk.enter(bspViewer.cameraPosition);}},{passive:false});
                             document.getElementById('bsp-btn-clipplus').addEventListener('touchstart',function(e){e.preventDefault();bspViewer.farClip=Math.min(65536,bspViewer.farClip*2);mat4.perspective(bspViewer.projMat,72*Math.PI/180,bspViewer.canvas.width/bspViewer.canvas.height,1.0,bspViewer.farClip);var el=document.getElementById('bsp-clip');if(el)el.textContent='Draw: '+bspViewer.farClip;},{passive:false});
                             document.getElementById('bsp-btn-clipminus').addEventListener('touchstart',function(e){e.preventDefault();bspViewer.farClip=Math.max(512,bspViewer.farClip/2);mat4.perspective(bspViewer.projMat,72*Math.PI/180,bspViewer.canvas.width/bspViewer.canvas.height,1.0,bspViewer.farClip);var el=document.getElementById('bsp-clip');if(el)el.textContent='Draw: '+bspViewer.farClip;},{passive:false});
                             document.getElementById('bsp-btn-exit').addEventListener('touchstart',function(e){e.preventDefault();var tui=document.getElementById('bsp-touch-ui');if(tui)tui.style.display='none';bspViewer.pointerLocked=false;var ov=document.getElementById('bsp-click-overlay');if(ov)ov.style.display='flex';},{passive:false});
@@ -363,6 +364,8 @@
 
                         bspViewer.map.onbsp = function(bsp) {
                             bspViewer.mover = new q3movement(bsp);
+                            bspViewer.walk = new BSPWalk(bsp);
+                            bspViewer.prevSpace = false;
                             bspViewer.mover.position = bspViewer.cameraPosition;
 
                             var loadingEl = document.getElementById('bsp-loading');
@@ -395,7 +398,23 @@
                             if (progressBar) progressBar.style.width = pct + '%';
                         };
 
+                        @php
+$bspShaderUrls = \Illuminate\Support\Facades\Cache::remember('bsp-shader-list:'.$file->id, 3600, function () use ($file) {
+    $out = [];
+    try {
+        foreach (\Illuminate\Support\Facades\Storage::disk('s3')->files('bsp/'.$file->id.'/assets/scripts') as $f) {
+            if (\Illuminate\Support\Str::endsWith(strtolower($f), '.shader')) {
+                $out[] = '/tex-proxy/'.$file->id.'/'.substr($f, strlen('bsp/'.$file->id.'/assets/'));
+            }
+        }
+    } catch (\Throwable $e) {}
+    return $out;
+});
+@endphp
                         var shaderList = ['scripts/all_shaders.shader'];
+@foreach($bspShaderUrls as $bspU)
+                        shaderList.push(window.location.origin + @json($bspU));
+@endforeach
                         bspViewer.map.loadShaders(shaderList);
                         bspViewer.map.load('/bsp-proxy/{{ $file->id }}', 5);
 
@@ -451,7 +470,7 @@
                                 bspViewer.velocity = [0, 0, 0];
                                 var noclipEl = document.getElementById('bsp-noclip');
                                 if (noclipEl) noclipEl.textContent = 'Noclip: ' + (bspViewer.noclip ? 'ON' : 'OFF');
-                                if (!bspViewer.noclip && bspViewer.mover) { bspViewer.mover.position = [bspViewer.cameraPosition[0], bspViewer.cameraPosition[1], bspViewer.cameraPosition[2]]; bspViewer.mover.velocity = [0, 0, 0]; }
+                                if (!bspViewer.noclip && bspViewer.walk) { bspViewer.walk.enter(bspViewer.cameraPosition); }
                             }
                             if ((key === '+' || key === '=') && bspViewer.active) {
                                 e.preventDefault(); bspViewer.farClip = Math.min(65536, bspViewer.farClip * 2);
@@ -546,13 +565,23 @@
                             bspViewer.cameraPosition[0] += bspViewer.velocity[0] * dt;
                             bspViewer.cameraPosition[1] += bspViewer.velocity[1] * dt;
                             bspViewer.cameraPosition[2] += bspViewer.velocity[2] * dt;
-                        } else if (bspViewer.mover) {
-                            bspViewer.mover.position = [bspViewer.cameraPosition[0], bspViewer.cameraPosition[1], bspViewer.cameraPosition[2]];
-                            bspViewer.mover.velocity = [bspViewer.velocity[0], bspViewer.velocity[1], bspViewer.velocity[2]];
-                            bspViewer.mover.move(wishDir, dt * 1000);
-                            bspViewer.cameraPosition[0] = bspViewer.mover.position[0];
-                            bspViewer.cameraPosition[1] = bspViewer.mover.position[1];
-                            bspViewer.cameraPosition[2] = bspViewer.mover.position[2];
+                        } else if (bspViewer.walk) {
+                            var hx = 0, hy = 0;
+                            if (bspViewer.keys["w"]) { hx += fwdX; hy += fwdY; }
+                            if (bspViewer.keys["s"]) { hx -= fwdX; hy -= fwdY; }
+                            if (bspViewer.keys["a"]) { hx -= rightX; hy -= rightY; }
+                            if (bspViewer.keys["d"]) { hx += rightX; hy += rightY; }
+                            if (bspViewer.joystick.active) {
+                                hx += fwdX*(-bspViewer.joystick.dy) + rightX*bspViewer.joystick.dx;
+                                hy += fwdY*(-bspViewer.joystick.dy) + rightY*bspViewer.joystick.dx;
+                            }
+                            var spaceNow = !!bspViewer.keys[" "];
+                            var jumpEdge = spaceNow && !bspViewer.prevSpace;
+                            bspViewer.prevSpace = spaceNow;
+                            bspViewer.walk.step(dt, { wishDir: [hx, hy], speed: 320, jump: jumpEdge, sprint: !!bspViewer.keys['shift'] });
+                            bspViewer.cameraPosition[0] = bspViewer.walk.position[0];
+                            bspViewer.cameraPosition[1] = bspViewer.walk.position[1];
+                            bspViewer.cameraPosition[2] = bspViewer.walk.position[2];
                         }
 
                         // Update BSP visibility

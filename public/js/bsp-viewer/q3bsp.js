@@ -163,6 +163,8 @@ q3bsp.prototype.loadShaders = function(sources) {
     var map = this;
     
     for(var i = 0; i < sources.length; ++i) {
+        // Absolute Pfade (/tex-proxy/..., http://) NICHT mit base_folder präfixen.
+        if (sources[i].charAt(0) === '/' || /^https?:\/\//i.test(sources[i])) { continue; }
         sources[i] = q3bsp_base_folder + '/' + sources[i];
     }
     
@@ -303,6 +305,8 @@ q3bsp.prototype.buildShaders = function(shaders) {
     for(var i = 0; i < shaders.length; ++i) {
         var shader = shaders[i];
         var glShader = q3glshader.build(gl, shader);
+        glShader.sky = shader.sky;
+        glShader.skyParms = shader.skyParms || null;
         this.shaders[shader.name] = glShader;
     }
 };
@@ -350,6 +354,8 @@ q3bsp.prototype.bindShaders = function() {
             surface.shader = shader;
             if(shader.sky) {
                 map.skyShader = shader; // Sky does not get pushed into effectSurfaces. It's a separate pass
+                // Echte 6-Seiten-Skybox laden, wenn der Shader skyParms hat.
+                if(shader.skyParms) { map.loadSkybox(shader.skyParms); }
             } else {
                 map.effectSurfaces.push(surface);
             }
@@ -468,7 +474,13 @@ q3bsp.prototype.drawViews = function(views) {
     if(this.surfaces.length > 0) {
         
         // If we have a skybox, render it first
-        if(this.skyShader) {
+        if(this.skyboxReady) {
+            // Echte 6-Seiten-Skybox (skyParms)
+            for (var sv = 0; sv < viewCount; ++sv) {
+                if (viewCount > 1) this.setViewport(views[sv].viewport);
+                this.drawSkybox(views[sv].viewMat, views[sv].projMat);
+            }
+        } else if(this.skyShader) {
             // SkyBox Buffers
             gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.skyboxIndexBuffer);
             gl.bindBuffer(gl.ARRAY_BUFFER, this.skyboxBuffer);
@@ -586,6 +598,9 @@ q3bsp.prototype.drawViews = function(views) {
 //
 // BSP Tree Collision Detection
 //
+// Q3/ET surface flags (surfaceflags.h). Used to tag what a trace collided with.
+var SURF_LADDER = 0x8;
+
 q3bsptree = function(bsp) {
     this.bsp = bsp;
 };
@@ -596,7 +611,10 @@ q3bsptree.prototype.trace = function(start, end, radius) {
         startSolid: false,
         fraction: 1.0,
         endPos: end,
-        plane: null
+        plane: null,
+        surfaceFlags: 0,   // flags of the brush surface we hit (SURF_LADDER etc.)
+        contents: 0,       // contents of the brush surface we hit
+        isLadder: false    // convenience: (surfaceFlags & SURF_LADDER) on the hit
     };
     
     if(!this.bsp) { return output; }
@@ -622,7 +640,7 @@ q3bsptree.prototype.traceNode = function(nodeIdx, startFraction, endFraction, st
             var brush = this.bsp.brushes[this.bsp.leafBrushes[leaf.leafBrush + i]];
             var surface = this.bsp.surfaces[brush.shader];
             if (brush.brushSideCount > 0 && surface.contents & 1) {
-                this.traceBrush(brush, start, end, radius, output);
+                this.traceBrush(brush, surface, start, end, radius, output);
             }
         }
         return;
@@ -683,7 +701,7 @@ q3bsptree.prototype.traceNode = function(nodeIdx, startFraction, endFraction, st
     }
 };
 
-q3bsptree.prototype.traceBrush = function(brush, start, end, radius, output) {
+q3bsptree.prototype.traceBrush = function(brush, surface, start, end, radius, output) {
     var startFraction = -1;
     var endFraction = 1;
     var startsOut = false;
@@ -730,8 +748,103 @@ q3bsptree.prototype.traceBrush = function(brush, start, end, radius, output) {
             if (startFraction < 0)
                 startFraction = 0;
             output.fraction = startFraction;
+            // Tag the collided surface so movement can react to it
+            // (ladder climbing, slick floors, etc.).
+            output.surfaceFlags = surface ? (surface.flags | 0) : 0;
+            output.contents     = surface ? (surface.contents | 0) : 0;
+            output.isLadder     = (output.surfaceFlags & SURF_LADDER) !== 0;
         }
     }
     
     return;
+};
+/* ───────────────────────── Echte Skybox (skyParms) ───────────────────────── */
+/* Eigenständiges Mini-Programm + 6 texturierte Quads. Greift nicht in den
+   bestehenden Shader-/Render-Pfad ein. Orientierung der Seiten ist bewusst
+   einzeln anpassbar (siehe verts unten), falls eine Seite gedreht/gespiegelt ist. */
+q3bsp_sky_vs = 'attribute vec3 position; attribute vec2 texCoord;' +
+  'uniform mat4 modelViewMat; uniform mat4 projectionMat; varying vec2 vTexCoord;' +
+  'void main(void){ vTexCoord = texCoord; gl_Position = projectionMat * modelViewMat * vec4(position, 1.0); }';
+q3bsp_sky_fs = 'precision mediump float; varying vec2 vTexCoord; uniform sampler2D texture;' +
+  'void main(void){ gl_FragColor = texture2D(texture, vTexCoord); }';
+
+q3bsp.prototype.initSkyboxProgram = function() {
+    if (this.skyProgram) return;
+    var gl = this.gl;
+    this.skyProgram = q3glshader.compileShaderProgram(gl, q3bsp_sky_vs, q3bsp_sky_fs);
+    if (!this.skyProgram) { console.warn('Skybox-Programm konnte nicht kompiliert werden'); return; }
+    this._skyMV = mat4.create();
+
+    // Reihenfolge MUSS zu loadSkybox passen: ft, bk, lf, rt, up, dn
+    // Q3-Welt: X=vorne, Y=links, Z=oben. Jede Seite = 2 Dreiecke. [x,y,z,u,v], uv(0,0)=oben-links.
+    // E = Abstand der Seite zur Achse, O = leicht größer -> Seiten überlappen an den
+    // Kanten minimal, damit keine 1px-Nähte zwischen den Würfelseiten durchblitzen.
+    var E = 100.0;
+    var O = E * 1.02;
+    function quad(TL,TR,BR,BL){ return [].concat(TL,TR,BR, TL,BR,BL); }
+    var verts = [].concat(
+        quad([ E, O, O,0,0],[ E,-O, O,1,0],[ E,-O,-O,1,1],[ E, O,-O,0,1]), // ft (+X)
+        quad([-E,-O, O,0,0],[-E, O, O,1,0],[-E, O,-O,1,1],[-E,-O,-O,0,1]), // bk (-X)
+        quad([-O, E, O,0,0],[ O, E, O,1,0],[ O, E,-O,1,1],[-O, E,-O,0,1]), // lf (+Y)
+        quad([ O,-E, O,0,0],[-O,-E, O,1,0],[-O,-E,-O,1,1],[ O,-E,-O,0,1]), // rt (-Y)
+        quad([-O, O, E,0,0],[ O, O, E,1,0],[ O,-O, E,1,1],[-O,-O, E,0,1]), // up (+Z)
+        quad([-O,-O,-E,0,0],[ O,-O,-E,1,0],[ O, O,-E,1,1],[-O, O,-E,0,1])  // dn (-Z)
+    );
+    this.skyVbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.skyVbo);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+};
+
+q3bsp.prototype.loadSkybox = function(base) {
+    if (this._skyBase === base) return;
+    this._skyBase = base;
+    this.initSkyboxProgram();
+    if (!this.skyProgram) return;
+    var self = this, gl = this.gl;
+    this.skyFaceTex = this.skyFaceTex || [null,null,null,null,null,null];
+    var faces = ['ft','bk','lf','rt','up','dn'];
+    faces.forEach(function(suf, idx){
+        q3glshader.loadTextureUrl(gl, { clamp: true }, base + '_' + suf, function(tex){
+            self.skyFaceTex[idx] = tex;
+            self.skyboxReady = true;
+        });
+    });
+};
+
+q3bsp.prototype.drawSkybox = function(viewMat, projMat) {
+    if (!this.skyboxReady || !this.skyProgram || !this.skyVbo) return;
+    var gl = this.gl, p = this.skyProgram;
+
+    // Rotation-only ModelView (Kamera-Translation raus -> Himmel "unendlich" weit)
+    var mv = this._skyMV;
+    for (var k = 0; k < 16; k++) mv[k] = viewMat[k];
+    mv[12] = 0; mv[13] = 0; mv[14] = 0;
+
+    gl.useProgram(p);
+    gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);          // kein Depth schreiben -> Map zeichnet drüber
+    gl.disable(gl.CULL_FACE);
+    gl.uniformMatrix4fv(p.uniform.modelViewMat, false, mv);
+    gl.uniformMatrix4fv(p.uniform.projectionMat, false, projMat);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.skyVbo);
+    gl.enableVertexAttribArray(p.attrib.position);
+    gl.enableVertexAttribArray(p.attrib.texCoord);
+    gl.vertexAttribPointer(p.attrib.position, 3, gl.FLOAT, false, 20, 0);
+    gl.vertexAttribPointer(p.attrib.texCoord, 2, gl.FLOAT, false, 20, 12);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.uniform1i(p.uniform.texture, 0);
+    for (var f = 0; f < 6; f++) {
+        var t = this.skyFaceTex[f];
+        if (!t) continue;
+        gl.bindTexture(gl.TEXTURE_2D, t);
+        gl.drawArrays(gl.TRIANGLES, f * 6, 6);
+    }
+
+    gl.disableVertexAttribArray(p.attrib.position);
+    gl.disableVertexAttribArray(p.attrib.texCoord);
+    gl.depthMask(true);
+    gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
 };

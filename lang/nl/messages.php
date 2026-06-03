@@ -5,6 +5,8 @@ return [
     'vertical_banner_help' => 'Voor zijbalken, blogs en HTML-pagina\'s. Past zich aan de opgegeven breedte aan.',
     'accept' => '[TODO:nl] Accept All',
     'active_servers' => '[TODO:nl] Active Servers',
+    'clans_card' => 'Clans',
+    'clans_card_desc' => 'Blader door clans en bekijk hun statistieken',
     'active_servers_desc' => '[TODO:nl] Servers with players right now',
     'added_to_favorites' => '[TODO:nl] Added to favorites',
     'advanced' => '[TODO:nl] Advanced',

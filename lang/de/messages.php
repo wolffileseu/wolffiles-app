@@ -5,6 +5,8 @@ return [
     'vertical_banner_help' => 'Für Sidebars, Blogs und HTML-Seiten. Passt sich automatisch an die angegebene Breite an.',
     'accept' => 'Alle akzeptieren',
     'active_servers' => 'Aktive Server',
+    'clans_card' => 'Clans',
+    'clans_card_desc' => 'Clans durchsuchen und ihre Statistiken ansehen',
     'active_servers_desc' => 'Server mit Spielern gerade jetzt',
     'added_to_favorites' => 'Zu Favoriten hinzugefügt',
     'advanced' => 'Erweitert',

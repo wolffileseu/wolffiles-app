@@ -37,7 +37,7 @@
     @forelse($comments as $comment)
         <div class="border-t border-gray-700 py-4 {{ !$loop->first ? '' : 'border-t-0' }}">
             <div class="flex items-start space-x-3">
-                <img src="{{ $comment->user?->avatar_url ?? 'https://ui-avatars.com/api/?name=User&background=random' }}" class="w-8 h-8 rounded-full flex-shrink-0">
+                <img src="{{ $comment->user?->avatar_url ?? 'https://ui-avatars.com/api/?name=User&background=random' }}" class="w-8 h-8 rounded-full flex-shrink-0" alt="{{ $comment->user?->name ?? 'User' }} avatar">
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center space-x-2 mb-1">
                         <a href="{{ route('profile.show', $comment->user ?? 1) }}" class="text-amber-400 text-sm font-medium hover:underline">

@@ -63,7 +63,7 @@
                    class="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-700/50 transition">
                     <span class="text-gray-500 w-6 text-center text-sm font-bold">#{{ $p->rank }}</span>
                     @if($p->country_code)
-                    <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="">
+                    <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="{{ strtoupper($p->country_code) }} flag">
                     @endif
                     <span class="flex-1 text-sm text-gray-200 truncate">{!! $p->name_html ?? e($p->name_clean ?? 'Unknown') !!}</span>
                     <span class="text-xs text-gray-400 whitespace-nowrap">

@@ -74,7 +74,7 @@
                         <td class="px-3 py-2.5">
                             @if($p->country_code)
                             <span class="flex items-center gap-1.5">
-                                <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="">
+                                <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="{{ strtoupper($p->country_code) }} flag">
                                 <span class="text-gray-400 text-xs">{{ strtoupper($p->country_code) }}</span>
                             </span>
                             @else

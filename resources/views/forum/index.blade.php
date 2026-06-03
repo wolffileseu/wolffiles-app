@@ -13,7 +13,7 @@
             <div class="bg-gray-800 border border-gray-700 rounded-t-lg px-6 py-4">
                 <div class="flex items-center gap-3">
                     @if($category->icon_image_url)
-                        <img src="{{ $category->icon_image_url }}" alt="" class="w-7 h-7 object-contain">
+                        <img src="{{ $category->icon_image_url }}" alt="{{ $category->name }}" class="w-7 h-7 object-contain">
                     @elseif($category->icon)
                         <i class="{{ $category->icon }} text-xl" style="color: {{ $category->color }}"></i>
                     @else
@@ -34,7 +34,7 @@
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden"
                              style="background-color: {{ $sub->color }}20">
                             @if($sub->icon_image_url)
-                                <img src="{{ $sub->icon_image_url }}" alt="" class="w-8 h-8 object-contain">
+                                <img src="{{ $sub->icon_image_url }}" alt="{{ $sub->name }}" class="w-8 h-8 object-contain">
                             @elseif($sub->icon)
                                 <i class="{{ $sub->icon }}" style="color: {{ $sub->color }}"></i>
                             @else

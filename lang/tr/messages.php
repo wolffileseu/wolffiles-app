@@ -5,6 +5,8 @@ return [
     'vertical_banner_help' => 'Kenar çubukları, bloglar ve HTML sayfaları için. Belirtilen genişliğe uyar.',
     'accept' => '[TODO:tr] Accept All',
     'active_servers' => '[TODO:tr] Active Servers',
+    'clans_card' => 'Klanlar',
+    'clans_card_desc' => 'Klanlara göz at ve istatistiklerini gör',
     'active_servers_desc' => '[TODO:tr] Servers with players right now',
     'added_to_favorites' => '[TODO:tr] Added to favorites',
     'advanced' => '[TODO:tr] Advanced',

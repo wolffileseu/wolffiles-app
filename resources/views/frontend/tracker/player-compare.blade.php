@@ -54,7 +54,7 @@
                     : route('tracker.compare', ['p1' => $p->id, 'p2' => $player2?->id]);
             @endphp
             <a href="{{ $link }}" class="flex items-center gap-2 bg-gray-700 rounded-lg px-3 py-2 hover:bg-gray-600 transition">
-                @if($p->country_code)<img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="">@endif
+                @if($p->country_code)<img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="{{ strtoupper($p->country_code) }} flag">@endif
                 <span class="text-white text-sm truncate">{!! $p->name_html ?? e($p->name_clean ?? 'Unknown') !!}</span>
                 <span class="text-gray-500 text-xs ml-auto">ELO {{ number_format($p->elo_rating) }}</span>
             </a>

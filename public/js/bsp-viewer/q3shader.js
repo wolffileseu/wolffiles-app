@@ -128,6 +128,7 @@ q3shader.parseShader = function(name, tokens) {
         name: name,
         cull: 'back',
         sky: false,
+        skyParms: null,
         blend: false,
         opaque: false,
         sort: 0,
@@ -211,7 +212,56 @@ q3shader.parseShader = function(name, tokens) {
                     default: break;
                 }
                 break;
+
+            case 'skyparms':
+                // skyParms <farbox> <cloudheight> <nearbox>
+                // farbox = Basis-Pfad der 6 Cube-Faces (z.B. env/lbsky2/lbsky2)
+                shader.sky = true;
+                var farbox = tokens.next();
+                tokens.next(); // cloudheight (ignoriert)
+                tokens.next(); // nearbox (ignoriert)
+                if (farbox && farbox !== '-') { shader.skyParms = farbox; }
+                break;
                 
+            case 'implicitmap':
+            case 'implicitmask':
+            case 'implicitblend': {
+                // ET/idTech3-Kurzform: erzeugt automatisch eine Stage.
+                //   implicitMap  <tex|->  -> deckende Stage
+                //   implicitMask <tex|->  -> Alpha-Test (Cutout, GE128)  [Blätter, Zäune]
+                //   implicitBlend<tex|->  -> Alpha-Blend (transluzent)
+                // "-" bedeutet: Textur = Shadername.
+                var implMap = tokens.next();
+                if(implMap === '-' || !implMap) { implMap = shader.name; }
+                implMap = implMap.replace(/\.(jpg|tga)$/i, '.png');
+                if(!/\.png$/i.test(implMap)) { implMap += '.png'; }
+
+                var masked  = (token === 'implicitmask');
+                var blended = (token === 'implicitblend');
+
+                var iStage = {
+                    map: implMap,
+                    clamp: false,
+                    tcGen: 'base',
+                    rgbGen: 'identity',
+                    rgbWaveform: null,
+                    alphaGen: '1.0',
+                    alphaFunc: masked ? 'GE128' : null,
+                    alphaWaveform: null,
+                    blendSrc:  blended ? 'GL_SRC_ALPHA' : 'GL_ONE',
+                    blendDest: blended ? 'GL_ONE_MINUS_SRC_ALPHA' : 'GL_ZERO',
+                    hasBlendFunc: blended,
+                    tcMods: [],
+                    animMaps: [],
+                    animFreq: 0,
+                    depthFunc: 'lequal',
+                    depthWrite: true
+                };
+
+                if(blended) { shader.blend = true; } else { shader.opaque = true; }
+                shader.stages.push(iStage);
+            } break;
+
             default: break;
         }
     }

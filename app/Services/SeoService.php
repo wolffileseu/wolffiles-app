@@ -83,15 +83,21 @@ class SeoService
     public static function getSitemapUrls(int $limit = 50000): array
     {
         $urls = [];
+        $today = now()->toW3cString();
 
         // Static pages
-        $urls[] = ['url' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily'];
-        $urls[] = ['url' => route('files.index'), 'priority' => '0.9', 'changefreq' => 'daily'];
-        $urls[] = ['url' => route('categories.index'), 'priority' => '0.8', 'changefreq' => 'weekly'];
+        $urls[] = ['url' => route('home'), 'priority' => '1.0', 'changefreq' => 'daily', 'lastmod' => $today];
+        $urls[] = ['url' => route('files.index'), 'priority' => '0.9', 'changefreq' => 'daily', 'lastmod' => $today];
+        $urls[] = ['url' => route('categories.index'), 'priority' => '0.8', 'changefreq' => 'weekly', 'lastmod' => $today];
 
         // Categories
         Category::where('is_active', true)->each(function ($cat) use (&$urls) {
-            $urls[] = ['url' => route('categories.show', $cat), 'priority' => '0.7', 'changefreq' => 'weekly'];
+            $urls[] = [
+                'url' => route('categories.show', $cat),
+                'priority' => '0.7',
+                'changefreq' => 'weekly',
+                'lastmod' => $cat->updated_at?->toW3cString() ?? now()->toW3cString(),
+            ];
         });
 
         // Files

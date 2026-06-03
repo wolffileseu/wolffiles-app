@@ -8,6 +8,7 @@ export default defineConfig({
                 'resources/css/app.css',
                 'resources/css/wiki.css',
                 'resources/js/app.js',
+                'resources/js/wikitext-editor.js',
                 'resources/js/wiki-theme.js',
             ],
             refresh: true,

@@ -24,30 +24,38 @@
  *    3. This notice may not be removed or altered from any source
  *    distribution.
  */
-
+ 
 // Much of this file is a simplified/dumbed-down version of the Q3 player movement code
 // found in bg_pmove.c and bg_slidemove.c
-
+ 
 // Some movement constants ripped from the Q3 Source code
 var q3movement_stopspeed = 100.0;
 var q3movement_duckScale = 0.25;
 var q3movement_jumpvelocity = 50;
-
+ 
 var q3movement_accelerate = 10.0;
 var q3movement_airaccelerate = 0.1;
 var q3movement_flyaccelerate = 8.0;
-
+ 
 var q3movement_friction = 6.0;
 var q3movement_flightfriction = 3.0;
-
+ 
 var q3movement_frameTime = 0.30;
 var q3movement_overclip = 0.501;
 var q3movement_stepsize = 18;
-
+ 
 var q3movement_gravity = 20.0;
-
+ 
 var q3movement_playerRadius = 10.0;
 var q3movement_scale = 50;
+ 
+// --- Multi-jump (Dreifachsprung) -------------------------------------------
+// Anzahl Sprünge bevor man den Boden wieder berühren muss. 1 = Vanilla.
+var q3movement_maxJumps = 3;
+// Mindestabstand (Sekunden) zwischen zwei Sprüngen. Verhindert, dass eine
+// gehaltene Sprungtaste alle Sprünge in einem Frame verbraucht. 0.12s lässt
+// ein schnelles Dreifach-Tippen problemlos durch.
+var q3movement_jumpCooldown = 0.12;
  
 q3movement = function(bsp) {
     this.bsp = bsp;
@@ -55,10 +63,14 @@ q3movement = function(bsp) {
     this.velocity = [0, 0, 0];
     this.position = [0, 0, 0];
     this.onGround = false;
-    
+ 
+    // Multi-jump: verbleibende Sprünge bis zur nächsten Bodenberührung.
+    this.jumpsRemaining = q3movement_maxJumps;
+    this._lastJumpMs = 0;
+ 
     this.groundTrace = null;
 };
-
+ 
 q3movement.prototype.applyFriction = function() {
     if(!this.onGround) { return; }
     
@@ -80,7 +92,7 @@ q3movement.prototype.applyFriction = function() {
         this.velocity = [0, 0, 0];
     }
 };
-
+ 
 q3movement.prototype.groundCheck = function() {
     var checkPoint = [this.position[0], this.position[1], this.position[2] - q3movement_playerRadius - 0.25];
     
@@ -103,7 +115,7 @@ q3movement.prototype.groundCheck = function() {
     
     this.onGround = true;
 };
-
+ 
 q3movement.prototype.clipVelocity = function(velIn, normal) {
     var backoff = vec3.dot(velIn, normal);
     
@@ -116,7 +128,7 @@ q3movement.prototype.clipVelocity = function(velIn, normal) {
     var change = vec3.scale([0,0,0], normal, backoff);
     return vec3.subtract(change, velIn, change);
 };
-
+ 
 q3movement.prototype.accelerate = function(dir, speed, accel) {
     var currentSpeed = vec3.dot(this.velocity, dir);
     var addSpeed = speed - currentSpeed;
@@ -132,24 +144,44 @@ q3movement.prototype.accelerate = function(dir, speed, accel) {
     var accelDir = vec3.scale([0,0,0], dir, accelSpeed);
     vec3.add(this.velocity, this.velocity, accelDir);
 };
-
+ 
 q3movement.prototype.jump = function() {
-    if(!this.onGround) { return false; }
-    
+    // Keine Sprünge mehr übrig (alle 3 in der Luft verbraucht).
+    if (this.jumpsRemaining <= 0) { return false; }
+ 
+    // Debounce: gehaltene Taste darf nicht alle Sprünge auf einmal verbrauchen.
+    var now = (typeof performance !== 'undefined') ? performance.now() : Date.now();
+    if (now - this._lastJumpMs < q3movement_jumpCooldown * 1000) { return false; }
+    this._lastJumpMs = now;
+ 
+    var wasOnGround = this.onGround;
     this.onGround = false;
+    this.jumpsRemaining--;
+ 
+    // ET-Style: jeder Sprung (Boden ODER Luft) setzt die Vertikalgeschwindigkeit
+    // auf einen festen Impuls. So fühlt sich der Dreifachsprung konsistent an,
+    // statt dass sich die Geschwindigkeit aufaddiert.
     this.velocity[2] = q3movement_jumpvelocity;
-    
-    //Make sure that the player isn't stuck in the ground
-    var groundDist = vec3.dot( this.position, this.groundTrace.plane.normal ) - this.groundTrace.plane.distance - q3movement_playerRadius;
-    vec3.add(this.position, this.position, vec3.scale([0, 0, 0], this.groundTrace.plane.normal, groundDist + 5));
-    
+ 
+    // Nur der Bodensprung braucht den "Unstuck"-Schubs aus dem Boden heraus
+    // (nur dann existiert ein groundTrace).
+    if (wasOnGround && this.groundTrace && this.groundTrace.plane) {
+        var groundDist = vec3.dot(this.position, this.groundTrace.plane.normal)
+                       - this.groundTrace.plane.distance - q3movement_playerRadius;
+        vec3.add(this.position, this.position,
+                 vec3.scale([0, 0, 0], this.groundTrace.plane.normal, groundDist + 5));
+    }
+ 
     return true;
 };
-
+ 
 q3movement.prototype.move = function(dir, frameTime) {
     q3movement_frameTime = frameTime*0.0075;
     
     this.groundCheck();
+ 
+    // Bei Bodenkontakt die Sprünge wieder auffüllen (Basis für Dreifachsprung).
+    if (this.onGround) { this.jumpsRemaining = q3movement_maxJumps; }
     
     vec3.normalize(dir, dir);
     
@@ -161,7 +193,7 @@ q3movement.prototype.move = function(dir, frameTime) {
     
     return this.position;
 };
-
+ 
 q3movement.prototype.airMove = function(dir) {
     var speed = vec3.length(dir) * q3movement_scale;
     
@@ -169,7 +201,7 @@ q3movement.prototype.airMove = function(dir) {
     
     this.stepSlideMove( true );
 };
-
+ 
 q3movement.prototype.walkMove = function(dir) {
     this.applyFriction();
     
@@ -183,7 +215,7 @@ q3movement.prototype.walkMove = function(dir) {
     
     this.stepSlideMove( false );
 };
-
+ 
 q3movement.prototype.slideMove = function(gravity) {
     var bumpcount;
     var numbumps = 4;
@@ -200,12 +232,12 @@ q3movement.prototype.slideMove = function(gravity) {
             this.velocity = this.clipVelocity(this.velocity, this.groundTrace.plane.normal);
         }
     }
-
+ 
     // never turn against the ground plane
     if ( this.groundTrace && this.groundTrace.plane ) {
         planes.push(vec3.copy([0,0,0], this.groundTrace.plane.normal));
     }
-
+ 
     // never turn against original velocity
     planes.push(vec3.normalize([0,0,0], this.velocity));
     
@@ -218,18 +250,18 @@ q3movement.prototype.slideMove = function(gravity) {
         
         // see if we can make it there
         var trace = this.bsp.trace(this.position, end, q3movement_playerRadius);
-
+ 
         if (trace.allSolid) {
             // entity is completely trapped in another solid
             this.velocity[2] = 0;   // don't build up falling damage, but allow sideways acceleration
             return true;
         }
-
+ 
         if (trace.fraction > 0) {
             // actually covered some distance
             vec3.copy(this.position, trace.endPos);
         }
-
+ 
         if (trace.fraction == 1) {
              break;     // moved the entire distance
         }
@@ -237,11 +269,11 @@ q3movement.prototype.slideMove = function(gravity) {
         time_left -= time_left * trace.fraction;
         
         planes.push(vec3.copy([0,0,0], trace.plane.normal));
-
+ 
         //
         // modify velocity so it parallels all of the clip planes
         //
-
+ 
         // find a plane that it enters
         for(var i = 0; i < planes.length; ++i) {
             var into = vec3.dot(this.velocity, planes[i]);
@@ -250,7 +282,7 @@ q3movement.prototype.slideMove = function(gravity) {
             // slide along the plane
             var clipVelocity = this.clipVelocity(this.velocity, planes[i]);
             var endClipVelocity = this.clipVelocity(endVelocity, planes[i]);
-
+ 
             // see if there is a second plane that the new move enters
             for (var j = 0; j < planes.length; j++) {
                 if ( j == i ) { continue; }
@@ -259,22 +291,22 @@ q3movement.prototype.slideMove = function(gravity) {
                 // try clipping the move to the plane
                 clipVelocity = this.clipVelocity( clipVelocity, planes[j] );
                 endClipVelocity = this.clipVelocity( endClipVelocity, planes[j] );
-
+ 
                 // see if it goes back into the first clip plane
                 if ( vec3.dot( clipVelocity, planes[i] ) >= 0 ) { continue; }
-
+ 
                 // slide the original velocity along the crease
                 var dir = [0,0,0];
                 vec3.cross(dir, planes[i], planes[j]);
                 vec3.normalize(dir, dir);
                 var d = vec3.dot(dir, this.velocity);
                 vec3.scale(clipVelocity, dir, d);
-
+ 
                 vec3.cross(dir, planes[i], planes[j]);
                 vec3.normalize(dir, dir);
                 d = vec3.dot(dir, endVelocity);
                 vec3.scale(endClipVelocity, dir, d);
-
+ 
                 // see if there is a third plane the the new move enters
                 for(var k = 0; k < planes.length; ++k) {
                     if ( k == i || k == j ) { continue; }
@@ -285,27 +317,27 @@ q3movement.prototype.slideMove = function(gravity) {
                     return true;
                 }
             }
-
+ 
             // if we have fixed all interactions, try another move
             vec3.copy(this.velocity, clipVelocity);
             vec3.copy(endVelocity, endClipVelocity);
             break;
         }
     }
-
+ 
     if ( gravity ) {
         vec3.copy(this.velocity, endVelocity);
     }
-
+ 
     return ( bumpcount !== 0 );
 };
-
+ 
 q3movement.prototype.stepSlideMove = function(gravity) {
     var start_o = vec3.copy([0,0,0], this.position);
     var start_v = vec3.copy([0,0,0], this.velocity);
     
     if ( this.slideMove( gravity ) === 0 ) { return; } // we got exactly where we wanted to go first try
-
+ 
     var down = vec3.copy([0,0,0], start_o);
     down[2] -= q3movement_stepsize;
     var trace = this.bsp.trace(start_o, down, q3movement_playerRadius);

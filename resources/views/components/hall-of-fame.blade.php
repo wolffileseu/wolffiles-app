@@ -34,7 +34,7 @@
             @foreach($topUploaders as $i => $uploader)
                 <a href="{{ route('profile.show', $uploader) }}" class="flex items-center space-x-3 hover:bg-gray-700/50 rounded px-2 py-1.5 -mx-2 transition-colors">
                     <span class="w-6 text-center text-sm font-bold {{ $i < 3 ? 'text-amber-400' : 'text-gray-500' }}">{{ $i + 1 }}</span>
-                    <img src="{{ $uploader->avatar_url }}" class="w-7 h-7 rounded-full" alt="">
+                    <img src="{{ $uploader->avatar_url }}" class="w-7 h-7 rounded-full" alt="{{ $uploader->name }} avatar">
                     <span class="text-sm text-gray-300 truncate flex-1">{{ $uploader->name }}</span>
                     <span class="text-xs text-gray-500">{{ $uploader->approved_uploads_count }}</span>
                 </a>

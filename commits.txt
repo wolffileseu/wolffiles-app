@@ -1,0 +1,197 @@
+2026-05-25 fix(video-player): move Plyr CSS import to app.js entry
+2026-05-25 Add force-poll button on offline servers (authenticated users)
+2026-05-25 feat(tracker): map timer display + i18n strings
+2026-05-25 feat(bug-tracker): foundation - DB schema, models, Filament admin, public frontend
+2026-05-25 Track map-start timestamp on tracker servers
+2026-05-25 fix(forum): icon image rendering + solid card backgrounds
+2026-05-25 feat(motw): persist history in DB so cache:clear doesn't repeat winners
+2026-05-25 feat(categories): is_visible toggle + admin filters + CSV/XLSX export
+2026-05-25 fix(uploads): raise PHP upload limits to 64M/128M
+2026-05-25 chore(deps): add phpoffice/phpspreadsheet 5.7
+2026-05-25 Upgrade for Wolffiles Uploader , and more
+2026-05-23 feat(ops): failed_jobs auto-prune + tighter tracker healthcheck
+2026-05-23 test: add phpunit config and engine parser tests
+2026-05-23 feat(tracker): display engine info on server list/details + i18n (6 langs)
+2026-05-23 feat(tracker): engine version parsing (et_legacy, rtcw, etpro detection)
+2026-05-23 fix(tracker): pass EngineVersionParser to ServerPollerService constructor
+2026-05-18 feat(tracker): admin poll controls per server
+2026-05-18 feat(admin,testserver): hierarchical category dropdown + TJ-mod map filter
+2026-05-18 feat(testserver): map+mod rotation cron + blacklist for crash maps
+2026-05-17 feat(testserver): idle random-map pool + auto-onboarding + tracker integration
+2026-05-17 feat(testserver): hostname, et:// protocol, RAR archive maps + 4 new mods
+2026-05-17 feat(testserver): self-healing fastdl auto-sync for unsynced maps
+2026-05-17 fix(tracker): faster recovery of returning servers
+2026-05-17 chore(wiki): wikitext parser, diff view, html-to-wikitext converter
+2026-05-17 fix(fastdl): preserve original filenames for ET-Legacy clients
+2026-05-17 feat(testserver): public testserver platform with S3 map auto-loader
+2026-05-17 feat(embed): smart embed mode for all file types
+2026-05-17 feat(videos): YouTube-style scrub-preview thumbnails
+2026-05-17 feat: Universal video player with QSV hardware transcoding
+2026-05-16 feat(uploads): multipart S3 API for Sanctum + desktop-app promo banner
+2026-05-16 feat(admin): upload action for missing textures
+2026-05-16 chore: gitignore et-assets pool dir
+2026-05-16 feat(uploads,tracker): trusted-uploader badge, multi-screenshot API, mod icons
+2026-05-16 feat(bsp-viewer): full texture-pipeline rebuild
+2026-05-15 feat(bsp-viewer): game-aware texture fallback with missing-tex tracking
+2026-05-14 feat(tracker): support iortcw masters via gamename + protocol_override
+2026-05-14 chore: track previously un-committed production files
+2026-05-14 fix(tracker): single-source offline poll backoff with poll_failures               staircase (B-3b)
+2026-05-14 fix(views): placeholder for extension-promo component to prevent 500 on home
+2026-05-14 fix(tracker): collapse 3 UPDATEs to 1 in ServerLifecycleHandler (B-1)
+2026-05-14 docs: B-2 root cause found — PlayerTrackingService filters ping=0 bots
+2026-05-14 docs: initial Claude Code findings + CLAUDE.md path corrections
+2026-05-14 feat(wiki): Vector skin + special pages + routes (Phases 4-5)
+2026-05-14 feat(wiki): models + WikitextParser service (80/20 Wikitext-Markdown hybrid)
+2026-05-14 feat(wiki): MediaWiki-style schema — translations, talk, redirects, links
+2026-05-11 Merge pull request #17 from wolffileseu/fix/issue-16-motw-featured-reset
+2026-05-11 fix(motw): idempotent featured rotation + audit log for is_featured (#16)
+2026-05-11 fix(ci): allow Claude to use Read/Grep/Bash and GitHub MCP tools
+2026-05-11 fix(ci): correct Claude Code Action v1 parameters and add id-token permission
+2026-05-11 ci(claude-mention): also trigger on issue opened/edited, not just comments
+2026-05-11 ci: add Claude Code GitHub Actions for PR review, @mention handler, weekly audit
+2026-05-11 chore(cleanup): remove public/tmp/ debug and sample artifacts
+2026-05-11 chore(cleanup): remove waypoint debris and stale .bak files from repo
+2026-05-11 fix(archive): remove unrar-free p-mode call that leaked files to CWD
+2026-05-11 fix(telegram): notify on approved uploads and pending→approved transitions
+2026-05-10 feat(files): auto-link map/bot relations on file save (issue #12 follow-up)
+2026-05-10 feat(tracker): add cvar filter pills to /servers
+2026-05-10 feat(categories): add sort dropdown to category view (Closes #13)
+2026-05-10 fix(upload): redirect non-trusted uploaders to upload page with pending message
+2026-05-10 docs: mark issue #9 resolved
+2026-05-10 feat(files): link bot/waypoint files to maps automatically
+2026-05-10 Merge feature/pm-system: complete PM (DM) system
+2026-05-10 feat(pm): read-only Filament resources for audit log and snapshots (Phase 6.3)
+2026-05-10 fix(pm): use 'lock'/'unlock' enum values for action column (Phase 6.2 fix)
+2026-05-10 feat(pm): Filament resource for PM Conversations with lock + snapshot (Phase 6.2)
+2026-05-10 feat(pm): Filament resource for PM Message Reports (Phase 6.1)
+2026-05-10 feat(pm): retention purge command with daily scheduler (Phase 8)
+2026-05-10 feat(pm): reusable dm-button component, integrated in 5 comment views (Phase 4d.5)
+2026-05-10 feat(pm): 'Send message' button next to file uploader (Phase 4d.4)
+2026-05-10 feat(pm): settings UI with privacy and block list (Phase 4e)
+2026-05-10 feat(pm): 'Send message' button on user profile (Phase 4d.3)
+2026-05-10 feat(pm): functional reply form on conversation page (Phase 4d.2)
+2026-05-10 feat(pm): functional compose form (Phase 4d.1)
+2026-05-10 feat(pm): header bell + profile dropdown entry (Phase 4b)
+2026-05-10 feat(pm): frontend skeleton with inbox view (Phase 4a)
+2026-05-10 feat(pm): real policy implementation with blocks and privacy
+2026-05-10 feat(pm): add markdown renderer, rate limiter, conversation service
+2026-05-10 feat(pm): add eloquent models with relationships and hash dedup
+2026-05-10 feat(pm): add private messages schema and permissions
+2026-05-10 feat(ui): expandable search bar with magnifier icon below lg breakpoint
+2026-05-10 feat(upload): browser-direct multipart upload to S3 with i18n - 5GB uploads via S3 multipart, bypasses CF 100MB limit, presigned URLs per chunk, SHA-256 dedup, Tailwind components, 6 languages (DE/EN/FR/NL/PL/TR)
+2026-05-10 fix(tracker): worker scripts updated for new app path
+2026-05-10 feat(cdn): public files served via cdn.wolffiles.eu, screenshots bucket policy
+2026-05-10 chore: tighten .gitignore for backup files, remove debug php scripts
+2026-05-01 Replace ipapi.co HTTP lookup with local MaxMind GeoLite2
+2026-05-01 Cleanup: remove backup files from tracking, add map_name_clean migration
+2026-04-30 Bug Fixes
+2026-04-27 small fix
+2026-04-27 Fix more Translation Keys
+2026-04-22 Clean UP
+2026-04-22 Fix tracker resolver: prioritize IP+port match over enhanced_source_ip
+2026-04-22 fix(tracker): strip color codes in bot detection + add missed defensive check
+2026-04-22 fix(tracker): prevent bot pollution at ingest + daily safety net
+2026-04-22 fix(tracker): bot detection and cleanup of polluted stats
+2026-04-22 feat(tracker): i18n translations for match browser, cross-server and recent activity
+2026-04-22 ops(tracker): scale queue workers from 12 to 36
+2026-04-22 feat(tracker): recent players and recent maps on server detail page
+2026-04-22 feat(tracker): cross-server activity on player profiles
+2026-04-22 feat(tracker): past match browser with time-range filter
+2026-04-22 feat(tracker): global weapon mastery leaderboards
+2026-04-22 fix(tracker): handle null current_map on pending servers
+2026-04-22 chore: update offline report snapshot
+2026-04-22 fix(tracker): clamp int fields in ServerPollerService to prevent overflow
+2026-04-22 fix(tracker): defensive ws-packet parser + ops tools for stat rebuilds
+2026-04-22 fix(tracker): remove ON UPDATE CURRENT_TIMESTAMP from 10 timestamp columns
+2026-04-21 feat(tracker): player profile deco panels — HS%, dmg ratio, team pref, skill XP chart, prestige timeline
+2026-04-21 feat(tracker): block 1 — backend fundament
+2026-04-21 feat(tracker): expose full sv_tracker payload on player profile
+2026-04-21 Upgrade
+2026-04-21 fix(tracker): resolve enhanced tracker pipeline failures + admin file edit button
+2026-04-21 fix(tracker): top-players use MAX(xp) not SUM, so xpsave servers don't double-count
+2026-04-21 feat(tracker): i18n server properties, humans-only sort, layout polish
+2026-04-21 feat(tracker): Server properties, bot tracking & live bot display
+2026-04-21 feat(files): add live-server play statistics widget to map pages
+2026-04-21 perf(campaign-creator): load only stock maps inline, custom via API
+2026-04-21 feat(tracker): Major tracker overhaul — multi-filter, teams, ping, mod icons + session tracking fixes
+2026-04-21 fix: prevent nav menu FOUC + cleanup vite config
+2026-04-21 feat(tracker): Multi-filter server list, team grouping, mod icons, ping column
+2026-04-21 chore(layout): add cache-busting query to easter-egg.js
+2026-04-21 fix(easter-egg): make Konami code layout-independent (FR AZERTY)
+2026-04-21 Fix: normalize Latin-1 cvar values to UTF-8 before DB persist
+2026-04-21 tracker: keep established servers pollable, switch queue to redis
+2026-04-21 tracker: switch from sv_tracker2 to multi-tracker sv_tracker
+2026-04-19 feat(tracker): add XP Skills breakdown on player profile
+2026-04-19 feat(tracker): player banner PNG + vertical embed system
+2026-04-19 feat(tracker): 30-day server and player rankings with ET/RtCW tabs
+2026-04-19 feat(api): add 5 per-server tracker endpoints + fix api-docs layout
+2026-04-19 docs: add Server Banners & Embeds section, GDPR, Mistral/Qdrant, scheduled jobs
+2026-04-19 feat(tracker): server banner system with PNG signatures and vertical HTML embeds
+2026-04-19 Upgrade
+2026-04-19 Add player banner PNG signatures with embed box
+2026-04-19 feat(tracker): map-grouped activity timeline on player profile
+2026-04-19 feat(tracker): classic percentile ELO rating system
+2026-04-19 feat(tracker): classic percentile ELO rating system
+2026-04-19 feat(tracker): weapon breakdown shows lifetime totals
+2026-04-19 feat(tracker): weighted-average enhanced rating across matches
+2026-04-19 feat(tracker): cumulative weapon stats with delta detection
+2026-04-19 feat(tracker): weapon breakdown + poller data fixes
+2026-04-18 feat(tracker): weapon + class icon assets from ET 2.83.1
+2026-04-18 feat(tracker): WeaponStatsHandler Phase 3.5 test-mode
+2026-04-18 feat(tracker): slot-to-player mapping + bot skip
+2026-04-18 fix(tracker): preserve milliseconds in match started_at INSERT
+2026-04-18 feat(tracker): DB schema for weapon stats parsing
+2026-04-18 feat(tracker): WeaponStatsParser for 'ws' payloads
+2026-04-17 feat(tracker): Enhanced Tracker frontend + handler fixes
+2026-04-17 feat(tracker): Enhanced UDP tracker with per-match stats
+2026-04-17 feat(tracker): add activity heatmap, streaks, map variety, peak time
+2026-04-17 fix(tracker): replace broken K/D with XP/h and avg XP/session
+2026-04-17 feat(wallpapers): admin-managed background images with slideshow (#4)
+2026-04-17 feat(wallpapers): admin-managed background images with slideshow (#4)
+2026-04-17 feat(wallpapers): admin-managed background images with slideshow (#4)
+2026-04-17 Dateien gelöscht
+2026-04-17 docs: add .env.example template for new contributors
+2026-04-17 feat(files): show servers currently and recently playing this map (#3)
+2026-04-17 feat(files): show servers currently and recently playing this map (#3)
+2026-04-17 Update CONTRIBUTING.md with contribution guidelines
+2026-04-17 Add contributing guidelines for Wolffiles project
+2026-04-17 Create pull request template for consistent submissions
+2026-04-17 Add issue template configuration file
+2026-04-17 Enhance feature request template with translations
+2026-04-17 Add bug report template for GitHub issues
+2026-04-17 Create feature_request.yml
+2026-04-16 API Docs Update , Tracker Bug Fix
+2026-04-16 feat: parallel tracker polling via queue jobs, fix next_poll_at fillable
+2026-04-16 feat: add tracker API endpoints (player/{id}, online, maps/{name})
+2026-04-16 Last Update
+2026-03-26 Vorbereitung für Wolffiles Upload Programm
+2026-03-26 fix: sitemap public cache-control, remove web middleware
+2026-03-24 DSGVO Upgrade
+2026-03-24 fixes
+2026-03-13 feat: API docs multilingual update, request logging middleware + Filament Analytics widget
+2026-03-08 profile & settings pages - avatar upload S3, custom profile fields, notification prefs, heatmap, danger zone"
+2026-03-07 Merge pull request #2 from wolffileseu/claude/security-review-M0W4q
+2026-03-06 fix: load player list via AJAX on page load instead of stale blade render
+2026-03-06 Security fixes: rate limiting, SQL injection, security headers, XSS sanitization
+2026-03-06 fix: refresh player data immediately on page load, then every 30s
+2026-03-06 Security Fix
+2026-03-06 Security Fix
+2026-03-06 fix: sanitize non-UTF8 player names from ET servers (ISO-8859-1 conversion)
+2026-03-06 Tracker Bug Fix , Admin GUI Translation  better GUI and small fix
+2026-03-05 Profile Upgrade and new Functions
+2026-03-05 Add community forum with categories, threads, posts, BBCode editor, moderation & i18n
+2026-03-05 Admin GUI: Analytics Update
+2026-03-05 Tracker HealthCheck Fix
+2026-03-05 Add RAR/7z archive support for file analysis and waypoint scanning
+2026-03-04 Notification Fix and New Style
+2026-03-04 Tracker Bug Fix
+2026-03-04 Tracker - Server View - Bug Fix
+2026-03-04 Tracker Bug Fix , Telegram Bot more Feature
+2026-03-04 AI Bot hinzugefügt
+2026-03-02 Add comprehensive README with feature overview
+2026-03-02 Add comprehensive README with feature overview
+2026-03-02 Add README with CI badge
+2026-03-02 Fix CI: add bootstrap/cache and storage directories
+2026-03-02 Add GitHub Actions CI workflow
+2026-03-02 Fix: File model update
+2026-03-02 Initial commit: Wolffiles.eu Laravel App

@@ -9,6 +9,25 @@
 
     {{-- Enhanced Tracker Banner (for admins) --}}
     <x-tracker-enhanced-banner />
+    {{-- Quick Links --}}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <a href="{{ route('tracker.servers') }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
+            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.server_browser') }}</h3>
+            <p class="text-gray-400 text-sm mt-1">{{ __('messages.browse_servers') }}</p>
+        </a>
+        <a href="{{ route('tracker.players') }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
+            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.player_search') }}</h3>
+            <p class="text-gray-400 text-sm mt-1">{{ __('messages.find_players') }}</p>
+        </a>
+        <a href="{{ route('tracker.servers', ['online' => 1, 'players' => 1]) }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
+            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.active_servers') }}</h3>
+            <p class="text-gray-400 text-sm mt-1">{{ __('messages.active_servers_desc') }}</p>
+        </a>
+        <a href="{{ route('tracker.clans') }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
+            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.clans_card') }}</h3>
+            <p class="text-gray-400 text-sm mt-1">{{ __('messages.clans_card_desc') }}</p>
+        </a>
+    </div>
 
     {{-- Stats Cards --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -96,21 +115,6 @@
         </div>
     </div>
 
-    {{-- Quick Links --}}
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-        <a href="{{ route('tracker.servers') }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
-            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.server_browser') }}</h3>
-            <p class="text-gray-400 text-sm mt-1">{{ __('messages.browse_servers') }}</p>
-        </a>
-        <a href="{{ route('tracker.players') }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
-            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.player_search') }}</h3>
-            <p class="text-gray-400 text-sm mt-1">{{ __('messages.find_players') }}</p>
-        </a>
-        <a href="{{ route('tracker.servers', ['online' => 1, 'players' => 1]) }}" class="bg-gray-800 rounded-lg p-6 hover:bg-gray-750 transition group">
-            <h3 class="text-lg font-semibold text-white group-hover:text-amber-400">{{ __('messages.active_servers') }}</h3>
-            <p class="text-gray-400 text-sm mt-1">{{ __('messages.active_servers_desc') }}</p>
-        </a>
-    </div>
 
 </div>
 {{-- Auto-Refresh alle 30 Sekunden --}}

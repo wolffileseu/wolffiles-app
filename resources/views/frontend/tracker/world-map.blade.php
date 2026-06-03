@@ -37,7 +37,7 @@
             @foreach($stats['countries'] as $country)
             <div class="flex items-center gap-2 bg-gray-700/50 rounded-lg px-3 py-2">
                 @if($country->country_code)
-                <img src="https://flagcdn.com/{{ strtolower($country->country_code) }}.svg" alt="" class="w-5 h-3 rounded-sm object-cover">
+                <img src="https://flagcdn.com/{{ strtolower($country->country_code) }}.svg" alt="{{ strtoupper($country->country_code) }} flag" class="w-5 h-3 rounded-sm object-cover">
                 @endif
                 <div class="flex-1 min-w-0">
                     <div class="text-white text-sm font-medium truncate">{{ $country->country ?? strtoupper($country->country_code) }}</div>

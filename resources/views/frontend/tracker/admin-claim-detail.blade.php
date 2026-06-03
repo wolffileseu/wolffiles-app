@@ -27,7 +27,7 @@
                     @if($claim->claimable_type === 'player')
                     <div class="flex items-center gap-3">
                         @if($claim->entity->country_code)
-                        <img src="https://flagcdn.com/{{ strtolower($claim->entity->country_code) }}.svg" class="w-5 h-3 rounded-sm" alt="">
+                        <img src="https://flagcdn.com/{{ strtolower($claim->entity->country_code) }}.svg" class="w-5 h-3 rounded-sm" alt="{{ strtoupper($claim->entity->country_code) }} flag">
                         @endif
                         <a href="{{ route('tracker.player.show', $claim->entity) }}" class="text-amber-400 hover:text-amber-300 font-semibold">
                             {!! $claim->entity->name_html ?? e($claim->entity->name_clean ?? 'Unknown') !!}
