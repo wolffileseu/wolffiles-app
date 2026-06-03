@@ -36,6 +36,11 @@ class TrackerServerResource extends Resource
                     Forms\Components\TextInput::make('port')->numeric()->required()->default(27960),
                     Forms\Components\TextInput::make('hostname')->maxLength(500),
                     Forms\Components\TextInput::make('hostname_clean')->maxLength(255),
+                    Forms\Components\TextInput::make('slug')->maxLength(50)
+                        ->regex('/^[a-z][a-z0-9-]+$/')
+                        ->rule('not_in:manage,claim,claims,create,edit,delete,admin,new,tracker,servers')
+                        ->unique(ignoreRecord: true)
+                        ->helperText('Optional public URL slug. Admin bypass: no 30-day lock.'),
                 ])->columns(2),
 
             Forms\Components\Section::make('Status')

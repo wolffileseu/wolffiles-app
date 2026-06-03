@@ -36,7 +36,7 @@ class TrackerServer extends Model
         'os', 'sv_pure', 'punkbuster', 'is_ranked',
         'is_online', 'is_manually_added', 'added_by', 'status',
         'claimed_by_user_id', 'claimed_by_clan_id', 'is_visible_for_clan', 'is_verified', 'is_locked',
-        'description', 'rules', 'server_website', 'server_discord', 'server_email', 'server_banner_url',
+        'description', 'rules', 'server_website', 'server_discord', 'server_email', 'server_banner_url', 'server_logo_url', 'slug', 'slug_changed_at',
         'total_players_tracked', 'total_unique_players', 'uptime_percentage',
         'last_seen_at', 'first_seen_at', 'last_poll_at', 'next_poll_at', 'poll_failures',
         'latency_ms', 'private_slots', 'bot_count',
@@ -44,6 +44,27 @@ class TrackerServer extends Model
         'heavy_weapon_restriction', 'anticheat', 'os_support',
         'custom_poll_interval', 'polling_paused',
         'engine_family', 'engine_version', 'engine_platform', 'engine_build_date', 'engine_is_dev_build', 'engine_display',
+    ];
+
+    protected $casts = [
+        'first_seen_at'      => 'datetime',
+        'last_seen_at'       => 'datetime',
+        'last_poll_at'       => 'datetime',
+        'next_poll_at'       => 'datetime',
+        'slug_changed_at'    => 'datetime',
+        'enhanced_first_seen_at' => 'datetime',
+        'enhanced_last_event_at' => 'datetime',
+        'is_online'          => 'boolean',
+        'is_verified'        => 'boolean',
+        'is_locked'          => 'boolean',
+        'is_visible_for_clan'=> 'boolean',
+        'is_manually_added'  => 'boolean',
+        'polling_paused'     => 'boolean',
+        'is_private'         => 'boolean',
+        'needs_password'     => 'boolean',
+        'is_ranked'          => 'boolean',
+        'is_enhanced_tracker'=> 'boolean',
+        'enhanced_disabled'  => 'boolean',
     ];
 
     protected function casts(): array

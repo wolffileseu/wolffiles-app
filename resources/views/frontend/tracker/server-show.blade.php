@@ -1,4 +1,13 @@
 <x-layouts.app :title="$server->hostname_clean ?: $server->full_address">
+@php
+$canManageServer = auth()->check() && (
+    $server->claimed_by_user_id === auth()->id()
+    || ($server->claimed_by_clan_id && \App\Models\ClanManager::where('clan_id', $server->claimed_by_clan_id)
+        ->where('user_id', auth()->id())
+        ->whereIn('role', ['owner', 'admin'])
+        ->exists())
+);
+@endphp
 <div class="max-w-7xl mx-auto px-4 py-8"
      x-data="serverLive()"
      x-init="startPolling()">
@@ -98,14 +107,62 @@
                             🖥️ {{ __('Claim Server') }}
                         </a>
                     @elseif($server->claimed_by_user_id === auth()->id())
-                        <span class="mt-2 inline-block bg-green-900/30 text-green-400 px-4 py-1.5 rounded text-sm font-medium">✓ {{ __('Your Server') }}</span>
+                        <div class="mt-2 flex gap-2 flex-wrap">
+                            <span class="inline-block bg-green-900/30 text-green-400 px-4 py-1.5 rounded text-sm font-medium">✓ {{ __('Your Server') }}</span>
+                            <a href="{{ route('server.manage', $server) }}" class="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-400 text-gray-900 px-4 py-1.5 rounded text-sm font-semibold transition">⚙️ Manage</a>
+                        </div>
                     @else
+                        @if($canManageServer)
+                        <div class="mt-2 flex gap-2 flex-wrap">
+                            <span class="inline-block bg-gray-700/50 text-gray-500 px-4 py-1.5 rounded text-sm font-medium">✓ {{ __('Claimed') }}</span>
+                            <a href="{{ route('server.manage', $server) }}" class="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-400 text-gray-900 px-4 py-1.5 rounded text-sm font-semibold transition">⚙️ Manage</a>
+                        </div>
+                        @else
                         <span class="mt-2 inline-block bg-gray-700/50 text-gray-500 px-4 py-1.5 rounded text-sm font-medium">✓ {{ __('Claimed') }}</span>
+                        @endif
                     @endif
                 @endauth
             </div>
         </div>
     </div>
+
+    @if($server->server_banner_url || $server->server_logo_url || $server->description || $server->rules || $server->server_website || $server->server_discord || $server->server_email)
+    <div class="mb-6">
+        @if($server->server_banner_url)
+        <div class="relative bg-gray-800 rounded-lg overflow-hidden mb-4">
+            <img src="{{ $server->server_banner_url }}" alt="banner" class="w-full h-32 md:h-48 object-cover">
+        </div>
+        @endif
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            @if($server->server_logo_url)
+            <div class="md:col-span-1">
+                <img src="{{ $server->server_logo_url }}" alt="logo" class="w-full max-w-[200px] mx-auto bg-gray-900 rounded p-3">
+            </div>
+            @endif
+            <div class="md:col-span-{{ $server->server_logo_url ? '2' : '3' }} space-y-4">
+                @if($server->description)
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h2 class="text-white font-semibold text-sm uppercase tracking-wide mb-2">About</h2>
+                    <div class="prose prose-invert prose-sm max-w-none text-gray-300">{!! \Illuminate\Support\Str::markdown($server->description) !!}</div>
+                </div>
+                @endif
+                @if($server->rules)
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h2 class="text-white font-semibold text-sm uppercase tracking-wide mb-2">Server Rules</h2>
+                    <div class="prose prose-invert prose-sm max-w-none text-gray-300">{!! \Illuminate\Support\Str::markdown($server->rules) !!}</div>
+                </div>
+                @endif
+                @if($server->server_website || $server->server_discord || $server->server_email)
+                <div class="flex flex-wrap gap-2">
+                    @if($server->server_website)<a href="{{ $server->server_website }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-sm">🌐 Website</a>@endif
+                    @if($server->server_discord)<a href="{{ \Illuminate\Support\Str::startsWith($server->server_discord, ['http://', 'https://']) ? $server->server_discord : 'https://' . $server->server_discord }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-sm">💬 Discord</a>@endif
+                    @if($server->server_email)<a href="mailto:{{ $server->server_email }}" class="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-sm">✉️ Contact</a>@endif
+                </div>
+                @endif
+            </div>
+        </div>
+    </div>
+    @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Left: Current info --}}

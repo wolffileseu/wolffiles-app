@@ -268,8 +268,16 @@ class TrackerController extends Controller
     /**
      * Server Detail
      */
-    public function serverShow(TrackerServer $server)
+    public function serverShow($identifier)
     {
+        // Resolve: numeric -> tracker_servers.id, string -> tracker_servers.slug
+        if (ctype_digit((string) $identifier)) {
+            $server = TrackerServer::find((int) $identifier);
+        } else {
+            $server = TrackerServer::where('slug', $identifier)->first();
+        }
+        abort_unless($server, 404);
+
         $server->load(['game', 'settings']);
 
         // Current players from latest snapshots
@@ -904,43 +912,6 @@ class TrackerController extends Controller
             'lifetimeWeapons',
             'playerTimeline', 'xpSkills',
             'prestigeLevel', 'headshotRatio', 'damageGiven', 'damageReceived', 'damageRatio', 'axisMatches', 'alliesMatches', 'skillProgression', 'prestigeMilestones'));
-    }
-
-    /**
-     * Claim a player profile as yours.
-     */
-    public function claimPlayer(Request $request, TrackerPlayer $player)
-    {
-        $user = $request->user();
-
-        // Check if user already has a claimed player
-        $existing = TrackerPlayer::where('user_id', $user->id)->first();
-        if ($existing && $existing->id !== $player->id) {
-            return back()->with('error', __('messages.already_claimed_other'));
-        }
-
-        // Check if player is already claimed by someone else
-        if ($player->isClaimed() && $player->user_id !== $user->id) {
-            return back()->with('error', __('messages.player_already_claimed'));
-        }
-
-        $player->update(['user_id' => $user->id]);
-        return back()->with('success', __('messages.player_claimed'));
-    }
-
-    /**
-     * Unclaim a player profile.
-     */
-    public function unclaimPlayer(Request $request, TrackerPlayer $player)
-    {
-        $user = $request->user();
-
-        if ($player->user_id !== $user->id) {
-            return back()->with('error', __('messages.not_your_player'));
-        }
-
-        $player->update(['user_id' => null]);
-        return back()->with('success', __('messages.player_unclaimed'));
     }
 
     /**

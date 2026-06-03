@@ -441,6 +441,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/clan/{clan}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
     Route::delete('/clan/{clan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
     Route::post('/clan/{clan}/servers/{server}/toggle', [\App\Http\Controllers\Frontend\ClanManageController::class, 'toggleServerVisibility'])->name('clan.manage.server.toggle');
+
+    // Server Manage Dashboard (claimed servers)
+    Route::get('/servers/{server}/manage', [\App\Http\Controllers\Frontend\ServerManageController::class, 'index'])->name('server.manage');
+    Route::put('/servers/{server}/manage/content', [\App\Http\Controllers\Frontend\ServerManageController::class, 'updateContent'])->name('server.manage.content');
+    Route::post('/servers/{server}/manage/link-clan', [\App\Http\Controllers\Frontend\ServerManageController::class, 'linkClan'])->name('server.manage.link-clan');
+    Route::post('/servers/{server}/manage/unlink-clan', [\App\Http\Controllers\Frontend\ServerManageController::class, 'unlinkClan'])->name('server.manage.unlink-clan');
 });
 
     // My claims
