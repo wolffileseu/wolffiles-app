@@ -153,7 +153,7 @@
                             </div>
                         </div>
 
-                        <div class="prose prose-invert max-w-none text-gray-300 break-words">
+                        <div class="prose prose-invert max-w-none text-gray-300 break-words prose-strong:text-inherit prose-em:text-inherit">
                             {!! \App\Helpers\BBCode::parse($post->body) !!}
                         </div>
 

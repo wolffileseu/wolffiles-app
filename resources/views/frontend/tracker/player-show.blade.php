@@ -119,7 +119,7 @@
         @endif
 
         @if($player->bio)
-            <div class="prose prose-invert prose-sm max-w-none text-gray-300">{!! \App\Helpers\BBCode::parse($player->bio) !!}</div>
+            <div class="prose prose-invert prose-sm max-w-none text-gray-300 prose-strong:text-inherit prose-em:text-inherit">{!! \App\Helpers\BBCode::parse($player->bio) !!}</div>
         @endif
 
         @if($hasSocial)

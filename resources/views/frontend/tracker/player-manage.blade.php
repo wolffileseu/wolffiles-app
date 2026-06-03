@@ -46,6 +46,25 @@
                     <input name="tagline" value="{{ old('tagline', $player->tagline) }}" maxlength="200" placeholder="One-line description (e.g. 'Veteran ETPub regular')" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
                 </div>
                 <div>
+                    <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Country</label>
+                    <div class="flex items-center gap-2">
+                        @if($player->country_code)
+                            <img src="https://flagcdn.com/{{ strtolower($player->country_code) }}.svg" class="w-6 h-4 rounded-sm flex-shrink-0" alt="{{ $player->country_code }}">
+                        @endif
+                        <select name="country_code" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-amber-500">
+                            <option value="">— None —</option>
+                            @foreach(\App\Helpers\CountryList::codes() as $code => $name)
+                                <option value="{{ $code }}" @selected(old('country_code', $player->country_code) === $code)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @if($player->country_locked)
+                        <p class="text-xs text-amber-400 mt-1">🔒 Locked. Auto-detection won't override your choice.</p>
+                    @else
+                        <p class="text-xs text-gray-500 mt-1">Country is auto-detected from your in-game IP. Set it manually to lock.</p>
+                    @endif
+                </div>
+                <div>
                     <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Bio (Markdown + BBCode)</label>
                     <x-bbcode-toolbar target="player-bio-editor" />
                     <textarea id="player-bio-editor" name="bio" rows="8" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('bio', $player->bio) }}</textarea>

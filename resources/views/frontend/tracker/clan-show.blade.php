@@ -105,14 +105,14 @@
             @if($isClaimed && $registered->description)
             <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700/50">
                 <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700"><h2 class="text-white font-semibold">About</h2></div>
-                <div class="p-4 prose prose-invert prose-sm max-w-none text-gray-300">{!! \App\Helpers\BBCode::parse($registered->description) !!}</div>
+                <div class="p-4 prose prose-invert prose-sm max-w-none text-gray-300 prose-strong:text-inherit prose-em:text-inherit">{!! \App\Helpers\BBCode::parse($registered->description) !!}</div>
             </div>
             @endif
 
             @if($isClaimed && $registered->rules)
             <div class="bg-gray-800 rounded-lg overflow-hidden border border-gray-700/50">
                 <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700"><h2 class="text-white font-semibold">&#128220; Clan Rules</h2></div>
-                <div class="p-4 prose prose-invert prose-sm max-w-none text-gray-300">{!! \App\Helpers\BBCode::parse($registered->rules) !!}</div>
+                <div class="p-4 prose prose-invert prose-sm max-w-none text-gray-300 prose-strong:text-inherit prose-em:text-inherit">{!! \App\Helpers\BBCode::parse($registered->rules) !!}</div>
             </div>
             @endif
 
@@ -186,7 +186,7 @@
                 <div class="border-l-2 border-amber-500/40 pl-4">
                     <h3 class="text-lg font-semibold text-white">{{ $post->title }}</h3>
                     <div class="text-xs text-gray-500 font-mono mb-2">{{ $post->published_at?->diffForHumans() }}</div>
-                    <div class="prose prose-invert prose-sm max-w-none text-gray-300">{!! \App\Helpers\BBCode::parse($post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 400)) !!}</div>
+                    <div class="prose prose-invert prose-sm max-w-none text-gray-300 prose-strong:text-inherit prose-em:text-inherit">{!! \App\Helpers\BBCode::parse($post->excerpt ?: \Illuminate\Support\Str::limit($post->content, 400)) !!}</div>
                 </div>
                 @empty
                 <p class="text-gray-500 text-sm">No news posted yet.</p>

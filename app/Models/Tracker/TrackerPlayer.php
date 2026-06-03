@@ -31,6 +31,7 @@ class TrackerPlayer extends Model
         'claimed_by_user_id', 'is_verified',
         'display_name', 'tagline', 'bio', 'avatar_url', 'banner_url',
         'youtube_url', 'twitch_url', 'discord_url', 'twitter_url', 'website_url',
+        'country', 'country_code', 'country_locked',
     ];
 
     protected function casts(): array
