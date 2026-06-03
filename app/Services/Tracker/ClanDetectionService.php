@@ -80,11 +80,22 @@ class ClanDetectionService
                             $clan->update(['last_seen_at' => now()]);
                         }
 
-                        TrackerClanMember::updateOrCreate(
-                            ['clan_id' => $clan->id, 'player_id' => $player->id],
-                            ['is_active' => $player->last_seen_at >= now()->subDays(14), 'joined_at' => now()]
-                        );
-                        $stats['members_added']++;
+                        // Check block-list of the linked registered clan, if any
+                        $isBlocked = false;
+                        $registered = \App\Models\Clan::where('tracker_clan_id', $clan->id)->first();
+                        if ($registered) {
+                            $isBlocked = \App\Models\ClanMemberBlock::isPlayerBlocked($registered->id, $player->id)
+                                || \App\Models\ClanMemberBlock::isNameBlocked($registered->id, $player->name_clean ?? $player->name ?? '');
+                        }
+                        if (!$isBlocked) {
+                            TrackerClanMember::updateOrCreate(
+                                ['clan_id' => $clan->id, 'player_id' => $player->id],
+                                ['is_active' => $player->last_seen_at >= now()->subDays(14), 'joined_at' => now()]
+                            );
+                            $stats['members_added']++;
+                        } else {
+                            $stats['blocked_skipped'] = ($stats['blocked_skipped'] ?? 0) + 1;
+                        }
                     }
                     $stats['processed']++;
                 }

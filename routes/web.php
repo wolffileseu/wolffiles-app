@@ -440,6 +440,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/clan/{clan}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
     Route::post('/clan/{clan}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
     Route::delete('/clan/{clan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
+
+    // Member block-list
+    Route::post('/clan/{clan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');
+    Route::post('/clan/{clan}/blocks', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addBlock'])->name('clan.manage.block.add');
+    Route::delete('/clan/{clan}/blocks/{block}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeBlock'])->name('clan.manage.block.remove');
+
+    // Member block-list
+    Route::post('/clan/{clan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');
+    Route::post('/clan/{clan}/blocks', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addBlock'])->name('clan.manage.block.add');
+    Route::delete('/clan/{clan}/blocks/{block}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeBlock'])->name('clan.manage.block.remove');
     Route::post('/clan/{clan}/servers/{server}/toggle', [\App\Http\Controllers\Frontend\ClanManageController::class, 'toggleServerVisibility'])->name('clan.manage.server.toggle');
 
     // Server Manage Dashboard (claimed servers)

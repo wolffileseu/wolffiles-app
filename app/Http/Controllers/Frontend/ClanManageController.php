@@ -54,7 +54,13 @@ class ClanManageController extends Controller
         $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_clan_id', $clan->id)->orderBy('hostname_clean')->get();
         $autoDetectedServers = $clan->autoDetectedServersQuery()->orderBy('hostname_clean')->get();
 
-        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey', 'claimedServers', 'autoDetectedServers'));
+        // Block-list
+        $blocks = \App\Models\ClanMemberBlock::where('clan_id', $clan->id)
+            ->with(['targetPlayer', 'blockedBy'])
+            ->latest()
+            ->get();
+
+        return view('frontend.clan.manage', compact('clan', 'manager', 'members', 'squads', 'news', 'applications', 'apiKeys', 'hasPendingApiKey', 'claimedServers', 'autoDetectedServers', 'blocks'));
     }
 
     /** Save page content (about, rules, info, links). */
@@ -363,6 +369,80 @@ class ClanManageController extends Controller
 
         $member->update(['is_active' => false]);
         return back()->with('success', __('Member removed.'));
+    }
+
+    /** Block a member: removes them AND adds them to the block-list to prevent re-pool. */
+    public function blockMember(Request $request, Clan $clan, TrackerClanMember $member)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+        abort_unless($clan->trackerClan && $member->clan_id === $clan->trackerClan->id, 404);
+
+        $data = $request->validate([
+            'block_type' => 'required|in:player_id,name,both',
+            'reason'     => 'nullable|string|max:500',
+        ]);
+
+        $player = $member->player;
+        abort_unless($player, 404);
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($clan, $member, $player, $data) {
+            $member->update(['is_active' => false]);
+            if (in_array($data['block_type'], ['player_id', 'both'])) {
+                \App\Models\ClanMemberBlock::updateOrCreate(
+                    ['clan_id' => $clan->id, 'block_type' => 'player_id', 'target_player_id' => $player->id],
+                    ['target_name' => null, 'blocked_by_user_id' => auth()->id(), 'reason' => $data['reason'] ?? null]
+                );
+            }
+            if (in_array($data['block_type'], ['name', 'both'])) {
+                \App\Models\ClanMemberBlock::updateOrCreate(
+                    ['clan_id' => $clan->id, 'block_type' => 'name', 'target_name' => $player->name_clean ?? $player->name ?? ''],
+                    ['target_player_id' => null, 'blocked_by_user_id' => auth()->id(), 'reason' => $data['reason'] ?? null]
+                );
+            }
+        });
+
+        return back()->with('success', __('Player blocked and removed from members.'));
+    }
+
+    /** Manually add a block (for users that haven't been auto-pooled yet). */
+    public function addBlock(Request $request, Clan $clan)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+
+        $data = $request->validate([
+            'block_type'       => 'required|in:player_id,name',
+            'target_player_id' => 'nullable|integer|exists:tracker_players,id',
+            'target_name'      => 'nullable|string|max:255',
+            'reason'           => 'nullable|string|max:500',
+        ]);
+
+        if ($data['block_type'] === 'player_id' && empty($data['target_player_id'])) {
+            return back()->withInput()->with('error', __('Please pick a player.'));
+        }
+        if ($data['block_type'] === 'name' && empty($data['target_name'])) {
+            return back()->withInput()->with('error', __('Please enter a name.'));
+        }
+
+        \App\Models\ClanMemberBlock::updateOrCreate(
+            [
+                'clan_id'           => $clan->id,
+                'block_type'        => $data['block_type'],
+                'target_player_id'  => $data['block_type'] === 'player_id' ? $data['target_player_id'] : null,
+                'target_name'       => $data['block_type'] === 'name' ? $data['target_name'] : null,
+            ],
+            ['blocked_by_user_id' => auth()->id(), 'reason' => $data['reason'] ?? null]
+        );
+
+        return back()->with('success', __('Block added.'));
+    }
+
+    /** Remove a block entry. */
+    public function removeBlock(Clan $clan, \App\Models\ClanMemberBlock $block)
+    {
+        $this->gate($clan, ['owner', 'admin']);
+        abort_unless($block->clan_id === $clan->id, 404);
+        $block->delete();
+        return back()->with('success', __('Block removed.'));
     }
 
     /** Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */

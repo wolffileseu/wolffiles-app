@@ -215,17 +215,91 @@
                             <td class="px-4 py-2"><button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-amber-400 rounded text-xs">Save</button></td>
                         </form>
                         <td class="px-4 py-2">
-                            @if($manager->role === 'owner')
-                            <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->tracker_clan_id, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan?')">
-                                @csrf @method('DELETE')
-                                <button class="text-red-400 hover:text-red-300 text-sm" title="Remove member">&times;</button>
-                            </form>
+                            @if(in_array($manager->role, ['owner', 'admin']))
+                            <div class="flex gap-1 justify-end">
+                                <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->tracker_clan_id, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan? (Can be re-added by Auto-Detection.)')">
+                                    @csrf @method('DELETE')
+                                    <button class="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs" title="Remove (can come back via Auto-Detect)">Remove</button>
+                                </form>
+                                <form method="POST" action="{{ route('clan.manage.member.block', [$clan->tracker_clan_id, $m->id]) }}" onsubmit="return confirm('Block {{ $m->player->name_clean }} permanently? They will be removed AND prevented from being auto-pooled again.')">
+                                    @csrf
+                                    <input type="hidden" name="block_type" value="both">
+                                    <button class="px-2 py-1 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded text-xs" title="Block (permanent)">🚫 Block</button>
+                                </form>
+                            </div>
                             @endif
                         </td>
                     </tr>
                     @endforeach
                 </tbody>
             </table>
+        </div>
+        @endif
+
+        {{-- BLOCKED PLAYERS --}}
+        @if(in_array($manager->role, ['owner', 'admin']))
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 space-y-4 mt-6">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div>
+                    <h3 class="text-white font-semibold text-sm uppercase tracking-wide">🚫 Blocked players ({{ $blocks->count() }})</h3>
+                    <p class="text-xs text-gray-500 mt-1">Players in this list are excluded from auto-detection. They won't reappear in the member list.</p>
+                </div>
+            </div>
+
+            @if($blocks->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead><tr class="text-left text-xs text-gray-500 uppercase border-b border-gray-700">
+                        <th class="px-3 py-2">Target</th>
+                        <th class="px-3 py-2">Type</th>
+                        <th class="px-3 py-2">Reason</th>
+                        <th class="px-3 py-2">Blocked by</th>
+                        <th class="px-3 py-2">When</th>
+                        <th class="px-3 py-2 text-right">Action</th>
+                    </tr></thead>
+                    <tbody class="divide-y divide-gray-700/50">
+                        @foreach($blocks as $b)
+                        <tr>
+                            <td class="px-3 py-2 text-gray-200 font-mono text-xs">
+                                @if($b->block_type === 'player_id' && $b->targetPlayer)
+                                    {{ $b->targetPlayer->name_clean }} <span class="text-gray-500">#{{ $b->target_player_id }}</span>
+                                @elseif($b->block_type === 'name')
+                                    {{ $b->target_name }}
+                                @else
+                                    <span class="text-gray-500">—</span>
+                                @endif
+                            </td>
+                            <td class="px-3 py-2"><span class="px-2 py-0.5 rounded text-xs uppercase {{ $b->block_type === 'player_id' ? 'bg-purple-900/30 text-purple-400' : 'bg-blue-900/30 text-blue-400' }}">{{ $b->block_type === 'player_id' ? 'Player' : 'Name' }}</span></td>
+                            <td class="px-3 py-2 text-gray-400 text-xs">{{ $b->reason ?: '—' }}</td>
+                            <td class="px-3 py-2 text-gray-400 text-xs">{{ $b->blockedBy?->name ?? 'Unknown' }}</td>
+                            <td class="px-3 py-2 text-gray-500 text-xs">{{ $b->created_at?->diffForHumans() }}</td>
+                            <td class="px-3 py-2 text-right">
+                                <form method="POST" action="{{ route('clan.manage.block.remove', [$clan->tracker_clan_id, $b->id]) }}" onsubmit="return confirm('Unblock this entry? They can be auto-pooled again.')">
+                                    @csrf @method('DELETE')
+                                    <button class="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs">Unblock</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <p class="text-gray-500 text-sm">No blocked players.</p>
+            @endif
+
+            {{-- Manual add block --}}
+            <div class="border-t border-gray-700 pt-4">
+                <h4 class="text-white font-semibold text-xs uppercase tracking-wide mb-2">Add block manually (by name)</h4>
+                <form method="POST" action="{{ route('clan.manage.block.add', $clan->tracker_clan_id) }}" class="grid grid-cols-1 md:grid-cols-12 gap-2">
+                    @csrf
+                    <input type="hidden" name="block_type" value="name">
+                    <input name="target_name" required maxlength="255" placeholder="Player name (exact match)" class="md:col-span-5 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded text-sm focus:outline-none focus:border-amber-500">
+                    <input name="reason" maxlength="500" placeholder="Reason (optional)" class="md:col-span-5 bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded text-sm focus:outline-none focus:border-amber-500">
+                    <button class="md:col-span-2 px-3 py-2 bg-red-900/30 hover:bg-red-900/50 text-red-400 rounded text-sm">🚫 Block</button>
+                </form>
+                <p class="text-xs text-gray-500 mt-2">Use name-block for fake/imposter handles. The name must match exactly (case-insensitive).</p>
+            </div>
         </div>
         @endif
     </div>
