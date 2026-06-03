@@ -147,6 +147,7 @@ class ClanResource extends Resource
     {
         return [
             \App\Filament\Resources\ClanResource\RelationManagers\ManagersRelationManager::class,
+            \App\Filament\Resources\ClanResource\RelationManagers\MembersRelationManager::class,
         ];
     }
 

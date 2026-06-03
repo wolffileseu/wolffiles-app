@@ -43,6 +43,42 @@ class TrackerServerResource extends Resource
                         ->helperText('Optional public URL slug. Admin bypass: no 30-day lock.'),
                 ])->columns(2),
 
+            Forms\Components\Section::make('Public Page Content')
+                ->description('Visible on the server\'s public page (/servers/{id})')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\Textarea::make('description')
+                        ->label('Description')
+                        ->rows(4)
+                        ->maxLength(20000)
+                        ->columnSpanFull()
+                        ->helperText('Markdown + BBCode supported.'),
+                    Forms\Components\Textarea::make('rules')
+                        ->label('Server Rules')
+                        ->rows(6)
+                        ->maxLength(20000)
+                        ->columnSpanFull()
+                        ->helperText('Markdown + BBCode supported.'),
+                    Forms\Components\TextInput::make('server_logo_url')->label('Logo URL')->url()->maxLength(500),
+                    Forms\Components\TextInput::make('server_banner_url')->label('Banner URL')->url()->maxLength(500),
+                    Forms\Components\TextInput::make('server_website')->label('Website')->url()->maxLength(255),
+                    Forms\Components\TextInput::make('server_discord')->label('Discord')->maxLength(255),
+                    Forms\Components\TextInput::make('server_email')->label('Email')->email()->maxLength(255),
+                ])->columns(2),
+            Forms\Components\Section::make('Clan Link')
+                ->collapsed()
+                ->schema([
+                    Forms\Components\Select::make('claimed_by_clan_id')
+                        ->label('Linked clan')
+                        ->relationship('clan', 'name')
+                        ->searchable()
+                        ->preload()
+                        ->nullable()
+                        ->helperText('Linked clan appears on the clan\'s public page.'),
+                    Forms\Components\Toggle::make('is_visible_for_clan')
+                        ->label('Show on clan page')
+                        ->helperText('Toggle visibility independent of link.'),
+                ])->columns(2),
             Forms\Components\Section::make('Status')
                 ->schema([
                     Forms\Components\Toggle::make('is_online'),

@@ -47,6 +47,18 @@ class Clan extends Model
     // --- NEU: Verknüpfungen ---
     public function trackerClan(): BelongsTo { return $this->belongsTo(TrackerClan::class, "tracker_clan_id"); }
     public function managers(): HasMany { return $this->hasMany(ClanManager::class); }
+    /** Members of this clan, via the linked tracker_clan. */
+    public function members(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(
+            \App\Models\Tracker\TrackerClanMember::class,
+            \App\Models\Tracker\TrackerClan::class,
+            'id',              // tracker_clans.id (Foreign on this)
+            'clan_id',         // tracker_clan_members.clan_id (Foreign on through)
+            'tracker_clan_id', // clans.tracker_clan_id (Local)
+            'id'               // tracker_clans.id (Local on through)
+        );
+    }
     public function applications(): HasMany { return $this->hasMany(ClanApplication::class); }
 
     public function news(): HasMany {
