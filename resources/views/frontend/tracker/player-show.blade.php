@@ -144,6 +144,81 @@
     </div>
     @endif
 
+    {{-- ============================================================
+         PLAYER SCREENSHOTS (Gallery + Lightbox)
+    ============================================================ --}}
+    @php $publicScreenshots = $player->screenshots()->where('is_public', true)->get(); @endphp
+    @if($publicScreenshots->isNotEmpty())
+    <div class="bg-gray-800 rounded-lg p-6 mb-6">
+        <h2 class="text-white font-semibold text-sm uppercase tracking-wide mb-4">
+            <i class="fas fa-images mr-2 text-amber-400"></i>Screenshots ({{ $publicScreenshots->count() }})
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            @foreach($publicScreenshots as $idx => $s)
+            <a href="{{ $s->url }}"
+               data-lightbox-idx="{{ $idx }}"
+               class="ws-shot block relative aspect-video bg-black rounded-lg overflow-hidden border border-gray-700 hover:border-amber-500 transition group"
+               @if($s->title) title="{{ $s->title }}" @endif>
+                <img src="{{ $s->url }}" loading="lazy" class="w-full h-full object-cover group-hover:scale-105 transition" alt="{{ $s->title ?: 'Screenshot' }}">
+                @if($s->title || $s->caption)
+                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition">
+                        @if($s->title)<div class="text-white text-xs font-semibold truncate">{{ $s->title }}</div>@endif
+                        @if($s->caption)<div class="text-gray-300 text-[10px] truncate">{{ $s->caption }}</div>@endif
+                    </div>
+                @endif
+            </a>
+            @endforeach
+        </div>
+    </div>
+
+    {{-- Lightbox modal --}}
+    <div id="ws-lightbox" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/90 p-4 cursor-pointer" onclick="wsLbClose(event)">
+        <button onclick="wsLbPrev(event)" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl px-3 py-1 select-none" aria-label="Previous">&larr;</button>
+        <img id="ws-lb-img" src="" class="max-w-full max-h-full object-contain rounded-lg" alt="">
+        <button onclick="wsLbNext(event)" class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white text-3xl px-3 py-1 select-none" aria-label="Next">&rarr;</button>
+        <button onclick="wsLbClose(event)" class="absolute top-4 right-4 text-white/70 hover:text-white text-2xl px-2 py-1 select-none" aria-label="Close">&times;</button>
+        <div id="ws-lb-caption" class="absolute left-1/2 -translate-x-1/2 bottom-6 text-center text-white/80 text-sm max-w-[80%]"></div>
+    </div>
+    <script>
+    (function() {
+        const shots = Array.from(document.querySelectorAll('.ws-shot'));
+        let cur = 0;
+        const lb  = document.getElementById('ws-lightbox');
+        const img = document.getElementById('ws-lb-img');
+        const cap = document.getElementById('ws-lb-caption');
+        function show(i) {
+            if (i < 0) i = shots.length - 1;
+            if (i >= shots.length) i = 0;
+            cur = i;
+            img.src = shots[i].href;
+            cap.textContent = shots[i].getAttribute('title') || '';
+            lb.classList.remove('hidden');
+            lb.classList.add('flex');
+        }
+        window.wsLbClose = function(ev) {
+            if (ev && ev.target.tagName === 'IMG') return; // clicking image shouldn't close
+            lb.classList.add('hidden');
+            lb.classList.remove('flex');
+            img.src = '';
+        };
+        window.wsLbPrev = function(ev) { ev.stopPropagation(); show(cur - 1); };
+        window.wsLbNext = function(ev) { ev.stopPropagation(); show(cur + 1); };
+        shots.forEach((a, i) => {
+            a.addEventListener('click', function(ev) {
+                ev.preventDefault();
+                show(i);
+            });
+        });
+        document.addEventListener('keydown', function(ev) {
+            if (lb.classList.contains('hidden')) return;
+            if (ev.key === 'Escape') wsLbClose({});
+            if (ev.key === 'ArrowLeft') wsLbPrev(ev);
+            if (ev.key === 'ArrowRight') wsLbNext(ev);
+        });
+    })();
+    </script>
+    @endif
+
     {{-- Stats Cards --}}
     {{-- =========================================== --}}
     {{-- Combat Overview: HS%, Dmg Ratio, Team Pref --}}

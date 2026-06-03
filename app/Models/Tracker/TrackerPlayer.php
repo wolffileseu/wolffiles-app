@@ -50,6 +50,11 @@ class TrackerPlayer extends Model
     public function dailyStats(): HasMany { return $this->hasMany(TrackerPlayerDailyStat::class, 'player_id'); }
     public function eloHistory(): HasMany { return $this->hasMany(TrackerEloHistory::class, 'player_id'); }
     public function clanMemberships(): HasMany { return $this->hasMany(TrackerClanMember::class, 'player_id'); }
+
+    public function screenshots(): HasMany
+    {
+        return $this->hasMany(PlayerScreenshot::class, 'player_id')->orderBy('sort_order')->orderBy('id');
+    }
     public function bans(): HasMany { return $this->hasMany(TrackerBan::class, 'player_id'); }
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
     public function isClaimedBy(?\App\Models\User $user): bool { return $user && $this->claimed_by_user_id === $user->id; }

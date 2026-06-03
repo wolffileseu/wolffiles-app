@@ -131,5 +131,71 @@
         </div>
 
     </form>
+
+    {{-- ============================================================
+         SCREENSHOTS SECTION
+    ============================================================ --}}
+    @php
+        $screenshots = $player->screenshots()->get();
+        $maxScreenshots = \App\Http\Controllers\Frontend\PlayerScreenshotController::MAX_SCREENSHOTS_PER_PLAYER;
+        $screenshotsCount = $screenshots->count();
+        $canUpload = $screenshotsCount < $maxScreenshots;
+    @endphp
+    <div class="mt-8 bg-gray-800/50 border border-gray-700 rounded-lg overflow-hidden">
+        <div class="px-4 py-3 bg-gray-900/50 border-b border-gray-700 flex items-center justify-between">
+            <h2 class="text-white font-semibold text-sm uppercase tracking-wide">
+                <i class="fas fa-images mr-2 text-amber-400"></i>Screenshots
+            </h2>
+            <span class="text-xs text-gray-500 font-mono">{{ $screenshotsCount }} / {{ $maxScreenshots }}</span>
+        </div>
+        <div class="p-4">
+
+            {{-- Upload form --}}
+            @if($canUpload)
+            <form method="POST" action="{{ route('tracker.player.screenshot.upload', $player) }}" enctype="multipart/form-data" class="mb-6">
+                @csrf
+                <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Upload Screenshots</label>
+                <input type="file" name="screenshots[]" multiple accept="image/jpeg,image/png,image/webp,image/gif" required
+                       class="block w-full text-sm text-gray-300 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-500 file:text-gray-900 hover:file:bg-amber-400 file:cursor-pointer cursor-pointer bg-gray-900 border border-gray-600 rounded-lg">
+                <p class="text-xs text-gray-500 mt-1">Max 6 files per upload. Max 5 MB each. JPG, PNG, WebP, GIF. Up to {{ $maxScreenshots - $screenshotsCount }} more allowed.</p>
+                <button type="submit" class="mt-3 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm transition">Upload</button>
+            </form>
+            @else
+            <div class="mb-6 px-4 py-3 bg-amber-900/20 border border-amber-700 text-amber-300 rounded-lg text-sm">
+                You have reached the limit of {{ $maxScreenshots }} screenshots. Delete one to upload more.
+            </div>
+            @endif
+
+            {{-- Existing screenshots grid --}}
+            @if($screenshotsCount > 0)
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach($screenshots as $s)
+                <div class="relative group bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+                    <a href="{{ $s->url }}" target="_blank" rel="noopener" class="block aspect-video bg-black">
+                        <img src="{{ $s->url }}" class="w-full h-full object-contain" alt="{{ $s->title ?: 'Screenshot' }}" loading="lazy">
+                    </a>
+                    <div class="p-2 text-xs text-gray-400">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="font-mono">{{ $s->size_formatted }} @if($s->width && $s->height)&middot; {{ $s->width }}&times;{{ $s->height }}@endif</span>
+                            <form method="POST" action="{{ route('tracker.player.screenshot.destroy', [$player, $s]) }}" onsubmit="return confirm('Delete this screenshot?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-400 hover:text-red-300" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                        @if(!$s->is_public)
+                            <div class="text-amber-400 mt-1">🔒 Private</div>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div class="text-center text-sm text-gray-500 py-8">No screenshots yet. Upload one above!</div>
+            @endif
+        </div>
+    </div>
 </div>
 </x-layouts.app>

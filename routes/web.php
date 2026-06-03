@@ -267,6 +267,12 @@ Route::get('/players/{player}/servers', [TrackerController::class, 'playerServer
 Route::middleware('auth')->group(function () {
     Route::get('/players/{player}/manage', [\App\Http\Controllers\Frontend\PlayerManageController::class, 'index'])->name('tracker.player.manage');
     Route::put('/players/{player}/profile', [\App\Http\Controllers\Frontend\PlayerManageController::class, 'updateProfile'])->name('tracker.player.manage.profile');
+
+    // Player Screenshots
+    Route::post('/players/{player}/screenshots', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'upload'])->name('tracker.player.screenshot.upload');
+    Route::put('/players/{player}/screenshots/{screenshot}', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'update'])->name('tracker.player.screenshot.update');
+    Route::delete('/players/{player}/screenshots/{screenshot}', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'destroy'])->name('tracker.player.screenshot.destroy');
+    Route::post('/players/{player}/screenshots/reorder', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'reorder'])->name('tracker.player.screenshot.reorder');
 });
 
 Route::post('/servers/{server}/force-poll', [TrackerController::class, 'forcePoll'])->middleware(['auth', 'throttle:5,1'])->name('tracker.server.force_poll');
