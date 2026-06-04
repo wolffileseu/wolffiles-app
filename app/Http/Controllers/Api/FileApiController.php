@@ -19,7 +19,7 @@ class FileApiController extends Controller
             'q' => 'required|string|min:2|max:100',
             'game' => 'nullable|string',
             'category' => 'nullable|string',
-            'limit' => 'nullable|integer|min:1|max:50',
+            'limit' => 'nullable|integer|min:1|max:500',
         ]);
 
         $query = File::approved()->with(['category']);
