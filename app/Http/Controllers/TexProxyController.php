@@ -71,7 +71,13 @@ class TexProxyController extends Controller
             return $response;
         }
 
-        // 5. Placeholder + log
+        // 5. Fuzzy-Resolver: Format-/Schreibweise-tolerant (jpg/png/tga; tga->png)
+        if ($response = $this->tryFuzzy($fileId, $path)) {
+            $this->autoResolveMiss($fileId, $path, 'fuzzy');
+            return $response;
+        }
+
+        // 6. Placeholder + log
         $this->logMissing($fileId, $path, $game);
         return $this->placeholder();
     }
@@ -137,16 +143,105 @@ class TexProxyController extends Controller
         if (!$resolved) return null;
 
         $ext = strtolower(pathinfo($resolved, PATHINFO_EXTENSION));
-        $mime = self::MIME[$ext] ?? 'application/octet-stream';
-
         $this->autoResolveMiss($fileId, $path, 'pool-');
 
+        if ($ext === 'tga') {
+            return $this->serveImageData(file_get_contents($resolved), 'tga', $resolved, 'pool-' . GameAssetMapper::folderFor($game));
+        }
 
+        $mime = self::MIME[$ext] ?? 'application/octet-stream';
         return response()->file($resolved, [
             'Content-Type'     => $mime,
             'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
             'X-Texture-Source' => 'pool-' . GameAssetMapper::folderFor($game),
         ]);
+    }
+
+    private function tryFuzzy(int $fileId, string $path): ?Response
+    {
+        $pathNoExt = strtolower(preg_replace('/\\.[^.\\/]+$/', '', $path));
+        $exts = ['png', 'jpg', 'jpeg', 'tga'];
+
+        // a) S3 (map-spezifisch) – Endung & Schreibweise egal
+        try {
+            $s3 = Storage::disk('s3');
+            $prefix = "bsp/{$fileId}/assets/";
+            foreach ($s3->allFiles("bsp/{$fileId}/assets") as $f) {
+                $rel = substr($f, strlen($prefix));
+                $relNoExt = strtolower(preg_replace('/\\.[^.\\/]+$/', '', $rel));
+                $relExt = strtolower(pathinfo($rel, PATHINFO_EXTENSION));
+                if ($relNoExt === $pathNoExt && in_array($relExt, $exts, true)) {
+                    $data = $s3->get($f);
+                    if ($data === null) continue;
+                    return $this->serveImageData($data, $relExt, $f, 's3-fuzzy');
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("TexProxy fuzzy S3 [{$fileId}/{$path}]: {$e->getMessage()}");
+        }
+
+        // b) Game-Pool (Basis-Texturen) – case-insensitive
+        try {
+            $game = $this->resolveGameForFile($fileId);
+            $fullPath = GameAssetMapper::filesystemPath($game, $path);
+            if ($fullPath) {
+                $dir = dirname($fullPath);
+                $baseLower = strtolower(pathinfo($fullPath, PATHINFO_FILENAME));
+                if (is_dir($dir)) {
+                    foreach (scandir($dir) as $entry) {
+                        if ($entry === '.' || $entry === '..') continue;
+                        $entryNoExt = strtolower(pathinfo($entry, PATHINFO_FILENAME));
+                        $entryExt = strtolower(pathinfo($entry, PATHINFO_EXTENSION));
+                        if ($entryNoExt === $baseLower && in_array($entryExt, $exts, true)) {
+                            $abs = $dir . '/' . $entry;
+                            return $this->serveImageData(file_get_contents($abs), $entryExt, $abs, 'pool-fuzzy');
+                        }
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning("TexProxy fuzzy pool [{$fileId}/{$path}]: {$e->getMessage()}");
+        }
+
+        return null;
+    }
+
+    private function serveImageData(string $data, string $ext, string $cacheKey, string $source): Response
+    {
+        if ($ext === 'tga') {
+            $png = $this->tgaToPngCached($cacheKey, $data);
+            if ($png !== null) {
+                return response($png, 200, [
+                    'Content-Type'     => 'image/png',
+                    'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+                    'X-Texture-Source' => $source . '-tga2png',
+                ]);
+            }
+        }
+        $mime = self::MIME[$ext] ?? 'application/octet-stream';
+        return response($data, 200, [
+            'Content-Type'     => $mime,
+            'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
+            'X-Texture-Source' => $source,
+        ]);
+    }
+
+    private function tgaToPngCached(string $cacheKey, string $tgaData): ?string
+    {
+        $cacheFile = storage_path('app/texcache/' . md5($cacheKey) . '.png');
+        if (!is_file($cacheFile)) {
+            @mkdir(dirname($cacheFile), 0775, true);
+            $tmp = tempnam(sys_get_temp_dir(), 'tga');
+            file_put_contents($tmp, $tgaData);
+            @exec('convert ' . escapeshellarg($tmp) . ' PNG32:' . escapeshellarg($cacheFile) . ' 2>/dev/null', $o, $rc);
+            if (($rc ?? 1) !== 0 || !is_file($cacheFile)) {
+                @exec('ffmpeg -y -i ' . escapeshellarg($tmp) . ' -pix_fmt rgba -frames:v 1 ' . escapeshellarg($cacheFile) . ' 2>/dev/null');
+            }
+            @unlink($tmp);
+            if (!is_file($cacheFile)) return null;
+        }
+        $bytes = @file_get_contents($cacheFile);
+        return $bytes !== false ? $bytes : null;
     }
 
     private function trySkybox(int $fileId, string $path, ?string $game)

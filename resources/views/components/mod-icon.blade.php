@@ -13,11 +13,12 @@
 
     // Manual aliases for common mod-name variants that don't match their file directly
     $aliases = [
-        'etlegacy'      => 'legacy',
+        'etlegacy'        => 'legacy',
         //'main'          => 'etmain',
-        'silentmod'     => 'silent',
-        'noquarter'     => 'nq',
-        'truecombat'    => 'tc',
+        'omnibotetmain' => 'etmain',
+        'silentmod'       => 'silent',
+        'noquarter'       => 'nq',
+        'truecombat'      => 'tc',
     ];
     $slug = $aliases[$slug] ?? $slug;
 
