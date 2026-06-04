@@ -672,7 +672,7 @@ return [
     'wiki_updated' => '[TODO:de] Wiki updated',
     'with_screenshots' => '[TODO:de] With Screenshots',
     'write_comment' => 'Kommentar schreiben...',
-    'xp' => '[TODO:de] XP',
+    'xp' => 'XP',
     'yearly_goal' => '[TODO:de] Yearly Goal',
     'your_profile' => '[TODO:de] Your Profile',
     '{}' => '[TODO:de] {}',
