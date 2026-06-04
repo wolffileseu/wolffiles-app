@@ -83,4 +83,5 @@ return [
 
     'Also requires' => 'Wymaga również',
     'so statistics are sent at all.' => 'aby statystyki były w ogóle wysyłane.',
+    'export_xlsx' => 'Eksportuj do Excela',
 ];

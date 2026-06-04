@@ -256,6 +256,7 @@ Route::post("/donate/paypal-ipn", [DonationController::class, "paypalIpn"])->nam
 // ===== Tracker =====
 Route::get('/tracker', [TrackerController::class, 'index'])->name('tracker.index');
 Route::get('/servers', [TrackerController::class, 'servers'])->name('tracker.servers');
+Route::get('/servers/export', [TrackerController::class, 'exportServers'])->name('tracker.servers.export');
 Route::get('/servers/{server}', [TrackerController::class, 'serverShow'])->name('tracker.server.show');
 Route::get('/players', [TrackerController::class, 'players'])->name('tracker.players');
 Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name('tracker.player.show');

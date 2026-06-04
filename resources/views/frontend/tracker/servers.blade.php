@@ -351,7 +351,15 @@
         </div>
     </div>
 
-    <div class="mt-4">{{ $servers->links() }}</div>
+    <div class="mt-4 flex items-center justify-between gap-3 flex-wrap">
+        <a href="{{ route('tracker.servers.export', request()->query()) }}"
+           class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-amber-400 transition"
+           title="{{ __('tracker.export_xlsx') }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            {{ __('tracker.export_xlsx') }}
+        </a>
+        <div>{{ $servers->links() }}</div>
+    </div>
 </div>
 
 {{-- Convert multi-checkboxes to comma-string on submit (keeps URLs clean) --}}

@@ -45,34 +45,8 @@ class TrackerController extends Controller
     /**
      * Server List
      */
-    public function servers(Request $request)
+    private function buildServerQuery(\Illuminate\Http\Request $request)
     {
-        $cacheKey = 'tracker:web:servers:' . md5(json_encode([
-            'game'        => $request->input('game'),
-            'online'      => $request->boolean('online'),
-            'players'     => $request->boolean('players'),
-            'country'     => $request->input('country'),
-            'map'         => $request->input('map'),
-            'mod'         => $request->input('mod'),
-            'gametype'    => $request->input('gametype'),
-            'search'      => $request->input('search'),
-            'no_password' => $request->boolean('no_password'),
-            'ff'          => $request->boolean('ff'),
-            'antilag'     => $request->boolean('antilag'),
-            'balanced'    => $request->boolean('balanced'),
-            'anticheat'   => $request->boolean('anticheat'),
-            'hwrestrict'  => $request->boolean('hwrestrict'),
-            'enhanced'    => $request->boolean('enhanced'),
-            'live_enhanced' => $request->boolean('live_enhanced'),
-            'engine_family' => $request->input('engine_family'),
-            'sort'        => $request->get('sort', 'players'),
-            'dir'         => $request->get('dir', 'desc'),
-            'page'        => $request->get('page', 1),
-        ]));
-
-        $payload = Cache::remember($cacheKey, 25, function () use ($request) {
-        $games = TrackerGame::active()->orderBy('sort_order')->get();
-
         $query = TrackerServer::active()->with('game');
 
         // Helper: parse ?key=A, ?key=A,B, or ?key[]=A&key[]=B into a clean array
@@ -218,6 +192,108 @@ class TrackerController extends Controller
 
         // Secondary sort: online first
         $query->orderByDesc('is_online');
+        return $query;
+    }
+
+    public function exportServers(\Illuminate\Http\Request $request)
+    {
+        $servers = $this->buildServerQuery($request)->get([
+            'id','game_id','hostname_clean','ip','port','country','country_code',
+            'mod_name','mod_version','engine_version','engine_platform',
+            'os','current_players','max_players','is_online','is_enhanced_tracker',
+            'enhanced_event_count','enhanced_last_event_at','last_seen_at',
+        ]);
+
+        \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder(new \PhpOffice\PhpSpreadsheet\Cell\StringValueBinder());
+
+        $groups = [];
+        foreach ($servers as $sv) {
+            $key = ($sv->game_id ?? '?')."\x1f".($sv->os ?? '')."\x1f".($sv->mod_name ?? '')."\x1f".($sv->mod_version ?? '');
+            if (!isset($groups[$key])) {
+                $groups[$key] = ['game_id'=>$sv->game_id,'os'=>$sv->os,'mod'=>$sv->mod_name,
+                    'version'=>$sv->mod_version,'count'=>0,'online'=>0,'enhanced'=>0,'players_now'=>0];
+            }
+            $g =& $groups[$key];
+            $g['count']++;
+            $g['online']      += $sv->is_online ? 1 : 0;
+            $g['enhanced']    += $sv->is_enhanced_tracker ? 1 : 0;
+            $g['players_now'] += (int) $sv->current_players;
+            unset($g);
+        }
+        usort($groups, fn($a,$b) => $b['count'] <=> $a['count']);
+
+        $sumHeader = ['game_id','os','mod','version','count','online','enhanced','players_now'];
+        $sumRows   = array_map(fn($g) => array_values($g), $groups);
+
+        $detHeader = ['id','game_id','hostname','ip','port','country','mod','mod_version',
+            'engine_version','platform','os','players','max','online','enhanced',
+            'enh_events','last_enhanced_event','last_seen','url'];
+        $detRows = [];
+        foreach ($servers as $sv) {
+            $detRows[] = [$sv->id,$sv->game_id,$sv->hostname_clean,$sv->ip,$sv->port,$sv->country_code,
+                $sv->mod_name,$sv->mod_version,$sv->engine_version,$sv->engine_platform,$sv->os,
+                $sv->current_players,$sv->max_players,$sv->is_online?1:0,$sv->is_enhanced_tracker?1:0,
+                $sv->enhanced_event_count,(string)$sv->enhanced_last_event_at,(string)$sv->last_seen_at,
+                'https://wolffiles.eu/servers/'.$sv->id];
+        }
+
+        $ss = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $a = $ss->getActiveSheet(); $a->setTitle('Summary');
+        $a->fromArray($sumHeader,null,'A1'); $a->fromArray($sumRows,null,'A2');
+        $b = $ss->createSheet(); $b->setTitle('Servers');
+        $b->fromArray($detHeader,null,'A1'); $b->fromArray($detRows,null,'A2');
+
+        foreach ([$a,$b] as $sh) {
+            $highest = $sh->getHighestColumn();
+            $sh->getStyle("A1:{$highest}1")->getFont()->setBold(true);
+            $colIdx = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highest);
+            for ($i = 1; $i <= $colIdx; $i++) {
+                $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+                $sh->getColumnDimension($col)->setAutoSize(true);
+            }
+            $sh->freezePane('A2');
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'srvexp_').'.xlsx';
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss);
+        $writer->setPreCalculateFormulas(false);
+        $writer->save($tmp);
+
+        $filename = 'wolffiles_servers_'.date('Ymd_His').'.xlsx';
+        return response()->download($tmp, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
+    public function servers(Request $request)
+    {
+        $cacheKey = 'tracker:web:servers:' . md5(json_encode([
+            'game'        => $request->input('game'),
+            'online'      => $request->boolean('online'),
+            'players'     => $request->boolean('players'),
+            'country'     => $request->input('country'),
+            'map'         => $request->input('map'),
+            'mod'         => $request->input('mod'),
+            'gametype'    => $request->input('gametype'),
+            'search'      => $request->input('search'),
+            'no_password' => $request->boolean('no_password'),
+            'ff'          => $request->boolean('ff'),
+            'antilag'     => $request->boolean('antilag'),
+            'balanced'    => $request->boolean('balanced'),
+            'anticheat'   => $request->boolean('anticheat'),
+            'hwrestrict'  => $request->boolean('hwrestrict'),
+            'enhanced'    => $request->boolean('enhanced'),
+            'live_enhanced' => $request->boolean('live_enhanced'),
+            'engine_family' => $request->input('engine_family'),
+            'sort'        => $request->get('sort', 'players'),
+            'dir'         => $request->get('dir', 'desc'),
+            'page'        => $request->get('page', 1),
+        ]));
+
+        $payload = Cache::remember($cacheKey, 25, function () use ($request) {
+        $games = TrackerGame::active()->orderBy('sort_order')->get();
+
+        $query = $this->buildServerQuery($request);
 
         $servers = $query->paginate(50)->withQueryString();
 

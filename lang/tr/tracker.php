@@ -83,4 +83,5 @@ return [
 
     'Also requires' => 'Ayrıca',
     'so statistics are sent at all.' => 'ayarlı olmalı, aksi halde istatistik gönderilmez.',
+    'export_xlsx' => 'Excel olarak disa aktar',
 ];
