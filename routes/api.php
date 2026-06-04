@@ -5,7 +5,7 @@ use App\Http\Controllers\Api\FileApiController;
 use Illuminate\Support\Facades\Route;
 
 // Public API (for Discord bot etc.)
-Route::prefix('v1')->middleware('throttle:60,1')->group(function () {
+Route::prefix('v1')->middleware('throttle:1200,1')->group(function () {
     Route::get('/files/search', [FileApiController::class, 'search']);
     Route::get('/files/latest', [FileApiController::class, 'latest']);
     Route::get('/files/random', [FileApiController::class, 'random']);
@@ -111,7 +111,7 @@ Route::middleware(\App\Http\Middleware\ValidateClanApiKey::class)
     });
 
 // Tracker API (public)
-Route::prefix('v1/tracker')->group(function () {
+Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/servers',         [\App\Http\Controllers\Frontend\TrackerController::class, 'apiServers'])->name('tracker.api.servers');
     Route::get('/servers/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopServers'])->name('tracker.api.top-servers');
     Route::get('/stats',           [\App\Http\Controllers\Frontend\TrackerController::class, 'apiStats'])->name('tracker.api.stats');

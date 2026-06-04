@@ -1113,7 +1113,7 @@ class TrackerController extends Controller
                 }
             }
 
-            return $query->orderByDesc('current_players')->limit(200)->get([
+            return $query->orderByDesc('current_players')->limit(2000)->get([
                 'id', 'game_id', 'hostname_html', 'hostname_clean', 'ip', 'port',
                 'current_map', 'current_players', 'max_players', 'gametype',
                 'mod_name', 'country_code', 'is_online', 'needs_password',
