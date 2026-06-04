@@ -417,9 +417,7 @@ Route::middleware('auth')->group(function () {
 // clan = slug (registered Clan). Management gated im Controller via ClanManager-Rolle.
 Route::middleware('auth')->group(function () {
     // Bewerbung absenden (jeder eingeloggte User)
-    Route::bind('managedClan', function ($value) {
-        return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
-    });
+
     Route::post('/clan/{managedClan}/apply', function (\Illuminate\Http\Request $request, \App\Models\Clan $managedClan) {
         $data = $request->validate([
             'player_name' => 'required|string|max:255',
@@ -436,14 +434,9 @@ Route::middleware('auth')->group(function () {
 
     // Management-Dashboard
     // Bind {clan} param in this group to Clan resolved by tracker_clan_id
-    Route::bind('managedClan', function ($value) {
-        return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
-    });
 
-        // Bind {clan} to Clan via tracker_clan_id (user-facing ID)
-        Route::bind('managedClan', function ($value) {
-            return \App\Models\Clan::where('tracker_clan_id', $value)->firstOrFail();
-        });
+
+
 
                 Route::get('/clan/{managedClan}/manage', [\App\Http\Controllers\Frontend\ClanManageController::class, 'index'])->name('clan.manage');
     Route::put('/clan/{managedClan}/content', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateContent'])->name('clan.manage.content');

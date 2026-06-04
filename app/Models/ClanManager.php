@@ -14,7 +14,7 @@ class ClanManager extends Model
     public function user(): BelongsTo { return $this->belongsTo(User::class); }
     public function invitedBy(): BelongsTo { return $this->belongsTo(User::class, 'invited_by_user_id'); }
 
-    public function canEditContent(): bool { return in_array($this->role, [self::ROLE_OWNER, self::ROLE_ADMIN, self::ROLE_EDITOR]); }
-    public function canManage(): bool { return in_array($this->role, [self::ROLE_OWNER, self::ROLE_ADMIN]); }
+    public function canEditContent(): bool { return in_array($this->role, [self::ROLE_LEADER, self::ROLE_OWNER]); }
+    public function canManage(): bool { return in_array($this->role, [self::ROLE_LEADER, self::ROLE_OWNER]); }
     public function isOwner(): bool { return $this->role === self::ROLE_OWNER; }
 }

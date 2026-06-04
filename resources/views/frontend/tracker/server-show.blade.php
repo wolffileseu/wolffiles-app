@@ -4,7 +4,7 @@ $canManageServer = auth()->check() && (
     $server->claimed_by_user_id === auth()->id()
     || ($server->claimed_by_clan_id && \App\Models\ClanManager::where('clan_id', $server->claimed_by_clan_id)
         ->where('user_id', auth()->id())
-        ->whereIn('role', ['owner', 'admin'])
+        ->whereIn('role', ['leader', 'owner'])
         ->exists())
 );
 @endphp

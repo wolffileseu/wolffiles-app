@@ -376,10 +376,10 @@ class ClanManageController extends Controller
         return back()->with('success', __('Member added.'));
     }
 
-    /** Remove (soft) a clan member. Owner only. */
+    /** Remove (soft) a clan member. Leader + Owner allowed. */
     public function removeMember(Clan $managedClan, TrackerClanMember $member)
     {
-        $this->gate($managedClan, ['leader']);
+        $this->gate($managedClan, ['leader', 'owner']);
         abort_unless($managedClan->trackerClan && $member->clan_id === $managedClan->trackerClan->id, 404);
 
         $member->update(['is_active' => false]);
@@ -460,10 +460,10 @@ class ClanManageController extends Controller
         return back()->with('success', __('Block removed.'));
     }
 
-    /** Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */
+    /** Leader or Owner requests a new API key. Creates a PENDING entry visible in Filament admin. */
     public function requestApiKey(Request $request, Clan $managedClan)
     {
-        $this->gate($managedClan, ['leader']);
+        $this->gate($managedClan, ['leader', 'owner']);
 
         $pending = \App\Models\ClanApiKey::where('clan_id', $managedClan->id)
             ->where('key', 'LIKE', 'PENDING:%')

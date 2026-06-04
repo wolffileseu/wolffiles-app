@@ -3,7 +3,7 @@
     $tagDisplay = $registered?->tag_display ?: ("[" . $clan->tag_clean . "]");
     $clanName   = $registered->name ?? $clan->name ?? 'Unknown Clan';
     $isClaimed  = (bool) $registered;
-    $canManage  = $managerRole && in_array($managerRole, [\App\Models\ClanManager::ROLE_OWNER, \App\Models\ClanManager::ROLE_ADMIN, \App\Models\ClanManager::ROLE_EDITOR]);
+    $canManage  = $managerRole && in_array($managerRole, [\App\Models\ClanManager::ROLE_LEADER, \App\Models\ClanManager::ROLE_OWNER, \App\Models\ClanManager::ROLE_EDITOR]);
     // logo/banner from registered clan if present
     $logoUrl   = $registered?->logo ? (\Illuminate\Support\Str::startsWith($registered->logo, ['http://','https://']) ? $registered->logo : asset('storage/'.$registered->logo)) : null;
     $bannerUrl = $registered?->banner ? (\Illuminate\Support\Str::startsWith($registered->banner, ['http://','https://']) ? $registered->banner : asset('storage/'.$registered->banner)) : null;

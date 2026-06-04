@@ -39,6 +39,23 @@ class Clan extends Model
 
     public function getRouteKeyName(): string { return "slug"; }
 
+    /**
+     * Hybrid route model binding:
+     * - numeric value → lookup via tracker_clan_id (stable identifier)
+     * - non-numeric → lookup via slug (changeable URL identifier)
+     * Allows /clan/3/manage AND /clan/fearless-assassins/manage to both work.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if ($field) {
+            return $this->where($field, $value)->first();
+        }
+        $query = ctype_digit((string) $value)
+            ? $this->where('tracker_clan_id', $value)
+            : $this->where('slug', $value);
+        return $query->first();
+    }
+
     // --- bestehende Relations ---
     public function apiKeys(): HasMany { return $this->hasMany(ClanApiKey::class); }
     public function activeApiKeys(): HasMany { return $this->hasMany(ClanApiKey::class)->where("is_active", true); }
