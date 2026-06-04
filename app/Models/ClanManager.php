@@ -4,8 +4,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ClanManager extends Model
 {
-    const ROLE_OWNER = 'owner';
-    const ROLE_ADMIN = 'admin';
+    const ROLE_LEADER = 'leader';
+    const ROLE_OWNER  = 'owner';
     const ROLE_EDITOR = 'editor';
 
     protected $fillable = ['clan_id','user_id','role','invited_by_user_id'];

@@ -26,8 +26,8 @@ class ManagersRelationManager extends RelationManager
                 ->required(),
             Forms\Components\Select::make('role')
                 ->options([
+                    'leader' => 'Leader',
                     'owner'  => 'Owner',
-                    'admin'  => 'Admin',
                     'editor' => 'Editor',
                 ])
                 ->required()
@@ -42,8 +42,8 @@ class ManagersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('user.name')->label('User')->searchable(),
                 Tables\Columns\TextColumn::make('user.email')->label('Email')->searchable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('role')->badge()->color(fn ($state) => match($state) {
-                    'owner'  => 'warning',
-                    'admin'  => 'success',
+                    'leader' => 'warning',
+                    'owner'  => 'success',
                     'editor' => 'info',
                     default  => 'gray',
                 }),

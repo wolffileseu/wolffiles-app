@@ -79,7 +79,7 @@ class TrackerClanResource extends Resource
                         if (!$record) return '—';
                         $reg = $record->registeredClan;
                         if (!$reg) return new \Illuminate\Support\HtmlString('<span class="text-gray-500">No registered clan linked.</span>');
-                        $owner = $reg->managers()->where('role', 'owner')->with('user')->first()?->user?->name ?? 'no owner';
+                        $owner = $reg->managers()->where('role', 'leader')->with('user')->first()?->user?->name ?? 'no owner';
                         $url = url('/admin/clans/' . $reg->id . '/edit');
                         return new \Illuminate\Support\HtmlString(
                             '<a href="' . $url . '" class="text-amber-500 hover:underline">' . e($reg->name) . '</a>'

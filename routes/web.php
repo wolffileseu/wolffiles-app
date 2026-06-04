@@ -461,6 +461,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/clan/{managedClan}/members/search', [\App\Http\Controllers\Frontend\ClanManageController::class, 'searchPlayers'])->name('clan.manage.member.search');
     Route::post('/clan/{managedClan}/members', [\App\Http\Controllers\Frontend\ClanManageController::class, 'addMember'])->name('clan.manage.member.add');
     Route::delete('/clan/{managedClan}/members/{member}', [\App\Http\Controllers\Frontend\ClanManageController::class, 'removeMember'])->name('clan.manage.member.remove');
+    Route::post('/clan/{managedClan}/auto-join', [\App\Http\Controllers\Frontend\ClanManageController::class, 'updateAutoJoin'])->name('clan.manage.auto_join');
 
     // Member block-list
     Route::post('/clan/{managedClan}/members/{member}/block', [\App\Http\Controllers\Frontend\ClanManageController::class, 'blockMember'])->name('clan.manage.member.block');

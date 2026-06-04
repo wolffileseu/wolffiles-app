@@ -16,7 +16,7 @@ class TrackerClan extends Model
         'country', 'country_code',
         'member_count', 'avg_elo', 'total_play_time_minutes',
         'first_seen_at', 'last_seen_at', 'status',
-        'description', 'discord', 'is_verified', 'claimed_by_user_id', 'is_locked', 'active_member_count',
+        'description', 'discord', 'is_verified', 'claimed_by_user_id', 'is_locked', 'auto_join_enabled', 'active_member_count',
     ];
 
     protected function casts(): array
@@ -27,6 +27,7 @@ class TrackerClan extends Model
             'avg_elo' => 'decimal:2',
             'is_verified' => 'boolean',
             'is_locked' => 'boolean',
+            'auto_join_enabled' => 'boolean',
         ];
     }
 

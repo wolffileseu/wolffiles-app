@@ -87,7 +87,10 @@ class ClanDetectionService
                             $isBlocked = \App\Models\ClanMemberBlock::isPlayerBlocked($registered->id, $player->id)
                                 || \App\Models\ClanMemberBlock::isNameBlocked($registered->id, $player->name_clean ?? $player->name ?? '');
                         }
-                        if (!$isBlocked) {
+                        // Auto-Join: only proceed if the clan opted-in (default off)
+                        if (!$clan->auto_join_enabled) {
+                            $stats['auto_join_disabled'] = ($stats['auto_join_disabled'] ?? 0) + 1;
+                        } elseif (!$isBlocked) {
                             TrackerClanMember::updateOrCreate(
                                 ['clan_id' => $clan->id, 'player_id' => $player->id],
                                 ['is_active' => $player->last_seen_at >= now()->subDays(14), 'joined_at' => now()]

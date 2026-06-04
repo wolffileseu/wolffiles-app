@@ -29,7 +29,7 @@ class ServerManageController extends Controller
         if ($server->claimed_by_clan_id) {
             $isManager = ClanManager::where('clan_id', $server->claimed_by_clan_id)
                 ->where('user_id', $user->id)
-                ->whereIn('role', [ClanManager::ROLE_OWNER, ClanManager::ROLE_ADMIN])
+                ->whereIn('role', [ClanManager::ROLE_LEADER, ClanManager::ROLE_OWNER])
                 ->exists();
             if ($isManager) {
                 return;
@@ -47,7 +47,7 @@ class ServerManageController extends Controller
         // List of clans the current user can link the server to (owner/admin of)
         $userManagedClans = Clan::whereHas('managers', function ($q) {
             $q->where('user_id', auth()->id())
-              ->whereIn('role', [ClanManager::ROLE_OWNER, ClanManager::ROLE_ADMIN]);
+              ->whereIn('role', [ClanManager::ROLE_LEADER, ClanManager::ROLE_OWNER]);
         })->orderBy('name')->get();
 
         return view('frontend.tracker.server-manage', compact('server', 'userManagedClans'));
@@ -112,7 +112,7 @@ class ServerManageController extends Controller
         // Verify the user is owner/admin of this clan
         $allowed = ClanManager::where('clan_id', $data['clan_id'])
             ->where('user_id', auth()->id())
-            ->whereIn('role', [ClanManager::ROLE_OWNER, ClanManager::ROLE_ADMIN])
+            ->whereIn('role', [ClanManager::ROLE_LEADER, ClanManager::ROLE_OWNER])
             ->exists();
         abort_unless($allowed, 403, 'You are not a manager of that clan.');
 

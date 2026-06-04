@@ -112,7 +112,7 @@ class ClanResource extends Resource
                 Tables\Columns\TextColumn::make('owner_name')
                     ->label('Owner')
                     ->getStateUsing(function ($record) {
-                        $owner = $record->managers()->where('role', 'owner')->with('user')->first();
+                        $owner = $record->managers()->where('role', 'leader')->with('user')->first();
                         return $owner?->user?->name ?? '—';
                     }),
                 Tables\Columns\IconColumn::make('is_recruiting')->boolean()->label('Recruiting'),

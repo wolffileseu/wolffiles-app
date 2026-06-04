@@ -1,8 +1,8 @@
 <x-layouts.app :title="'Manage [' . $clan->tag . '] ' . $clan->name">
 @php
     $tc = $clan->trackerClan;
-    $isOwner = $manager->role === 'owner';
-    $isAdmin = in_array($manager->role, ['owner','admin']);
+    $isOwner = $manager->role === 'leader';
+    $isAdmin = in_array($manager->role, ['leader','owner']);
     $roleLabels = ['Leader','Co-Leader','Recruiter','Member','Trial','Inactive'];
 @endphp
 
@@ -30,7 +30,7 @@
         <button @click="tab='managers'" :class="tab==='managers' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Managers<span class="text-gray-600 ml-1">{{ $clan->managers->count() }}</span></button>
         <button @click="tab='apps'" :class="tab==='apps' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">Applications<span class="text-gray-600 ml-1">{{ $applications->where('status','pending')->count() }}</span></button>
         @endif
-        @if($manager->role === 'owner')
+        @if($manager->role === 'leader')
         <button @click="tab='api'" :class="tab==='api' ? 'text-amber-400 border-amber-500' : 'text-gray-400 border-transparent hover:text-gray-200'" class="px-4 py-2.5 text-sm font-medium uppercase tracking-wide border-b-2 transition">API Keys<span class="text-gray-600 ml-1">{{ $apiKeys->count() }}</span></button>
         @endif
     </div>
@@ -117,6 +117,22 @@
             </div>
             <button type="submit" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-gray-900 font-semibold rounded-lg text-sm transition">Save Changes</button>
         </form>
+
+        {{-- Auto-Join toggle (owner only, separate form) --}}
+        @if($clan->trackerClan && $manager->role === \App\Models\ClanManager::ROLE_LEADER)
+        <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 mt-5">
+            <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-3">Auto-Join Detection</h3>
+            <form method="POST" action="{{ route("clan.manage.auto_join", $clan->tracker_clan_id) }}" class="flex items-start gap-3">
+                @csrf
+                <input type="hidden" name="auto_join_enabled" value="0">
+                <input type="checkbox" name="auto_join_enabled" value="1" onchange="this.form.submit()" {{ $clan->trackerClan->auto_join_enabled ? 'checked' : '' }} class="rounded bg-gray-900 border-gray-600 text-amber-500 mt-0.5">
+                <div class="text-sm text-gray-300">
+                    Auto-add players whose in-game name contains the clan tag <span class="font-mono text-amber-400">{{ $clan->display_tag }}</span>.
+                    <div class="text-xs text-gray-500 mt-1">When off, members can only be added manually. Recommended off to keep fake-tag players out.</div>
+                </div>
+            </form>
+        </div>
+        @endif
     </div>
 
     {{-- ========================= MEMBERS ========================= --}}
@@ -217,7 +233,7 @@
                             <td class="px-4 py-2"><button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-amber-400 rounded text-xs">Save</button></td>
                         </form>
                         <td class="px-4 py-2">
-                            @if(in_array($manager->role, ['owner', 'admin']))
+                            @if(in_array($manager->role, ['leader', 'owner']))
                             <div class="flex gap-1 justify-end">
                                 <form method="POST" action="{{ route('clan.manage.member.remove', [$clan->tracker_clan_id, $m->id]) }}" onsubmit="return confirm('Remove {{ $m->player->name_clean }} from clan? (Can be re-added by Auto-Detection.)')">
                                     @csrf @method('DELETE')
@@ -239,7 +255,7 @@
         @endif
 
         {{-- BLOCKED PLAYERS --}}
-        @if(in_array($manager->role, ['owner', 'admin']))
+        @if(in_array($manager->role, ['leader', 'owner']))
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5 space-y-4 mt-6">
             <div class="flex items-center justify-between gap-2 flex-wrap">
                 <div>
@@ -417,13 +433,13 @@
                     <tr class="hover:bg-gray-700/30">
                         <td class="px-4 py-3 text-gray-200">{{ $mgr->user->name ?? 'Unknown' }} @if($mgr->user_id === auth()->id())<span class="text-gray-500 text-xs">(you)</span>@endif</td>
                         <td class="px-4 py-3">
-                            @if($mgr->role === 'owner')
+                            @if($mgr->role === 'leader')
                                 <span class="px-2 py-0.5 rounded-full text-xs uppercase tracking-wide border text-amber-400 border-amber-500/40 bg-amber-900/10">owner</span>
                             @elseif($isOwner)
                                 <form method="POST" action="{{ route('clan.manage.manager.update', [$clan->tracker_clan_id, $mgr->id]) }}" class="inline">
                                     @csrf @method('PUT')
                                     <select name="role" onchange="this.form.submit()" class="bg-gray-900 border border-gray-600 text-gray-200 px-2 py-1 rounded text-xs">
-                                        <option value="admin" {{ $mgr->role==='admin'?'selected':'' }}>admin</option>
+                                        <option value="admin" {{ $mgr->role==='owner'?'selected':'' }}>admin</option>
                                         <option value="editor" {{ $mgr->role==='editor'?'selected':'' }}>editor</option>
                                     </select>
                                 </form>
@@ -433,13 +449,13 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex gap-2 justify-end items-center">
-                            @if($isOwner && $mgr->role !== 'owner' && $mgr->user_id !== auth()->id())
+                            @if($isOwner && $mgr->role !== 'leader' && $mgr->user_id !== auth()->id())
                                 <form method="POST" action="{{ route('clan.manage.manager.transfer', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Transfer ownership to {{ $mgr->user->name ?? 'this user' }}? You will become an editor. Only the new owner can transfer back.')">
                                     @csrf
                                     <button class="text-amber-400 hover:text-amber-300 text-xs" title="Transfer ownership">Transfer</button>
                                 </form>
                             @endif
-                            @if($mgr->role !== 'owner')
+                            @if($mgr->role !== 'leader')
                                 <form method="POST" action="{{ route('clan.manage.manager.delete', [$clan->tracker_clan_id, $mgr->id]) }}" onsubmit="return confirm('Remove this manager?')">@csrf @method('DELETE')<button class="text-red-400 hover:text-red-300 text-xs">Remove</button></form>
                             @endif
                             </div>
@@ -492,7 +508,7 @@
     @endif
 
     {{-- ========================= API KEYS (owner only) ========================= --}}
-    @if($manager->role === 'owner')
+    @if($manager->role === 'leader')
     <div x-show="tab==='api'" x-cloak class="space-y-4">
         <div class="bg-gray-800 rounded-lg border border-gray-700/50 p-5">
             <h3 class="text-white font-semibold text-sm uppercase tracking-wide mb-2">ClanNews Tool</h3>
