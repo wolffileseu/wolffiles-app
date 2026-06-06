@@ -358,6 +358,7 @@ class ClanManageController extends Controller
                 'role_label' => $data['role_label'] ?? $existing->role_label,
                 'squad_id'   => $data['squad_id'] ?? $existing->squad_id,
             ]);
+            $managedClan->trackerClan->recalcMemberCounts();
             return back()->with('success', __('Member re-added.'));
         }
 
@@ -373,6 +374,7 @@ class ClanManageController extends Controller
             'joined_at'  => now(),
         ]);
 
+        $managedClan->trackerClan->recalcMemberCounts();
         return back()->with('success', __('Member added.'));
     }
 
