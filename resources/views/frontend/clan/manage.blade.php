@@ -3,7 +3,7 @@
     $tc = $clan->trackerClan;
     $isOwner = $manager->role === 'leader';
     $isAdmin = in_array($manager->role, ['leader','owner']);
-    $roleLabels = ['Leader','Co-Leader','Recruiter','Member','Trial','Inactive'];
+    $roleLabels = ['Owner','Leader','Co-Leader','Staff','Recruiter','Member','Trial','Inactive'];
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 py-8" x-data="{ tab: 'content' }">
