@@ -161,11 +161,15 @@ class WeaponStatsHandler extends AbstractHandler
             // Compute delta. We use 'hits' as the growth-direction sentinel
             // (in ET it monotonically increases within a match).
             if ($previous !== null && $previous->hits <= $w['hits']) {
-                $deltaHits      = $w['hits']      - $previous->hits;
-                $deltaAtts      = $w['atts']      - $previous->atts;
-                $deltaKills     = $w['kills']     - $previous->kills;
-                $deltaDeaths    = $w['deaths']    - $previous->deaths;
-                $deltaHeadshots = $w['headshots'] - $previous->headshots;
+                // Clamp each delta at 0: a cumulative lifetime total must
+                // never shrink from a single ws packet. A negative delta
+                // (counter regression / packet anomaly) would otherwise be
+                // written into an UNSIGNED column -> MySQL error 1264.
+                $deltaHits      = max(0, $w['hits']      - $previous->hits);
+                $deltaAtts      = max(0, $w['atts']      - $previous->atts);
+                $deltaKills     = max(0, $w['kills']     - $previous->kills);
+                $deltaDeaths    = max(0, $w['deaths']    - $previous->deaths);
+                $deltaHeadshots = max(0, $w['headshots'] - $previous->headshots);
             } else {
                 // No prior snapshot OR values regressed -> treat as fresh growth.
                 $deltaHits      = $w['hits'];
@@ -276,8 +280,11 @@ class WeaponStatsHandler extends AbstractHandler
             $totalHeadshots += $w['headshots'];
         }
 
+        // Clamp to 0..100: a percentage > 100 means the parser fed us
+        // garbage (atts < hits / shifted field). Must never reach the
+        // decimal(5,2) column unbounded -> MySQL error 1264.
         $accuracyPct = $totalAtts > 0
-            ? round($totalHits * 100 / $totalAtts, 2)
+            ? min(100, max(0, round($totalHits * 100 / $totalAtts, 2)))
             : 0.00;
 
         $damage = $parsed['damage'] ?? [];
@@ -335,7 +342,7 @@ class WeaponStatsHandler extends AbstractHandler
                 'self_kills' => $damage['self_kills'] ?? 0,
                 'team_gibs' => $damage['team_gibs'] ?? 0,
 
-                'time_played_pct' => $parsed['time_played_pct'],
+                'time_played_pct' => min(100, max(0, (float) $parsed['time_played_pct'])),
                 'ping_avg' => $client['ping'] ?? 0,
                 'score' => $client['score'] ?? 0,
 

@@ -117,12 +117,11 @@ class TrackerServer extends Model
         return $query->where(function ($q) {
             // Normal active / pending servers
             $q->whereIn('status', ['active', 'pending'])
-              // OR established servers that were deactivated by cleanup
-              ->orWhere(function ($q2) {
-                  $q2->where('status', 'inactive')
-                     ->whereNotNull('last_seen_at')
-                     ->where('first_seen_at', '<=', now()->subDay());
-              })
+              // NOTE: 'inactive' servers are intentionally NOT polled.
+              // Cleanup deactivates dead servers; they only return to the
+              // poll loop when a human re-adds them (status -> active) or
+              // discovery sees a 'removed' server re-register. This keeps
+              // long-dead servers out of the rotation permanently.
               // OR servers currently sending enhanced tracker events
               ->orWhere(function ($q3) {
                   $q3->where('is_enhanced_tracker', true)
