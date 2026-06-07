@@ -332,15 +332,18 @@ class WeaponStatsHandler extends AbstractHandler
                 'accuracy_pct' => $accuracyPct,
                 'weapon_bitmask' => $parsed['weapon_mask'],
 
-                'damage_given' => $damage['given'] ?? 0,
-                'damage_received' => $damage['received'] ?? 0,
-                'team_damage_given' => $damage['team_given'] ?? 0,
-                'team_damage_received' => $damage['team_received'] ?? 0,
-                'team_kills' => $damage['team_kills'] ?? 0,
-                'gibs' => $damage['gibs'] ?? 0,
-                'kill_assists' => $damage['kill_assists'] ?? 0,
-                'self_kills' => $damage['self_kills'] ?? 0,
-                'team_gibs' => $damage['team_gibs'] ?? 0,
+                // Clamp all damage-block counters at 0: parser anomalies
+                // produced negative/garbage values written into UNSIGNED
+                // columns -> MySQL error 1264 (first seen on 'gibs').
+                'damage_given' => max(0, (int) ($damage['given'] ?? 0)),
+                'damage_received' => max(0, (int) ($damage['received'] ?? 0)),
+                'team_damage_given' => max(0, (int) ($damage['team_given'] ?? 0)),
+                'team_damage_received' => max(0, (int) ($damage['team_received'] ?? 0)),
+                'team_kills' => max(0, (int) ($damage['team_kills'] ?? 0)),
+                'gibs' => max(0, (int) ($damage['gibs'] ?? 0)),
+                'kill_assists' => max(0, (int) ($damage['kill_assists'] ?? 0)),
+                'self_kills' => max(0, (int) ($damage['self_kills'] ?? 0)),
+                'team_gibs' => max(0, (int) ($damage['team_gibs'] ?? 0)),
 
                 'time_played_pct' => min(100, max(0, (float) $parsed['time_played_pct'])),
                 'ping_avg' => $client['ping'] ?? 0,
