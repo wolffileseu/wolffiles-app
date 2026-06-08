@@ -1,4 +1,4 @@
-<x-layouts.app :title="'[' . ($registered->tag ?? $clan->tag_clean) . '] ' . ($registered->name ?? $clan->name ?? $clan->tag_clean) . ' - Wolffiles'">
+<x-layouts.app :title="'[' . ($registered->tag ?? $clan->tag_clean) . '] ' . ($registered->name ?? $clan->name ?? $clan->tag_clean)">
 @php
     $tagDisplay = $registered?->tag_display ?: ("[" . $clan->tag_clean . "]");
     $clanName   = $registered->name ?? $clan->name ?? 'Unknown Clan';
