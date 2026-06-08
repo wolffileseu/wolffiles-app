@@ -347,7 +347,9 @@ class WeaponStatsHandler extends AbstractHandler
 
                 'time_played_pct' => min(100, max(0, (float) $parsed['time_played_pct'])),
                 'ping_avg' => $client['ping'] ?? 0,
-                'score' => $client['score'] ?? 0,
+                // Score can legitimately be NEGATIVE (teamkills/self-kills).
+                // Clamp to signed int range only -- never max(0,...).
+                'score' => max(-2147483648, min(2147483647, (int) ($client['score'] ?? 0))),
 
                 'skill_rating' => $skillRating,
                 'skill_rating_delta' => $skillRatingDelta,
