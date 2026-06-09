@@ -74,7 +74,7 @@
                             <textarea id="clan-description-editor" name="description" rows="6" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('description', $clan->description) }}</textarea>
                         </div>
                         <div>
-                            <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Server Rules</label>
+                            <label class="block text-xs uppercase tracking-wide text-gray-400 mb-1.5">Clan Rules</label>
                             <x-bbcode-toolbar target="clan-rules-editor" />
                             <textarea id="clan-rules-editor" name="rules" rows="5" class="w-full bg-gray-900 border border-gray-600 text-gray-200 px-3 py-2 rounded-b-lg text-sm font-mono focus:outline-none focus:border-amber-500">{{ old('rules', $clan->rules) }}</textarea>
                         </div>

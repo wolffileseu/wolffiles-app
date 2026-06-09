@@ -354,7 +354,7 @@ class TrackerController extends Controller
         }
         abort_unless($server, 404);
 
-        $server->load(['game', 'settings']);
+        $server->load(['game', 'settings', 'clan', 'claimedByUser', 'addedBy']);
 
         // Current players from latest snapshots
         $activeSessions = $server->sessions()

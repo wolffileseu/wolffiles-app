@@ -33,6 +33,17 @@ $canManageServer = auth()->check() && (
                     <span style="border-left: 3px solid {{ $server->game->color }}" class="pl-2">{{ $server->game->short_name }}</span>
                     @if($server->mod_name)<span class="inline-flex items-center gap-1"><x-mod-icon :mod="$server->mod_name" size="xs" />@if($server->mod_version)<span class="text-gray-500 text-xs">{{ $server->mod_version }}</span>@endif</span>@endif
                     @if($server->country_code)<x-country-flag :code="$server->country_code" :country="$server->country" /> {{ $server->country }}@endif
+                    @if($server->clan)
+                        <span class="inline-flex items-center gap-1">Operator:
+                            <a href="{{ route('clan.show', $server->clan->tracker_clan_id ?: $server->clan->slug) }}" class="text-amber-400 hover:text-amber-300 font-medium">{{ $server->clan->display_tag }} {{ $server->clan->name }}</a>
+                        </span>
+                    @elseif($server->claimedByUser)
+                        <span class="inline-flex items-center gap-1">Operator:
+                            <a href="{{ route('profile.show', $server->claimedByUser->id) }}" class="text-amber-400 hover:text-amber-300 font-medium">{{ $server->claimedByUser->name }}</a>
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1">Operator: <span class="text-gray-500 italic">Unknown</span></span>
+                    @endif
                     @if($server->latency_ms !== null)
                         @php
                             $ping = (int) $server->latency_ms;

@@ -123,7 +123,7 @@ class Clan extends Model
         return match ($this->founded_label) {
             'since'       => 'since',
             'established' => 'established in',
-            default       => 'founded',
+            default       => 'founded in',
         };
     }
 
