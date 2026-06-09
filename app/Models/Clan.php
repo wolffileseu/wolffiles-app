@@ -15,7 +15,7 @@ class Clan extends Model
     protected $fillable = [
         "name", "tag", "slug", "description", "website",
         "logo", "banner", "contact_discord", "contact_email", "ts_address",
-        "rules", "location", "founded", "is_active",
+        "rules", "location", "founded", "founded_label", "is_active",
         "tracker_clan_id", "tag_display", "is_published", "is_recruiting", "recruitment_summary", "view_count",
     ];
 
@@ -116,6 +116,24 @@ class Clan extends Model
                 $q->where('hostname_clean', 'LIKE', $like)
                   ->orWhere('hostname', 'LIKE', $like);
             });
+    }
+
+    /** Inline prefix used before the founded value, e.g. "founded", "since", "established in". */
+    public function getFoundedPrefixAttribute(): string {
+        return match ($this->founded_label) {
+            'since'       => 'since',
+            'established' => 'established in',
+            default       => 'founded',
+        };
+    }
+
+    /** Heading label for the detail table, e.g. "Founded", "Since", "Established". */
+    public function getFoundedHeadingAttribute(): string {
+        return match ($this->founded_label) {
+            'since'       => 'Since',
+            'established' => 'Established',
+            default       => 'Founded',
+        };
     }
 
     // --- Scopes ---

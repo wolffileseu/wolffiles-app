@@ -36,7 +36,7 @@
                     <div class="text-xs text-gray-500 mt-0.5">
                         @if($clan->location){{ $clan->location }}@endif
                         @if($clan->location && $clan->founded) · @endif
-                        @if($clan->founded)since {{ $clan->founded }}@endif
+                        @if($clan->founded){{ $clan->founded_prefix }} {{ $clan->founded }}@endif
                     </div>
                 </div>
             </div>

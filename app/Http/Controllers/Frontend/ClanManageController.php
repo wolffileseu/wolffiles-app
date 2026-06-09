@@ -100,6 +100,7 @@ class ClanManageController extends Controller
             'rules'               => 'nullable|string|max:20000',
             'location'            => 'nullable|string|max:255',
             'founded'             => 'nullable|string|max:50',
+            'founded_label'       => 'nullable|in:founded,since,established',
             'website'             => 'nullable|url|max:255',
             'contact_discord'     => 'nullable|string|max:255',
             'ts_address'          => 'nullable|string|max:255',

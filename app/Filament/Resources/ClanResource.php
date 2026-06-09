@@ -69,6 +69,10 @@ class ClanResource extends Resource
                 Forms\Components\Textarea::make('recruitment_summary')->rows(3)->columnSpanFull(),
                 Forms\Components\TextInput::make('location')->maxLength(255),
                 Forms\Components\TextInput::make('founded')->maxLength(50)->placeholder('e.g. 2008'),
+                Forms\Components\Select::make('founded_label')->label('Date label')
+                    ->options(['founded' => 'founded …', 'since' => 'since …', 'established' => 'established in …'])
+                    ->default('founded')->selectablePlaceholder(false)
+                    ->helperText('How the date is introduced on the public profile.'),
             ])->columns(2),
 
             // ---------- Contact / Links ----------

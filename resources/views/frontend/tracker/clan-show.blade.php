@@ -47,7 +47,7 @@
                 </div>
                 <div class="flex items-center gap-3 mt-1 text-sm text-gray-400 flex-wrap">
                     @if($registered?->location)<span>{{ $registered->location }}</span>@endif
-                    @if($registered?->founded)<span>&middot; founded {{ $registered->founded }}</span>
+                    @if($registered?->founded)<span>&middot; {{ $registered->founded_prefix }} {{ $registered->founded }}</span>
                     @elseif($clan->first_seen_at)<span>&middot; since {{ $clan->first_seen_at->format('M Y') }}</span>@endif
                 </div>
             </div>
@@ -157,7 +157,7 @@
                         <tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Members</td><td class="px-4 py-2.5 text-gray-300">{{ $clan->member_count }}</td></tr>
                         @if($isClaimed)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Recruiting</td><td class="px-4 py-2.5">@if($registered->is_recruiting)<span class="text-green-400">YES</span>@else<span class="text-gray-500">NO</span>@endif</td></tr>@endif
                         @if($registered?->ts_address)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">TS / Vent</td><td class="px-4 py-2.5 text-gray-300 font-mono text-xs">{{ $registered->ts_address }}</td></tr>@endif
-                        @if($registered?->founded)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">Founded</td><td class="px-4 py-2.5 text-gray-300">{{ $registered->founded }}</td></tr>@endif
+                        @if($registered?->founded)<tr><td class="px-4 py-2.5 text-gray-500 uppercase text-xs">{{ $registered->founded_heading }}</td><td class="px-4 py-2.5 text-gray-300">{{ $registered->founded }}</td></tr>@endif
                     </tbody>
                 </table>
             </div>
