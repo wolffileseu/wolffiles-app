@@ -629,6 +629,17 @@ class TrackerController extends Controller
      */
     public function playerShow(TrackerPlayer $player)
     {
+        // Merged player → redirect to canonical target (follow chains, max 5 hops).
+        if ($player->merged_into) {
+            $target = (int) $player->merged_into;
+            for ($i = 0; $i < 5; $i++) {
+                $next = \App\Models\Tracker\TrackerPlayer::where('id', $target)->value('merged_into');
+                if (!$next) break;
+                $target = (int) $next;
+            }
+            return redirect()->route('tracker.player.show', $target, 301);
+        }
+
         $player->load(['aliases', 'clanMemberships.clan']);
 
         // Activity timeline — built below when we have enhanced data.
