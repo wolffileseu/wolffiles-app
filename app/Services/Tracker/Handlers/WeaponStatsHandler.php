@@ -101,6 +101,20 @@ class WeaponStatsHandler extends AbstractHandler
 
         $playerId = (int) $slotRow->player_id;
 
+        // Persist the player's current class onto the open slot row so the
+        // live player list can show it. class comes from the ws clientinfo
+        // (\ping\score\P\class\name). Done BEFORE the match check below
+        // because class is valid even during warmup / between maps, when
+        // there is no open match. ET only — RtCW never sends ws.
+        $wsClass = $parsed['client']['class'] ?? null;
+        if ($wsClass !== null && $wsClass !== '') {
+            DB::table('tracker_server_slots')
+                ->where('server_id', $serverId)
+                ->where('slot', $parsed['slot'])
+                ->whereNull('disconnected_at')
+                ->update(['class' => (int) $wsClass, 'updated_at' => now()]);
+        }
+
         // Find the currently-open match for this server. Without an open
         // match we can't attribute per-match stats — ws packets during
         // warmup or between maps are discarded.

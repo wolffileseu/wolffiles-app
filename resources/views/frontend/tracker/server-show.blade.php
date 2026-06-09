@@ -209,6 +209,7 @@ $canManageServer = auth()->check() && (
                         <tr>
                             <th class="px-4 py-2 w-6"></th>
                             <th class="px-4 py-2">{{ __('messages.players') }}</th>
+                            <th class="px-4 py-2 text-center">Class</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.score') }}</th>
                             <th class="px-4 py-2 text-center">Ping</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.duration') }}</th>
@@ -223,7 +224,7 @@ $canManageServer = auth()->check() && (
                     <template x-if="players.filter(p => (p.team || null) === group.key).length > 0">
                     <tbody class="divide-y divide-gray-700/50">
                         <tr :class="group.bg">
-                            <td :colspan="5" class="px-4 py-1.5">
+                            <td :colspan="6" class="px-4 py-1.5">
                                 <span class="font-semibold text-xs uppercase tracking-wider" :class="group.color"
                                       x-text="group.label + ' (' + players.filter(p => (p.team || null) === group.key).length + ')'"></span>
                             </td>
@@ -243,6 +244,17 @@ $canManageServer = auth()->check() && (
                             <td class="px-4 py-2">
                                 <a x-show="p.player_url" :href="p.player_url" class="text-amber-400 hover:text-amber-300" x-html="p.player_name"></a>
                                 <span x-show="!p.player_url" class="text-gray-400" x-html="p.player_name"></span>
+                            </td>
+                            <td class="px-4 py-2 text-center">
+                                <template x-if="p.class !== null && p.class !== undefined && [0,1,2,3,4].includes(p.class)">
+                                    <img :src="'/images/classes/class-' + {0:'soldier',1:'medic',2:'engineer',3:'fieldops',4:'covertops'}[p.class] + '.png'"
+                                         :alt="{0:'Soldier',1:'Medic',2:'Engineer',3:'Field Ops',4:'Covert Ops'}[p.class]"
+                                         :title="{0:'Soldier',1:'Medic',2:'Engineer',3:'Field Ops',4:'Covert Ops'}[p.class]"
+                                         class="inline-block w-4 h-4 opacity-80" loading="lazy">
+                                </template>
+                                <template x-if="p.class === null || p.class === undefined || ![0,1,2,3,4].includes(p.class)">
+                                    <span class="text-gray-600">-</span>
+                                </template>
                             </td>
                             <td class="px-4 py-2 text-center text-gray-300" x-text="p.score"></td>
                             <td class="px-4 py-2 text-center text-xs">

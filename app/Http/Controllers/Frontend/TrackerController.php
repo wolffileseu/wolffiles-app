@@ -1186,6 +1186,27 @@ class TrackerController extends Controller
             }
         }
 
+        // Live class per player from the open slot rows (ET enhanced only).
+        // Slot rows carry the most recent class from ws packets; RtCW/non-
+        // enhanced servers never set it, so this map stays empty there.
+        $latestClasses = [];
+        $playerIds = $sessions->pluck('player_id')->filter()->all();
+        if (!empty($playerIds)) {
+            $slotClassRows = \DB::table('tracker_server_slots')
+                ->where('server_id', $server->id)
+                ->whereNull('disconnected_at')
+                ->whereIn('player_id', $playerIds)
+                ->whereNotNull('class')
+                ->orderByDesc('connected_at')
+                ->get(['player_id', 'class']);
+            foreach ($slotClassRows as $r) {
+                // first wins = most recent open slot for that player
+                if (!array_key_exists($r->player_id, $latestClasses)) {
+                    $latestClasses[$r->player_id] = (int) $r->class;
+                }
+            }
+        }
+
         $humanPlayers = $sessions->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
             'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
             'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
@@ -1194,6 +1215,7 @@ class TrackerController extends Controller
             'score'        => (int) $s->score,
             'ping'         => $latestPings[$s->id] ?? null,
             'team'         => $latestTeams[$s->id] ?? null,
+            'class'        => $latestClasses[$s->player_id] ?? null,
             'duration'     => $s->duration_minutes . 'm',
             'is_bot'       => false,
         ])->all();
@@ -1231,6 +1253,7 @@ class TrackerController extends Controller
                             'score'        => (int) ($p['score'] ?? 0),
                             'ping'         => 0,              // render as "BOT" badge in UI
                             'team'         => $p['team'] ?? null,
+                            'class'        => null,
                             'duration'     => '-',
                             'is_bot'       => true,
                         ];
