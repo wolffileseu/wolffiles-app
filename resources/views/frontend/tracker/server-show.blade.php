@@ -210,6 +210,8 @@ $canManageServer = auth()->check() && (
                             <th class="px-4 py-2 w-6"></th>
                             <th class="px-4 py-2">{{ __('messages.players') }}</th>
                             <th class="px-4 py-2 text-center">Class</th>
+                            <th class="px-4 py-2 text-center text-green-400">K</th>
+                            <th class="px-4 py-2 text-center text-red-400">D</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.score') }}</th>
                             <th class="px-4 py-2 text-center">Ping</th>
                             <th class="px-4 py-2 text-center">{{ __('messages.duration') }}</th>
@@ -224,7 +226,7 @@ $canManageServer = auth()->check() && (
                     <template x-if="players.filter(p => (p.team || null) === group.key).length > 0">
                     <tbody class="divide-y divide-gray-700/50">
                         <tr :class="group.bg">
-                            <td :colspan="6" class="px-4 py-1.5">
+                            <td :colspan="8" class="px-4 py-1.5">
                                 <span class="font-semibold text-xs uppercase tracking-wider" :class="group.color"
                                       x-text="group.label + ' (' + players.filter(p => (p.team || null) === group.key).length + ')'"></span>
                             </td>
@@ -255,6 +257,14 @@ $canManageServer = auth()->check() && (
                                 <template x-if="p.class === null || p.class === undefined || ![0,1,2,3,4].includes(p.class)">
                                     <span class="text-gray-600">-</span>
                                 </template>
+                            </td>
+                            <td class="px-4 py-2 text-center text-gray-300">
+                                <span x-show="p.kills !== null && p.kills !== undefined" class="text-green-400 font-medium" x-text="p.kills"></span>
+                                <span x-show="p.kills === null || p.kills === undefined" class="text-gray-600">-</span>
+                            </td>
+                            <td class="px-4 py-2 text-center text-gray-300">
+                                <span x-show="p.deaths !== null && p.deaths !== undefined" class="text-red-400 font-medium" x-text="p.deaths"></span>
+                                <span x-show="p.deaths === null || p.deaths === undefined" class="text-gray-600">-</span>
                             </td>
                             <td class="px-4 py-2 text-center text-gray-300" x-text="p.score"></td>
                             <td class="px-4 py-2 text-center text-xs">

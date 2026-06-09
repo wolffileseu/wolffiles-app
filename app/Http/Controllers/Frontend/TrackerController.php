@@ -1207,18 +1207,53 @@ class TrackerController extends Controller
             }
         }
 
-        $humanPlayers = $sessions->map(fn(\App\Models\Tracker\TrackerPlayerSession $s) => [
-            'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
-            'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
-            'country_code' => $s->player?->country_code,
-            'country'      => $s->player?->country,
-            'score'        => (int) $s->score,
-            'ping'         => $latestPings[$s->id] ?? null,
-            'team'         => $latestTeams[$s->id] ?? null,
-            'class'        => $latestClasses[$s->player_id] ?? null,
-            'duration'     => $s->duration_minutes . 'm',
-            'is_bot'       => false,
-        ])->all();
+        // Live K/D (+ class fallback) from the open match's per-player stats
+        // (ET enhanced only). Keyed by clean-name because match_stats.player_id
+        // can diverge from the session player_id (Poller vs Enhanced identity).
+        // Map: cleanName => ['class'=>int|null,'kills'=>int,'deaths'=>int]
+        $matchStatsByName = [];
+        if ($server->is_enhanced_tracker) {
+            $openMatch = \DB::table('tracker_matches')
+                ->where('server_id', $server->id)
+                ->whereNull('ended_at')
+                ->orderByDesc('started_at')
+                ->first(['id']);
+            if ($openMatch) {
+                $msRows = \DB::table('tracker_player_match_stats')
+                    ->where('match_id', $openMatch->id)
+                    ->get(['name_clean_snapshot', 'class', 'kills', 'deaths']);
+                foreach ($msRows as $r) {
+                    $key = mb_strtolower(\App\Services\Tracker\ColorCodeService::toClean($r->name_clean_snapshot ?? ''));
+                    if ($key === '') continue;
+                    // last write wins (rows share one ws-sync timestamp anyway)
+                    $matchStatsByName[$key] = [
+                        'class'  => $r->class !== null ? (int) $r->class : null,
+                        'kills'  => (int) $r->kills,
+                        'deaths' => (int) $r->deaths,
+                    ];
+                }
+            }
+        }
+
+        $humanPlayers = $sessions->map(function (\App\Models\Tracker\TrackerPlayerSession $s) use ($latestPings, $latestTeams, $latestClasses, $matchStatsByName) {
+            $nameKey = mb_strtolower(\App\Services\Tracker\ColorCodeService::toClean($s->player?->name_clean ?? ''));
+            $ms = $matchStatsByName[$nameKey] ?? null;
+            return [
+                'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
+                'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
+                'country_code' => $s->player?->country_code,
+                'country'      => $s->player?->country,
+                'score'        => (int) $s->score,
+                'ping'         => $latestPings[$s->id] ?? null,
+                'team'         => $latestTeams[$s->id] ?? null,
+                // class: prefer match_stats (consistent), fall back to slot-class
+                'class'        => $ms['class'] ?? $latestClasses[$s->player_id] ?? null,
+                'kills'        => $ms['kills'] ?? null,
+                'deaths'       => $ms['deaths'] ?? null,
+                'duration'     => $s->duration_minutes . 'm',
+                'is_bot'       => false,
+            ];
+        })->all();
 
         // ---- Bots: pulled live from the server, cached 60s to avoid UDP-spamming ----
         // Bots don't get tracked in the DB (generic names, no aliases, no statistics).
@@ -1254,6 +1289,8 @@ class TrackerController extends Controller
                             'ping'         => 0,              // render as "BOT" badge in UI
                             'team'         => $p['team'] ?? null,
                             'class'        => null,
+                            'kills'        => null,
+                            'deaths'       => null,
                             'duration'     => '-',
                             'is_bot'       => true,
                         ];
