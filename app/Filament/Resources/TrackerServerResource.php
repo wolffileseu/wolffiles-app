@@ -84,7 +84,7 @@ class TrackerServerResource extends Resource
                     Forms\Components\Toggle::make('is_online'),
                     Forms\Components\Toggle::make('is_manually_added'),
                     Forms\Components\Select::make('status')
-                        ->options(['active' => 'Active', 'inactive' => 'Inactive', 'removed' => 'Removed', 'banned' => 'Banned'])
+                        ->options(['active' => 'Active', 'inactive' => 'Inactive', 'pending' => 'Pending', 'removed' => 'Removed', 'banned' => 'Banned'])
                         ->default('active'),
                 ])->columns(3),
 
@@ -158,7 +158,7 @@ class TrackerServerResource extends Resource
                     ->label('Game'),
                 Tables\Filters\TernaryFilter::make('is_online')->label('Online'),
                 Tables\Filters\SelectFilter::make('status')
-                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'removed' => 'Removed', 'banned' => 'Banned']),
+                    ->options(['active' => 'Active', 'inactive' => 'Inactive', 'pending' => 'Pending', 'removed' => 'Removed', 'banned' => 'Banned']),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

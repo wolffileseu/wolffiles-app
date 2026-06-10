@@ -34,6 +34,16 @@ class ServerLifecycleHandler extends AbstractHandler
             return;
         }
 
+        // Banned servers: link the event so the job can mark it processed,
+        // but do NOT promote/keep-alive them. Skipping the enhanced UPDATE
+        // below keeps enhanced_last_event_at stale so scopePollable() never
+        // re-enters them, and the early return stops downstream handlers
+        // (presence/kills/weapon stats) from running for a banned server.
+        if (DB::table('tracker_servers')->where('id', $serverId)->value('status') === 'banned') {
+            $event->update(['server_id' => $serverId]);
+            return;
+        }
+
         // Single statement collapses the previous three sequential UPDATEs
         // (last_event_at, event_count increment, first-packet flip) into one.
         // COALESCE preserves the "set first_seen / source_ip only on the first

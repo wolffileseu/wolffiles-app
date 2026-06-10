@@ -114,7 +114,10 @@ class TrackerServer extends Model
      */
     public function scopePollable($query)
     {
-        return $query->where(function ($q) {
+        // Banned servers are never polled, regardless of how they would
+        // otherwise qualify (active/pending status OR a live enhanced
+        // tracker stream). This outer guard wraps both arms below.
+        return $query->where('status', '!=', 'banned')->where(function ($q) {
             // Normal active / pending servers
             $q->whereIn('status', ['active', 'pending'])
               // NOTE: 'inactive' servers are intentionally NOT polled.

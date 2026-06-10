@@ -9,6 +9,7 @@ use App\Services\Tracker\Handlers\PlayerAliasHandler;
 use App\Services\Tracker\Handlers\PlayerPresenceHandler;
 use App\Services\Tracker\Handlers\ServerLifecycleHandler;
 use App\Services\Tracker\Handlers\WeaponStatsHandler;
+use App\Services\Tracker\Handlers\KillHandler;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -76,10 +77,21 @@ class ProcessTrackerEventJob implements ShouldQueue
             // Refresh to see server_id set by the handler above
             $event->refresh();
 
+            // Skip command-specific handling for banned servers. The
+            // ServerLifecycleHandler already linked server_id but did not
+            // promote the server; running presence/kill/weapon handlers
+            // would re-populate players and stats for a banned server.
+            $serverBanned = $event->server_id !== null
+                && \Illuminate\Support\Facades\DB::table('tracker_servers')
+                    ->where('id', $event->server_id)
+                    ->value('status') === 'banned';
+
             // Step 2 — command-specific handling
-            $handler = $this->resolveHandler($event->cmd);
-            if ($handler !== null) {
-                $handler->handle($event);
+            if (!$serverBanned) {
+                $handler = $this->resolveHandler($event->cmd);
+                if ($handler !== null) {
+                    $handler->handle($event);
+                }
             }
 
             // Step 3 — done
@@ -115,6 +127,7 @@ class ProcessTrackerEventJob implements ShouldQueue
             new PlayerAliasHandler(),
             new MatchLifecycleHandler(),
             new WeaponStatsHandler(),
+            new KillHandler(),
         ];
 
         foreach ($handlers as $handler) {
