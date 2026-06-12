@@ -954,5 +954,32 @@
 
 
 @endif
+@if(($classTotal ?? 0) > 0)
+<div class="bg-gray-800 rounded-lg p-6 mb-6">
+    <h2 class="text-lg font-bold text-white mb-4">{{ __('Class Distribution') }}</h2>
+    <div class="space-y-3">
+        @foreach($classStats as $cs)
+            @php $pct = (int) round($cs['matches'] / $classTotal * 100); @endphp
+            <div>
+                <div class="flex justify-between text-sm mb-1">
+                    <span class="text-amber-400 font-semibold">{{ $cs['name'] }}</span>
+                    <span class="text-gray-400">
+                        {{ $pct }}% &middot; {{ number_format($cs['matches']) }} {{ __('matches') }}
+                        @if(($cs['kills'] + $cs['deaths']) > 0)
+                            &middot; K/D {{ $cs['deaths'] > 0 ? number_format($cs['kills'] / $cs['deaths'], 2) : '&infin;' }}
+                            @if($cs['headshots'] > 0)
+                                &middot; {{ number_format($cs['headshots']) }} HS
+                            @endif
+                        @endif
+                    </span>
+                </div>
+                <div class="h-2 bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-amber-500" style="width: {{ $pct }}%"></div>
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+@endif
 </div>
 </x-layouts.app>

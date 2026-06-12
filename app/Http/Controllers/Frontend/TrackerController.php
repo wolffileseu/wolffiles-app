@@ -991,7 +991,29 @@ class TrackerController extends Controller
                 ->max('prestige');
         }
 
+        // Class distribution (Enhanced players only — match_stats carry the class).
+        // Kills/deaths/headshots come from weapon_stats, pre-aggregated per match
+        // to avoid the one-row-per-weapon fan-out, then summed per class.
+        $wsAgg = \DB::raw('(SELECT match_id, player_id, SUM(kills) k, SUM(deaths) d, SUM(headshots) h '
+            . 'FROM tracker_match_player_weapon_stats GROUP BY match_id, player_id) w');
+        $classStats = \DB::table('tracker_player_match_stats as m')
+            ->leftJoin($wsAgg, function ($j) {
+                $j->on('w.match_id', '=', 'm.match_id')->on('w.player_id', '=', 'm.player_id');
+            })
+            ->where('m.player_id', $player->id)
+            ->selectRaw('m.class, COUNT(*) matches, COALESCE(SUM(w.k),0) kills, COALESCE(SUM(w.d),0) deaths, COALESCE(SUM(w.h),0) headshots')
+            ->groupBy('m.class')->orderByDesc('matches')->get()
+            ->map(fn($r) => [
+                'name'      => \App\Services\Tracker\TrackerClass::name((int) $r->class) ?? 'Unknown',
+                'matches'   => (int) $r->matches,
+                'kills'     => (int) $r->kills,
+                'deaths'    => (int) $r->deaths,
+                'headshots' => (int) $r->headshots,
+            ]);
+        $classTotal = $classStats->sum('matches');
+
         return view('frontend.tracker.player-show', compact(
+            'classStats', 'classTotal',
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteServersTotal', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',
             'latestMatch', 'latestMatchStats', 'latestMatchWeapons',
@@ -1258,7 +1280,10 @@ class TrackerController extends Controller
                 'ping'         => $latestPings[$s->id] ?? null,
                 'team'         => $latestTeams[$s->id] ?? null,
                 // class: prefer match_stats (consistent), fall back to slot-class
-                'class'        => $ms['class'] ?? $latestClasses[$s->player_id] ?? null,
+                // Spectators have no class
+                'class'        => (($latestTeams[$s->id] ?? null) === 'spectator')
+                    ? null
+                    : ($ms['class'] ?? $latestClasses[$s->player_id] ?? null),
                 'kills'        => $ms['kills'] ?? null,
                 'deaths'       => $ms['deaths'] ?? null,
                 'duration'     => $s->duration_minutes . 'm',
