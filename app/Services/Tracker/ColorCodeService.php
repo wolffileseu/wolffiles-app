@@ -4,47 +4,58 @@ namespace App\Services\Tracker;
 
 class ColorCodeService
 {
-    private static array $colorMap = [
-        '0' => '#000000', // black
-        '1' => '#FF0000', // red
-        '2' => '#00FF00', // green
-        '3' => '#FFFF00', // yellow
-        '4' => '#0000FF', // blue
-        '5' => '#00FFFF', // cyan
-        '6' => '#FF00FF', // magenta
-        '7' => '#FFFFFF', // white
-        '8' => '#FF8800', // orange
-        '9' => '#AAAAAA', // grey
-        'a' => '#FF4444', // light red
-        'b' => '#44FF44', // light green
-        'c' => '#4444FF', // light blue
-        'd' => '#44FFFF', // light cyan
-        'e' => '#FF44FF', // light magenta
-        'f' => '#EEEEEE', // light grey
-        'g' => '#CCAA00', // dark yellow / gold
-        'h' => '#996600', // dark orange / brown
-        'i' => '#CCCCCC', // silver
-        'j' => '#333333', // dark grey
-        'k' => '#666600', // olive
-        'l' => '#336633', // dark green
-        'm' => '#660000', // dark red
-        'n' => '#993300', // brown
-        'o' => '#FF6600', // bright orange
-        'p' => '#FF9900', // light orange
-        'q' => '#FFCC00', // gold
-        'r' => '#669900', // yellow-green
-        's' => '#009966', // teal
-        't' => '#0099CC', // steel blue
-        'u' => '#3366CC', // medium blue
-        'v' => '#6633CC', // purple
-        'w' => '#FFFFFF', // white
-        'x' => '#CC0000', // dark red
-        'y' => '#00CC00', // dark green
-        'z' => '#3399FF', // sky blue
-        '*' => '#FFFFFF', // white (reset)
-        '-' => '#FFFFFF', // white (reset)
-        '+' => '#FFFFFF', // white (reset)
+    /**
+     * ET:Legacy g_color_table (src/qcommon/q_math.c), 32 Eintraege, Index 0-31.
+     * Floats -> Hex via round(v * 255). Lookup-Index = (ord($c) - ord('0')) & 31
+     * (engine ColorIndex()). Ein Farbcode ist '^' + alphanumerisches Zeichen
+     * ([0-9A-Za-z]), gemaess Q_IsColorString().
+     */
+    private static array $colorTable = [
+        '#000000', // 0  black
+        '#FF0000', // 1  red
+        '#00FF00', // 2  green
+        '#FFFF00', // 3  yellow
+        '#0000FF', // 4  blue
+        '#00FFFF', // 5  cyan
+        '#FF00FF', // 6  purple
+        '#FFFFFF', // 7  white
+        '#FF8000', // 8  orange
+        '#808080', // 9  md.grey
+        '#BFBFBF', // 10 lt.grey
+        '#BFBFBF', // 11 lt.grey
+        '#008000', // 12 md.green
+        '#808000', // 13 md.yellow
+        '#000080', // 14 md.blue
+        '#800000', // 15 md.red
+        '#804000', // 16 md.orange
+        '#FF991A', // 17 lt.orange
+        '#008080', // 18 md.cyan
+        '#800080', // 19 md.purple
+        '#0080FF', // 20
+        '#8000FF', // 21
+        '#3399CC', // 22
+        '#CCFFCC', // 23
+        '#006633', // 24
+        '#FF0033', // 25
+        '#B31A1A', // 26
+        '#993300', // 27
+        '#CC9933', // 28
+        '#999933', // 29
+        '#FFFFBF', // 30
+        '#FFFF80', // 31
     ];
+
+    /**
+     * Resolve an ET color code character to a hex color (#RRGGBB).
+     * Returns null if the character is not a valid color code ([0-9A-Za-z]).
+     */
+    private static function colorForChar(string $c): ?string
+    {
+        if ($c === '' || $c[0] === '^') {
+            return null;
+        }
+        return self::$colorTable[(ord($c[0]) - 48) & 31];
+    }
 
     /**
      * Convert ET color codes (^1, ^2, etc.) to HTML spans.
@@ -52,22 +63,16 @@ class ColorCodeService
     public static function toHtml(string $text): string
     {
         $result = '';
-        $len = strlen($text);
+        $len    = strlen($text);
         $inSpan = false;
 
         for ($i = 0; $i < $len; $i++) {
-            if ($text[$i] === '^' && $i + 1 < $len) {
-                $code = strtolower($text[$i + 1]);
-                if (isset(self::$colorMap[$code])) {
-                    if ($inSpan) {
-                        $result .= '</span>';
-                    }
-                    $result .= '<span style="color:' . self::$colorMap[$code] . '">';
-                    $inSpan = true;
-                    $i++;
-                    continue;
+            if ($text[$i] === '^' && $i + 1 < $len && ($hex = self::colorForChar($text[$i + 1])) !== null) {
+                if ($inSpan) {
+                    $result .= '</span>';
                 }
-                // Unknown ^X code - skip both chars
+                $result .= '<span style="color:' . $hex . '">';
+                $inSpan  = true;
                 $i++;
                 continue;
             }
@@ -82,19 +87,33 @@ class ColorCodeService
     }
 
     /**
+     * Canonical identity key: strip colors, collapse whitespace,
+     * lowercase, trim. Used ONLY for guid_hash computation, never for display.
+     */
+    public static function normalizeKey(string $name): string
+    {
+        // toClean removes color codes (game-accurate). The result may still
+        // contain literal carets from ^^ escapes; strip those for identity only.
+        $clean = self::toClean($name);
+        $clean = str_replace('^', '', $clean);
+        $clean = preg_replace('/\s+/', ' ', $clean);
+        return mb_strtolower(trim($clean), 'UTF-8');
+    }
+
+    /**
      * Remove all ET color codes from text.
      */
     public static function toClean(string $text): string
     {
-        return preg_replace('/\^[^\s]/', '', $text);
+        return preg_replace('/\^[^\^]/', '', $text);
     }
 
     /**
-     * Get the color hex for a given code.
+     * Get the color hex for a given code character, or null if not a color code.
      */
     public static function getColor(string $code): ?string
     {
-        return self::$colorMap[strtolower($code)] ?? null;
+        return self::colorForChar($code);
     }
 
     /**
@@ -113,23 +132,18 @@ class ColorCodeService
     }
 
     /**
-     * Get RGB tuple for a color code character (0-9, a-z, etc.), or null if unknown.
+     * Get RGB tuple for a color code character, or null if not a color code.
      *
      * @return array{0:int,1:int,2:int}|null
      */
     public static function getRgb(string $code): ?array
     {
-        $code = strtolower($code);
-        if (!isset(self::$colorMap[$code])) {
-            return null;
-        }
-        return self::hexToRgb(self::$colorMap[$code]);
+        $hex = self::colorForChar($code);
+        return $hex === null ? null : self::hexToRgb($hex);
     }
 
     /**
      * Parse ET-color-coded text into segments with RGB colors.
-     * Intended for image renderers (banners, avatars) that need RGB tuples
-     * rather than HTML. Unknown ^X codes are swallowed silently (matches toHtml behavior).
      *
      * @param array{0:int,1:int,2:int} $defaultColor Starting color (default white).
      * @return list<array{text:string, color:array{0:int,1:int,2:int}}>
@@ -142,18 +156,12 @@ class ColorCodeService
         $len      = strlen($text);
 
         for ($i = 0; $i < $len; $i++) {
-            if ($text[$i] === '^' && $i + 1 < $len) {
-                $code = strtolower($text[$i + 1]);
-                if (isset(self::$colorMap[$code])) {
-                    if ($buffer !== '') {
-                        $segments[] = ['text' => $buffer, 'color' => $current];
-                        $buffer = '';
-                    }
-                    $current = self::hexToRgb(self::$colorMap[$code]);
-                    $i++;
-                    continue;
+            if ($text[$i] === '^' && $i + 1 < $len && ($hex = self::colorForChar($text[$i + 1])) !== null) {
+                if ($buffer !== '') {
+                    $segments[] = ['text' => $buffer, 'color' => $current];
+                    $buffer = '';
                 }
-                // Unknown ^X code — swallow both chars (matches toHtml behavior)
+                $current = self::hexToRgb($hex);
                 $i++;
                 continue;
             }
@@ -166,5 +174,4 @@ class ColorCodeService
 
         return $segments;
     }
-
 }
