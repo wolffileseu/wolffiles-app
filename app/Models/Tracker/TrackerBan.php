@@ -16,21 +16,47 @@ class TrackerBan extends Model
     protected $table = 'tracker_bans';
 
     protected $fillable = [
-        'player_id', 'guid_hash', 'ip_address',
-        'reason', 'source', 'banned_by',
-        'expires_at', 'is_active',
+        'player_id', 'guid_hash', 'guid_snapshot', 'ip_address',
+        'reason', 'public_reason', 'source', 'type', 'status',
+        'is_public', 'banned_by', 'source_report_id',
+        'expires_at', 'occurred_at', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_public' => 'boolean',
             'expires_at' => 'datetime',
+            'occurred_at' => 'datetime',
         ];
     }
 
     public function player(): BelongsTo { return $this->belongsTo(TrackerPlayer::class, 'player_id'); }
     public function bannedBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'banned_by'); }
+
+    public function sourceReport(): BelongsTo { return $this->belongsTo(\App\Models\Report::class, 'source_report_id'); }
+
+    public function evidence(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TrackerBanEvidence::class, 'ban_id');
+    }
+
+    public function publicEvidence(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TrackerBanEvidence::class, 'ban_id')->where('is_public', true);
+    }
+
+    public function servers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(TrackerServer::class, 'tracker_ban_servers', 'ban_id', 'server_id');
+    }
+
+    /** A ban is publicly visible only if flagged public, active, and has >=1 public evidence. */
+    public function isPubliclyVisible(): bool
+    {
+        return $this->is_public && $this->status === 'active' && $this->publicEvidence()->exists();
+    }
 
     public function isExpired(): bool
     {
