@@ -1,0 +1,10 @@
+<?php
+namespace App\Filament\Resources\TrackerBanResource\Pages;
+use App\Filament\Resources\TrackerBanResource;
+use Filament\Actions;
+use Filament\Resources\Pages\EditRecord;
+class EditTrackerBan extends EditRecord
+{
+    protected static string $resource = TrackerBanResource::class;
+    protected function getHeaderActions(): array { return [Actions\DeleteAction::make()]; }
+}
