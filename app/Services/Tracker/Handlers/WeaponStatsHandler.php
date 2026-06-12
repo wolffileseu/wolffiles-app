@@ -317,7 +317,13 @@ class WeaponStatsHandler extends AbstractHandler
                 $skillRatingDelta = (float) $rd;
             }
             if (is_numeric($pr) && !str_contains($pr, '.')) {
-                $prestige = (int) $pr;
+                // Prestige is realistically 0..~50. Out-of-range values mean the
+                // tail tokens were mis-ordered for this server's compilation
+                // (a rating/score leaked into the prestige slot). Treat as null
+                // rather than writing garbage that overflows the SMALLINT column
+                // (MySQL 1264). Same defensive pattern as the damage-block clamps.
+                $prCandidate = (int) $pr;
+                $prestige = ($prCandidate >= 0 && $prCandidate <= 1000) ? $prCandidate : null;
             }
         }
 
