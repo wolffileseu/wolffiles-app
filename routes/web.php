@@ -271,6 +271,8 @@ Route::middleware('auth')->group(function () {
 
     // Player Screenshots
     Route::post('/players/{player}/screenshots', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'upload'])->name('tracker.player.screenshot.upload');
+    Route::get('/players/{player}/report', [\App\Http\Controllers\Frontend\TrackerPlayerReportController::class, 'create'])->name('tracker.player.report.create');
+    Route::post('/players/{player}/report', [\App\Http\Controllers\Frontend\TrackerPlayerReportController::class, 'store'])->name('tracker.player.report.store');
     Route::put('/players/{player}/screenshots/{screenshot}', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'update'])->name('tracker.player.screenshot.update');
     Route::delete('/players/{player}/screenshots/{screenshot}', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'destroy'])->name('tracker.player.screenshot.destroy');
     Route::post('/players/{player}/screenshots/reorder', [\App\Http\Controllers\Frontend\PlayerScreenshotController::class, 'reorder'])->name('tracker.player.screenshot.reorder');
