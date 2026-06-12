@@ -24,6 +24,16 @@
                 {{ $label }}
             </a>
             @endforeach
+
+            {{-- Toggle filters: Enhanced / Flagged --}}
+            <a href="{{ route('tracker.players', array_merge(request()->except(['page','enhanced']), request('enhanced') ? [] : ['enhanced' => 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('enhanced') ? 'bg-emerald-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                &#9889; {{ __('Enhanced') }}
+            </a>
+            <a href="{{ route('tracker.players', array_merge(request()->except(['page','flagged']), request('flagged') ? [] : ['flagged' => 1])) }}"
+               class="px-3 py-2 rounded-lg text-sm transition {{ request('flagged') ? 'bg-red-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600' }}">
+                &#9888; {{ __('Flagged') }}
+            </a>
         </div>
     </div>
 
@@ -51,6 +61,9 @@
                                 {!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}
                                 @if($player->has_enhanced_data)
                                     <x-tracker-enhanced-badge class="ml-1 align-middle" />
+                                @endif
+                                @if($player->is_flagged)
+                                    <span class="ml-1 align-middle inline-flex items-center text-[10px] px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/50 uppercase tracking-wider font-bold" title="{{ __('Flagged') }}">&#9888;</span>
                                 @endif
                             </a>
                         </td>

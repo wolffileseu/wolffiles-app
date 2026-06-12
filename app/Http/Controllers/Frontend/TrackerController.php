@@ -609,6 +609,21 @@ class TrackerController extends Controller
             $query->where('country_code', $request->country);
         }
 
+        // Enhanced-only filter
+        if ($request->boolean('enhanced')) {
+            $query->where('has_enhanced_data', true);
+        }
+
+        // Flagged-only filter (public flags with public evidence)
+        if ($request->boolean('flagged')) {
+            $query->whereHas('bans', fn($q) => $q->where('is_public', true)
+                ->where('status', 'active')->whereHas('publicEvidence'));
+        }
+
+        // Marker for the flagged badge (single EXISTS subquery, no N+1)
+        $query->withExists(['bans as is_flagged' => fn($q) => $q->where('is_public', true)
+            ->where('status', 'active')->whereHas('publicEvidence')]);
+
         $sort = $request->get('sort', 'last_seen');
         $query = match($sort) {
             'elo' => $query->orderByDesc('elo_rating'),
@@ -1012,7 +1027,16 @@ class TrackerController extends Controller
             ]);
         $classTotal = $classStats->sum('matches');
 
+        // Public cheat flags: only active, public, with >=1 public evidence.
+        $publicFlags = $player->bans()
+            ->where('is_public', true)
+            ->where('status', 'active')
+            ->whereHas('publicEvidence')
+            ->with(['publicEvidence', 'servers'])
+            ->get();
+
         return view('frontend.tracker.player-show', compact(
+            'publicFlags',
             'classStats', 'classTotal',
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteServersTotal', 'favoriteMaps',
             'enhancedMatches', 'enhancedMatchesCount',

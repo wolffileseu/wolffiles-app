@@ -22,6 +22,12 @@
                         @if($player->is_bot)
                             <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-gray-500/20 text-gray-300 border border-gray-400/30 uppercase tracking-wider font-semibold">Bot</span>
                         @endif
+                        @if(!empty($publicFlags) && $publicFlags->isNotEmpty())
+                            <a href="#flagged" class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/50 uppercase tracking-wider font-bold hover:bg-red-500/30 transition"
+                               title="{{ $publicFlags->first()->public_reason }}">
+                                &#9888; {{ __('Flagged') }}
+                            </a>
+                        @endif
                         @if(!empty($prestigeLevel) && $prestigeLevel > 0)
                             <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider font-bold"
                                   title="{{ __('Prestige level :n', ['n' => $prestigeLevel]) }}">
@@ -98,6 +104,9 @@
                 <a href="{{ route('profile.show', auth()->user()) }}" class="ml-1 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg text-xs transition border border-gray-600">&larr; My Profile</a>
                 @else
                 <span class="px-3 py-1.5 bg-gray-700 text-gray-500 rounded-lg text-xs">&#x2713; Claimed</span>
+                @endif
+                @if($player->claimed_by_user_id !== auth()->id())
+                <a href="{{ route('tracker.player.report.create', $player) }}" class="mt-1 inline-block px-3 py-1.5 bg-red-900/30 hover:bg-red-900/50 text-red-300 rounded-lg text-xs transition border border-red-500/30">&#9888; {{ __('Report Player') }}</a>
                 @endif
                 </div>
                 @endauth
@@ -954,6 +963,41 @@
 
 
 @endif
+@if(!empty($publicFlags) && $publicFlags->isNotEmpty())
+<div id="flagged" class="bg-red-950/40 border border-red-500/40 rounded-lg p-4 sm:p-6 mb-4 sm:mb-6">
+    <h2 class="text-base sm:text-lg font-bold text-red-300 mb-2 flex items-center gap-2">&#9888; {{ __('Flagged Player') }}</h2>
+    @foreach($publicFlags as $flag)
+        <div class="mb-4 last:mb-0">
+            <div class="text-red-200 font-semibold">{{ $flag->public_reason ?: __('Flagged for cheating') }}</div>
+            @if($flag->servers->isNotEmpty())
+                <div class="text-xs text-gray-400 mt-1">{{ __('Servers') }}:
+                    {{ $flag->servers->map(fn($s) => $s->hostname_clean ?: $s->hostname ?: ('Server #'.$s->id))->implode(', ') }}
+                </div>
+            @endif
+            @if($flag->publicEvidence->isNotEmpty())
+                <div class="flex flex-wrap gap-3 mt-3">
+                    @foreach($flag->publicEvidence as $ev)
+                        @php $evUrl = $ev->url(60); @endphp
+                        @if($evUrl)
+                            @if($ev->type === 'screenshot')
+                                <a href="{{ $evUrl }}" target="_blank" rel="noopener">
+                                    <img src="{{ $evUrl }}" class="w-32 h-20 sm:w-40 sm:h-24 object-cover rounded border border-red-500/30 hover:border-red-400 transition" alt="{{ $ev->caption }}">
+                                </a>
+                            @else
+                                <a href="{{ $evUrl }}" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-1 text-sm px-3 py-1.5 rounded bg-red-500/10 text-red-300 border border-red-500/30 hover:bg-red-500/20 transition">
+                                    {{ ucfirst($ev->type) }}: {{ $ev->caption ?: __('View evidence') }}
+                                </a>
+                            @endif
+                        @endif
+                    @endforeach
+                </div>
+            @endif
+        </div>
+    @endforeach
+</div>
+@endif
+
 @if(($classTotal ?? 0) > 0)
 <div class="bg-gray-800 rounded-lg p-6 mb-6">
     <h2 class="text-lg font-bold text-white mb-4">{{ __('Class Distribution') }}</h2>
