@@ -25,8 +25,7 @@ class PollerHashService
      */
     public function hashFromName(string $name): string
     {
-        $cleanName = $this->stripColorCodes($name);
-        return hash('sha256', strtolower($cleanName));
+        return hash('sha256', \App\Services\Tracker\ColorCodeService::normalizeKey($name));
     }
 
     /**

@@ -94,7 +94,13 @@ class PlayerTrackingService
             $name = utf8_encode($name);
         }
         $name = mb_substr($name, 0, 64);
-        $player = TrackerPlayer::where('guid_hash', $guidHash)->first();
+        $player = TrackerPlayer::where('guid_hash', $guidHash)->whereNull('merged_into')->first();
+        if (!$player) {
+            $merged = TrackerPlayer::where('guid_hash', $guidHash)->whereNotNull('merged_into')->first();
+            if ($merged) {
+                $player = TrackerPlayer::find($merged->merged_into);
+            }
+        }
 
         if ($player) {
             // Update name if changed
@@ -285,8 +291,7 @@ class PlayerTrackingService
     private function generateGuidHash(string $name, string $serverIp): string
     {
         // Use name only (not IP) so players are recognized across servers
-        $cleanName = ColorCodeService::toClean($name);
-        return hash('sha256', strtolower($cleanName));
+        return hash('sha256', ColorCodeService::normalizeKey($name));
     }
 
     /**
