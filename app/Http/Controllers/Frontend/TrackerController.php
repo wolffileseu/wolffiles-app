@@ -345,6 +345,43 @@ class TrackerController extends Controller
     /**
      * Server Detail
      */
+    /**
+     * Per-server Excel export (all tracked data, multi-tab).
+     * Cached 6h on disk so repeated/public hits don't rebuild.
+     */
+    public function serverExport($identifier, \App\Services\Tracker\TrackerServerExportService $svc)
+    {
+        // Resolve: numeric -> tracker_servers.id, string -> tracker_servers.slug
+        if (ctype_digit((string) $identifier)) {
+            $server = TrackerServer::find((int) $identifier);
+        } else {
+            $server = TrackerServer::where('slug', $identifier)->first();
+        }
+        abort_unless($server, 404);
+
+        $id = (int) $server->id;
+        $dir = storage_path('app/exports');
+        if (! is_dir($dir)) { mkdir($dir, 0775, true); }
+
+        $filename = $svc->filename($id); // wolffiles-server-{id}-{Ymd}.xlsx
+        $path = $dir . '/' . $filename;
+
+        $fresh = is_file($path) && (time() - filemtime($path)) < 6 * 3600;
+
+        if (! $fresh) {
+            try {
+                $svc->export($id, $path);
+            } catch (\Throwable $e) {
+                \Log::error('serverExport failed', ['server_id' => $id, 'err' => $e->getMessage()]);
+                abort(500, 'Export konnte nicht erstellt werden.');
+            }
+        }
+
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ]);
+    }
+
     public function serverShow($identifier)
     {
         // Resolve: numeric -> tracker_servers.id, string -> tracker_servers.slug
@@ -396,6 +433,16 @@ class TrackerController extends Controller
                 ->orderByDesc('started_at')
                 ->limit(15)
                 ->get();
+
+            // Participants per match (distinct players from match_stats) for the
+            // history table — batched over the loaded IDs to avoid N+1 in Blade.
+            $rmIds = $recentMatches->pluck('id')->all();
+            $matchParticipants = empty($rmIds) ? collect()
+                : \DB::table('tracker_player_match_stats')
+                    ->whereIn('match_id', $rmIds)
+                    ->select('match_id', \DB::raw('COUNT(DISTINCT player_id) as c'))
+                    ->groupBy('match_id')
+                    ->pluck('c', 'match_id');
 
             // === E) LIVE MATCH (currently running) ===
             $liveMatch = \DB::table('tracker_matches')
@@ -592,7 +639,7 @@ class TrackerController extends Controller
 
         return view('frontend.tracker.server-show', compact(
             'rtcwScoreboard',
-            'server', 'activeSessions', 'history', 'topMaps', 'recentMatches',
+            'server', 'activeSessions', 'history', 'topMaps', 'recentMatches', 'matchParticipants',
             'hallOfFame', 'lastMatch', 'lastMatchPlayers',
             'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta',
             'recentPlayers', 'recentMaps', 'recentRange'

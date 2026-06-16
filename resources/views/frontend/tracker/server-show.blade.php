@@ -170,6 +170,14 @@ $canManageServer = auth()->check() && (
                     @if($server->server_email)<a href="mailto:{{ $server->server_email }}" class="inline-flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded text-sm">✉️ Contact</a>@endif
                 </div>
                 @endif
+                {{-- Per-server Excel export (all tracked data, multi-tab; cached 6h) --}}
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <a href="{{ route('tracker.server.export', $server) }}"
+                       class="inline-flex items-center gap-1 bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-1.5 rounded text-sm font-medium transition"
+                       title="Alle Tracker-Daten dieses Servers als Excel (.xlsx)">
+                        📊 Export Excel
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -305,6 +313,9 @@ $canManageServer = auth()->check() && (
                 <div class="px-4 py-8 text-center text-gray-500">{{ __('messages.no_players_now') }}</div>
                 </template>
             </div>
+
+            {{-- RtCW kill scoreboard (renders only for RtCW servers) --}}
+            @include('frontend.tracker.partials.rtcw-scoreboard', ['rtcwScoreboard' => $rtcwScoreboard ?? null])
 
             {{-- Player Count History (24h) --}}
             @if($history->count() > 1)
@@ -853,7 +864,9 @@ function playerChart() {
                     <th class="px-4 py-3 text-left">{{ __('Map') }}</th>
                     <th class="px-4 py-3 text-left">{{ __('Started') }}</th>
                     <th class="px-4 py-3 text-right">{{ __('Duration') }}</th>
+                    <th class="px-4 py-3 text-center">{{ __('Players') }}</th>
                     <th class="px-4 py-3 text-left">{{ __('End') }}</th>
+                    <th class="px-4 py-3 text-right">{{ __('Total') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-700/50">
@@ -881,6 +894,42 @@ function playerChart() {
                             {{ $m }}m {{ str_pad($s, 2, '0', STR_PAD_LEFT) }}s
                         @endif
                     </td>
+                    {{-- Players at map start -> finish, team split (allies v axis, +spec). Populated for matches after the handler update. --}}
+                    <td class="px-4 py-3 text-center font-mono text-xs whitespace-nowrap">
+                        @php
+                            $isLive = is_null($match->ended_at);
+                            // Build a side: "AvX" with optional "+S spec", or null if no data
+                            $fmtSide = function ($allies, $axis, $spec, $playingFallback) {
+                                if (!is_null($allies) || !is_null($axis)) {
+                                    $a = (int) ($allies ?? 0);
+                                    $x = (int) ($axis ?? 0);
+                                    $s = (int) ($spec ?? 0);
+                                    return ['main' => $a.'v'.$x, 'spec' => $s > 0 ? $s : null];
+                                }
+                                if (!is_null($playingFallback)) {
+                                    return ['main' => (string) (int) $playingFallback, 'spec' => null];
+                                }
+                                return null;
+                            };
+                            $start = $fmtSide($match->allies_at_start ?? null, $match->axis_at_start ?? null, $match->spec_at_start ?? null, $match->players_at_start ?? null);
+                            $end   = $fmtSide($match->allies_at_end ?? null, $match->axis_at_end ?? null, $match->spec_at_end ?? null, $match->players_at_end ?? null);
+                        @endphp
+                        @if(is_null($start))
+                            <span class="text-gray-600">—</span>
+                        @else
+                            <span class="text-gray-200">{{ $start['main'] }}</span>@if($start['spec'])<span class="text-gray-500 text-[10px] ml-0.5">+{{ $start['spec'] }}</span>@endif
+                        @endif
+                        <span class="text-gray-600 mx-1">&rarr;</span>
+                        @if($isLive)
+                            <span class="inline-flex items-center gap-1 text-emerald-400">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>live
+                            </span>
+                        @elseif(is_null($end))
+                            <span class="text-gray-600">—</span>
+                        @else
+                            <span class="text-gray-200">{{ $end['main'] }}</span>@if($end['spec'])<span class="text-gray-500 text-[10px] ml-0.5">+{{ $end['spec'] }}</span>@endif
+                        @endif
+                    </td>
                     <td class="px-4 py-3">
                         @php
                             $reasonColors = [
@@ -898,6 +947,10 @@ function playerChart() {
                         @else
                             <span class="text-gray-500">—</span>
                         @endif
+                    </td>
+                    {{-- Total distinct participants (from match_stats; available for all matches) --}}
+                    <td class="px-4 py-3 text-right text-gray-300 font-mono text-xs">
+                        {{ $matchParticipants[$match->id] ?? 0 }}
                     </td>
                 </tr>
                 @endforeach

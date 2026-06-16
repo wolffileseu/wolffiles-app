@@ -62,10 +62,15 @@ class MatchLifecycleHandler extends AbstractHandler
             // Open a new match (use formatted string to preserve milliseconds —
             // Carbon objects in insert() get coerced to Y-m-d H:i:s without .v)
             $startedAtMs = $event->received_at->format('Y-m-d H:i:s.v');
+            $startCounts = $this->teamSnapshotCounts($serverId);
             DB::table('tracker_matches')->insert([
                 'server_id' => $serverId,
                 'map_name' => $mapName,
                 'started_at' => $startedAtMs,
+                'players_at_start' => $startCounts['playing'],
+                'allies_at_start' => $startCounts['allies'],
+                'axis_at_start' => $startCounts['axis'],
+                'spec_at_start' => $startCounts['spec'],
                 'created_at' => $startedAtMs,
                 'updated_at' => $startedAtMs,
             ]);
@@ -116,6 +121,48 @@ class MatchLifecycleHandler extends AbstractHandler
      * Find and close any open match for this server.
      * Returns the closed match row (before closure) or null if none was open.
      */
+    /**
+     * Team distribution of currently-connected human players (non-bots),
+     * from the latest poll snapshot per open session (getstatus/getinfo).
+     * tracker_player_snapshots.team holds 'allies' | 'axis' | 'spectator'.
+     * Returns ['allies'=>int,'axis'=>int,'spec'=>int,'playing'=>int].
+     */
+    private function teamSnapshotCounts(int $serverId): array
+    {
+        $out = ['allies' => 0, 'axis' => 0, 'spec' => 0, 'playing' => 0];
+
+        $sessionIds = DB::table('tracker_player_sessions')
+            ->where('server_id', $serverId)
+            ->whereNull('ended_at')
+            ->pluck('id')
+            ->all();
+
+        if (empty($sessionIds)) {
+            return $out;
+        }
+
+        $rows = DB::table('tracker_player_snapshots as s')
+            ->join('tracker_player_sessions as ses', 'ses.id', '=', 's.session_id')
+            ->leftJoin('tracker_players as p', 'p.id', '=', 'ses.player_id')
+            ->whereIn('s.session_id', $sessionIds)
+            ->where(function ($q) {
+                $q->where('p.is_bot', 0)->orWhereNull('p.is_bot');
+            })
+            ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE session_id = s.session_id)')
+            ->get(['s.team']);
+
+        foreach ($rows as $r) {
+            switch ((string) $r->team) {
+                case 'allies':    $out['allies']++; break;
+                case 'axis':      $out['axis']++;   break;
+                case 'spectator': $out['spec']++;   break;
+            }
+        }
+        $out['playing'] = $out['allies'] + $out['axis'];
+
+        return $out;
+    }
+
     private function closeOpenMatch(int $serverId, Carbon $endedAt, string $reason): ?\stdClass
     {
         $open = DB::table('tracker_matches')
@@ -145,14 +192,25 @@ class MatchLifecycleHandler extends AbstractHandler
         $durationMs = max(0, (int) round(($endedAt->getTimestamp() + $endedAt->micro / 1e6 - $startedAt->getTimestamp() - $startedAt->micro / 1e6) * 1000));
         $duration = (int) round($durationMs / 1000);
 
+        $updateData = [
+            'ended_at' => $endedAt->format('Y-m-d H:i:s.v'),
+            'duration_seconds' => $duration,
+            'end_reason' => $reason,
+            'updated_at' => $endedAt->format('Y-m-d H:i:s.v'),
+        ];
+        // Snapshot connected humans at the moment the map truly ends.
+        // For mapchange/maprestart this isn't a real finish, so leave it null.
+        if ($reason === 'mapend') {
+            $endCounts = $this->teamSnapshotCounts($serverId);
+            $updateData['players_at_end'] = $endCounts['playing'];
+            $updateData['allies_at_end'] = $endCounts['allies'];
+            $updateData['axis_at_end'] = $endCounts['axis'];
+            $updateData['spec_at_end'] = $endCounts['spec'];
+        }
+
         DB::table('tracker_matches')
             ->where('id', $open->id)
-            ->update([
-                'ended_at' => $endedAt->format('Y-m-d H:i:s.v'),
-                'duration_seconds' => $duration,
-                'end_reason' => $reason,
-                'updated_at' => $endedAt->format('Y-m-d H:i:s.v'),
-            ]);
+            ->update($updateData);
 
         // Reconstruct aggregate match result from per-player stats.
         // The sv_tracker protocol does not emit a final scoreboard/score event,

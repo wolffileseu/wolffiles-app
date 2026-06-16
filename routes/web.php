@@ -41,6 +41,7 @@ use App\Http\Controllers\Auth\DiscordController;
 use App\Http\Controllers\Api\EasterEggController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Frontend\WikiController;
+use App\Http\Controllers\Admin\WikiMediaController;
 use App\Http\Controllers\Frontend\TutorialController;
 use App\Http\Controllers\Frontend\CampaignCreatorController;
 
@@ -77,6 +78,15 @@ Route::get('/wiki/{slug}', [WikiController::class, 'show'])->name('wiki.show');
 Route::get('/wiki/{slug}/history', [WikiController::class, 'history'])->name('wiki.history');
 Route::get('/wiki/{slug}/diff/{rev1}/{rev2}', [WikiController::class, 'diff'])->name('wiki.diff');
 Route::post('/wiki/{slug}/restore/{rev}', [WikiController::class, 'restore'])->middleware('auth')->name('wiki.restore');
+
+// ---- Wiki-Media (Admin + Moderator: Upload / Pool / Delete) ----
+// Admin-Check passiert im Controller-Constructor (siehe WikiMediaController)
+Route::middleware(['auth'])->prefix('admin/wiki-media')->name('admin.wiki-media.')->group(function () {
+    Route::post('/upload',    [WikiMediaController::class, 'upload'])->name('upload');
+    Route::get('/pool',       [WikiMediaController::class, 'pool'])->name('pool');
+    Route::delete('/{media}', [WikiMediaController::class, 'destroy'])->name('destroy');
+});
+
 
 // Wiki (auth required)
 Route::middleware('auth')->group(function () {
@@ -258,6 +268,7 @@ Route::get('/tracker', [TrackerController::class, 'index'])->name('tracker.index
 Route::get('/servers', [TrackerController::class, 'servers'])->name('tracker.servers');
 Route::get('/servers/export', [TrackerController::class, 'exportServers'])->name('tracker.servers.export');
 Route::get('/servers/{server}', [TrackerController::class, 'serverShow'])->name('tracker.server.show');
+Route::get('/servers/{server}/export', [TrackerController::class, 'serverExport'])->middleware('throttle:3,1')->name('tracker.server.export');
 Route::get('/players', [TrackerController::class, 'players'])->name('tracker.players');
 Route::get('/players/{player}', [TrackerController::class, 'playerShow'])->name('tracker.player.show');
 
