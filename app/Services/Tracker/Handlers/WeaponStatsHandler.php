@@ -58,7 +58,14 @@ class WeaponStatsHandler extends AbstractHandler
             return;
         }
 
-        $parsed = $this->parser->parse($event->payload);
+        // jaymod sends 6 fields per weapon (extra 'subshots'); stock/silEnT/
+        // nitmod/legacy send 5. Derive from the reporting server's mod_name.
+        $modName = (string) (DB::table('tracker_servers')
+            ->where('id', $serverId)
+            ->value('mod_name') ?? '');
+        $fieldsPerWeapon = str_contains(strtolower($modName), 'jaymod') ? 6 : 5;
+
+        $parsed = $this->parser->parse($event->payload, $fieldsPerWeapon);
         if ($parsed === null) {
             Log::warning('WeaponStatsHandler: unparsable ws payload', [
                 'event_id' => $event->id,

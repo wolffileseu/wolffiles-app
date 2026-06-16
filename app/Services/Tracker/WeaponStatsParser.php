@@ -53,7 +53,7 @@ class WeaponStatsParser
      * Returns null if the payload cannot be interpreted as a ws packet.
      * Returns a structured array otherwise — see parseStructured() for the shape.
      */
-    public function parse(string $payload): ?array
+    public function parse(string $payload, int $fieldsPerWeapon = 5): ?array
     {
         // Strip leading 'ws ' if present (payload from tracker_raw_events
         // sometimes includes it, sometimes only the args — be tolerant).
@@ -81,7 +81,7 @@ class WeaponStatsParser
         }
 
         try {
-            return $this->parseStructured($tokens, $clientinfoPart);
+            return $this->parseStructured($tokens, $clientinfoPart, $fieldsPerWeapon);
         } catch (\Throwable $e) {
             // Malformed packet — let caller log the raw payload for inspection.
             return null;
@@ -110,7 +110,7 @@ class WeaponStatsParser
      *   client: array{ping:int,score:int,p:string,class:int,name:string}|null,
      * }
      */
-    private function parseStructured(array $tokens, string $clientinfoPart): array
+    private function parseStructured(array $tokens, string $clientinfoPart, int $fieldsPerWeapon = 5): array
     {
         $i = 0;
         $slot = (int) $tokens[$i++];
@@ -124,16 +124,33 @@ class WeaponStatsParser
                 if (($weaponMask & (1 << $bit)) === 0) {
                     continue;
                 }
-                // Need 5 more tokens for this weapon
-                if ($i + 4 >= count($tokens)) {
+                // Need N more tokens for this weapon (5 = stock ETL/silEnT/nitmod,
+                // 6 = jaymod, which inserts a 'subshots' field at position 3).
+                // jaymod field order (g_match.cpp:422, logPrint=false):
+                //   hits atts subshots kills deaths headshots
+                if ($i + $fieldsPerWeapon - 1 >= count($tokens)) {
                     throw new \RuntimeException("truncated weapon stats at bit $bit");
                 }
+                if ($fieldsPerWeapon === 6) {
+                    $hits      = (int) $tokens[$i++];
+                    $atts      = (int) $tokens[$i++];
+                    $i++; // subshots — jaymod-specific, intentionally discarded
+                    $kills     = (int) $tokens[$i++];
+                    $deaths    = (int) $tokens[$i++];
+                    $headshots = (int) $tokens[$i++];
+                } else {
+                    $hits      = (int) $tokens[$i++];
+                    $atts      = (int) $tokens[$i++];
+                    $kills     = (int) $tokens[$i++];
+                    $deaths    = (int) $tokens[$i++];
+                    $headshots = (int) $tokens[$i++];
+                }
                 $weapons[$bit] = [
-                    'hits'      => (int) $tokens[$i++],
-                    'atts'      => (int) $tokens[$i++],
-                    'kills'     => (int) $tokens[$i++],
-                    'deaths'    => (int) $tokens[$i++],
-                    'headshots' => (int) $tokens[$i++],
+                    'hits'      => $hits,
+                    'atts'      => $atts,
+                    'kills'     => $kills,
+                    'deaths'    => $deaths,
+                    'headshots' => $headshots,
                 ];
             }
         }
