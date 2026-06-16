@@ -196,7 +196,23 @@ class Ranking30dService
 
         $allRows = [];
         foreach ($familyBuckets as $family => $rows) {
-            usort($rows, fn ($a, $b) => $b['playtime_minutes_30d'] <=> $a['playtime_minutes_30d']);
+            // Rank by ELO (highest first). Players with no ELO or below the
+            // minimum playtime threshold are 'unrated' and sorted to the end,
+            // ordered by playtime among themselves. This keeps low-sample
+            // ELO spikes from outranking established regulars.
+            $minPlaytime = 300; // minutes within the 30d window to be ELO-ranked
+            usort($rows, function ($a, $b) use ($minPlaytime) {
+                $aRated = $a['elo_rating'] !== null && $a['playtime_minutes_30d'] >= $minPlaytime;
+                $bRated = $b['elo_rating'] !== null && $b['playtime_minutes_30d'] >= $minPlaytime;
+                if ($aRated && $bRated) {
+                    return ($b['elo_rating'] <=> $a['elo_rating'])
+                        ?: ($b['playtime_minutes_30d'] <=> $a['playtime_minutes_30d']);
+                }
+                if ($aRated) return -1; // rated players ahead of unrated
+                if ($bRated) return 1;
+                // both unrated -> fall back to playtime
+                return $b['playtime_minutes_30d'] <=> $a['playtime_minutes_30d'];
+            });
             $total = count($rows);
             foreach ($rows as $i => $row) {
                 $row['rank']          = $i + 1;
