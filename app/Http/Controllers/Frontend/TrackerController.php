@@ -14,6 +14,7 @@ use App\Models\Tracker\TrackerClan;
 use App\Models\Tracker\TrackerMap;
 use App\Services\Tracker\ColorCodeService;
 use Illuminate\Http\Request;
+use App\Services\Tracker\RtcwKillStatsService;
 
 class TrackerController extends Controller
 {
@@ -582,7 +583,15 @@ class TrackerController extends Controller
             ->limit(15)
             ->get();
 
+        // RtCW kill scoreboard (game_id >= 6 = RtCW family; ET is 1..5).
+        // Built from tracker_rtcw_kills; null for ET servers.
+        $rtcwScoreboard = null;
+        if ($server->game_id >= 6) {
+            $rtcwScoreboard = (new RtcwKillStatsService())->serverScoreboard($server->id);
+        }
+
         return view('frontend.tracker.server-show', compact(
+            'rtcwScoreboard',
             'server', 'activeSessions', 'history', 'topMaps', 'recentMatches',
             'hallOfFame', 'lastMatch', 'lastMatchPlayers',
             'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta',
@@ -937,10 +946,10 @@ class TrackerController extends Controller
         // === Combat Overview (global headshot %, damage ratio, team preference) ===
         $hsAgg = DB::table('tracker_player_weapon_stats')
             ->where('player_id', $player->id)
-            ->selectRaw('SUM(total_headshots) as hs, SUM(total_kills) as k')
+            ->selectRaw('SUM(total_headshots) as hs, SUM(total_hits) as h')
             ->first();
-        $headshotRatio = ($hsAgg && $hsAgg->k > 0)
-            ? round(($hsAgg->hs / $hsAgg->k) * 100, 1) : null;
+        $headshotRatio = ($hsAgg && $hsAgg->h > 0)
+            ? round(($hsAgg->hs / $hsAgg->h) * 100, 1) : null;
 
         $dmgAgg = DB::table('tracker_player_match_stats')
             ->where('player_id', $player->id)
