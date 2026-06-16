@@ -414,6 +414,7 @@ class TrackerController extends Controller
 
         // Enhanced Tracker: recent matches (only if server reports via sv_tracker2)
         $recentMatches = collect();
+        $matchParticipants = collect();
         $hallOfFame = [];
         $lastMatch = null;
         $lastMatchPlayers = collect();
