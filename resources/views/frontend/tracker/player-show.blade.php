@@ -12,7 +12,7 @@
                         @if($player->avatar_url)
                             <img src="{{ $player->avatar_url }}" class="w-10 h-10 rounded-full object-cover border-2 border-amber-500/40 inline-block flex-shrink-0" alt="Avatar">
                         @endif
-                        <span>{!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}</span>
+                        <span>{!! ($liveNameHtml ?? null) ?: ($player->name_html ?: e($player->name_clean ?: 'Unknown')) !!}</span>
                         @if($player->display_name)
                             <span class="text-gray-400 text-base font-normal">&middot; {{ $player->display_name }}</span>
                         @endif

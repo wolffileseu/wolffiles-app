@@ -714,6 +714,24 @@ class TrackerController extends Controller
 
         $player->load(['aliases', 'clanMemberships.clan']);
 
+        // Live name colours: if this player is on a server right now (snapshot
+        // fresher than 60s, ~3-4 poll cycles), render their CURRENT coloured name
+        // from the raw snapshot. Falls back to the frozen name_html when offline.
+        // Does NOT touch name/name_clean/name_html on the record (Decision A).
+        $liveNameHtml = null;
+        if (!$player->is_bot) {
+            $liveSnap = \DB::table('tracker_player_snapshots')
+                ->where('player_id', $player->id)
+                ->where('polled_at', '>=', now()->subSeconds(60))
+                ->whereNotNull('name')
+                ->where('name', '!=', '')
+                ->orderByDesc('polled_at')
+                ->value('name');
+            if ($liveSnap !== null) {
+                $liveNameHtml = \App\Services\Tracker\ColorCodeService::toHtml($liveSnap);
+            }
+        }
+
         // Activity timeline — built below when we have enhanced data.
         $playerTimeline = [];
 
@@ -1093,6 +1111,7 @@ class TrackerController extends Controller
             ->get();
 
         return view('frontend.tracker.player-show', compact(
+            'liveNameHtml',
             'publicFlags',
             'classStats', 'classTotal',
             'player', 'sessions', 'eloHistory', 'favoriteServers', 'favoriteServersTotal', 'favoriteMaps',
