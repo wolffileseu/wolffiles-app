@@ -613,10 +613,10 @@ function playerChart() {
                         <td class="py-2 pr-2">
                             @if($lp->p_id)
                                 <a href="{{ route('tracker.player.show', $lp->p_id) }}" class="hover:text-amber-400">
-                                    {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                    {!! (!empty($lp->name_snapshot) ? \App\Services\Tracker\ColorCodeService::toHtml($lp->name_snapshot) : ($lp->name_html ?: e($lp->name_clean ?: '?'))) !!}
                                 </a>
                             @else
-                                {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                {!! (!empty($lp->name_snapshot) ? \App\Services\Tracker\ColorCodeService::toHtml($lp->name_snapshot) : ($lp->name_html ?: e($lp->name_clean ?: '?'))) !!}
                             @endif
                             @if($lp->is_bot ?? false)
                                 <span class="text-[9px] px-1 py-0 ml-1 rounded bg-gray-700 text-gray-400 uppercase">Bot</span>
@@ -674,10 +674,10 @@ function playerChart() {
                         <td class="py-2 pr-2">
                             @if($lp->p_id)
                                 <a href="{{ route('tracker.player.show', $lp->p_id) }}" class="hover:text-amber-400">
-                                    {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                    {!! (!empty($lp->name_snapshot) ? \App\Services\Tracker\ColorCodeService::toHtml($lp->name_snapshot) : ($lp->name_html ?: e($lp->name_clean ?: '?'))) !!}
                                 </a>
                             @else
-                                {!! $lp->name_html ?: e($lp->name_clean ?: $lp->name_snapshot ?: '?') !!}
+                                {!! (!empty($lp->name_snapshot) ? \App\Services\Tracker\ColorCodeService::toHtml($lp->name_snapshot) : ($lp->name_html ?: e($lp->name_clean ?: '?'))) !!}
                             @endif
                             @if($lp->is_bot ?? false)
                                 <span class="text-[9px] px-1 py-0 ml-1 rounded bg-gray-700 text-gray-400 uppercase">Bot</span>

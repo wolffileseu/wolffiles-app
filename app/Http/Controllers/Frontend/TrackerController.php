@@ -1307,15 +1307,17 @@ class TrackerController extends Controller
         $sessionIds = $sessions->pluck('id')->all();
         $latestPings = [];
         $latestTeams = [];
+        $latestNames = [];
         if (!empty($sessionIds)) {
             $latestRows = \DB::table('tracker_player_snapshots as s')
-                ->select('s.session_id', 's.ping', 's.team')
+                ->select('s.session_id', 's.ping', 's.team', 's.name')
                 ->whereIn('s.session_id', $sessionIds)
                 ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE session_id = s.session_id)')
                 ->get();
             foreach ($latestRows as $r) {
                 $latestPings[$r->session_id] = $r->ping;
                 $latestTeams[$r->session_id] = $r->team;
+                $latestNames[$r->session_id] = $r->name;
             }
         }
 
@@ -1368,11 +1370,16 @@ class TrackerController extends Controller
             }
         }
 
-        $humanPlayers = $sessions->map(function (\App\Models\Tracker\TrackerPlayerSession $s) use ($latestPings, $latestTeams, $latestClasses, $matchStatsByName) {
+        $humanPlayers = $sessions->map(function (\App\Models\Tracker\TrackerPlayerSession $s) use ($latestPings, $latestTeams, $latestClasses, $matchStatsByName, $latestNames) {
             $nameKey = mb_strtolower(\App\Services\Tracker\ColorCodeService::toClean($s->player?->name_clean ?? ''));
             $ms = $matchStatsByName[$nameKey] ?? null;
             return [
-                'player_name'  => $s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown'),
+                // Live coloured name from the freshest snapshot (raw ^x string).
+                // Falls back to the frozen name_html (Decision A) when no snapshot
+                // name is present for this session.
+                'player_name'  => (!empty($latestNames[$s->id]))
+                    ? \App\Services\Tracker\ColorCodeService::toHtml($latestNames[$s->id])
+                    : ($s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown')),
                 'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
                 'country_code' => $s->player?->country_code,
                 'country'      => $s->player?->country,
