@@ -104,7 +104,9 @@ class LeaderboardController extends Controller
             ->whereNull('p.merged_into');
 
         if ($metric === 'elo') {
-            $q->whereNotNull('p.elo_rating')->where('p.elo_games', '>', 0);
+            // elo_games is currently always 0 (not populated); match the working
+            // /players/top board, which orders by elo_rating with no games gate.
+            $q->whereNotNull('p.elo_rating');
         } elseif ($metric === 'headshots') {
             $q->where('p.has_enhanced_data', 1);
         }
