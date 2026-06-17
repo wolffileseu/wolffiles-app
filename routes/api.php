@@ -116,6 +116,13 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/servers/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopServers'])->name('tracker.api.top-servers');
     Route::get('/stats',           [\App\Http\Controllers\Frontend\TrackerController::class, 'apiStats'])->name('tracker.api.stats');
     Route::get('/online',          [\App\Http\Controllers\Frontend\TrackerController::class, 'apiOnline'])->name('tracker.api.online');
+
+    // --- Tracker API Phase 1: player combat depth (read-only) ---
+    Route::get('/players/{id}/weapons',     [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'weapons'])->name('tracker.api.player-weapons');
+    Route::get('/players/{id}/stats',       [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'stats'])->name('tracker.api.player-stats');
+    Route::get('/players/{id}/elo-history', [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'eloHistory'])->name('tracker.api.player-elo-history');
+    Route::get('/players/{id}/daily',       [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'daily'])->name('tracker.api.player-daily');
+    Route::get('/players/{id}/aliases',     [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'aliases'])->name('tracker.api.player-aliases');
     Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
     Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
