@@ -3,7 +3,6 @@
 @if($stats)
 <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-4">
     <div class="flex items-center gap-2 mb-3">
-        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
         <h3 class="text-sm font-mono uppercase tracking-wider text-gray-300">
             {{ __('messages.map_live_stats_title') }}
         </h3>
@@ -18,6 +17,9 @@
             <div class="text-[10px] font-mono uppercase tracking-wider text-gray-500 mt-1">
                 {{ __('messages.map_live_stats_total_plays') }}
             </div>
+            <div class="text-[9px] font-mono uppercase tracking-wider text-gray-600 mt-0.5">
+                {{ __('messages.map_live_stats_sub_alltime') }}
+            </div>
         </div>
         <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
             <div class="text-2xl font-bold text-blue-400 tabular-nums">
@@ -26,6 +28,9 @@
             <div class="text-[10px] font-mono uppercase tracking-wider text-gray-500 mt-1">
                 {{ __('messages.map_live_stats_active_servers') }}
             </div>
+            <div class="text-[9px] font-mono uppercase tracking-wider text-gray-600 mt-0.5">
+                {{ __('messages.map_live_stats_sub_active_7d') }}
+            </div>
         </div>
         <div class="bg-gray-900/50 rounded-lg p-3 border border-gray-700/50">
             <div class="text-2xl font-bold text-green-400 tabular-nums">
@@ -33,6 +38,9 @@
             </div>
             <div class="text-[10px] font-mono uppercase tracking-wider text-gray-500 mt-1">
                 {{ __('messages.map_live_stats_peak_players') }}
+            </div>
+            <div class="text-[9px] font-mono uppercase tracking-wider text-gray-600 mt-0.5">
+                {{ __('messages.map_live_stats_sub_alltime') }}
             </div>
         </div>
     </div>

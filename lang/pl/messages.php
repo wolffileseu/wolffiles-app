@@ -801,6 +801,8 @@ return [
     'map_live_stats_top_servers' => '[TODO:pl] Top Servers',
     'map_live_stats_unnamed_server' => '[TODO:pl] Unnamed Server',
     'map_live_stats_plays_short' => '[TODO:pl] plays',
+    'map_live_stats_sub_alltime' => '[TODO:pl] all-time',
+    'map_live_stats_sub_active_7d' => '[TODO:pl] active · 7 days',
     'edit_in_admin' => 'Edytuj w panelu admina',
     'no_news_yet' => 'Brak nowości.',
     'views_count' => 'wyświetleń',

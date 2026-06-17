@@ -115,8 +115,6 @@ class FileController extends Controller
                     ->where('map_name', $mapName)
                     ->selectRaw('
                         COALESCE(SUM(times_played), 0) as total_plays,
-                        COUNT(DISTINCT server_id) as active_servers,
-                        COALESCE(MAX(peak_players), 0) as peak_players,
                         MAX(last_played_at) as last_played_at
                     ')
                     ->first();
@@ -125,6 +123,32 @@ class FileController extends Controller
                 if (!$agg || (int) $agg->total_plays === 0) {
                     return null;
                 }
+
+                // Active servers: played this map in the last 7d AND server reachable in the last 24h
+                $activeServers = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats as sms')
+                    ->join('tracker_servers as s', 's.id', '=', 'sms.server_id')
+                    ->where('sms.map_name', $mapName)
+                    ->where('sms.last_played_at', '>=', now()->subDays(7))
+                    ->where('s.last_seen_at', '>=', now()->subHours(24))
+                    ->distinct()
+                    ->count('sms.server_id');
+
+                // Peak players: highest concurrent REAL humans, all-time. Bots never get a
+                // player session, so max simultaneous sessions excludes them by construction.
+                $peakRow = \Illuminate\Support\Facades\DB::selectOne(
+                    'SELECT COALESCE(MAX(c), 0) AS peak FROM (
+                        SELECT SUM(d) OVER (PARTITION BY server_id ORDER BY ts, d DESC, sid ROWS UNBOUNDED PRECEDING) AS c
+                        FROM (
+                            SELECT server_id, started_at AS ts, 1 AS d, id AS sid
+                              FROM tracker_player_sessions WHERE map_name = ?
+                            UNION ALL
+                            SELECT server_id, COALESCE(ended_at, NOW()) AS ts, -1 AS d, id AS sid
+                              FROM tracker_player_sessions WHERE map_name = ?
+                        ) ev
+                    ) sweep',
+                    [$mapName, $mapName]
+                );
+                $peakPlayers = (int) ($peakRow->peak ?? 0);
 
                 // Top 5 servers for this map (most plays first)
                 $topServers = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats as sms')
@@ -145,8 +169,8 @@ class FileController extends Controller
 
                 return [
                     'total_plays'    => (int) $agg->total_plays,
-                    'active_servers' => (int) $agg->active_servers,
-                    'peak_players'   => (int) $agg->peak_players,
+                    'active_servers' => $activeServers,
+                    'peak_players'   => $peakPlayers,
                     'last_played_at' => $agg->last_played_at ? \Carbon\Carbon::parse($agg->last_played_at) : null,
                     'top_servers'    => $topServers,
                 ];

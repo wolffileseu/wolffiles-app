@@ -803,6 +803,8 @@ return [
     'map_live_stats_top_servers' => '[TODO:tr] Top Servers',
     'map_live_stats_unnamed_server' => '[TODO:tr] Unnamed Server',
     'map_live_stats_plays_short' => '[TODO:tr] plays',
+    'map_live_stats_sub_alltime' => '[TODO:tr] all-time',
+    'map_live_stats_sub_active_7d' => '[TODO:tr] active · 7 days',
     'edit_in_admin' => 'Yönetici panelinde düzenle',
     'no_news_yet' => 'Henüz haber yok.',
     'views_count' => 'görüntüleme',
