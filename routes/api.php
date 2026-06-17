@@ -123,6 +123,12 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/players/{id}/elo-history', [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'eloHistory'])->name('tracker.api.player-elo-history');
     Route::get('/players/{id}/daily',       [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'daily'])->name('tracker.api.player-daily');
     Route::get('/players/{id}/aliases',     [\App\Http\Controllers\Api\V1\Tracker\PlayerStatsController::class, 'aliases'])->name('tracker.api.player-aliases');
+
+    // --- Tracker API Phase 2a: matches (read-only) ---
+    Route::get('/matches',              [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'index'])->name('tracker.api.matches');
+    Route::get('/matches/{id}',         [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'show'])->name('tracker.api.match-detail');
+    Route::get('/matches/{id}/weapons', [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'matchWeapons'])->name('tracker.api.match-weapons');
+    Route::get('/players/{id}/matches', [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'playerMatches'])->name('tracker.api.player-matches');
     Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
     Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
