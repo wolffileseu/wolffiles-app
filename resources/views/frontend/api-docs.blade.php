@@ -700,6 +700,8 @@
                 </div>
             </div>
 
+        @include('frontend.partials.api-docs-tracker-extended')
+
         {{-- Rate Limits --}}
         <div class="mt-8 bg-gray-800 rounded-xl border border-amber-500/20 p-6">
             <h2 class="text-lg font-bold text-white mb-3">⚠️ {{ __('messages.api_rate_limit_title') }}</h2>
