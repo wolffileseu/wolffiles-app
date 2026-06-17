@@ -143,6 +143,11 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/maps',                 [\App\Http\Controllers\Api\V1\Tracker\MapController::class, 'index'])->name('tracker.api.maps');
     Route::get('/maps/{name}/stats',    [\App\Http\Controllers\Api\V1\Tracker\MapController::class, 'show'])->name('tracker.api.map-detail');
     Route::get('/servers/{id}/maps',    [\App\Http\Controllers\Api\V1\Tracker\MapController::class, 'serverMaps'])->name('tracker.api.server-maps');
+
+    // --- Tracker API Phase 5: kill feed (RtCW, read-only) ---
+    Route::get('/players/{id}/kills', [\App\Http\Controllers\Api\V1\Tracker\KillController::class, 'playerKills'])->name('tracker.api.player-kills');
+    Route::get('/servers/{id}/kills', [\App\Http\Controllers\Api\V1\Tracker\KillController::class, 'serverKills'])->name('tracker.api.server-kills');
+    Route::get('/matches/{id}/kills', [\App\Http\Controllers\Api\V1\Tracker\KillController::class, 'matchKills'])->name('tracker.api.match-kills');
     Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
     Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
