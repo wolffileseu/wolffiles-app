@@ -129,6 +129,10 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/matches/{id}',         [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'show'])->name('tracker.api.match-detail');
     Route::get('/matches/{id}/weapons', [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'matchWeapons'])->name('tracker.api.match-weapons');
     Route::get('/players/{id}/matches', [\App\Http\Controllers\Api\V1\Tracker\MatchController::class, 'playerMatches'])->name('tracker.api.player-matches');
+
+    // --- Tracker API Phase 2b: leaderboards (read-only) ---
+    Route::get('/leaderboards',          [\App\Http\Controllers\Api\V1\Tracker\LeaderboardController::class, 'index'])->name('tracker.api.leaderboards');
+    Route::get('/leaderboards/{metric}', [\App\Http\Controllers\Api\V1\Tracker\LeaderboardController::class, 'leaderboard'])->name('tracker.api.leaderboard');
     Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
     Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
