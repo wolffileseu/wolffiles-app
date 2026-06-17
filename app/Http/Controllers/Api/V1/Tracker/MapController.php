@@ -10,22 +10,27 @@ use Illuminate\Support\Facades\DB;
 /**
  * Tracker API -- Phase 4: maps (read-only, keyless).
  *
+ * Play stats are computed live from tracker_server_map_stats (SUM/COUNT/MAX)
+ * because the rollup columns on tracker_maps (total_time_played_minutes,
+ * total_unique_players, peak_concurrent_players, total_sessions) are never
+ * populated -- no job/service writes them. unique_players and sessions are
+ * therefore not exposed; avg_players is only meaningful per-server.
+ *
  * Note: GET /tracker/maps/{mapName} (live "who plays it now") already exists
- * in TrackerController@apiMapStats. These endpoints add the aggregate map
- * list, per-map detail (+ top servers), and per-server map breakdown.
+ * in TrackerController@apiMapStats and is unaffected.
  *
  * screenshot_path is returned raw (as stored); a full screenshot_url can be
  * added additively once the frontend URL builder is wired in.
  */
 class MapController extends Controller
 {
+    /** sort key => aggregate alias from the tracker_server_map_stats rollup */
     private const SORTS = [
-        'time'     => 'total_time_played_minutes',
-        'players'  => 'total_unique_players',
-        'servers'  => 'total_servers',
-        'sessions' => 'total_sessions',
-        'peak'     => 'peak_concurrent_players',
-        'recent'   => 'last_seen_at',
+        'time'    => 'time_minutes',
+        'played'  => 'times_played',
+        'servers' => 'servers',
+        'peak'    => 'peak_players',
+        'recent'  => 'last_played_at',
     ];
 
     /** GET /api/v1/tracker/maps */
@@ -37,17 +42,28 @@ class MapController extends Controller
         $sortKey = (string) $request->query('sort', 'time');
         $sortCol = self::SORTS[$sortKey] ?? self::SORTS['time'];
 
-        $query = DB::table('tracker_maps');
+        $agg = DB::table('tracker_server_map_stats')
+            ->selectRaw(
+                'map_name, COUNT(*) as servers, SUM(times_played) as times_played, '
+                .'SUM(total_time_minutes) as time_minutes, MAX(peak_players) as peak_players, '
+                .'MAX(last_played_at) as last_played_at'
+            )
+            ->groupBy('map_name');
+
+        $query = DB::table('tracker_maps as m')
+            ->joinSub($agg, 'a', 'a.map_name', '=', 'm.name');
+
         if ($request->filled('q')) {
-            $query->where('name_clean', 'like', '%'.((string) $request->query('q')).'%');
+            $query->where('m.name_clean', 'like', '%'.((string) $request->query('q')).'%');
         }
 
-        $rows = $query->orderByDesc($sortCol)
+        $rows = $query
+            ->orderByDesc("a.$sortCol")
             ->offset($offset)->limit($limit + 1)
             ->get([
-                'id', 'name', 'name_clean', 'file_id', 'total_servers',
-                'total_time_played_minutes', 'total_unique_players', 'total_sessions',
-                'peak_concurrent_players', 'first_seen_at', 'last_seen_at', 'screenshot_path',
+                'm.id', 'm.name', 'm.name_clean', 'm.file_id', 'm.screenshot_path',
+                'm.first_seen_at', 'm.last_seen_at',
+                'a.servers', 'a.times_played', 'a.time_minutes', 'a.peak_players', 'a.last_played_at',
             ]);
 
         $hasMore = $rows->count() > $limit;
@@ -75,14 +91,24 @@ class MapController extends Controller
                 $q->where('name', $name)->orWhere('name_clean', $name);
             })
             ->first([
-                'id', 'name', 'name_clean', 'file_id', 'total_servers',
-                'total_time_played_minutes', 'total_unique_players', 'total_sessions',
-                'peak_concurrent_players', 'first_seen_at', 'last_seen_at', 'screenshot_path',
+                'id', 'name', 'name_clean', 'file_id', 'screenshot_path',
+                'first_seen_at', 'last_seen_at',
             ]);
 
         if (! $map) {
             return response()->json(['error' => 'map_not_found'], 404);
         }
+
+        $agg = DB::table('tracker_server_map_stats')
+            ->where('map_name', $map->name)
+            ->selectRaw(
+                'COUNT(*) as servers, SUM(times_played) as times_played, '
+                .'SUM(total_time_minutes) as time_minutes, MAX(peak_players) as peak_players, '
+                .'MAX(last_played_at) as last_played_at'
+            )
+            ->first();
+
+        $row = (object) array_merge((array) $map, (array) $agg);
 
         $serverLimit = $this->limit($request, 10, 50);
 
@@ -107,7 +133,7 @@ class MapController extends Controller
 
         return response()->json([
             'data' => [
-                'map'         => $this->mapShape($map),
+                'map'         => $this->mapShape($row),
                 'top_servers' => $servers,
             ],
             'meta' => ['server_count' => $servers->count()],
@@ -163,11 +189,11 @@ class MapController extends Controller
             'file_id'         => $m->file_id !== null ? (int) $m->file_id : null,
             'screenshot_path' => $m->screenshot_path,
             'stats' => [
-                'servers'             => (int) $m->total_servers,
-                'time_played_minutes' => (int) $m->total_time_played_minutes,
-                'unique_players'      => (int) $m->total_unique_players,
-                'sessions'            => (int) $m->total_sessions,
-                'peak_concurrent'     => (int) $m->peak_concurrent_players,
+                'servers'             => (int) $m->servers,
+                'times_played'        => (int) $m->times_played,
+                'time_played_minutes' => (int) $m->time_minutes,
+                'peak_players'        => (int) $m->peak_players,
+                'last_played_at'      => $m->last_played_at,
             ],
             'first_seen_at' => $m->first_seen_at,
             'last_seen_at'  => $m->last_seen_at,
