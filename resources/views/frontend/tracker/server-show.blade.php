@@ -507,7 +507,7 @@ function playerChart() {
                                     <td class="px-4 py-2">
                                         @if($rp->player_id)
                                             <a href="{{ route('tracker.player.show', $rp->player_id) }}" class="text-white hover:text-amber-300">
-                                                {!! $rp->name_html ?: e($rp->name_clean ?: 'unknown') !!}
+                                                {!! (!empty($recentRawNames[$rp->player_id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($recentRawNames[$rp->player_id]) : ($rp->name_html ?: e($rp->name_clean ?: 'unknown'))) !!}
                                             </a>
                                         @else
                                             <span class="text-gray-400">{{ $rp->name_clean ?: 'unknown' }}</span>

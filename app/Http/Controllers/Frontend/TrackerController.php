@@ -615,6 +615,26 @@ class TrackerController extends Controller
             ->limit(30)
             ->get();
 
+        // Latest known raw (coloured) name per player for this list, so the
+        // recent-players table shows current ^x colours instead of the frozen
+        // name_html. One batched query over the listed player_ids (no N+1).
+        // Keyed by player_id; Blade renders it via ColorCodeService::toHtml().
+        $recentRawNames = [];
+        $rpIds = $recentPlayers->pluck('player_id')->filter()->all();
+        if (!empty($rpIds)) {
+            $rawRows = \DB::table('tracker_player_snapshots as s')
+                ->select('s.player_id', 's.name')
+                ->whereIn('s.player_id', $rpIds)
+                ->whereNotNull('s.name')->where('s.name', '!=', '')
+                ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE player_id = s.player_id AND name IS NOT NULL AND name != \'\')')
+                ->get();
+            foreach ($rawRows as $r) {
+                if (!array_key_exists($r->player_id, $recentRawNames)) {
+                    $recentRawNames[$r->player_id] = $r->name;
+                }
+            }
+        }
+
         $recentMaps = \DB::table('tracker_player_sessions')
             ->where('server_id', $server->id)
             ->whereNotNull('map_name')
@@ -643,7 +663,7 @@ class TrackerController extends Controller
             'server', 'activeSessions', 'history', 'topMaps', 'recentMatches', 'matchParticipants',
             'hallOfFame', 'lastMatch', 'lastMatchPlayers',
             'liveMatch', 'liveMatchPlayers', 'serverMapBest', 'serverWeaponMeta',
-            'recentPlayers', 'recentMaps', 'recentRange'
+            'recentPlayers', 'recentRawNames', 'recentMaps', 'recentRange'
         ));
     }
 
