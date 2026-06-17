@@ -1,7 +1,7 @@
 {{--
     Tracker API — Extended endpoints (Phases 1–5).
     Included from frontend/api-docs.blade.php via @include, rendered inside the
-    same x-data="{ openEndpoint: null }" scope, immediately before {{-- Rate Limits --}}.
+    same x-data="{ openEndpoint: null }" scope, immediately before the Rate Limits section.
 
     Hardcoded English to match the existing tracker blocks (the tracker section
     is not localized; only the Files section uses __()).
