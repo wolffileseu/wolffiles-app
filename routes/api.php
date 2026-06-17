@@ -133,6 +133,11 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     // --- Tracker API Phase 2b: leaderboards (read-only) ---
     Route::get('/leaderboards',          [\App\Http\Controllers\Api\V1\Tracker\LeaderboardController::class, 'index'])->name('tracker.api.leaderboards');
     Route::get('/leaderboards/{metric}', [\App\Http\Controllers\Api\V1\Tracker\LeaderboardController::class, 'leaderboard'])->name('tracker.api.leaderboard');
+
+    // --- Tracker API Phase 3: clans (read-only) ---
+    Route::get('/clans/{id}',         [\App\Http\Controllers\Api\V1\Tracker\ClanController::class, 'show'])->name('tracker.api.clan-detail');
+    Route::get('/clans/{id}/members', [\App\Http\Controllers\Api\V1\Tracker\ClanController::class, 'members'])->name('tracker.api.clan-members');
+    Route::get('/clans/{id}/squads',  [\App\Http\Controllers\Api\V1\Tracker\ClanController::class, 'squads'])->name('tracker.api.clan-squads');
     Route::get('/players/search',  [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayerSearch'])->name('tracker.api.player-search');
     Route::get('/players/top',     [\App\Http\Controllers\Frontend\TrackerController::class, 'apiTopPlayers'])->name('tracker.api.top-players');
     Route::get('/players/{id}',    [\App\Http\Controllers\Frontend\TrackerController::class, 'apiPlayer'])->name('tracker.api.player');
