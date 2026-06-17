@@ -67,9 +67,6 @@ class PlayerStatsController extends Controller
                 'deaths'       => (int) $w->total_deaths,
                 'headshots'    => (int) $w->total_headshots,
                 'accuracy'     => $accuracy,
-                'headshot_pct' => $w->total_kills > 0
-                    ? round($w->total_headshots / $w->total_kills * 100, 2)
-                    : 0.0,
             ];
         });
 
