@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\Tracker\WeaponRegistry;
 
 /**
  * Tracker API -- Phase 1: player combat depth (read-only, keyless).
@@ -42,6 +43,9 @@ class PlayerStatsController extends Controller
             ]);
 
         $weapons = $rows->map(function ($w) {
+            $bit  = (int) $w->weapon_bit;
+            $meta = WeaponRegistry::get($bit);
+
             // Accuracy from raw hits/attempts (authoritative);
             // fall back to stored accuracy_bp only when no attempts recorded.
             $accuracy = $w->total_atts > 0
@@ -49,7 +53,14 @@ class PlayerStatsController extends Controller
                 : ($w->accuracy_bp > 0 ? round($w->accuracy_bp / 100, 2) : 0.0);
 
             return [
-                'weapon_bit'   => (int) $w->weapon_bit,
+                'weapon_bit'   => $bit,
+                'weapon'       => $meta ? [
+                    'name'     => $meta['name'],
+                    'slug'     => $meta['slug'],
+                    'category' => $meta['category'],
+                    'side'     => $meta['side'],
+                    'icon'     => WeaponRegistry::iconUrl($bit),
+                ] : null,
                 'hits'         => (int) $w->total_hits,
                 'attempts'     => (int) $w->total_atts,
                 'kills'        => (int) $w->total_kills,
