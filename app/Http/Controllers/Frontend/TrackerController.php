@@ -1816,16 +1816,7 @@ class TrackerController extends Controller
                 ->pluck('s.ping', 's.session_id')
                 ->all();
         }
-        $playerIds = $rows->pluck('player_id')->filter()->all();
-        $slotByPlayer = [];
-        if (! empty($playerIds)) {
-            $slotByPlayer = \DB::table('tracker_server_slots')
-                ->where('server_id', $id)
-                ->whereNull('disconnected_at')
-                ->whereIn('player_id', $playerIds)
-                ->pluck('slot', 'player_id')
-                ->all();
-        }
+
 
         return response()->json([
             'server_id' => $id,
@@ -1837,7 +1828,6 @@ class TrackerController extends Controller
                 'country_code' => $p->country_code,
                 'score'        => (int) $p->score,
                 'ping'         => array_key_exists($p->session_id, $pingBySession) ? (int) $pingBySession[$p->session_id] : null,
-                'slot'         => array_key_exists($p->player_id, $slotByPlayer) ? (int) $slotByPlayer[$p->player_id] : null,
                 'team'         => $p->team,
                 'map'          => $p->map_name,
                 'started_at'   => $p->started_at,
