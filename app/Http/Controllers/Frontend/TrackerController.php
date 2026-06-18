@@ -1789,6 +1789,7 @@ class TrackerController extends Controller
             ->orderBy('tracker_player_sessions.started_at')
             ->select([
                 'tracker_players.id as player_id',
+                'tracker_player_sessions.id as session_id',
                 'tracker_players.name_clean',
                 'tracker_players.name_html',
                 'tracker_players.country_code',
@@ -1799,6 +1800,33 @@ class TrackerController extends Controller
             ])
             ->get();
 
+        // [api] ping+slot — resolve latest snapshot ping per active session,
+        // and the live slot number, without a per-row subquery.
+        $sessionIds = $rows->pluck('session_id')->filter()->all();
+        $pingBySession = [];
+        if (! empty($sessionIds)) {
+            $latest = \DB::table('tracker_player_snapshots')
+                ->select('session_id', \DB::raw('MAX(polled_at) as mx'))
+                ->whereIn('session_id', $sessionIds)
+                ->groupBy('session_id');
+            $pingBySession = \DB::table('tracker_player_snapshots as s')
+                ->joinSub($latest, 'l', function ($j) {
+                    $j->on('s.session_id', '=', 'l.session_id')->on('s.polled_at', '=', 'l.mx');
+                })
+                ->pluck('s.ping', 's.session_id')
+                ->all();
+        }
+        $playerIds = $rows->pluck('player_id')->filter()->all();
+        $slotByPlayer = [];
+        if (! empty($playerIds)) {
+            $slotByPlayer = \DB::table('tracker_server_slots')
+                ->where('server_id', $id)
+                ->whereNull('disconnected_at')
+                ->whereIn('player_id', $playerIds)
+                ->pluck('slot', 'player_id')
+                ->all();
+        }
+
         return response()->json([
             'server_id' => $id,
             'count'     => $rows->count(),
@@ -1808,6 +1836,8 @@ class TrackerController extends Controller
                 'name_html'    => $p->name_html,
                 'country_code' => $p->country_code,
                 'score'        => (int) $p->score,
+                'ping'         => array_key_exists($p->session_id, $pingBySession) ? (int) $pingBySession[$p->session_id] : null,
+                'slot'         => array_key_exists($p->player_id, $slotByPlayer) ? (int) $slotByPlayer[$p->player_id] : null,
                 'team'         => $p->team,
                 'map'          => $p->map_name,
                 'started_at'   => $p->started_at,
