@@ -58,7 +58,7 @@
                         <td class="px-4 py-2.5 text-gray-500">{{ $players->firstItem() + $loop->index }}</td>
                         <td class="px-4 py-2.5">
                             <a href="{{ route('tracker.player.show', $player) }}" class="text-amber-400 hover:text-amber-300">
-                                {!! $player->name_html ?: e($player->name_clean ?: 'Unknown') !!}
+                                {!! (!empty($rawNames[$player->id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($rawNames[$player->id]) : ($player->name_html ?: e($player->name_clean ?: 'Unknown'))) !!}
                                 @if($player->has_enhanced_data)
                                     <x-tracker-enhanced-badge class="ml-1 align-middle" />
                                 @endif

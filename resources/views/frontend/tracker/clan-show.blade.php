@@ -131,7 +131,7 @@
                         @foreach($topPlayers as $i => $player)
                         <tr class="hover:bg-gray-700/30 transition">
                             <td class="px-4 py-2 text-gray-500">{{ $i + 1 }}</td>
-                            <td class="px-4 py-2"><a href="{{ route('tracker.player.show', $player) }}" class="text-amber-400 hover:text-amber-300">{!! $player->name_html ?? e($player->name_clean ?? 'Unknown') !!}</a></td>
+                            <td class="px-4 py-2"><a href="{{ route('tracker.player.show', $player) }}" class="text-amber-400 hover:text-amber-300">{!! (!empty($rawNames[$player->id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($rawNames[$player->id]) : ($player->name_html ?? e($player->name_clean ?? 'Unknown'))) !!}</a></td>
                             <td class="px-4 py-2 text-center text-white font-medium">{{ number_format($player->elo_rating) }}</td>
                             <td class="px-4 py-2 text-gray-400 text-xs">{{ $player->last_seen_at?->diffForHumans() ?? '-' }}</td>
                         </tr>
@@ -207,7 +207,7 @@
             <table class="w-full text-sm">
                 <tbody class="divide-y divide-gray-700/50">
                     @foreach($members as $m)
-                    @include('frontend.tracker.partials._clan-member-row', ['m' => $m])
+                    @include('frontend.tracker.partials._clan-member-row', ['m' => $m, 'rawNames' => $rawNames])
                     @endforeach
                 </tbody>
             </table>
@@ -221,7 +221,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-700/50">
                     @foreach($unassignedMembers as $m)
-                    @include('frontend.tracker.partials._clan-member-row', ['m' => $m])
+                    @include('frontend.tracker.partials._clan-member-row', ['m' => $m, 'rawNames' => $rawNames])
                     @endforeach
                 </tbody>
             </table>

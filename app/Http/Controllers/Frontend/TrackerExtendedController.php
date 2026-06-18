@@ -51,6 +51,30 @@ class TrackerExtendedController extends Controller
     /**
      * Rankings landing page - teasers per game family.
      */
+    /**
+     * Latest known raw (coloured) name per player_id, for showing current
+     * ^x colours in ranking lists instead of the frozen name_html.
+     * One batched query; safe for the small/paginated ranking sets.
+     */
+    private function latestRawNames(array $playerIds): array
+    {
+        $playerIds = array_values(array_filter($playerIds));
+        if (empty($playerIds)) return [];
+        $out = [];
+        $rows = DB::table('tracker_player_snapshots as s')
+            ->select('s.player_id', 's.name')
+            ->whereIn('s.player_id', $playerIds)
+            ->whereNotNull('s.name')->where('s.name', '!=', '')
+            ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE player_id = s.player_id AND name IS NOT NULL AND name != \'\')')
+            ->get();
+        foreach ($rows as $r) {
+            if (!array_key_exists($r->player_id, $out)) {
+                $out[$r->player_id] = $r->name;
+            }
+        }
+        return $out;
+    }
+
     public function rankings()
     {
         $data = [];
@@ -78,7 +102,15 @@ class TrackerExtendedController extends Controller
 
         $lastComputed = DB::table('tracker_server_rankings')->max('computed_at');
 
-        return view('frontend.tracker.rankings', compact('data', 'lastComputed'));
+        $rankIds = [];
+        foreach (['et', 'rtcw'] as $fam) {
+            foreach (($data[$fam]['players'] ?? []) as $row) {
+                if (!empty($row->player_id)) $rankIds[] = $row->player_id;
+            }
+        }
+        $rawNames = $this->latestRawNames($rankIds);
+
+        return view('frontend.tracker.rankings', compact('data', 'lastComputed', 'rawNames'));
     }
 
     /**
@@ -189,7 +221,9 @@ class TrackerExtendedController extends Controller
         $rankings = $query->paginate(50)->withQueryString();
         $lastComputed = DB::table('tracker_player_rankings_30d')->max('computed_at');
 
-        return view('frontend.tracker.rankings-players', compact('rankings', 'game', 'sort', 'dir', 'lastComputed'));
+        $rawNames = $this->latestRawNames(collect($rankings->items())->pluck('player_id')->all());
+
+        return view('frontend.tracker.rankings-players', compact('rankings', 'game', 'sort', 'dir', 'lastComputed', 'rawNames'));
     }
 
     // ── Clans ──
@@ -395,10 +429,19 @@ class TrackerExtendedController extends Controller
             $registered->increment('view_count');
         }
 
+        // Latest known coloured name per player (both roster variants:
+        // unclaimed topPlayers + claimed squad/unassigned members).
+        $clanPlayerIds = $topPlayers->pluck('id')->all();
+        foreach ($membersBySquad as $grp) {
+            foreach ($grp as $m) { if ($m->player) $clanPlayerIds[] = $m->player->id; }
+        }
+        foreach ($unassignedMembers as $m) { if ($m->player) $clanPlayerIds[] = $m->player->id; }
+        $rawNames = $this->latestRawNames($clanPlayerIds);
+
         return view('frontend.tracker.clan-show', compact(
             'clan', 'topPlayers', 'recentActivity',
             'registered', 'news', 'recruitmentPost', 'clanServers',
-            'membersBySquad', 'unassignedMembers', 'managerRole', 'userHasApplied'
+            'membersBySquad', 'unassignedMembers', 'managerRole', 'userHasApplied', 'rawNames'
         ));
     }
     public function playerCompare(Request $request)

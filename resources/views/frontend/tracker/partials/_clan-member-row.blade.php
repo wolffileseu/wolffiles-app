@@ -14,7 +14,7 @@
 <tr class="hover:bg-gray-700/30 transition">
     <td class="px-4 py-2">
         <a href="{{ route('tracker.player.show', $m->player) }}" class="text-amber-400 hover:text-amber-300 font-mono text-sm">
-            {!! $m->player->name_html ?? e($m->player->name_clean ?? 'Unknown') !!}
+            {!! (!empty($rawNames[$m->player->id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($rawNames[$m->player->id]) : ($m->player->name_html ?? e($m->player->name_clean ?? 'Unknown'))) !!}
         </a>
     </td>
     <td class="px-4 py-2">

@@ -68,7 +68,7 @@
                         <td class="px-3 py-2.5 text-gray-500 font-bold">{{ $p->rank }}</td>
                         <td class="px-3 py-2.5">
                             <a href="{{ route('tracker.player.show', $p->player_id) }}" class="text-amber-400 hover:text-amber-300 font-medium">
-                                {!! $p->name_html ?? e($p->name_clean ?? 'Unknown') !!}
+                                {!! (!empty($rawNames[$p->player_id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($rawNames[$p->player_id]) : ($p->name_html ?? e($p->name_clean ?? 'Unknown'))) !!}
                             </a>
                         </td>
                         <td class="px-3 py-2.5">

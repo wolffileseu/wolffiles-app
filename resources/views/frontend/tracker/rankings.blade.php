@@ -65,7 +65,7 @@
                     @if($p->country_code)
                     <img src="https://flagcdn.com/{{ strtolower($p->country_code) }}.svg" class="w-4 h-3 rounded-sm" alt="{{ strtoupper($p->country_code) }} flag">
                     @endif
-                    <span class="flex-1 text-sm text-gray-200 truncate">{!! $p->name_html ?? e($p->name_clean ?? 'Unknown') !!}</span>
+                    <span class="flex-1 text-sm text-gray-200 truncate">{!! (!empty($rawNames[$p->player_id] ?? null) ? \App\Services\Tracker\ColorCodeService::toHtml($rawNames[$p->player_id]) : ($p->name_html ?? e($p->name_clean ?? 'Unknown'))) !!}</span>
                     <span class="text-xs text-gray-400 whitespace-nowrap">
                         {{ (int)($p->playtime_minutes_30d / 60) }}h
                         @if($p->elo_rating) · ELO {{ $p->elo_rating }} @endif

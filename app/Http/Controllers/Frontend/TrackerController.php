@@ -713,7 +713,26 @@ class TrackerController extends Controller
 
         $players = $query->paginate(50)->withQueryString();
 
-        return view('frontend.tracker.players', compact('players'));
+        // Latest known raw (coloured) name per listed player, so the list shows
+        // current ^x colours instead of the frozen name_html. Batched over the
+        // 50 paginated IDs (no N+1). Rendered via ColorCodeService::toHtml().
+        $rawNames = [];
+        $pids = collect($players->items())->pluck('id')->filter()->all();
+        if (!empty($pids)) {
+            $rows = \DB::table('tracker_player_snapshots as s')
+                ->select('s.player_id', 's.name')
+                ->whereIn('s.player_id', $pids)
+                ->whereNotNull('s.name')->where('s.name', '!=', '')
+                ->whereRaw('s.polled_at = (SELECT MAX(polled_at) FROM tracker_player_snapshots WHERE player_id = s.player_id AND name IS NOT NULL AND name != \'\')')
+                ->get();
+            foreach ($rows as $r) {
+                if (!array_key_exists($r->player_id, $rawNames)) {
+                    $rawNames[$r->player_id] = $r->name;
+                }
+            }
+        }
+
+        return view('frontend.tracker.players', compact('players', 'rawNames'));
     }
 
     /**
