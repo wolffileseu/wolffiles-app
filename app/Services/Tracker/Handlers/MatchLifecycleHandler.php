@@ -6,6 +6,8 @@ use App\Models\Tracker\TrackerRawEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\Tracker\RebuildPlayerRankings30dJob;
 
 /**
  * Handles match lifecycle events:
@@ -163,6 +165,25 @@ class MatchLifecycleHandler extends AbstractHandler
         return $out;
     }
 
+    /**
+     * Debounced trigger for the 30-day player-ranking (ELO) rebuild.
+     *
+     * Fires whenever a match closes. A short cache lock lets only the first
+     * close within a ~60s window schedule a job; the job runs ~20s later (so
+     * straggler ws-events have landed). At most one rebuild per ~60s; the
+     * 30-minute scheduled rebuild stays as a safety net. afterCommit() so it
+     * never fires on a rolled-back transaction.
+     */
+    private function scheduleRankingRebuild(): void
+    {
+        if (Cache::add('tracker:rankings:rebuild-lock', 1, now()->addSeconds(60))) {
+            RebuildPlayerRankings30dJob::dispatch()
+                ->onQueue('tracker-low')
+                ->afterCommit()
+                ->delay(now()->addSeconds(20));
+        }
+    }
+
     private function closeOpenMatch(int $serverId, Carbon $endedAt, string $reason): ?\stdClass
     {
         $open = DB::table('tracker_matches')
@@ -230,6 +251,8 @@ class MatchLifecycleHandler extends AbstractHandler
                 'end_reason' => 'timeout',
                 'updated_at' => $endedAt->format('Y-m-d H:i:s.v'),
             ]);
+
+        $this->scheduleRankingRebuild();
 
         return $open;
     }
