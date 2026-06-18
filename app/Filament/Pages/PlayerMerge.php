@@ -16,6 +16,18 @@ class PlayerMerge extends Page
     protected static ?int $navigationSort = 20;
     protected static string $view = 'filament.pages.player-merge';
 
+    /** Manual merge form (free-form IDs for pairs the auto-detector misses). */
+    public ?int $manualKeepId = null;
+    public ?int $manualMergeId = null;
+
+    /** Suspect-pair scan is expensive (~3 min); only run it on demand. */
+    public bool $showSuspects = false;
+
+    public function loadSuspects(): void
+    {
+        $this->showSuspects = true;
+    }
+
     public static function canAccess(): bool
     {
         return auth()->user()?->hasRole('admin') ?? false;
@@ -88,6 +100,39 @@ class PlayerMerge extends Page
             });
             return $pairs;
         });
+    }
+
+    public function previewManual(): void
+    {
+        if (!$this->validManualIds()) return;
+        $this->previewMerge((int) $this->manualKeepId, (int) $this->manualMergeId);
+    }
+
+    public function doManual(): void
+    {
+        if (!$this->validManualIds()) return;
+        $this->doMerge((int) $this->manualKeepId, (int) $this->manualMergeId);
+    }
+
+    private function validManualIds(): bool
+    {
+        $keep = (int) $this->manualKeepId;
+        $merge = (int) $this->manualMergeId;
+        if ($keep <= 0 || $merge <= 0) {
+            Notification::make()->warning()->title('IDs fehlen')->body('Bitte beide IDs angeben.')->send();
+            return false;
+        }
+        if ($keep === $merge) {
+            Notification::make()->warning()->title('Gleiche ID')->body('Keep und Merge dürfen nicht identisch sein.')->send();
+            return false;
+        }
+        foreach ([$keep, $merge] as $id) {
+            if (!DB::table('tracker_players')->where('id', $id)->exists()) {
+                Notification::make()->danger()->title('Unbekannte ID')->body("Spieler #$id existiert nicht.")->send();
+                return false;
+            }
+        }
+        return true;
     }
 
     public function previewMerge(int $keepId, int $mergeId): void
