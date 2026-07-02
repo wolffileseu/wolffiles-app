@@ -52,8 +52,12 @@ class WikiArticle extends Model
 
     protected function content(): Attribute
     {
+        // Wiki-Content wird von App\Services\Wiki\WikitextParser generiert.
+        // Der Parser escaped User-Input bereits sauber (htmlspecialchars) und gibt
+        // nur kontrollierte HTML-Tags aus - kein zusaetzliches Purifier-Cleaning noetig.
+        // (Frueher: Purifier::clean(), strippte aber figure/figcaption/HTML5-Tags weg.)
         return Attribute::make(
-            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+            set: fn (?string $value) => $value,
         );
     }
 

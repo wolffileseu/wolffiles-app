@@ -57,7 +57,9 @@ class FastDlExtractPk3s extends Command
         }
 
         // Get ZIP files that haven't been extracted yet
-        $alreadySynced = FastDlFile::where('directory_id', $baseDir->id)->pluck('wolffiles_file_id')->toArray();
+        $alreadySynced = FastDlFile::where('directory_id', $baseDir->id)
+            ->whereNotNull('wolffiles_file_id')
+            ->pluck('wolffiles_file_id')->toArray();
 
         $files = File::where('status', 'approved')
             ->where('game', $gameString)

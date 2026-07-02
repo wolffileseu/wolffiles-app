@@ -1,12 +1,26 @@
 <x-layouts.app title="Create Fast Download">
 <div class="max-w-2xl mx-auto px-4 py-12">
 
+    @php($hasClans = $hasClans ?? false)
+
+    @if($hasClans)
+    <div class="mb-6">
+        <a href="{{ route('clan.fastdl') }}" class="text-amber-400 hover:text-amber-300 text-sm">← Back to my Fast Downloads</a>
+    </div>
+    @endif
+
     <div class="text-center mb-8">
         <div class="text-6xl mb-4">🚀</div>
         <h1 class="text-3xl font-bold text-white">Create your Fast Download</h1>
         <p class="text-gray-400 mt-2">Set up a fast download server for your clan in seconds!</p>
     </div>
 
+    @if($games->count() === 0)
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-8 text-center">
+        <p class="text-gray-300">You already have a Fast Download for every available game. 🎉</p>
+        <a href="{{ route('clan.fastdl') }}" class="inline-block mt-4 px-6 py-2 rounded-lg font-medium text-white" style="background:linear-gradient(to right,#f59e0b,#ea580c);">Back to dashboard</a>
+    </div>
+    @else
     <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-8">
         <form action="{{ route('clan.fastdl.store') }}" method="POST">
             @csrf
@@ -63,6 +77,7 @@
             </div>
         </form>
     </div>
+    @endif
 
     @if(session('error'))
     <div class="fixed bottom-4 right-4 bg-red-900/90 border border-red-700 text-red-300 px-6 py-3 rounded-xl shadow-lg" x-data x-init="setTimeout(() => $el.remove(), 3000)">{{ session('error') }}</div>

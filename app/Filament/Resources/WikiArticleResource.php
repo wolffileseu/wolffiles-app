@@ -108,14 +108,188 @@ class WikiArticleResource extends Resource
                             ))
                             ->columnSpanFull(),
 
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\Textarea::make('wikitext')
-                                ->label('Wikitext-Quelle')
-                                ->rows(24)
-                                ->extraInputAttributes([
-                                    'style' => 'font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5;',
-                                    'spellcheck' => 'false',
+                        // ----- Bild-Einfuegen-Action -----
+                        Forms\Components\Actions::make([
+                            Forms\Components\Actions\Action::make('insertImage')
+                                ->label('Bild einfügen')
+                                ->icon('heroicon-o-photo')
+                                ->color('primary')
+                                ->modalHeading('🖼 Bild ins Wikitext einfügen')
+                                ->modalDescription('Wähle ein Bild aus dem Pool oder lade ein neues hoch.')
+                                ->modalWidth('2xl')
+                                ->modalSubmitActionLabel('Einfügen')
+                                ->form([
+                                    Forms\Components\Tabs::make('imageSource')->tabs([
+
+                                        Forms\Components\Tabs\Tab::make('Aus Pool')
+                                            ->icon('heroicon-o-photo')
+                                            ->schema([
+                                                Forms\Components\Select::make('pool_media_id')
+                                                    ->label('Vorhandenes Bild')
+                                                    ->placeholder('Bild aus Pool wählen oder suchen…')
+                                                    ->searchable()
+                                                    ->options(fn () => \App\Models\WikiMedia::query()
+                                                        ->where('type', 'image')
+                                                        ->orderByDesc('id')
+                                                        ->limit(50)
+                                                        ->pluck('filename', 'id')
+                                                        ->toArray())
+                                                    ->getSearchResultsUsing(function (string $search) {
+                                                        $like = '%' . $search . '%';
+                                                        return \App\Models\WikiMedia::query()
+                                                            ->where('type', 'image')
+                                                            ->where(function ($q) use ($like) {
+                                                                $q->where('filename', 'like', $like)
+                                                                  ->orWhere('caption', 'like', $like);
+                                                            })
+                                                            ->limit(30)
+                                                            ->pluck('filename', 'id')
+                                                            ->toArray();
+                                                    })
+                                                    ->getOptionLabelUsing(fn ($value) => \App\Models\WikiMedia::find($value)?->filename)
+                                                    ->live(),
+
+                                                Forms\Components\Placeholder::make('pool_preview')
+                                                    ->label('')
+                                                    ->content(function (Get $get) {
+                                                        $id = $get('pool_media_id');
+                                                        if (! $id) {
+                                                            return new \Illuminate\Support\HtmlString(
+                                                                '<div style="color:#9ca3af; font-style:italic; padding:1rem; text-align:center;">Wähle ein Bild oben, um eine Vorschau zu sehen.</div>'
+                                                            );
+                                                        }
+                                                        $m = \App\Models\WikiMedia::find($id);
+                                                        if (! $m) return '';
+                                                        return new \Illuminate\Support\HtmlString(
+                                                            '<div style="text-align:center; padding:0.5rem 0;">'
+                                                            . '<img src="' . htmlspecialchars($m->url, ENT_QUOTES) . '" alt="" '
+                                                            . 'style="max-width:100%; max-height:240px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);" />'
+                                                            . '<div style="margin-top:0.5rem; color:#9ca3af; font-size:12px;">'
+                                                            . htmlspecialchars($m->filename) . ' · ' . htmlspecialchars($m->file_size_formatted)
+                                                            . '</div></div>'
+                                                        );
+                                                    }),
+                                            ]),
+
+                                        Forms\Components\Tabs\Tab::make('Neu hochladen')
+                                            ->icon('heroicon-o-arrow-up-tray')
+                                            ->schema([
+                                                Forms\Components\FileUpload::make('upload_file')
+                                                    ->label('Bild-Datei')
+                                                    ->image()
+                                                    ->maxSize(8 * 1024) // 8 MB in KB
+                                                    ->acceptedFileTypes(['image/png', 'image/jpeg', 'image/gif', 'image/webp'])
+                                                    ->directory('tmp-wiki-uploads')
+                                                    ->disk('public')
+                                                    ->helperText('PNG / JPG / GIF / WEBP, max 8 MB. Wird beim Einfügen automatisch in den Wiki-Pool übernommen.'),
+                                            ]),
+
+                                    ]),
+
+                                    Forms\Components\Section::make('Anzeige-Optionen')
+                                        ->collapsible()
+                                        ->schema([
+                                            Forms\Components\TextInput::make('caption')
+                                                ->label('Bildunterschrift')
+                                                ->placeholder('z.B. „ETF Hauptmenü mit allen Slots"')
+                                                ->columnSpanFull(),
+                                            Forms\Components\Select::make('size')
+                                                ->label('Größe')
+                                                ->options([
+                                                    'thumb-200'  => 'Thumb · 200px',
+                                                    'thumb-400'  => 'Thumb · 400px (Standard)',
+                                                    'thumb-600'  => 'Thumb · 600px',
+                                                    'thumb-only' => 'Thumb · Standardgröße',
+                                                    'full'       => 'Volle Breite',
+                                                ])
+                                                ->default('thumb-400')
+                                                ->required(),
+                                            Forms\Components\Select::make('align')
+                                                ->label('Ausrichtung')
+                                                ->options([
+                                                    'none'   => 'Standard',
+                                                    'left'   => 'Links',
+                                                    'right'  => 'Rechts',
+                                                    'center' => 'Zentriert',
+                                                ])
+                                                ->default('none'),
+                                        ])->columns(2),
                                 ])
+                                ->action(function (array $data, $livewire): void {
+                                    // 1) Bild bestimmen — Pool oder neu hochgeladen
+                                    $media = null;
+
+                                    if (! empty($data['upload_file'])) {
+                                        $tmpRel = is_array($data['upload_file']) ? reset($data['upload_file']) : $data['upload_file'];
+                                        if ($tmpRel) {
+                                            $abs = \Illuminate\Support\Facades\Storage::disk('public')->path($tmpRel);
+                                            if (file_exists($abs)) {
+                                                $file = new \Illuminate\Http\UploadedFile(
+                                                    $abs,
+                                                    basename($tmpRel),
+                                                    mime_content_type($abs) ?: 'image/png',
+                                                    null,
+                                                    true
+                                                );
+                                                try {
+                                                    $media = (new \App\Services\Wiki\WikiMediaService())
+                                                        ->store($file, auth()->id());
+                                                } catch (\Throwable $e) {
+                                                    \Filament\Notifications\Notification::make()
+                                                        ->title('Upload fehlgeschlagen')
+                                                        ->body($e->getMessage())
+                                                        ->danger()->send();
+                                                    return;
+                                                }
+                                                @unlink($abs);
+                                            }
+                                        }
+                                    } elseif (! empty($data['pool_media_id'])) {
+                                        $media = \App\Models\WikiMedia::find($data['pool_media_id']);
+                                    }
+
+                                    if (! $media) {
+                                        \Filament\Notifications\Notification::make()
+                                            ->title('Kein Bild gewählt')
+                                            ->body('Wähle ein Bild aus dem Pool oder lade eines neu hoch.')
+                                            ->warning()->send();
+                                        return;
+                                    }
+
+                                    // 2) Snippet bauen
+                                    $opts = [];
+                                    switch ($data['size'] ?? 'thumb-400') {
+                                        case 'thumb-200':  $opts[] = 'thumb'; $opts[] = '200px'; break;
+                                        case 'thumb-400':  $opts[] = 'thumb'; $opts[] = '400px'; break;
+                                        case 'thumb-600':  $opts[] = 'thumb'; $opts[] = '600px'; break;
+                                        case 'thumb-only': $opts[] = 'thumb'; break;
+                                        case 'full':       /* nichts */ break;
+                                    }
+                                    if (in_array($data['align'] ?? 'none', ['left', 'right', 'center'], true)) {
+                                        $opts[] = $data['align'];
+                                    }
+                                    if (! empty($data['caption'])) {
+                                        $opts[] = $data['caption'];
+                                    }
+
+                                    $snippet = '[[File:' . $media->filename
+                                        . (count($opts) > 0 ? '|' . implode('|', $opts) : '')
+                                        . ']]';
+
+                                    // 3) An den CM6-Editor schicken (Livewire dispatch -> Window-Event)
+                                    $livewire->dispatch('wikitext-insert', snippet: $snippet);
+
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Bild eingefügt')
+                                        ->body($snippet)
+                                        ->success()->send();
+                                }),
+                        ])->columnSpanFull(),
+
+                        Forms\Components\Grid::make(2)->schema([
+                            Forms\Components\ViewField::make('wikitext')
+                                ->label('Wikitext-Quelle')
+                                ->view('forms.components.wikitext-editor')
                                 ->live(debounce: 800)
                                 ->afterStateUpdated(function (Set $set, ?string $state) {
                                     $set('_preview', static::renderPreview((string) $state));

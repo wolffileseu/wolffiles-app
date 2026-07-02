@@ -4,10 +4,18 @@
     $stats = $this->getLanguageStats();
     $rows  = $this->getTranslationRows();
     $langNames = [
-        'de'=>'🇩🇪 Deutsch','fr'=>'🇫🇷 Français','nl'=>'🇳🇱 Nederlands',
-        'pl'=>'🇵🇱 Polski','tr'=>'🇹🇷 Türkçe','es'=>'🇪🇸 Español',
-        'it'=>'🇮🇹 Italiano','pt'=>'🇵🇹 Português','ru'=>'🇷🇺 Русский',
-    ];
+        'en'=>'🇬🇧 English','de'=>'🇩🇪 Deutsch','fr'=>'🇫🇷 Français','nl'=>'🇳🇱 Nederlands',
+        'es'=>'🇪🇸 Español','it'=>'🇮🇹 Italiano','pt'=>'🇵🇹 Português','pl'=>'🇵🇱 Polski',
+        'ru'=>'🇷🇺 Русский','tr'=>'🇹🇷 Türkçe','fi'=>'🇫🇮 Suomi','sv'=>'🇸🇪 Svenska',
+        'no'=>'🇳🇴 Norsk','da'=>'🇩🇰 Dansk','is'=>'🇮🇸 Íslenska','cs'=>'🇨🇿 Čeština',
+        'sk'=>'🇸🇰 Slovenčina','hu'=>'🇭🇺 Magyar','ro'=>'🇷🇴 Română','bg'=>'🇧🇬 Български',
+        'hr'=>'🇭🇷 Hrvatski','sr'=>'🇷🇸 Српски','sl'=>'🇸🇮 Slovenščina','uk'=>'🇺🇦 Українська',
+        'el'=>'🇬🇷 Ελληνικά','et'=>'🇪🇪 Eesti','lv'=>'🇱🇻 Latviešu','lt'=>'🇱🇹 Lietuvių',
+        'pt_BR'=>'🇧🇷 Português (BR)','zh'=>'🇨🇳 中文','zh_TW'=>'🇹🇼 中文 (繁體)','ja'=>'🇯🇵 日本語',
+        'ko'=>'🇰🇷 한국어','ar'=>'🇸🇦 العربية','he'=>'🇮🇱 עברית','hi'=>'🇮🇳 हिन्दी',
+        'th'=>'🇹🇭 ไทย','vi'=>'🇻🇳 Tiếng Việt','id'=>'🇮🇩 Indonesia','ms'=>'🇲🇾 Melayu',
+        'fa'=>'🇮🇷 فارسی','ca'=>'🇪🇸 Català','gl'=>'🇪🇸 Galego','eu'=>'🇪🇸 Euskara',
+    ]
 @endphp
 
 <style>
@@ -77,7 +85,7 @@
       @foreach($stats as $lang => $s)
       @php $cls = $s['percent']>=80?'#22c55e':($s['percent']>=50?'#f59e0b':'#ef4444'); @endphp
       <div class="tm-lang-item {{ $selectedLang===$lang?'active':'' }}" wire:click="$set('selectedLang','{{$lang}}')">
-        <span class="tm-lang-flag">{{ $langNames[$lang] ? mb_substr($langNames[$lang],0,2) : '🌐' }}</span>
+        <span class="tm-lang-flag">{{ isset($langNames[$lang]) ? mb_substr($langNames[$lang],0,2) : '🌐' }}</span>
         <div class="tm-lang-info">
           <div class="tm-lang-name">{{ $langNames[$lang] ?? strtoupper($lang) }}</div>
           <div class="tm-lang-sub">

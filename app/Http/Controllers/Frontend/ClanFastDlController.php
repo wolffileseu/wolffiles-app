@@ -13,20 +13,49 @@ use Illuminate\Support\Str;
 
 class ClanFastDlController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $clan = FastDlClan::where('leader_user_id', auth()->id())
-            ->where('is_active', true)
-            ->first();
+        $userId = auth()->id();
 
-        if (!$clan) {
-            // Check if user can create a clan
-            if (auth()->user()->hasRole('clan_leader') || auth()->user()->hasRole('admin')) {
-                $games = FastDlGame::where('is_active', true)->get();
-                return view('frontend.fastdl.create-clan', compact('games'));
+        $clans = FastDlClan::where('leader_user_id', $userId)
+            ->where('is_active', true)
+            ->with('game')
+            ->get();
+
+        $canCreate = auth()->user()->hasRole('clan_leader') || auth()->user()->hasRole('admin');
+
+        // Games the user does not yet have a Fast Download for
+        $usedGameIds = $clans->pluck('game_id')->all();
+        $availableGames = FastDlGame::where('is_active', true)
+            ->whereNotIn('id', $usedGameIds)
+            ->get();
+
+        // No Fast Download yet -> show create form (or "no access" notice)
+        if ($clans->isEmpty()) {
+            if ($canCreate) {
+                return view('frontend.fastdl.create-clan', [
+                    'games' => $availableGames,
+                    'hasClans' => false,
+                ]);
             }
             return view('frontend.fastdl.no-clan');
         }
+
+        // User explicitly wants to add a Fast Download for another game
+        if ($request->boolean('create') && $canCreate && $availableGames->isNotEmpty()) {
+            return view('frontend.fastdl.create-clan', [
+                'games' => $availableGames,
+                'hasClans' => true,
+            ]);
+        }
+
+        // Pick the active Fast Download: by ?game=slug, otherwise the first one
+        $clan = null;
+        if ($request->filled('game')) {
+            $wanted = $request->get('game');
+            $clan = $clans->first(fn ($c) => $c->game && $c->game->slug === $wanted);
+        }
+        $clan = $clan ?: $clans->first();
 
         $game = $clan->game;
         $selectedDirs = $clan->selectedDirectories;
@@ -43,7 +72,8 @@ class ClanFastDlController extends Controller
 
         return view('frontend.fastdl.clan-dashboard', compact(
             'clan', 'game', 'selectedDirs', 'ownFiles',
-            'availableDirs', 'storageUsed', 'storageLimitBytes', 'storagePercent'
+            'availableDirs', 'storageUsed', 'storageLimitBytes', 'storagePercent',
+            'clans', 'availableGames', 'canCreate'
         ));
     }
 
@@ -54,16 +84,19 @@ class ClanFastDlController extends Controller
             abort(403);
         }
 
-        // Check if user already has a clan
-        if (FastDlClan::where('leader_user_id', auth()->id())->exists()) {
-            return back()->with('error', __('messages.already_have_clan'));
-        }
-
         $request->validate([
             'name' => 'required|string|max:50|min:2',
             'slug' => 'required|string|max:30|min:2|alpha_dash|unique:fastdl_clans,slug',
             'game_id' => 'required|exists:fastdl_games,id',
         ]);
+
+        // One Fast Download per user *and* game (not per user globally)
+        $alreadyForGame = FastDlClan::where('leader_user_id', auth()->id())
+            ->where('game_id', $request->game_id)
+            ->exists();
+        if ($alreadyForGame) {
+            return back()->with('error', __('messages.already_have_clan'))->withInput();
+        }
 
         // Make sure slug doesn't conflict with game slugs
         $gameSlug = FastDlGame::where('slug', $request->slug)->exists();
@@ -71,7 +104,7 @@ class ClanFastDlController extends Controller
             return back()->with('error', __('messages.slug_taken'))->withInput();
         }
 
-        FastDlClan::create([
+        $clan = FastDlClan::create([
             'name' => $request->name,
             'slug' => Str::lower($request->slug),
             'game_id' => $request->game_id,
@@ -81,12 +114,14 @@ class ClanFastDlController extends Controller
             'storage_limit_mb' => 500,
         ]);
 
-        return redirect()->route('clan.fastdl')->with('success', __('messages.clan_created'));
+        return redirect()
+            ->route('clan.fastdl', ['game' => $clan->game->slug])
+            ->with('success', __('messages.clan_created'));
     }
 
     public function updateDirectories(Request $request)
     {
-        $clan = FastDlClan::where('leader_user_id', auth()->id())->firstOrFail();
+        $clan = $this->resolveClan($request);
         $dirIds = $request->input('directories', []);
 
         $validDirs = FastDlDirectory::where('game_id', $clan->game_id)
@@ -101,7 +136,7 @@ class ClanFastDlController extends Controller
 
     public function upload(Request $request)
     {
-        $clan = FastDlClan::where('leader_user_id', auth()->id())->firstOrFail();
+        $clan = $this->resolveClan($request);
 
         $isMultipart = $request->filled('file_s3_key');
 
@@ -137,7 +172,7 @@ class ClanFastDlController extends Controller
         $finalS3Path = "fastdl/clans/{$clan->slug}/{$directory}/{$filename}";
 
         if ($isMultipart) {
-            // File ist schon in S3 unter fastdl/uploads/... — wir kopieren zur finalen Location
+            // File ist schon in S3 unter fastdl/uploads/... -> wir kopieren zur finalen Location
             try {
                 Storage::disk('s3')->copy($tempS3Key, $finalS3Path);
                 Storage::disk('s3')->delete($tempS3Key);
@@ -159,13 +194,31 @@ class ClanFastDlController extends Controller
 
     public function deleteFile(Request $request, FastDlClanFile $file)
     {
-        $clan = FastDlClan::where('leader_user_id', auth()->id())->firstOrFail();
-        if ($file->clan_id !== $clan->id) abort(403);
+        $clan = FastDlClan::where('leader_user_id', auth()->id())
+            ->where('id', $file->clan_id)
+            ->firstOrFail();
 
         Storage::disk('s3')->delete($file->s3_path);
         $file->delete();
 
         $clan->update(['storage_used_mb' => round($clan->ownFiles()->sum('file_size') / 1024 / 1024)]);
         return back()->with('success', __('messages.file_deleted'));
+    }
+
+    /**
+     * Resolve the Fast Download space the request acts on.
+     * Uses the posted clan_id (scoped to the current user) when present,
+     * otherwise falls back to the user's first space.
+     */
+    protected function resolveClan(Request $request): FastDlClan
+    {
+        $query = FastDlClan::where('leader_user_id', auth()->id())
+            ->where('is_active', true);
+
+        if ($request->filled('clan_id')) {
+            $query->where('id', $request->input('clan_id'));
+        }
+
+        return $query->firstOrFail();
     }
 }

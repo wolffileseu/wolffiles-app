@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Uploader API tree cache invalidation
         \App\Models\Category::observe(\App\Observers\CategoryObserver::class);
+        \App\Models\Tracker\TrackerBan::observe(\App\Observers\TrackerBanObserver::class);
         \App\Models\Tracker\TrackerClaim::observe(\App\Observers\TrackerClaimObserver::class);
 
         // Resource Policies
@@ -68,7 +69,7 @@ class AppServiceProvider extends ServiceProvider
             ["components.layouts.app", "components.dm-bell"],
             \App\Http\View\Composers\DmComposer::class
         );
-    }
+}
     /**
      * Auto-create permissions for all Filament resources.
      * Run once on boot, cached for 24h.

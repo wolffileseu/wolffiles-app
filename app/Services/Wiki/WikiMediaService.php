@@ -35,6 +35,14 @@ class WikiMediaService
 
         Storage::disk(self::DISK)->putFileAs(self::DIR, $file, $filename, 'public');
 
+        // Hetzner Object Storage: 'public' im putFileAs reicht nicht zuverlaessig.
+        // Expliziter PutObjectAcl-Call via setVisibility, sonst 403 vom CDN.
+        try {
+            Storage::disk(self::DISK)->setVisibility($key, 'public');
+        } catch (\Throwable $e) {
+            \Log::warning('WikiMediaService: setVisibility failed for '.$key.': '.$e->getMessage());
+        }
+
         return WikiMedia::create([
             'wiki_article_id' => $articleId,
             'user_id'         => $userId,

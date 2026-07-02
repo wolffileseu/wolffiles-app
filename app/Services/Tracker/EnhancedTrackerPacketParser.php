@@ -37,6 +37,7 @@ class EnhancedTrackerPacketParser
         'name',         // Tracker_ClientName
         'wsc',          // weapon-stats-count header (precedes N x 'ws')
         'ws',           // individual player weapon stats
+        'kill',         // RtCW obituary kill: kill <killer> <victim> <mod>
     ];
 
     /**

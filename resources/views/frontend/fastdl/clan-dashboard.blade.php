@@ -1,6 +1,28 @@
 <x-layouts.app :title="$clan->name . ' — Fast Download'">
 <div class="max-w-5xl mx-auto px-4 py-8">
 
+    @php($clans = $clans ?? collect())
+    @php($availableGames = $availableGames ?? collect())
+    @php($canCreate = $canCreate ?? false)
+
+    @if($clans->count() > 1 || ($canCreate && $availableGames->count() > 0))
+    <div class="flex flex-wrap items-center gap-2 mb-6">
+        @foreach($clans as $c)
+        <a href="{{ route('clan.fastdl', ['game' => $c->game->slug]) }}"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition {{ $c->id === $clan->id ? 'text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700' }}"
+           @if($c->id === $clan->id) style="background:linear-gradient(to right,#f59e0b,#ea580c);" @endif>
+            {{ $c->game->name }}
+        </a>
+        @endforeach
+        @if($canCreate && $availableGames->count() > 0)
+        <a href="{{ route('clan.fastdl', ['create' => 1]) }}"
+           class="px-4 py-2 rounded-lg text-sm font-medium bg-gray-800 text-amber-400 hover:bg-gray-700 transition border border-dashed border-gray-600">
+            + Add game
+        </a>
+        @endif
+    </div>
+    @endif
+
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-3xl font-bold text-white">🖥️ {{ $clan->name }}</h1>
@@ -40,6 +62,7 @@
                 <h3 class="text-lg font-semibold text-white mb-4">📦 Select Mod Directories</h3>
                 <form action="{{ route('clan.fastdl.directories') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="clan_id" value="{{ $clan->id }}">
                     @if($availableDirs->count() > 0)
                     <div class="space-y-3">
                         @foreach($availableDirs as $dir)
@@ -65,6 +88,7 @@
                 <h3 class="text-lg font-semibold text-white mb-4">📤 Upload Files</h3>
                 <form action="{{ route('clan.fastdl.upload') }}" method="POST" enctype="multipart/form-data">
                     @csrf
+                    <input type="hidden" name="clan_id" value="{{ $clan->id }}">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label class="text-sm text-gray-400 block mb-1">Target Directory</label>

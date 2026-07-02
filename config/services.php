@@ -40,6 +40,7 @@ return [
     'client_secret' => env('DISCORD_CLIENT_SECRET'),
     'redirect' => env('DISCORD_REDIRECT_URI'),
     'webhook_url' => env('DISCORD_WEBHOOK_URL'),
+        'flag_webhook_url' => env('DISCORD_FLAG_WEBHOOK_URL'),
 ],
 
 

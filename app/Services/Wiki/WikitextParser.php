@@ -159,13 +159,94 @@ class WikitextParser
         $out = [];
         $i = 0;
         $count = count($lines);
-
         while ($i < $count) {
             $line = $lines[$i];
+
+            // ===== MediaWiki-Tabelle: {| ... |} =====
+            if (preg_match('/^\s*\{\|(.*)$/', $line, $tm)) {
+                $tableAttrsRaw = html_entity_decode(trim($tm[1]), ENT_QUOTES, 'UTF-8');
+                $safeAttrs = '';
+                if (preg_match_all('/(class|id|style|border|cellpadding|cellspacing)=("[^"]*"|\'[^\']*\'|[^\s]+)/i', $tableAttrsRaw, $am, PREG_SET_ORDER)) {
+                    foreach ($am as $a) {
+                        $val = trim($a[2], "\"\'");
+                        $safeAttrs .= ' ' . strtolower($a[1]) . '="' . htmlspecialchars($val, ENT_QUOTES, 'UTF-8') . '"';
+                    }
+                }
+                if ($safeAttrs === '') {
+                    $safeAttrs = ' class="wikitable"';
+                }
+
+                $i++;
+                $rows = [];
+                $currentRow = null;
+
+                while ($i < $count) {
+                    $l = $lines[$i];
+
+                    if (preg_match('/^\s*\|\}\s*$/', $l)) {
+                        if ($currentRow !== null) { $rows[] = $currentRow; }
+                        $i++;
+                        break;
+                    }
+
+                    if (preg_match('/^\s*\|-/', $l)) {
+                        if ($currentRow !== null) { $rows[] = $currentRow; }
+                        $currentRow = ['cells' => []];
+                        $i++;
+                        continue;
+                    }
+
+                    if (preg_match('/^\s*!(.*)$/', $l, $hm)) {
+                        if ($currentRow === null) { $currentRow = ['cells' => []]; }
+                        $cells = preg_split('/\s*!!\s*/', $hm[1]);
+                        foreach ($cells as $c) {
+                            $currentRow['cells'][] = ['text' => trim($c), 'header' => true];
+                        }
+                        $i++;
+                        continue;
+                    }
+
+                    if (preg_match('/^\s*\|(.*)$/', $l, $dm)) {
+                        if ($currentRow === null) { $currentRow = ['cells' => []]; }
+                        $cells = preg_split('/\s*\|\|\s*/', $dm[1]);
+                        foreach ($cells as $c) {
+                            $currentRow['cells'][] = ['text' => trim($c), 'header' => false];
+                        }
+                        $i++;
+                        continue;
+                    }
+
+                    if ($currentRow !== null && !empty($currentRow['cells'])) {
+                        $lastIdx = count($currentRow['cells']) - 1;
+                        $currentRow['cells'][$lastIdx]['text'] .= "\n" . trim($l);
+                    }
+                    $i++;
+                }
+
+                $html = '<table' . $safeAttrs . '>';
+                foreach ($rows as $row) {
+                    if (empty($row['cells'])) { continue; }
+                    $html .= '<tr>';
+                    foreach ($row['cells'] as $cell) {
+                        $tag = $cell['header'] ? 'th' : 'td';
+                        // Zellinhalt durch Inline-Parsing jagen (Files, Links, Templates, Inline-Formatting)
+                        $cellHtml = $cell['text'];
+                        $cellHtml = $this->parseFiles($cellHtml);
+                        $cellHtml = $this->parseTemplates($cellHtml);
+                        $cellHtml = $this->parseInline($cellHtml);
+                        $html .= '<' . $tag . '>' . $cellHtml . '</' . $tag . '>';
+                    }
+                    $html .= '</tr>';
+                }
+                $html .= '</table>';
+                $out[] = $this->stash($html, 'TABLE');
+                continue;
+            }
+
+            // ===== Markdown-Tabelle (Fallback, bestehender Code) =====
             if (preg_match('/^\s*\|.+\|\s*$/', $line)
                 && isset($lines[$i + 1])
                 && preg_match('/^\s*\|[\s\-:|]+\|\s*$/', $lines[$i + 1])) {
-
                 $headers = $this->splitTableRow($line);
                 $i += 2;
                 $rows = [];
@@ -173,8 +254,7 @@ class WikitextParser
                     $rows[] = $this->splitTableRow($lines[$i]);
                     $i++;
                 }
-
-                $html = '<table class="wiki-table"><thead><tr>';
+                $html = '<table class="wikitable"><thead><tr>';
                 foreach ($headers as $h) {
                     $html .= '<th>' . $h . '</th>';
                 }
@@ -190,6 +270,7 @@ class WikitextParser
                 $out[] = $this->stash($html, 'TABLE');
                 continue;
             }
+
             $out[] = $line;
             $i++;
         }
@@ -413,11 +494,57 @@ class WikitextParser
 
     private function parseTemplates(string $text): string
     {
-        return preg_replace_callback('/\{\{([^}|\n]+)(\|[^}]*)?\}\}/', function ($m) {
-            $name = trim($m[1]);
-            return '<span class="wiki-template" data-template="' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '">'
-                . '{{' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '}}</span>';
-        }, $text);
+        // ===== Callout-Templates: {{Info|...}}, {{Hinweis|...}}, {{Warnung|...}}, {{Achtung|...}} =====
+        // Aliase: Info=Info/Notice/Note, Hinweis=Hinweis/Tipp/Tip, Warnung=Warnung/Warning/Caution, Achtung=Achtung/Danger/Important
+        $calloutMap = [
+            'info'      => 'info',
+            'notice'    => 'info',
+            'note'      => 'info',
+            'hinweis'   => 'hinweis',
+            'tipp'      => 'hinweis',
+            'tip'       => 'hinweis',
+            'warnung'   => 'warnung',
+            'warning'   => 'warnung',
+            'caution'   => 'warnung',
+            'achtung'   => 'achtung',
+            'danger'    => 'achtung',
+            'important' => 'achtung',
+            'wichtig'   => 'achtung',
+        ];
+        $calloutLabels = [
+            'info'    => 'Info',
+            'hinweis' => 'Hinweis',
+            'warnung' => 'Warnung',
+            'achtung' => 'Achtung',
+        ];
+
+        $text = preg_replace_callback(
+            '/\{\{\s*([A-Za-z]+)\s*\|(.+?)\}\}/s',
+            function ($m) use ($calloutMap, $calloutLabels) {
+                $name = strtolower(trim($m[1]));
+                if (!isset($calloutMap[$name])) {
+                    return $m[0]; // unbekanntes Template, durchreichen
+                }
+                $type = $calloutMap[$name];
+                $label = $calloutLabels[$type];
+
+                // Inhalt durch Inline-Parser jagen (Files, Links, Bold/Italic)
+                $body = trim($m[2]);
+                $body = $this->parseFiles($body);
+                $body = $this->parseInline($body);
+
+                return $this->stash(
+                    '<div class="wiki-callout wiki-callout-' . $type . '" role="note" aria-label="' . $label . '">'
+                    . '<span class="wiki-callout-icon" aria-hidden="true"></span>'
+                    . '<div class="wiki-callout-body">' . $body . '</div>'
+                    . '</div>',
+                    'CALLOUT'
+                );
+            },
+            $text
+        );
+
+        return $text;
     }
 
     private function parseCategories(string $text): string
