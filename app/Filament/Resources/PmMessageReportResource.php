@@ -28,10 +28,6 @@ class PmMessageReportResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can("view_any_pm_message_report") ?? false;
-    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -185,7 +181,7 @@ class PmMessageReportResource extends Resource
                     ->icon("heroicon-o-eye")
                     ->color("warning")
                     ->visible(fn ($record): bool => $record->conversation_id !== null
-                        && auth()->user()?->can("view_any_pm_conversation"))
+                        && auth()->user()?->can("view_any_pm::conversation"))
                     ->url(fn ($record): string => route("filament.admin.resources.pm-conversations.view", $record->conversation_id))
                     ->openUrlInNewTab(),
 

@@ -18,10 +18,6 @@ class PollResource extends Resource
     protected static ?int $navigationSort = 5;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_polls');
-    }
 
     public static function form(Form $form): Form
     {

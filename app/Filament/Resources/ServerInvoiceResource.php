@@ -18,10 +18,6 @@ class ServerInvoiceResource extends Resource
     protected static ?string $navigationLabel = 'Invoices';
     protected static ?int $navigationSort = 4;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public static function form(Form $form): Form
     {

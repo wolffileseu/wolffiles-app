@@ -23,10 +23,6 @@ class FileResource extends Resource
     protected static ?int $navigationSort = 1;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_files');
-    }
 
     public static function form(Form $form): Form
     {

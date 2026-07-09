@@ -7,9 +7,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class TelegramSettings extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
     protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Telegram Notifications';
@@ -23,10 +26,6 @@ class TelegramSettings extends Page
     public string $chat_id = '';
     public array $events = [];
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public static array $availableEvents = [
         'file_uploaded' => '📦 New File Uploaded',

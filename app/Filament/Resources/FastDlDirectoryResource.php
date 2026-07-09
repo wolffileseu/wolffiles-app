@@ -19,10 +19,6 @@ class FastDlDirectoryResource extends Resource
     protected static ?string $navigationLabel = 'Directories';
     protected static ?int $navigationSort = 2;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_fastdl_directories');
-    }
 
     public static function form(Form $form): Form
     {

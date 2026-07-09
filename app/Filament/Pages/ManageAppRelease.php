@@ -5,9 +5,12 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 class ManageAppRelease extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon  = 'heroicon-o-arrow-down-tray';
     protected static ?string $navigationGroup = 'Clans';
     protected static ?string $navigationLabel = 'Tool Release';

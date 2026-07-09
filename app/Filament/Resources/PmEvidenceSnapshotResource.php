@@ -24,10 +24,6 @@ class PmEvidenceSnapshotResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can("create_pm_evidence_snapshot") ?? false;
-    }
 
     public static function canCreate(): bool { return false; }
     public static function canEdit($record): bool { return false; }

@@ -17,10 +17,6 @@ class TagResource extends Resource
     protected static ?string $navigationGroup = 'Content';
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tags');
-    }
 
     public static function form(Form $form): Form
     {

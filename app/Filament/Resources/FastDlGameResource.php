@@ -18,10 +18,6 @@ class FastDlGameResource extends Resource
     protected static ?string $navigationLabel = 'Games';
     protected static ?int $navigationSort = 1;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_fastdl_games');
-    }
 
     public static function form(Form $form): Form
     {

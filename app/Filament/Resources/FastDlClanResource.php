@@ -20,10 +20,6 @@ class FastDlClanResource extends Resource
     protected static ?string $navigationLabel = 'Clans';
     protected static ?int $navigationSort = 4;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_fastdl_clans');
-    }
 
     public static function form(Form $form): Form
     {

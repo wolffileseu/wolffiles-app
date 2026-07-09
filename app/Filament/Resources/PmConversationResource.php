@@ -29,10 +29,6 @@ class PmConversationResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can("view_any_pm_conversation") ?? false;
-    }
 
     public static function canCreate(): bool
     {

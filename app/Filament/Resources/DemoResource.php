@@ -26,10 +26,6 @@ class DemoResource extends Resource
         return static::getModel()::where('status', 'pending')->count() ?: null;
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_demos');
-    }
 
     public static function form(Form $form): Form
     {

@@ -7,12 +7,15 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 /**
  * @property \Filament\Forms\Form $form
  */
 class SocialLinksSettings extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-share';
     protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Social Links';

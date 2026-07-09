@@ -6,6 +6,7 @@ use App\Models\Setting;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
@@ -14,6 +15,8 @@ use Filament\Notifications\Notification;
  */
 class CreditsSettings extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-heart';
     protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Credits';
@@ -24,10 +27,6 @@ class CreditsSettings extends Page
 
     public ?array $data = [];
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public function mount(): void
     {

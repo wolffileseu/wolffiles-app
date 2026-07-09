@@ -19,10 +19,6 @@ class TutorialCategoryResource extends Resource
     protected static ?int $navigationSort = 4;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tutorial_categories');
-    }
 
 
 

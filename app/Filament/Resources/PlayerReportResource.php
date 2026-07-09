@@ -26,10 +26,6 @@ class PlayerReportResource extends Resource
     protected static ?string $navigationLabel = 'Player Reports';
     protected static ?string $modelLabel = 'Player Report';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tracker_bans');
-    }
 
     public static function getNavigationBadge(): ?string
     {

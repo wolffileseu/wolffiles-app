@@ -26,10 +26,6 @@ class TrackerClaimResource extends Resource
     protected static ?string $modelLabel = 'Claim';
     protected static ?string $pluralModelLabel = 'Claims';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tracker_claims');
-    }
 
     public static function getNavigationBadge(): ?string
     {
