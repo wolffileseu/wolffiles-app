@@ -2,6 +2,7 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -25,5 +26,5 @@ class TrackerMap extends Model
         ];
     }
 
-    public function file(): BelongsTo { return $this->belongsTo(\App\Models\File::class, 'file_id'); }
+    public function file(): BelongsTo { return $this->belongsTo(File::class, 'file_id'); }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Throwable;
 use App\Models\TestserverSession;
 use App\Services\TestserverService;
 use Illuminate\Bus\Queueable;
@@ -63,7 +64,7 @@ class ExpireTestSessionJob implements ShouldQueue
         Log::info("ExpireJob: Session #{$session->id} closed as '{$finalStatus}'");
     }
 
-    public function failed(\Throwable $exception): void
+    public function failed(Throwable $exception): void
     {
         Log::error("ExpireJob: Session #{$this->sessionId} failed permanently: "
                  . $exception->getMessage());

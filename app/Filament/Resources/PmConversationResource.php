@@ -2,6 +2,18 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\ViewAction;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use App\Filament\Resources\PmConversationResource\Pages\ListPmConversations;
+use App\Filament\Resources\PmConversationResource\Pages\ViewPmConversation;
 use App\Filament\Resources\PmConversationResource\Pages;
 use App\Models\Pm\PmAdminAccessLog;
 use App\Models\Pm\PmConversation;
@@ -17,9 +29,9 @@ class PmConversationResource extends Resource
 {
     protected static ?string $model = PmConversation::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-chat-bubble-left-right";
+    protected static string | \BackedEnum | null $navigationIcon = "heroicon-o-chat-bubble-left-right";
 
-    protected static ?string $navigationGroup = "PM System";
+    protected static string | \UnitEnum | null $navigationGroup = "PM System";
 
     protected static ?string $navigationLabel = "Conversations";
 
@@ -49,24 +61,24 @@ class PmConversationResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("id")
+                TextColumn::make("id")
                     ->label("ID")
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("type")
+                TextColumn::make("type")
                     ->label("Type")
                     ->badge()
                     ->color(fn (string $state): string => $state === "group" ? "info" : "gray")
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("subject")
+                TextColumn::make("subject")
                     ->label("Subject")
                     ->limit(40)
                     ->placeholder("(no subject)")
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("participants_summary")
+                TextColumn::make("participants_summary")
                     ->label("Participants")
                     ->getStateUsing(function ($record) {
                         return $record->participants
@@ -77,26 +89,26 @@ class PmConversationResource extends Resource
                     ->wrap()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("message_count")
+                TextColumn::make("message_count")
                     ->label("Msgs")
                     ->numeric()
                     ->sortable()
                     ->alignCenter()
                     ->size("sm"),
 
-                Tables\Columns\IconColumn::make("locked")
+                IconColumn::make("locked")
                     ->label("Locked")
                     ->boolean()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("last_message_at")
+                TextColumn::make("last_message_at")
                     ->label("Last activity")
                     ->dateTime("Y-m-d H:i")
                     ->sortable()
                     ->placeholder("never")
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("created_at")
+                TextColumn::make("created_at")
                     ->label("Created")
                     ->date("Y-m-d")
                     ->sortable()
@@ -104,70 +116,70 @@ class PmConversationResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make("type")
+                SelectFilter::make("type")
                     ->options([
                         "direct" => "Direct (1:1)",
                         "group"  => "Group",
                     ]),
 
-                Tables\Filters\TernaryFilter::make("locked")
+                TernaryFilter::make("locked")
                     ->label("Lock state")
                     ->trueLabel("Locked only")
                     ->falseLabel("Unlocked only"),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make()
+            ->recordActions([
+                ViewAction::make()
                     ->label("View"),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort("last_message_at", "desc");
     }
 
-    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist->schema([
-            \Filament\Infolists\Components\Section::make("Conversation #" . $infolist->getRecord()?->id)
+        return $schema->components([
+            Section::make("Conversation #" . $schema->getRecord()?->id)
                 ->schema([
-                    \Filament\Infolists\Components\TextEntry::make("type")->badge()->color(fn ($state) => $state === "group" ? "info" : "gray"),
-                    \Filament\Infolists\Components\TextEntry::make("subject")->placeholder("(no subject)"),
-                    \Filament\Infolists\Components\TextEntry::make("creator.name")->label("Created by"),
-                    \Filament\Infolists\Components\TextEntry::make("created_at")->dateTime(),
-                    \Filament\Infolists\Components\TextEntry::make("last_message_at")->dateTime()->placeholder("never"),
-                    \Filament\Infolists\Components\IconEntry::make("locked")->boolean(),
-                    \Filament\Infolists\Components\TextEntry::make("message_count")->numeric(),
+                    TextEntry::make("type")->badge()->color(fn ($state) => $state === "group" ? "info" : "gray"),
+                    TextEntry::make("subject")->placeholder("(no subject)"),
+                    TextEntry::make("creator.name")->label("Created by"),
+                    TextEntry::make("created_at")->dateTime(),
+                    TextEntry::make("last_message_at")->dateTime()->placeholder("never"),
+                    IconEntry::make("locked")->boolean(),
+                    TextEntry::make("message_count")->numeric(),
                 ])
                 ->columns(3),
 
-            \Filament\Infolists\Components\Section::make("Participants")
+            Section::make("Participants")
                 ->schema([
-                    \Filament\Infolists\Components\RepeatableEntry::make("participants")
+                    RepeatableEntry::make("participants")
                         ->schema([
-                            \Filament\Infolists\Components\TextEntry::make("user.name")->label("User")->weight("bold"),
-                            \Filament\Infolists\Components\TextEntry::make("joined_at")->dateTime("Y-m-d H:i"),
-                            \Filament\Infolists\Components\TextEntry::make("left_at")->dateTime("Y-m-d H:i")->placeholder("active"),
-                            \Filament\Infolists\Components\TextEntry::make("last_read_at")->dateTime("Y-m-d H:i")->placeholder("never"),
+                            TextEntry::make("user.name")->label("User")->weight("bold"),
+                            TextEntry::make("joined_at")->dateTime("Y-m-d H:i"),
+                            TextEntry::make("left_at")->dateTime("Y-m-d H:i")->placeholder("active"),
+                            TextEntry::make("last_read_at")->dateTime("Y-m-d H:i")->placeholder("never"),
                         ])
                         ->columns(4),
                 ])
                 ->collapsed(),
 
-            \Filament\Infolists\Components\Section::make("Messages")
+            Section::make("Messages")
                 ->schema([
-                    \Filament\Infolists\Components\RepeatableEntry::make("messages")
+                    RepeatableEntry::make("messages")
                         ->schema([
-                            \Filament\Infolists\Components\TextEntry::make("sender.name")
+                            TextEntry::make("sender.name")
                                 ->label("From")
                                 ->weight("bold")
                                 ->columnSpan(1),
-                            \Filament\Infolists\Components\TextEntry::make("created_at")
+                            TextEntry::make("created_at")
                                 ->label("Sent")
                                 ->dateTime("Y-m-d H:i:s")
                                 ->columnSpan(1),
-                            \Filament\Infolists\Components\TextEntry::make("ip_address")
+                            TextEntry::make("ip_address")
                                 ->label("IP")
                                 ->copyable()
                                 ->columnSpan(1),
-                            \Filament\Infolists\Components\TextEntry::make("body")
+                            TextEntry::make("body")
                                 ->label("Body")
                                 ->placeholder(fn ($record) => $record?->body_purged_at ? "(purged by retention on " . $record->body_purged_at->format("Y-m-d") . ")" : "(empty)")
                                 ->columnSpanFull()
@@ -181,8 +193,8 @@ class PmConversationResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListPmConversations::route("/"),
-            "view"  => Pages\ViewPmConversation::route("/{record}"),
+            "index" => ListPmConversations::route("/"),
+            "view"  => ViewPmConversation::route("/{record}"),
         ];
     }
 }

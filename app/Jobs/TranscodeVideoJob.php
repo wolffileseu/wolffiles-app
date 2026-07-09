@@ -2,6 +2,10 @@
 
 namespace App\Jobs;
 
+use Throwable;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use App\Models\File;
 use App\Services\VideoTranscoderService;
 use Illuminate\Bus\Queueable;
@@ -134,7 +138,7 @@ class TranscodeVideoJob implements ShouldQueue
                 'output_size_mb' => round($result['output_size'] / 1048576, 1),
                 's3_path' => $s3Path,
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error("TranscodeVideoJob: exception for file {$file->id}", [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
@@ -179,7 +183,7 @@ class TranscodeVideoJob implements ShouldQueue
             return null;
         }
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($sourceLocal) !== true) {
             return null;
         }
@@ -230,7 +234,7 @@ class TranscodeVideoJob implements ShouldQueue
         Log::warning("TranscodeVideoJob: failed file {$file->id} — {$reason}");
     }
 
-    public function failed(\Throwable $e): void
+    public function failed(Throwable $e): void
     {
         $file = File::find($this->fileId);
         if ($file) {
@@ -247,9 +251,9 @@ class TranscodeVideoJob implements ShouldQueue
         if (!is_dir($dir)) {
             return;
         }
-        $items = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $items = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($items as $item) {
             $item->isDir() ? @rmdir($item->getRealPath()) : @unlink($item->getRealPath());

@@ -2,11 +2,26 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\TestserverSessionResource\Pages\ListTestserverSessions;
+use App\Filament\Resources\TestserverSessionResource\Pages\ViewTestserverSession;
+use App\Filament\Resources\TestserverSessionResource\Pages\EditTestserverSession;
 use App\Filament\Resources\TestserverSessionResource\Pages;
 use App\Jobs\ExpireTestSessionJob;
 use App\Models\TestserverSession;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -16,8 +31,8 @@ use Illuminate\Database\Eloquent\Builder;
 class TestserverSessionResource extends Resource
 {
     protected static ?string $model = TestserverSession::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
-    protected static ?string $navigationGroup = 'Server Hosting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clock';
+    protected static string | \UnitEnum | null $navigationGroup = 'Server Hosting';
     protected static ?string $navigationLabel = 'Test Sessions';
     protected static ?int $navigationSort = 11;
 
@@ -27,62 +42,62 @@ class TestserverSessionResource extends Resource
         return false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
         // Edit-Form (alles read-only, nur zum Anschauen)
-        return $form->schema([
-            Forms\Components\Section::make('Session Info')
+        return $schema->components([
+            Section::make('Session Info')
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('id')->disabled(),
-                    Forms\Components\TextInput::make('session_token')->disabled()->columnSpan(2),
-                    Forms\Components\Select::make('testserver_id')
+                    TextInput::make('id')->disabled(),
+                    TextInput::make('session_token')->disabled()->columnSpan(2),
+                    Select::make('testserver_id')
                         ->relationship('testserver', 'name')
                         ->disabled(),
-                    Forms\Components\TextInput::make('status')->disabled(),
-                    Forms\Components\TextInput::make('mod_name')->disabled(),
+                    TextInput::make('status')->disabled(),
+                    TextInput::make('mod_name')->disabled(),
                 ]),
 
-            Forms\Components\Section::make('Map & Connect')
+            Section::make('Map & Connect')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\TextInput::make('map_slug')->disabled(),
-                    Forms\Components\TextInput::make('map_pk3_filename')->disabled(),
-                    Forms\Components\TextInput::make('connect_address')->disabled(),
-                    Forms\Components\TextInput::make('connect_password')->disabled(),
+                    TextInput::make('map_slug')->disabled(),
+                    TextInput::make('map_pk3_filename')->disabled(),
+                    TextInput::make('connect_address')->disabled(),
+                    TextInput::make('connect_password')->disabled(),
                 ]),
 
-            Forms\Components\Section::make('User & Tracking')
+            Section::make('User & Tracking')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\TextInput::make('ip_address')->disabled(),
-                    Forms\Components\TextInput::make('country_code')->disabled(),
-                    Forms\Components\Select::make('user_id')
+                    TextInput::make('ip_address')->disabled(),
+                    TextInput::make('country_code')->disabled(),
+                    Select::make('user_id')
                         ->relationship('user', 'name')
                         ->disabled()
                         ->placeholder('Anonym'),
-                    Forms\Components\Textarea::make('user_agent')
+                    Textarea::make('user_agent')
                         ->disabled()
                         ->columnSpanFull()
                         ->rows(2),
                 ]),
 
-            Forms\Components\Section::make('Timing')
+            Section::make('Timing')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\DateTimePicker::make('reserved_at')->disabled(),
-                    Forms\Components\DateTimePicker::make('started_at')->disabled(),
-                    Forms\Components\DateTimePicker::make('expires_at')->disabled(),
-                    Forms\Components\DateTimePicker::make('ended_at')->disabled(),
+                    DateTimePicker::make('reserved_at')->disabled(),
+                    DateTimePicker::make('started_at')->disabled(),
+                    DateTimePicker::make('expires_at')->disabled(),
+                    DateTimePicker::make('ended_at')->disabled(),
                 ]),
 
-            Forms\Components\Section::make('Stats')
+            Section::make('Stats')
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('peak_players')->disabled()->numeric(),
-                    Forms\Components\TextInput::make('total_player_minutes')->disabled()->numeric(),
-                    Forms\Components\TextInput::make('snapshot_count')->disabled()->numeric(),
-                    Forms\Components\Textarea::make('error_message')
+                    TextInput::make('peak_players')->disabled()->numeric(),
+                    TextInput::make('total_player_minutes')->disabled()->numeric(),
+                    TextInput::make('snapshot_count')->disabled()->numeric(),
+                    Textarea::make('error_message')
                         ->disabled()
                         ->columnSpanFull(),
                 ]),
@@ -93,17 +108,17 @@ class TestserverSessionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('#')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('testserver.name')
+                TextColumn::make('testserver.name')
                     ->label('Server')
                     ->sortable()
                     ->badge()
                     ->color('gray'),
 
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->colors([
                         'gray'    => ['pending', 'launching'],
@@ -123,41 +138,41 @@ class TestserverSessionResource extends Resource
                         default     => null,
                     }),
 
-                Tables\Columns\TextColumn::make('map_slug')
+                TextColumn::make('map_slug')
                     ->label('Map')
                     ->searchable()
                     ->limit(20),
 
-                Tables\Columns\TextColumn::make('mod_name')
+                TextColumn::make('mod_name')
                     ->label('Mod')
                     ->badge()
                     ->color('info'),
 
-                Tables\Columns\TextColumn::make('ip_address')
+                TextColumn::make('ip_address')
                     ->label('IP')
                     ->searchable()
                     ->fontFamily('mono')
                     ->size('sm')
                     ->copyable(),
 
-                Tables\Columns\TextColumn::make('country_code')
+                TextColumn::make('country_code')
                     ->label('Land')
                     ->placeholder('?')
                     ->badge(),
 
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('User')
                     ->placeholder('Anonym')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('started_at')
+                TextColumn::make('started_at')
                     ->label('Gestartet')
                     ->dateTime('H:i')
                     ->sortable()
                     ->since()
                     ->placeholder('—'),
 
-                Tables\Columns\TextColumn::make('expires_at')
+                TextColumn::make('expires_at')
                     ->label('Verbleibt')
                     ->state(function (TestserverSession $record): string {
                         if (!in_array($record->status, ['pending','launching','active'])) {
@@ -173,13 +188,13 @@ class TestserverSessionResource extends Resource
                         $record->isActive() ? 'success' : 'gray'
                     ),
 
-                Tables\Columns\TextColumn::make('peak_players')
+                TextColumn::make('peak_players')
                     ->label('Peak')
                     ->numeric()
                     ->alignEnd()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Erstellt')
                     ->dateTime('d.m. H:i')
                     ->sortable()
@@ -187,7 +202,7 @@ class TestserverSessionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->multiple()
                     ->options([
                         'pending'   => '⏳ Pending',
@@ -199,30 +214,30 @@ class TestserverSessionResource extends Resource
                         'failed'    => '⚠ Failed',
                     ]),
 
-                Tables\Filters\Filter::make('aktive_sessions')
+                Filter::make('aktive_sessions')
                     ->label('Nur aktive Sessions')
                     ->query(fn (Builder $q) => $q->whereIn('status', ['pending','launching','active'])),
 
-                Tables\Filters\Filter::make('heute')
+                Filter::make('heute')
                     ->label('Heute')
                     ->query(fn (Builder $q) => $q->whereDate('created_at', today())),
 
-                Tables\Filters\Filter::make('diese_woche')
+                Filter::make('diese_woche')
                     ->label('Diese Woche')
                     ->query(fn (Builder $q) => $q->where('created_at', '>=', now()->startOfWeek())),
 
-                Tables\Filters\SelectFilter::make('testserver')
+                SelectFilter::make('testserver')
                     ->relationship('testserver', 'name'),
 
-                Tables\Filters\SelectFilter::make('mod_name')
+                SelectFilter::make('mod_name')
                     ->options(fn () => TestserverSession::query()
                         ->distinct()
                         ->pluck('mod_name', 'mod_name')
                         ->toArray()
                     ),
             ])
-            ->actions([
-                Tables\Actions\Action::make('forceStop')
+            ->recordActions([
+                Action::make('forceStop')
                     ->label('Stop')
                     ->icon('heroicon-o-stop-circle')
                     ->color('danger')
@@ -239,11 +254,11 @@ class TestserverSessionResource extends Resource
                             ->send();
                     }),
 
-                Tables\Actions\ViewAction::make(),
+                ViewAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\BulkAction::make('forceStopBulk')
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    BulkAction::make('forceStopBulk')
                         ->label('Alle ausgewählten stoppen')
                         ->icon('heroicon-o-stop-circle')
                         ->color('danger')
@@ -269,9 +284,9 @@ class TestserverSessionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTestserverSessions::route('/'),
-            'view'  => Pages\ViewTestserverSession::route('/{record}'),
-            'edit'  => Pages\EditTestserverSession::route('/{record}/edit'),
+            'index' => ListTestserverSessions::route('/'),
+            'view'  => ViewTestserverSession::route('/{record}'),
+            'edit'  => EditTestserverSession::route('/{record}/edit'),
         ];
     }
 

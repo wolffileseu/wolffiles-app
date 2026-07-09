@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Exception;
+use ZipArchive;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use App\Services\ArchiveHelper;
@@ -44,7 +46,7 @@ class FileAnalyzerService
             } elseif ($extension === 'lua') {
                 $result = array_merge($result, $this->analyzeLua($filePath));
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $result['extracted_metadata']['analysis_error'] = $this->sanitizeString($e->getMessage());
         }
 
@@ -61,7 +63,7 @@ class FileAnalyzerService
     protected function analyzePk3(string $filePath): array
     {
         $result = ['extracted_images' => [], 'extracted_metadata' => []];
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($filePath) !== true) return $result;
 
         $bspFiles = [];
@@ -164,7 +166,7 @@ class FileAnalyzerService
     protected function analyzeZip(string $filePath): array
     {
         $result = ['extracted_images' => [], 'extracted_metadata' => []];
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($filePath) !== true) return $result;
 
         $pk3Files = [];
@@ -340,7 +342,7 @@ class FileAnalyzerService
             foreach ($pk3Files as $pk3Name) {
                 $pk3Data = $archive->getFromName($pk3Name);
                 if ($pk3Data) {
-                    $tempPk3 = $this->tempDir . '/temp_' . \Illuminate\Support\Str::uuid() . '.pk3';
+                    $tempPk3 = $this->tempDir . '/temp_' . Str::uuid() . '.pk3';
                     file_put_contents($tempPk3, $pk3Data);
                     $pk3Result = $this->analyzePk3($tempPk3);
                     @unlink($tempPk3);
@@ -372,7 +374,7 @@ class FileAnalyzerService
         foreach ($tgaFiles as $tgaFile) {
             $data = $archive->getFromName($tgaFile);
             if (!$data) continue;
-            $tempTga = $this->tempDir . '/' . \Illuminate\Support\Str::uuid() . '.tga';
+            $tempTga = $this->tempDir . '/' . Str::uuid() . '.tga';
             file_put_contents($tempTga, $data);
             $converted = $this->convertTgaToPng($tempTga);
             if ($converted) {
@@ -394,7 +396,7 @@ class FileAnalyzerService
             if (!$data) continue;
             $ext = strtolower(pathinfo($img, PATHINFO_EXTENSION));
             if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $tempFile = $this->tempDir . '/' . \Illuminate\Support\Str::uuid() . '.' . $ext;
+                $tempFile = $this->tempDir . '/' . Str::uuid() . '.' . $ext;
                 file_put_contents($tempFile, $data);
                 $result['extracted_images'][] = [
                     'path' => $tempFile,
@@ -537,7 +539,7 @@ class FileAnalyzerService
             if ($needsFlip) $image->flip();
             $image->toPng()->save($pngPath);
             return file_exists($pngPath) ? $pngPath : null;
-        } catch (\Exception) {
+        } catch (Exception) {
             return null;
         }
     }

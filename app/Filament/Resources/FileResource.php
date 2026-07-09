@@ -2,13 +2,38 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\Facades\Storage;
+use Exception;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkAction;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
+use App\Filament\Resources\FileResource\RelationManagers\RelatedBotsRelationManager;
+use App\Filament\Resources\FileResource\RelationManagers\RelatedMapsRelationManager;
+use App\Filament\Resources\FileResource\Pages\ListFiles;
+use App\Filament\Resources\FileResource\Pages\CreateFile;
+use App\Filament\Resources\FileResource\Pages\EditFile;
 use App\Filament\Resources\FileResource\Pages;
 use App\Models\File;
 use App\Models\Tag;
 use App\Services\DiscordWebhookService;
 use App\Services\SocialMedia\SocialMediaService;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -18,22 +43,22 @@ use Illuminate\Support\HtmlString;
 class FileResource extends Resource
 {
     protected static ?string $model = File::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-arrow-up';
-    protected static ?string $navigationGroup = 'Files';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-arrow-up';
+    protected static string | \UnitEnum | null $navigationGroup = 'Files';
     protected static ?int $navigationSort = 1;
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Tabs::make('File')->tabs([
+        return $schema->components([
+            Tabs::make('File')->tabs([
 
                 // Tab 1: Content
-                Forms\Components\Tabs\Tab::make('Content')->schema([
-                    Forms\Components\TextInput::make('title')->required()->maxLength(255),
-                    Forms\Components\TextInput::make('slug')->maxLength(255)->unique(ignoreRecord: true),
-                    Forms\Components\Select::make('category_id')
+                Tab::make('Content')->schema([
+                    TextInput::make('title')->required()->maxLength(255),
+                    TextInput::make('slug')->maxLength(255)->unique(ignoreRecord: true),
+                    Select::make('category_id')
                         ->relationship(
                             name: 'category',
                             titleAttribute: 'name',
@@ -43,23 +68,23 @@ class FileResource extends Resource
                         ->searchable()
                         ->preload()
                         ->required(),
-                    Forms\Components\Select::make('user_id')
+                    Select::make('user_id')
                         ->relationship('user', 'name')
                         ->searchable()
                         ->required(),
-                    Forms\Components\Textarea::make('description')->rows(4),
-                    Forms\Components\RichEditor::make('description_html')->label('Description (Rich)'),
+                    Textarea::make('description')->rows(4),
+                    RichEditor::make('description_html')->label('Description (Rich)'),
                 ])->columns(2),
 
                 // Tab 2: File Info
-                Forms\Components\Tabs\Tab::make('File Info')->schema([
-                    Forms\Components\TextInput::make('file_name'),
-                    Forms\Components\TextInput::make('file_size')->numeric(),
-                    Forms\Components\TextInput::make('file_hash')->label('SHA256'),
-                    Forms\Components\TextInput::make('map_name'),
-                    Forms\Components\TextInput::make('version'),
-                    Forms\Components\TextInput::make('original_author'),
-                    Forms\Components\Select::make('game')
+                Tab::make('File Info')->schema([
+                    TextInput::make('file_name'),
+                    TextInput::make('file_size')->numeric(),
+                    TextInput::make('file_hash')->label('SHA256'),
+                    TextInput::make('map_name'),
+                    TextInput::make('version'),
+                    TextInput::make('original_author'),
+                    Select::make('game')
                         ->options([
                             'ET' => 'Enemy Territory',
                             'RtCW' => 'Return to Castle Wolfenstein',
@@ -74,29 +99,29 @@ class FileResource extends Resource
                 ])->columns(2),
 
                 // Tab 3: Tags
-                Forms\Components\Tabs\Tab::make('Tags')->schema([
-                    Forms\Components\Select::make('tags')
+                Tab::make('Tags')->schema([
+                    Select::make('tags')
                         ->label('Tags')
                         ->multiple()
                         ->relationship('tags', 'name')
                         ->preload()
                         ->searchable()
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('name')
+                            TextInput::make('name')
                                 ->required()
                                 ->maxLength(50)
                                 ->unique('tags', 'name'),
                         ])
                         ->helperText('Select existing tags or create new ones. Use tags like Objective, Frag, Trickjump, Sniper, etc.'),
 
-                    Forms\Components\Placeholder::make('suggested_tags')
+                    Placeholder::make('suggested_tags')
                         ->label('Suggested Tags')
                         ->content('Map Type: Objective, Frag, Trickjump, Deathmatch, CTF, Last Man Standing — Style: Sniper, Panzer, Rifle, CQB, Indoor, Outdoor — Size: Small, Medium, Large — Theme: WW2, Desert, Snow, Urban, Forest, Beach, Night — Quality: Final, Beta, Competitive, Fun Map'),
                 ]),
 
                 // Tab 4: Screenshots
-                Forms\Components\Tabs\Tab::make('Screenshots')->schema([
-                    Forms\Components\Placeholder::make('current_screenshots')
+                Tab::make('Screenshots')->schema([
+                    Placeholder::make('current_screenshots')
                         ->label('Current Screenshots')
                         ->content(function (?File $record): HtmlString {
                             if (!$record || $record->screenshots->isEmpty()) {
@@ -106,12 +131,12 @@ class FileResource extends Resource
                             $html = '<div style="display: flex; flex-wrap: wrap; gap: 12px;">';
                             foreach ($record->screenshots as $screenshot) {
                                 try {
-                                    $url = \Illuminate\Support\Facades\Storage::disk('s3')->temporaryUrl($screenshot->path, now()->addHour());
+                                    $url = Storage::disk('s3')->temporaryUrl($screenshot->path, now()->addHour());
                                     $html .= '<div style="position: relative;">';
                                     $html .= '<img src="' . e($url) . '" style="width: 160px; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #374151;">';
                                     $html .= '<span style="position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">#' . $screenshot->id . '</span>';
                                     $html .= '</div>';
-                                } catch (\Exception $e) {
+                                } catch (Exception $e) {
                                     $html .= '<div style="width: 160px; height: 100px; background: #374151; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #9CA3AF; font-size: 12px;">Error</div>';
                                 }
                             }
@@ -120,7 +145,7 @@ class FileResource extends Resource
                         })
                         ->visible(fn (?File $record) => $record !== null),
 
-                    Forms\Components\FileUpload::make('new_screenshots')
+                    FileUpload::make('new_screenshots')
                         ->label('Add Screenshots')
                         ->helperText('Upload additional screenshots. Existing screenshots will be kept.')
                         ->multiple()
@@ -132,7 +157,7 @@ class FileResource extends Resource
                         ->visibility('public')
                         ->dehydrated(false),
 
-                    Forms\Components\TextInput::make('delete_screenshot_ids')
+                    TextInput::make('delete_screenshot_ids')
                         ->label('Delete Screenshots (IDs)')
                         ->helperText('Enter screenshot IDs to delete, separated by commas (e.g. "12,15,18"). See IDs on images above.')
                         ->placeholder('e.g. 12,15,18')
@@ -140,15 +165,15 @@ class FileResource extends Resource
                 ]),
 
                 // Tab 5: Status
-                Forms\Components\Tabs\Tab::make('Status')->schema([
-                    Forms\Components\Select::make('status')
+                Tab::make('Status')->schema([
+                    Select::make('status')
                         ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'])
                         ->required(),
-                    Forms\Components\Textarea::make('rejection_reason'),
-                    Forms\Components\Toggle::make('is_featured'),
-                    Forms\Components\TextInput::make('featured_label')->maxLength(50),
-                    Forms\Components\Toggle::make('virus_clean'),
-                    Forms\Components\TextInput::make('virus_scan_result'),
+                    Textarea::make('rejection_reason'),
+                    Toggle::make('is_featured'),
+                    TextInput::make('featured_label')->maxLength(50),
+                    Toggle::make('virus_clean'),
+                    TextInput::make('virus_scan_result'),
                 ])->columns(2),
 
             ])->columnSpanFull(),
@@ -159,21 +184,21 @@ class FileResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('title')->searchable()->sortable()->limit(40),
-                Tables\Columns\TextColumn::make('user.name')->label('Uploader')->sortable(),
-                Tables\Columns\TextColumn::make('category.name')->sortable(),
-                Tables\Columns\TextColumn::make('game')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('tags.name')
+                TextColumn::make('id')->sortable(),
+                TextColumn::make('title')->searchable()->sortable()->limit(40),
+                TextColumn::make('user.name')->label('Uploader')->sortable(),
+                TextColumn::make('category.name')->sortable(),
+                TextColumn::make('game')->badge()->sortable(),
+                TextColumn::make('tags.name')
                     ->label('Tags')
                     ->badge()
                     ->color('warning')
                     ->separator(', ')
                     ->limit(30)
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('file_size')
+                TextColumn::make('file_size')
                     ->formatStateUsing(fn ($state) => $state ? number_format($state / 1048576, 1) . ' MB' : '-'),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
@@ -181,16 +206,16 @@ class FileResource extends Resource
                         'rejected' => 'danger',
                         default => 'gray',
                     }),
-                Tables\Columns\IconColumn::make('virus_clean')->boolean(),
-                Tables\Columns\TextColumn::make('download_count')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime('d.m.Y H:i')->sortable(),
+                IconColumn::make('virus_clean')->boolean(),
+                TextColumn::make('download_count')->sortable(),
+                TextColumn::make('created_at')->dateTime('d.m.Y H:i')->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->defaultPaginationPageOption(25)
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected']),
-                Tables\Filters\SelectFilter::make('category_id')
+                SelectFilter::make('category_id')
                     ->relationship(
                         name: 'category',
                         titleAttribute: 'name',
@@ -198,22 +223,22 @@ class FileResource extends Resource
                     )
                     ->getOptionLabelFromRecordUsing(fn ($record) => $record->parent ? "{$record->parent->name} → {$record->name}" : $record->name)
                     ->label('Category'),
-                Tables\Filters\SelectFilter::make('game')
+                SelectFilter::make('game')
                     ->options([
                         'ET' => 'Enemy Territory',
                         'RtCW' => 'RtCW',
                         'ET Quake Wars' => 'ET Quake Wars',
                     ]),
-                Tables\Filters\SelectFilter::make('tags')
+                SelectFilter::make('tags')
                     ->relationship('tags', 'name')
                     ->multiple()
                     ->preload()
                     ->label('Tags'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
 
-                Tables\Actions\Action::make('approve')
+                Action::make('approve')
                     ->label('Approve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
@@ -232,14 +257,14 @@ class FileResource extends Resource
                         Notification::make()->title('File approved!')->success()->send();
                     }),
 
-                Tables\Actions\Action::make('reject')
+                Action::make('reject')
                     ->label('Reject')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
         /** @var \App\Models\File $record */
                     ->visible(fn (File $record) => $record->status === 'pending')
-                    ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
+                    ->schema([
+                        Textarea::make('rejection_reason')
                             ->label('Reason')
                             ->required(),
                     ])
@@ -253,19 +278,19 @@ class FileResource extends Resource
                         Notification::make()->title('File rejected.')->warning()->send();
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                DeleteBulkAction::make(),
 
-                Tables\Actions\BulkAction::make('bulk_approve')
+                BulkAction::make('bulk_approve')
                     ->label('Approve Selected')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->requiresConfirmation()
                     ->deselectRecordsAfterCompletion()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                    ->action(function (Collection $records) {
                         $count = 0;
                         foreach ($records as $record) {
-        /** @var \App\Models\File $record */
+        /** @var File $record */
                             if ($record->status === 'pending') {
                                 $record->update([
                                     'status' => 'approved',
@@ -281,21 +306,21 @@ class FileResource extends Resource
                         Notification::make()->title("{$count} files approved!")->success()->send();
                     }),
 
-                Tables\Actions\BulkAction::make('bulk_reject')
+                BulkAction::make('bulk_reject')
                     ->label('Reject Selected')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->form([
-                        Forms\Components\Textarea::make('rejection_reason')
+                        Textarea::make('rejection_reason')
                             ->label('Reason (applies to all)')
                             ->required(),
                     ])
                     ->requiresConfirmation()
                     ->deselectRecordsAfterCompletion()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                    ->action(function (Collection $records, array $data) {
                         $count = 0;
                         foreach ($records as $record) {
-        /** @var \App\Models\File $record */
+        /** @var File $record */
                             if ($record->status === 'pending') {
                                 $record->update([
                                     'status' => 'rejected',
@@ -309,33 +334,33 @@ class FileResource extends Resource
                         Notification::make()->title("{$count} files rejected.")->warning()->send();
                     }),
 
-                Tables\Actions\BulkAction::make('bulk_tag')
+                BulkAction::make('bulk_tag')
                     ->label('Add Tags')
                     ->icon('heroicon-o-tag')
                     ->color('warning')
                     ->form([
-                        Forms\Components\Select::make('tags')
+                        Select::make('tags')
                             ->label('Tags to add')
                             ->multiple()
                             ->options(Tag::pluck('name', 'id'))
                             ->searchable()
                             ->preload()
                             ->createOptionForm([
-                                Forms\Components\TextInput::make('name')->required()->maxLength(50),
+                                TextInput::make('name')->required()->maxLength(50),
                             ])
                             ->createOptionUsing(function (array $data) {
                                 $tag = Tag::firstOrCreate(
-                                    ['slug' => \Illuminate\Support\Str::slug($data['name'])],
+                                    ['slug' => Str::slug($data['name'])],
                                     ['name' => $data['name']]
                                 );
                                 return $tag->id;
                             }),
                     ])
                     ->deselectRecordsAfterCompletion()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records, array $data) {
+                    ->action(function (Collection $records, array $data) {
                         if (!empty($data['tags'])) {
                             foreach ($records as $record) {
-        /** @var \App\Models\File $record */
+        /** @var File $record */
                                 $record->tags()->syncWithoutDetaching($data['tags']);
                             }
                             Notification::make()->title('Tags added to ' . $records->count() . ' files!')->success()->send();
@@ -347,17 +372,17 @@ class FileResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\FileResource\RelationManagers\RelatedBotsRelationManager::class,
-            \App\Filament\Resources\FileResource\RelationManagers\RelatedMapsRelationManager::class,
+            RelatedBotsRelationManager::class,
+            RelatedMapsRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFiles::route('/'),
-            'create' => Pages\CreateFile::route('/create'),
-            'edit' => Pages\EditFile::route('/{record}/edit'),
+            'index' => ListFiles::route('/'),
+            'create' => CreateFile::route('/create'),
+            'edit' => EditFile::route('/{record}/edit'),
         ];
     }
 }

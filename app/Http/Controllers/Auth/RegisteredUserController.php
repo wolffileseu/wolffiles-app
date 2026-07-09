@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use Illuminate\Validation\Rules\Password;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
@@ -30,7 +31,7 @@ class RegisteredUserController extends Controller
                 'not_regex:/(руб|перевод|получить|забрать)/iu',
             ],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ], [
             'name.regex' => __('Name may not contain links or @ handles.'),
             'name.not_regex' => __('Name contains forbidden words.'),

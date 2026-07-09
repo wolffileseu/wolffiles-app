@@ -1,11 +1,30 @@
 <?php
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\Str;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\ClanResource\RelationManagers\ManagersRelationManager;
+use App\Filament\Resources\ClanResource\RelationManagers\MembersRelationManager;
+use App\Filament\Resources\ClanResource\Pages\ListClans;
+use App\Filament\Resources\ClanResource\Pages\EditClan;
 use App\Filament\Resources\ClanResource\Pages;
 use App\Models\Clan;
 use App\Models\Tracker\TrackerClan;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,8 +32,8 @@ use Filament\Tables\Table;
 class ClanResource extends Resource
 {
     protected static ?string $model = Clan::class;
-    protected static ?string $navigationIcon = 'heroicon-o-user-group';
-    protected static ?string $navigationGroup = 'Clans';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-user-group';
+    protected static string | \UnitEnum | null $navigationGroup = 'Clans';
     protected static ?int $navigationSort = 1;
 
     /**
@@ -26,13 +45,13 @@ class ClanResource extends Resource
         return false;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
 
             // ---------- Identity ----------
-            Forms\Components\Section::make('Identity')->schema([
-                Forms\Components\Select::make('tracker_clan_id')
+            Section::make('Identity')->schema([
+                Select::make('tracker_clan_id')
                     ->label('Linked Tracker Clan')
                     ->relationship('trackerClan', 'tag_clean')
                     ->getOptionLabelFromRecordUsing(fn (TrackerClan $r) => "[{$r->tag_clean}] " . ($r->name ?? '(no name)') . " — " . $r->member_count . ' members')
@@ -40,11 +59,11 @@ class ClanResource extends Resource
                     ->disabled()
                     ->dehydrated(false)
                     ->helperText('1:1 link, set by the claim flow. Not editable here.'),
-                Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                Forms\Components\TextInput::make('tag')->required()->maxLength(10)
+                TextInput::make('name')->required()->maxLength(255),
+                TextInput::make('tag')->required()->maxLength(10)
                     ->prefix('[')->suffix(']')
                     ->helperText('Display tag. To match more name patterns, edit tracker_clan.tag_clean instead.'),
-                Forms\Components\TextInput::make('slug')->required()->maxLength(50)
+                TextInput::make('slug')->required()->maxLength(50)
                     ->regex('/^[a-z][a-z0-9-]+$/')
                     ->rule('not_in:manage,propose,recruiting,create,edit,delete,admin,new,tracker,clans')
                     ->unique(ignoreRecord: true)
@@ -52,50 +71,50 @@ class ClanResource extends Resource
             ])->columns(2),
 
             // ---------- Status ----------
-            Forms\Components\Section::make('Status')->schema([
-                Forms\Components\Toggle::make('is_active')->label('Active')->default(true)->inline(false)
+            Section::make('Status')->schema([
+                Toggle::make('is_active')->label('Active')->default(true)->inline(false)
                     ->helperText('Soft deactivation. Inactive clans are hidden everywhere.'),
-                Forms\Components\Toggle::make('is_published')->label('Published')->default(false)->inline(false)
+                Toggle::make('is_published')->label('Published')->default(false)->inline(false)
                     ->helperText('Visible on public clan page.'),
-                Forms\Components\Toggle::make('is_recruiting')->label('Recruiting')->default(false)->inline(false)
+                Toggle::make('is_recruiting')->label('Recruiting')->default(false)->inline(false)
                     ->helperText('Appears on /clans/recruiting board.'),
             ])->columns(3),
 
             // ---------- Profile content ----------
-            Forms\Components\Section::make('Profile')->schema([
-                Forms\Components\Textarea::make('description')->rows(3)->columnSpanFull()
+            Section::make('Profile')->schema([
+                Textarea::make('description')->rows(3)->columnSpanFull()
                     ->helperText('Markdown + BBCode supported.'),
-                Forms\Components\Textarea::make('rules')->rows(4)->columnSpanFull(),
-                Forms\Components\Textarea::make('recruitment_summary')->rows(3)->columnSpanFull(),
-                Forms\Components\TextInput::make('location')->maxLength(255),
-                Forms\Components\TextInput::make('founded')->maxLength(50)->placeholder('e.g. 2008'),
-                Forms\Components\Select::make('founded_label')->label('Date label')
+                Textarea::make('rules')->rows(4)->columnSpanFull(),
+                Textarea::make('recruitment_summary')->rows(3)->columnSpanFull(),
+                TextInput::make('location')->maxLength(255),
+                TextInput::make('founded')->maxLength(50)->placeholder('e.g. 2008'),
+                Select::make('founded_label')->label('Date label')
                     ->options(['founded' => 'founded …', 'since' => 'since …', 'established' => 'established in …'])
                     ->default('founded')->selectablePlaceholder(false)
                     ->helperText('How the date is introduced on the public profile.'),
             ])->columns(2),
 
             // ---------- Contact / Links ----------
-            Forms\Components\Section::make('Contact & Links')->schema([
-                Forms\Components\TextInput::make('website')->url()->maxLength(255),
-                Forms\Components\TextInput::make('contact_email')->email()->maxLength(255),
-                Forms\Components\TextInput::make('contact_discord')->maxLength(255)->prefix('discord.gg/'),
-                Forms\Components\TextInput::make('ts_address')->maxLength(255)->placeholder('ts3.example.com:9987'),
+            Section::make('Contact & Links')->schema([
+                TextInput::make('website')->url()->maxLength(255),
+                TextInput::make('contact_email')->email()->maxLength(255),
+                TextInput::make('contact_discord')->maxLength(255)->prefix('discord.gg/'),
+                TextInput::make('ts_address')->maxLength(255)->placeholder('ts3.example.com:9987'),
             ])->columns(2),
 
             // ---------- Images ----------
-            Forms\Components\Section::make('Images')->schema([
-                Forms\Components\TextInput::make('logo')->label('Logo URL')->maxLength(500)
+            Section::make('Images')->schema([
+                TextInput::make('logo')->label('Logo URL')->maxLength(500)
                     ->placeholder('https://... or storage path')
                     ->helperText('External URL or local storage path. Auto-detected at render time.'),
-                Forms\Components\TextInput::make('banner')->label('Banner URL')->maxLength(500)
+                TextInput::make('banner')->label('Banner URL')->maxLength(500)
                     ->placeholder('https://... or storage path'),
             ])->columns(2),
 
             // ---------- Meta (read-only) ----------
-            Forms\Components\Section::make('Meta')->schema([
-                Forms\Components\TextInput::make('view_count')->disabled()->dehydrated(false),
-                Forms\Components\TextInput::make('created_at')->disabled()->dehydrated(false),
+            Section::make('Meta')->schema([
+                TextInput::make('view_count')->disabled()->dehydrated(false),
+                TextInput::make('created_at')->disabled()->dehydrated(false),
             ])->columns(2)->collapsible()->collapsed(),
         ]);
     }
@@ -104,44 +123,44 @@ class ClanResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('logo')->circular()->size(40)
+                ImageColumn::make('logo')->circular()->size(40)
                     ->getStateUsing(fn ($record) => $record->logo
-                        ? (\Illuminate\Support\Str::startsWith($record->logo, ['http://','https://'])
+                        ? (Str::startsWith($record->logo, ['http://','https://'])
                             ? $record->logo
                             : asset('storage/'.$record->logo))
                         : null),
-                Tables\Columns\TextColumn::make('tag')->badge()->color('primary')->searchable(),
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('trackerClan.member_count')->label('Members')->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('owner_name')
+                TextColumn::make('tag')->badge()->color('primary')->searchable(),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('trackerClan.member_count')->label('Members')->numeric()->sortable(),
+                TextColumn::make('owner_name')
                     ->label('Owner')
                     ->getStateUsing(function ($record) {
                         $owner = $record->managers()->where('role', 'leader')->with('user')->first();
                         return $owner?->user?->name ?? '—';
                     }),
-                Tables\Columns\IconColumn::make('is_recruiting')->boolean()->label('Recruiting'),
-                Tables\Columns\IconColumn::make('is_published')->boolean()->label('Published'),
-                Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),
-                Tables\Columns\TextColumn::make('apiKeys_count')->counts('apiKeys')->label('API Keys'),
-                Tables\Columns\TextColumn::make('posts_count')->counts('posts')->label('Posts'),
-                Tables\Columns\TextColumn::make('created_at')->dateTime('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
+                IconColumn::make('is_recruiting')->boolean()->label('Recruiting'),
+                IconColumn::make('is_published')->boolean()->label('Published'),
+                IconColumn::make('is_active')->boolean()->label('Active'),
+                TextColumn::make('apiKeys_count')->counts('apiKeys')->label('API Keys'),
+                TextColumn::make('posts_count')->counts('posts')->label('Posts'),
+                TextColumn::make('created_at')->dateTime('d.m.Y')->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')->label('Active'),
-                Tables\Filters\TernaryFilter::make('is_published')->label('Published'),
-                Tables\Filters\TernaryFilter::make('is_recruiting')->label('Recruiting'),
+                TernaryFilter::make('is_active')->label('Active'),
+                TernaryFilter::make('is_published')->label('Published'),
+                TernaryFilter::make('is_recruiting')->label('Recruiting'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('viewPublic')->label('View public')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('viewPublic')->label('View public')
                     ->icon('heroicon-o-globe-alt')->color('gray')
                     ->url(fn ($record) => $record->trackerClan ? route('tracker.clan.show', $record->trackerClan->id) : null, shouldOpenInNewTab: true)
                     ->visible(fn ($record) => $record->trackerClan !== null),
-                Tables\Actions\DeleteAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->defaultSort('created_at', 'desc');
@@ -150,16 +169,16 @@ class ClanResource extends Resource
     public static function getRelations(): array
     {
         return [
-            \App\Filament\Resources\ClanResource\RelationManagers\ManagersRelationManager::class,
-            \App\Filament\Resources\ClanResource\RelationManagers\MembersRelationManager::class,
+            ManagersRelationManager::class,
+            MembersRelationManager::class,
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListClans::route('/'),
-            'edit'  => Pages\EditClan::route('/{record}/edit'),
+            'index' => ListClans::route('/'),
+            'edit'  => EditClan::route('/{record}/edit'),
         ];
     }
 }

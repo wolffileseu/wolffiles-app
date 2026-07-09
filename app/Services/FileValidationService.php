@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use ZipArchive;
+use Exception;
 use App\Models\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -80,7 +82,7 @@ class FileValidationService
         $info = [];
 
         try {
-            $zip = new \ZipArchive();
+            $zip = new ZipArchive();
             $result = $zip->open($localPath);
 
             if ($result !== true) {
@@ -138,7 +140,7 @@ class FileValidationService
 
             $zip->close();
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $errors[] = 'Failed to read PK3: ' . $e->getMessage();
         }
 

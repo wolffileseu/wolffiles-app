@@ -27,7 +27,7 @@ class FastDlController extends Controller
         }
 
         // Try game
-        /** @var \App\Models\FastDl\FastDlGame|null $game */
+        /** @var FastDlGame|null $game */
         $game = FastDlGame::where('slug', $first)->where('is_active', true)->first();
         if (!$game) {
             abort(404);
@@ -38,7 +38,7 @@ class FastDlController extends Controller
 
     private function serveGameFile(FastDlGame $game, string $dirSlug, string $filename)
     {
-        /** @var \App\Models\FastDl\FastDlDirectory|null $dir */
+        /** @var FastDlDirectory|null $dir */
         $dir = FastDlDirectory::where('game_id', $game->id)
             ->where('slug', $dirSlug)
             ->where('is_active', true)
@@ -121,7 +121,7 @@ class FastDlController extends Controller
 
         // 3. Check selected directories
         $selectedDirIds = $clan->selectedDirectories()->pluck('fastdl_directories.id');
-        /** @var \App\Models\FastDl\FastDlDirectory|null $dir */
+        /** @var FastDlDirectory|null $dir */
         $dir = FastDlDirectory::where('game_id', $game->id)
             ->where('slug', $dirSlug)
             ->whereIn('id', $selectedDirIds)
@@ -165,7 +165,7 @@ class FastDlController extends Controller
         if ($clan) {
             $game = $clan->game;
         } else {
-        /** @var \App\Models\FastDl\FastDlGame|null $game */
+        /** @var FastDlGame|null $game */
             $game = FastDlGame::where('slug', $first)->where('is_active', true)->first();
         }
 
@@ -196,7 +196,7 @@ class FastDlController extends Controller
                 }
             }
         } else {
-            /** @var \App\Models\FastDl\FastDlDirectory|null $dir */
+            /** @var FastDlDirectory|null $dir */
             $dir = FastDlDirectory::where('game_id', $game->id)
                 ->where('slug', $directory)
                 ->where('is_active', true)
@@ -223,7 +223,7 @@ class FastDlController extends Controller
      */
     public function listGame(Request $request, string $first)
     {
-        /** @var \App\Models\FastDl\FastDlGame|null $game */
+        /** @var FastDlGame|null $game */
         $game = FastDlGame::where('slug', $first)->where('is_active', true)->first();
         if (!$game) abort(404);
 

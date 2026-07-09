@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Casts\AsArrayObject;
  * @property string|null $message_template_motw
  * @property string|null $message_template_news
  * @property string|null $webhook_url
- * @property \Carbon\Carbon|null $last_posted_at
+ * @property Carbon|null $last_posted_at
  */
 class SocialMediaChannel extends Model
 {

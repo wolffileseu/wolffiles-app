@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\ServerOrder;
 use App\Services\PterodactylService;
 use Illuminate\Console\Command;
@@ -36,7 +37,7 @@ class ServerSyncStatus extends Command
                         ]),
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->warn("Failed to sync: {$order->server_name} - {$e->getMessage()}");
             }
         }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ClanApiKeyResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ClanApiKeyResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -13,7 +14,7 @@ class EditClanApiKey extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use App\Models\Tracker\TrackerMap;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,10 +26,10 @@ use Spatie\Sluggable\SlugOptions;
  * @property string|null $filename
  */
 /**
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $tags
- * @property-read \App\Models\Category|null $category
- * @property-read \App\Models\User|null $user
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\FileScreenshot[] $screenshots
+ * @property-read Collection|Tag[] $tags
+ * @property-read Category|null $category
+ * @property-read User|null $user
+ * @property-read Collection|FileScreenshot[] $screenshots
  */
 class File extends Model
 {
@@ -103,11 +106,11 @@ class File extends Model
     public function ratings(): HasMany { return $this->hasMany(Rating::class); }
     public function comments(): MorphMany { return $this->morphMany(Comment::class, 'commentable')->whereNull('parent_id'); }
     public function allComments(): MorphMany { return $this->morphMany(Comment::class, 'commentable'); }
-    public function tags(): \Illuminate\Database\Eloquent\Relations\MorphToMany { return $this->morphToMany(Tag::class, 'taggable'); }
+    public function tags(): MorphToMany { return $this->morphToMany(Tag::class, 'taggable'); }
     public function downloads(): HasMany { return $this->hasMany(Download::class); }
     public function downloadLogs(): HasMany { return $this->hasMany(Download::class); }
     public function favorites(): HasMany { return $this->hasMany(Favorite::class); }
-    public function trackerMaps(): \Illuminate\Database\Eloquent\Relations\HasMany { return $this->hasMany(\App\Models\Tracker\TrackerMap::class); }
+    public function trackerMaps(): HasMany { return $this->hasMany(TrackerMap::class); }
     public function reports(): MorphMany { return $this->morphMany(Report::class, 'reportable'); }
 
     // Scopes

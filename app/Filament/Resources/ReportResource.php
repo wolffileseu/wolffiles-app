@@ -2,10 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use App\Models\File;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkAction;
+use Illuminate\Database\Eloquent\Collection;
+use App\Filament\Resources\ReportResource\Pages\ListReports;
+use App\Filament\Resources\ReportResource\Pages\CreateReport;
+use App\Filament\Resources\ReportResource\Pages\EditReport;
 use App\Filament\Resources\ReportResource\Pages;
 use App\Models\Report;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -14,8 +29,8 @@ use Filament\Tables\Table;
 class ReportResource extends Resource
 {
     protected static ?string $model = Report::class;
-    protected static ?string $navigationIcon = 'heroicon-o-flag';
-    protected static ?string $navigationGroup = 'Moderation';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-flag';
+    protected static string | \UnitEnum | null $navigationGroup = 'Moderation';
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationBadge(): ?string
@@ -30,17 +45,17 @@ class ReportResource extends Resource
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('reportable_type'),
-            Forms\Components\TextInput::make('reportable_id'),
-            Forms\Components\TextInput::make('reason'),
-            Forms\Components\Textarea::make('description'),
-            Forms\Components\Select::make('status')
+        return $schema->components([
+            TextInput::make('reportable_type'),
+            TextInput::make('reportable_id'),
+            TextInput::make('reason'),
+            Textarea::make('description'),
+            Select::make('status')
                 ->options(['pending' => 'Pending', 'reviewed' => 'Reviewed', 'resolved' => 'Resolved', 'dismissed' => 'Dismissed'])
                 ->required(),
-            Forms\Components\Textarea::make('admin_notes'),
+            Textarea::make('admin_notes'),
         ]);
     }
 
@@ -48,46 +63,46 @@ class ReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->sortable(),
-                Tables\Columns\TextColumn::make('reportable_type')
+                TextColumn::make('id')->sortable(),
+                TextColumn::make('reportable_type')
                     ->label('Type')
                     ->formatStateUsing(fn ($state) => class_basename($state)),
-                Tables\Columns\TextColumn::make('reportable_id')->label('Item ID'),
-                Tables\Columns\TextColumn::make('reason')->badge()
+                TextColumn::make('reportable_id')->label('Item ID'),
+                TextColumn::make('reason')->badge()
                     ->colors([
                         'danger' => 'copyright',
                         'warning' => 'spam',
                         'info' => 'broken',
                         'secondary' => 'other',
                     ]),
-                Tables\Columns\TextColumn::make('user.name')->label('Reporter'),
-                Tables\Columns\BadgeColumn::make('status')
+                TextColumn::make('user.name')->label('Reporter'),
+                BadgeColumn::make('status')
                     ->colors([
                         'warning' => 'pending',
                         'info' => 'reviewed',
                         'success' => 'resolved',
                         'secondary' => 'dismissed',
                     ]),
-                Tables\Columns\TextColumn::make('created_at')->dateTime('d.m.Y H:i')->sortable(),
+                TextColumn::make('created_at')->dateTime('d.m.Y H:i')->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'reviewed' => 'Reviewed', 'resolved' => 'Resolved', 'dismissed' => 'Dismissed'])
                     ->default('pending'),
-                Tables\Filters\SelectFilter::make('reason')
+                SelectFilter::make('reason')
                     ->options(['copyright' => 'Copyright', 'broken' => 'Broken', 'spam' => 'Spam', 'inappropriate' => 'Inappropriate', 'other' => 'Other']),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
+            ->recordActions([
+                EditAction::make(),
 
                 // View reported content
-                Tables\Actions\Action::make('view_content')
+                Action::make('view_content')
                     ->label('View')
                     ->icon('heroicon-o-eye')
                     ->url(function (Report $record) {
                         if ($record->reportable_type === 'App\\Models\\File') {
-                            $file = \App\Models\File::find($record->reportable_id);
+                            $file = File::find($record->reportable_id);
                             return $file ? route('files.show', $file) : null;
                         }
                         return null;
@@ -95,13 +110,13 @@ class ReportResource extends Resource
                     ->openUrlInNewTab(),
 
                 // Quick resolve
-                Tables\Actions\Action::make('resolve')
+                Action::make('resolve')
                     ->label('Resolve')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
                     ->visible(fn (Report $record) => $record->status === 'pending')
-                    ->form([
-                        Forms\Components\Textarea::make('admin_notes')->label('Notes'),
+                    ->schema([
+                        Textarea::make('admin_notes')->label('Notes'),
                     ])
                     ->action(function (Report $record, array $data) {
                         $record->update([
@@ -114,7 +129,7 @@ class ReportResource extends Resource
                     }),
 
                 // Dismiss
-                Tables\Actions\Action::make('dismiss')
+                Action::make('dismiss')
                     ->label('Dismiss')
                     ->icon('heroicon-o-x-circle')
                     ->color('gray')
@@ -129,14 +144,14 @@ class ReportResource extends Resource
                         Notification::make()->title('Report dismissed.')->send();
                     }),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-                Tables\Actions\BulkAction::make('bulk_dismiss')
+            ->toolbarActions([
+                DeleteBulkAction::make(),
+                BulkAction::make('bulk_dismiss')
                     ->label('Dismiss Selected')
                     ->icon('heroicon-o-x-circle')
                     ->requiresConfirmation()
                     ->deselectRecordsAfterCompletion()
-                    ->action(function (\Illuminate\Database\Eloquent\Collection $records) {
+                    ->action(function (Collection $records) {
                         $records->each(fn ($r) => $r->update(['status' => 'dismissed', 'resolved_by' => auth()->id(), 'resolved_at' => now()]));
                         Notification::make()->title(count($records) . ' reports dismissed.')->send();
                     }),
@@ -146,9 +161,9 @@ class ReportResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListReports::route('/'),
-            'create' => Pages\CreateReport::route('/create'),
-            'edit' => Pages\EditReport::route('/{record}/edit'),
+            'index' => ListReports::route('/'),
+            'create' => CreateReport::route('/create'),
+            'edit' => EditReport::route('/{record}/edit'),
         ];
     }
 }

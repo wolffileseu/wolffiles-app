@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\PostResource\Pages;
 
+use App\Models\Post;
 use App\Filament\Resources\PostResource;
 use App\Services\SocialMedia\SocialMediaService;
 use App\Services\TelegramNotificationService;
 use Filament\Resources\Pages\EditRecord;
 
-/** @method \App\Models\Post getRecord() */
+/** @method Post getRecord() */
 class EditPost extends EditRecord
 {
     protected static string $resource = PostResource::class;

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Exception;
+use Illuminate\Support\Str;
+use App\Services\DemoUploadService;
 use App\Http\Controllers\Controller;
 use App\Models\Demo;
 use App\Models\Category;
@@ -100,7 +103,7 @@ class DemoController extends Controller
                 'user_agent' => request()->userAgent(),
                 'referer' => request()->header('referer'),
             ]);
-        } catch (\Exception $e) {}
+        } catch (Exception $e) {}
 
         $demo->incrementDownloads();
         if ($demo->user) { $demo->user->increment('total_downloads'); }
@@ -222,7 +225,7 @@ class DemoController extends Controller
         if ($request->has('tags') && is_array($request->tags)) {
             $tagIds = collect($request->tags)->filter()->unique()->map(function ($tagName) {
                 return Tag::firstOrCreate(
-                    ['slug' => \Illuminate\Support\Str::slug($tagName)],
+                    ['slug' => Str::slug($tagName)],
                     ['name' => trim($tagName)]
                 )->id;
             });
@@ -240,7 +243,7 @@ class DemoController extends Controller
         abort_unless($demo->status === 'approved', 404);
         $demo->load(['category.parent', 'user', 'tags']);
 
-        $service = app(\App\Services\DemoUploadService::class);
+        $service = app(DemoUploadService::class);
         $analysis = $service->analyzeFromS3($demo);
 
         return view('frontend.demos.viewer', compact('demo', 'analysis'));

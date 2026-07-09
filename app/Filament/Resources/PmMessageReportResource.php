@@ -2,11 +2,22 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use App\Filament\Resources\PmMessageReportResource\Pages\ListPmMessageReports;
+use App\Filament\Resources\PmMessageReportResource\Pages\EditPmMessageReport;
 use App\Filament\Resources\PmMessageReportResource\Pages;
 use App\Models\Pm\PmAdminAccessLog;
 use App\Models\Pm\PmMessageReport;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -16,9 +27,9 @@ class PmMessageReportResource extends Resource
 {
     protected static ?string $model = PmMessageReport::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-flag";
+    protected static string | \BackedEnum | null $navigationIcon = "heroicon-o-flag";
 
-    protected static ?string $navigationGroup = "PM System";
+    protected static string | \UnitEnum | null $navigationGroup = "PM System";
 
     protected static ?string $navigationLabel = "Reports";
 
@@ -40,29 +51,29 @@ class PmMessageReportResource extends Resource
         return "danger";
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make("Report")
+        return $schema->components([
+            Section::make("Report")
                 ->schema([
-                    Forms\Components\Placeholder::make("reporter")
+                    Placeholder::make("reporter")
                         ->label("Reported by")
                         ->content(fn ($record) => $record?->reporter?->name ?? "(unknown)"),
 
-                    Forms\Components\Placeholder::make("created_at")
+                    Placeholder::make("created_at")
                         ->label("Reported at")
                         ->content(fn ($record) => $record?->created_at?->format("Y-m-d H:i:s") ?? "-"),
 
-                    Forms\Components\TextInput::make("reason_code")
+                    TextInput::make("reason_code")
                         ->label("Reason code")
                         ->disabled(),
 
-                    Forms\Components\Textarea::make("reason_text")
+                    Textarea::make("reason_text")
                         ->label("Reporter\'s description")
                         ->disabled()
                         ->rows(3),
 
-                    Forms\Components\Placeholder::make("message_body")
+                    Placeholder::make("message_body")
                         ->label("Reported message body")
                         ->content(function ($record) {
                             if (! $record || ! $record->message) {
@@ -74,15 +85,15 @@ class PmMessageReportResource extends Resource
                             return $record->message->body;
                         }),
 
-                    Forms\Components\Placeholder::make("message_sender")
+                    Placeholder::make("message_sender")
                         ->label("Sender of reported message")
                         ->content(fn ($record) => $record?->message?->sender?->name ?? "(unknown)"),
                 ])
                 ->columns(2),
 
-            Forms\Components\Section::make("Resolution")
+            Section::make("Resolution")
                 ->schema([
-                    Forms\Components\Select::make("status")
+                    Select::make("status")
                         ->options([
                             "open"      => "Open",
                             "reviewing" => "Reviewing",
@@ -91,7 +102,7 @@ class PmMessageReportResource extends Resource
                         ])
                         ->required(),
 
-                    Forms\Components\Textarea::make("resolution_note")
+                    Textarea::make("resolution_note")
                         ->label("Resolution note (internal)")
                         ->rows(3)
                         ->helperText("Visible to other mods/admins. Not shown to users."),
@@ -104,25 +115,25 @@ class PmMessageReportResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("created_at")
+                TextColumn::make("created_at")
                     ->label("Reported")
                     ->dateTime("Y-m-d H:i")
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("reporter.name")
+                TextColumn::make("reporter.name")
                     ->label("Reporter")
                     ->searchable()
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("message.sender.name")
+                TextColumn::make("message.sender.name")
                     ->label("Reported user")
                     ->searchable()
                     ->size("sm")
                     ->color("warning"),
 
-                Tables\Columns\TextColumn::make("reason_code")
+                TextColumn::make("reason_code")
                     ->label("Reason")
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -134,13 +145,13 @@ class PmMessageReportResource extends Resource
                     })
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("reason_text")
+                TextColumn::make("reason_text")
                     ->label("Description")
                     ->limit(60)
                     ->wrap()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("status")
+                TextColumn::make("status")
                     ->label("Status")
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -151,13 +162,13 @@ class PmMessageReportResource extends Resource
                     })
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("resolver.name")
+                TextColumn::make("resolver.name")
                     ->label("Resolved by")
                     ->size("sm")
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make("status")
+                SelectFilter::make("status")
                     ->options([
                         "open"      => "Open",
                         "reviewing" => "Reviewing",
@@ -166,7 +177,7 @@ class PmMessageReportResource extends Resource
                     ])
                     ->default("open"),
 
-                Tables\Filters\SelectFilter::make("reason_code")
+                SelectFilter::make("reason_code")
                     ->options([
                         "spam"       => "Spam",
                         "harassment" => "Harassment",
@@ -175,8 +186,8 @@ class PmMessageReportResource extends Resource
                         "other"      => "Other",
                     ]),
             ])
-            ->actions([
-                Tables\Actions\Action::make("view_conversation")
+            ->recordActions([
+                Action::make("view_conversation")
                     ->label("View conversation")
                     ->icon("heroicon-o-eye")
                     ->color("warning")
@@ -185,18 +196,18 @@ class PmMessageReportResource extends Resource
                     ->url(fn ($record): string => route("filament.admin.resources.pm-conversations.view", $record->conversation_id))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\EditAction::make()
+                EditAction::make()
                     ->label("Resolve"),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort("created_at", "desc");
     }
 
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListPmMessageReports::route("/"),
-            "edit"  => Pages\EditPmMessageReport::route("/{record}/edit"),
+            "index" => ListPmMessageReports::route("/"),
+            "edit"  => EditPmMessageReport::route("/{record}/edit"),
         ];
     }
 }

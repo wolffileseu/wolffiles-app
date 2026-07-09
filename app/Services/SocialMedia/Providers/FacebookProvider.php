@@ -2,6 +2,7 @@
 
 namespace App\Services\SocialMedia\Providers;
 
+use Exception;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaProvider;
 use Illuminate\Support\Facades\Http;
@@ -106,7 +107,7 @@ class FacebookProvider implements SocialMediaProvider
 
             $error = $response->json('error.message', 'Unknown error');
             return ['success' => false, 'message' => 'Facebook API error: ' . $error];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
         }
     }
@@ -139,7 +140,7 @@ class FacebookProvider implements SocialMediaProvider
             $error = $response->json('error.message', $response->body());
             $channel->markFailed('Facebook API: ' . $error);
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $channel->markFailed($e->getMessage());
             Log::error('Facebook broadcast failed', [
                 'channel' => $channel->name,

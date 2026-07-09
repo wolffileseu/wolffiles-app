@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Tracker\TrackerPlayer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,7 +30,7 @@ class ClanMemberBlock extends Model
 
     public function targetPlayer(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Tracker\TrackerPlayer::class, 'target_player_id');
+        return $this->belongsTo(TrackerPlayer::class, 'target_player_id');
     }
 
     public function blockedBy(): BelongsTo

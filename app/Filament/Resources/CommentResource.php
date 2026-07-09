@@ -2,10 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\CommentResource\Pages\ListComments;
+use App\Filament\Resources\CommentResource\Pages\EditComment;
 use App\Filament\Resources\CommentResource\Pages;
 use App\Models\Comment;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,15 +26,15 @@ use Filament\Tables\Table;
 class CommentResource extends Resource
 {
     protected static ?string $model = Comment::class;
-    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
-    protected static ?string $navigationGroup = 'Community';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chat-bubble-left-right';
+    protected static string | \UnitEnum | null $navigationGroup = 'Community';
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Textarea::make('body')->required(),
-            Forms\Components\Toggle::make('is_approved')->default(true),
+        return $schema->components([
+            Textarea::make('body')->required(),
+            Toggle::make('is_approved')->default(true),
         ]);
     }
 
@@ -29,23 +42,23 @@ class CommentResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Date')
                     ->dateTime('d.m.Y H:i')
                     ->sortable()
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('User')
                     ->sortable()
                     ->searchable()
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('body')
+                TextColumn::make('body')
                     ->label('Comment')
                     ->limit(100)
                     ->wrap()
                     ->searchable()
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('commentable_type')
+                TextColumn::make('commentable_type')
                     ->label('Type')
                     ->formatStateUsing(fn ($state) => match(class_basename($state)) {
                         'File' => '📁 File',
@@ -54,7 +67,7 @@ class CommentResource extends Resource
                         default => class_basename($state),
                     })
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('commentable_title')
+                TextColumn::make('commentable_title')
                     ->label('On')
                     ->getStateUsing(function (Comment $record) {
                         $commentable = $record->commentable;
@@ -74,28 +87,28 @@ class CommentResource extends Resource
                     ->color('warning')
                     ->limit(40)
                     ->size('sm'),
-                Tables\Columns\IconColumn::make('is_approved')
+                IconColumn::make('is_approved')
                     ->label('✅')
                     ->boolean(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('commentable_type')
+                SelectFilter::make('commentable_type')
                     ->label('Type')
                     ->options([
                         'App\Models\File' => '📁 File',
                         'App\Models\Post' => '📰 Post',
                         'App\Models\LuaScript' => '📜 Lua',
                     ]),
-                Tables\Filters\Filter::make('not_approved')
+                Filter::make('not_approved')
                     ->label('Not Approved')
                     ->query(fn ($query) => $query->where('is_approved', false)),
-                Tables\Filters\Filter::make('today')
+                Filter::make('today')
                     ->label('Today')
                     ->query(fn ($query) => $query->whereDate('created_at', today())),
             ])
-            ->actions([
-                Tables\Actions\Action::make('visit')
+            ->recordActions([
+                Action::make('visit')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(function (Comment $record) {
                         $commentable = $record->commentable;
@@ -108,17 +121,17 @@ class CommentResource extends Resource
                     })
                     ->openUrlInNewTab()
                     ->visible(fn (Comment $record) => $record->commentable !== null),
-                Tables\Actions\Action::make('approve')
+                Action::make('approve')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->action(fn (Comment $record) => $record->update(['is_approved' => true]))
                     ->visible(fn (Comment $record) => !$record->is_approved),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
-                Tables\Actions\BulkAction::make('approve_all')
+            ->toolbarActions([
+                DeleteBulkAction::make(),
+                BulkAction::make('approve_all')
                     ->label('Approve Selected')
                     ->icon('heroicon-o-check')
                     ->color('success')
@@ -129,8 +142,8 @@ class CommentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListComments::route('/'),
-            'edit' => Pages\EditComment::route('/{record}/edit'),
+            'index' => ListComments::route('/'),
+            'edit' => EditComment::route('/{record}/edit'),
         ];
     }
 }

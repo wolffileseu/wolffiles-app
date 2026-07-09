@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,8 +20,8 @@ use Illuminate\Support\Facades\Storage;
  * @property int $file_size_bytes
  * @property int|null $width
  * @property int|null $height
- * @property \Carbon\Carbon $uploaded_at
- * @property \Carbon\Carbon|null $purged_at
+ * @property Carbon $uploaded_at
+ * @property Carbon|null $purged_at
  */
 class PmAttachment extends Model
 {

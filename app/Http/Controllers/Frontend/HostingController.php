@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\DonationSetting;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\ServerProduct;
 use App\Models\ServerOrder;
@@ -128,7 +132,7 @@ class HostingController extends Controller
             return redirect()->route('hosting.dashboard')->with('error', 'Keine offene Rechnung gefunden.');
         }
 
-        $paypalEmail = \App\Models\DonationSetting::get('paypal_email', '');
+        $paypalEmail = DonationSetting::get('paypal_email', '');
 
         return view('frontend.hosting.payment', compact('order', 'invoice', 'paypalEmail'));
     }
@@ -160,31 +164,31 @@ class HostingController extends Controller
 
         // Verify with PayPal
         try {
-            $response = \Illuminate\Support\Facades\Http::asForm()
+            $response = Http::asForm()
                 ->post('https://ipnpb.paypal.com/cgi-bin/webscr', array_merge(
                     ['cmd' => '_notify-validate'],
                     $data
                 ));
 
             if ($response->body() !== 'VERIFIED') {
-                \Illuminate\Support\Facades\Log::warning('Hosting PayPal IPN: Not verified', $data);
+                Log::warning('Hosting PayPal IPN: Not verified', $data);
                 return response('INVALID', 400);
             }
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Hosting PayPal IPN verification failed: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Hosting PayPal IPN verification failed: ' . $e->getMessage());
             return response('ERROR', 500);
         }
 
         // Only process completed payments
         if (($data['payment_status'] ?? '') !== 'Completed') {
-            \Illuminate\Support\Facades\Log::info('Hosting IPN: Non-completed status', ['status' => $data['payment_status'] ?? 'unknown']);
+            Log::info('Hosting IPN: Non-completed status', ['status' => $data['payment_status'] ?? 'unknown']);
             return response('OK');
         }
 
         // Parse custom data
         $custom = json_decode($data['custom'] ?? '{}', true);
         if (empty($custom['order_id']) || ($custom['type'] ?? '') !== 'hosting') {
-            \Illuminate\Support\Facades\Log::warning('Hosting IPN: Invalid custom data', $data);
+            Log::warning('Hosting IPN: Invalid custom data', $data);
             return response('INVALID_CUSTOM', 400);
         }
 
@@ -199,21 +203,21 @@ class HostingController extends Controller
 
         $order = ServerOrder::find($orderId);
         if (!$order) {
-            \Illuminate\Support\Facades\Log::error('Hosting IPN: Order not found', ['order_id' => $orderId]);
+            Log::error('Hosting IPN: Order not found', ['order_id' => $orderId]);
             return response('NOT_FOUND', 404);
         }
 
         // Find invoice
         $invoice = $invoiceId ? ServerInvoice::find($invoiceId) : $order->invoices()->where('status', 'pending')->latest()->first();
         if (!$invoice) {
-            \Illuminate\Support\Facades\Log::error('Hosting IPN: Invoice not found', ['order_id' => $orderId]);
+            Log::error('Hosting IPN: Invoice not found', ['order_id' => $orderId]);
             return response('NO_INVOICE', 404);
         }
 
         // Verify amount
         $paidAmount = (float) ($data['mc_gross'] ?? 0);
         if ($paidAmount < (float) $invoice->amount) {
-            \Illuminate\Support\Facades\Log::warning('Hosting IPN: Amount mismatch', [
+            Log::warning('Hosting IPN: Amount mismatch', [
                 'expected' => $invoice->amount, 'received' => $paidAmount,
             ]);
             return response('AMOUNT_MISMATCH', 400);
@@ -251,7 +255,7 @@ class HostingController extends Controller
 
         // Discord notification
         HostingDiscordNotifier::paymentReceived($order, $paidAmount, $txnId);
-        \Illuminate\Support\Facades\Log::info('Hosting IPN: Payment processed', [
+        Log::info('Hosting IPN: Payment processed', [
             'order_id' => $order->id,
             'amount' => $paidAmount,
             'txn_id' => $txnId,

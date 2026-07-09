@@ -2,9 +2,17 @@
 
 namespace App\Filament\Resources\BugTracker\TaskResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use App\Models\User;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,15 +22,15 @@ class CommentsRelationManager extends RelationManager
     protected static string $relationship = 'comments';
     protected static ?string $recordTitleAttribute = 'id';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('user_id')->label('Author')
+        return $schema->components([
+            Select::make('user_id')->label('Author')
                 ->options(fn () => User::orderBy('name')->pluck('name', 'id'))
                 ->searchable()->default(fn () => auth()->id()),
-            Forms\Components\Textarea::make('body')->required()->rows(6)->columnSpanFull()
+            Textarea::make('body')->required()->rows(6)->columnSpanFull()
                 ->helperText('Markdown supported'),
-            Forms\Components\Toggle::make('is_internal')->label('Internal note')
+            Toggle::make('is_internal')->label('Internal note')
                 ->helperText('Only visible to admins'),
         ]);
     }
@@ -33,17 +41,17 @@ class CommentsRelationManager extends RelationManager
             ->recordTitleAttribute('body')
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->placeholder(fn ($record) => $record->author_name ?? 'Anonymous'),
-                Tables\Columns\TextColumn::make('body')->limit(80)->wrap(),
-                Tables\Columns\IconColumn::make('is_internal')->boolean()->label('Internal'),
-                Tables\Columns\TextColumn::make('created_at')->since(),
+                TextColumn::make('user.name')->placeholder(fn ($record) => $record->author_name ?? 'Anonymous'),
+                TextColumn::make('body')->limit(80)->wrap(),
+                IconColumn::make('is_internal')->boolean()->label('Internal'),
+                TextColumn::make('created_at')->since(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 }

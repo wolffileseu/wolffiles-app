@@ -1,6 +1,8 @@
 <?php
 namespace App\Models;
 
+use App\Models\Tracker\TrackerClaim;
+use ReflectionMethod;
 use App\Models\Tracker\TrackerClan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,14 +71,14 @@ class ClanProposal extends Model
         }
 
         // Reuse linkRegisteredClan via a synthetic TrackerClaim
-        $claim = new \App\Models\Tracker\TrackerClaim([
+        $claim = new TrackerClaim([
             'user_id'        => $this->user_id,
             'claimable_type' => 'clan',
             'claimable_id'   => $trackerClan->id,
             'status'         => 'approved',
         ]);
         $claim->user_id = $this->user_id; // ensure for protected method
-        $ref = new \ReflectionMethod(\App\Models\Tracker\TrackerClaim::class, 'linkRegisteredClan');
+        $ref = new ReflectionMethod(TrackerClaim::class, 'linkRegisteredClan');
         $ref->setAccessible(true);
         $ref->invoke($claim, $trackerClan);
 

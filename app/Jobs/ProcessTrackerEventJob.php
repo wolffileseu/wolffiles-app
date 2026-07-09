@@ -2,6 +2,8 @@
 
 namespace App\Jobs;
 
+use Illuminate\Support\Facades\DB;
+use Throwable;
 use App\Models\Tracker\TrackerRawEvent;
 use App\Services\Tracker\Handlers\AbstractHandler;
 use App\Services\Tracker\Handlers\MatchLifecycleHandler;
@@ -82,7 +84,7 @@ class ProcessTrackerEventJob implements ShouldQueue
             // promote the server; running presence/kill/weapon handlers
             // would re-populate players and stats for a banned server.
             $serverBanned = $event->server_id !== null
-                && \Illuminate\Support\Facades\DB::table('tracker_servers')
+                && DB::table('tracker_servers')
                     ->where('id', $event->server_id)
                     ->value('status') === 'banned';
 
@@ -100,7 +102,7 @@ class ProcessTrackerEventJob implements ShouldQueue
                 'processed_at' => now(),
                 'processing_error' => null,
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('ProcessTrackerEventJob failed', [
                 'raw_event_id' => $this->rawEventId,
                 'cmd' => $event->cmd,

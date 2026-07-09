@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use Illuminate\Console\Command;
 use Imagick;
 use ZipArchive;
@@ -163,7 +164,7 @@ class ExtractStockLevelshots extends Command
                 $this->writeJpegThumb($blob, $pick['ext'] === 'jpeg' ? 'jpg' : $pick['ext'], $target);
                 $this->line("  ✓ <fg=green>$mapName</> (from .{$pick['ext']})");
                 $ok++;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->warn("  ✗ $mapName (" . $e->getMessage() . ')');
                 $failed++;
             }

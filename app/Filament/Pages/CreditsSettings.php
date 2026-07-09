@@ -2,28 +2,34 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
 use App\Models\Setting;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 
 /**
- * @property \Filament\Forms\Form $form
+ * @property \Filament\Schemas\Schema $form
  */
 class CreditsSettings extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-heart';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-heart';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Credits';
     protected static ?string $title = 'Credits verwalten';
     protected static ?int $navigationSort = 90;
 
-    protected static string $view = 'filament.pages.credits-settings';
+    protected string $view = 'filament.pages.credits-settings';
 
     public ?array $data = [];
 
@@ -43,40 +49,40 @@ class CreditsSettings extends Page
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Credits Seite')
+        return $schema
+            ->components([
+                Section::make('Credits Seite')
                     ->schema([
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Credits Seite aktiv')
                             ->default(true),
-                        Forms\Components\Textarea::make('header_text')
+                        Textarea::make('header_text')
                             ->label('Einleitungstext')
                             ->rows(3),
-                        Forms\Components\Textarea::make('footer_text')
+                        Textarea::make('footer_text')
                             ->label('Abschlusstext')
                             ->rows(2),
                     ]),
 
-                Forms\Components\Section::make('Credits Einträge')
+                Section::make('Credits Einträge')
                     ->description('Personen, Teams und Projekte die du danken möchtest.')
                     ->schema([
-                        Forms\Components\Repeater::make('entries')
+                        Repeater::make('entries')
                             ->label('')
                             ->schema([
-                                Forms\Components\TextInput::make('name')
+                                TextInput::make('name')
                                     ->label('Name')
                                     ->required()
                                     ->maxLength(100)
                                     ->columnSpan(1),
-                                Forms\Components\TextInput::make('role')
+                                TextInput::make('role')
                                     ->label('Rolle / Beitrag')
                                     ->maxLength(150)
                                     ->placeholder('z.B. Server Admin, Map Creator, Sponsor...')
                                     ->columnSpan(1),
-                                Forms\Components\Select::make('category')
+                                Select::make('category')
                                     ->label('Kategorie')
                                     ->options([
                                         'team' => '👥 Team',
@@ -88,18 +94,18 @@ class CreditsSettings extends Page
                                     ])
                                     ->default('contributor')
                                     ->columnSpan(1),
-                                Forms\Components\TextInput::make('url')
+                                TextInput::make('url')
                                     ->label('Link (optional)')
                                     ->url()
                                     ->maxLength(255)
                                     ->placeholder('https://...')
                                     ->columnSpan(1),
-                                Forms\Components\TextInput::make('avatar_url')
+                                TextInput::make('avatar_url')
                                     ->label('Avatar URL (optional)')
                                     ->maxLength(255)
                                     ->placeholder('https://...avatar.png')
                                     ->columnSpan(1),
-                                Forms\Components\Textarea::make('description')
+                                Textarea::make('description')
                                     ->label('Beschreibung (optional)')
                                     ->rows(2)
                                     ->maxLength(500)

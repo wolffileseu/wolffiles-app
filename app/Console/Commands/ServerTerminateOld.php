@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Notifications\ServerTerminationWarning;
+use App\Notifications\ServerTerminated;
 use App\Models\ServerOrder;
 use App\Services\ServerProvisioningService;
 use Illuminate\Console\Command;
@@ -25,7 +27,7 @@ class ServerTerminateOld extends Command
             if ($daysUntilTermination <= 7 && $daysUntilTermination > 0) {
                 $cacheKey = "server_termwarn_{$order->id}";
                 if (!cache()->has($cacheKey) && $order->user) {
-                    $order->user->notify(new \App\Notifications\ServerTerminationWarning($order, ( int) $daysUntilTermination));
+                    $order->user->notify(new ServerTerminationWarning($order, ( int) $daysUntilTermination));
                     cache()->put($cacheKey, true, now()->addHours(23));
                     $this->warn("Termination warning sent: {$order->server_name}");
                 }
@@ -37,7 +39,7 @@ class ServerTerminateOld extends Command
                 $this->error("Terminated: {$order->server_name} (Order #{$order->id})");
 
                 if ($order->user) {
-                    $order->user->notify(new \App\Notifications\ServerTerminated($order));
+                    $order->user->notify(new ServerTerminated($order));
                 }
             }
         }

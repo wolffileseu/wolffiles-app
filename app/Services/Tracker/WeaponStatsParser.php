@@ -2,6 +2,9 @@
 
 namespace App\Services\Tracker;
 
+use Throwable;
+use RuntimeException;
+
 /**
  * Parses the payload of a 'ws' (weapon stats) tracker packet.
  *
@@ -82,7 +85,7 @@ class WeaponStatsParser
 
         try {
             return $this->parseStructured($tokens, $clientinfoPart, $fieldsPerWeapon);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Malformed packet — let caller log the raw payload for inspection.
             return null;
         }
@@ -129,7 +132,7 @@ class WeaponStatsParser
                 // jaymod field order (g_match.cpp:422, logPrint=false):
                 //   hits atts subshots kills deaths headshots
                 if ($i + $fieldsPerWeapon - 1 >= count($tokens)) {
-                    throw new \RuntimeException("truncated weapon stats at bit $bit");
+                    throw new RuntimeException("truncated weapon stats at bit $bit");
                 }
                 if ($fieldsPerWeapon === 6) {
                     $hits      = (int) $tokens[$i++];

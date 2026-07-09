@@ -2,6 +2,10 @@
 
 namespace App\Filament\Pages;
 
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Exception;
+use Log;
+use Illuminate\Support\Facades\Http;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Notifications\Notification;
@@ -13,11 +17,11 @@ class TranslationManager extends Page
     use HasPageShield;
 
     use WithFileUploads;
-    protected static ?string $navigationIcon = 'heroicon-o-language';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-language';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Translations';
     protected static ?int $navigationSort = 10;
-    protected static string $view = 'filament.pages.translation-manager';
+    protected string $view = 'filament.pages.translation-manager';
 
     public string $selectedLang = '';
     public string $selectedFile = 'messages';
@@ -257,7 +261,7 @@ return " . $this->arrayExport($translations) . ";
         return implode("\n", $lines);
     }
 
-    public function exportCsv(string $lang): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportCsv(string $lang): StreamedResponse
     {
         $baseKeys = $this->getBaseKeys();
         $langKeys = $this->getLangKeys($lang);
@@ -281,7 +285,7 @@ return " . $this->arrayExport($translations) . ";
         }, "wolffiles-translations-{$lang}.csv");
     }
 
-    public function exportJson(string $lang): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function exportJson(string $lang): StreamedResponse
     {
         $baseKeys = $this->getBaseKeys();
         $langKeys = $this->getLangKeys($lang);
@@ -494,8 +498,8 @@ return " . $this->arrayExport($translations) . ";
                 ->success()
                 ->send();
                 
-        } catch (\Exception $e) {
-            \Log::error("JSON Import Error: " . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error("JSON Import Error: " . $e->getMessage());
             Notification::make()
                 ->title("Import Error")
                 ->body($e->getMessage())
@@ -526,7 +530,7 @@ return " . $this->arrayExport($translations) . ";
         $targetLang = $langNames[$this->selectedLang] ?? $this->selectedLang;
 
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'x-api-key'         => config('services.anthropic.key'),
                 'anthropic-version' => '2023-06-01',
                 'Content-Type'      => 'application/json',
@@ -555,8 +559,8 @@ return " . $this->arrayExport($translations) . ";
                     ->success()->send();
             }
 
-        } catch (\Exception $e) {
-            \Log::error('AI Translation: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('AI Translation: ' . $e->getMessage());
             Notification::make()->title('Fehler: ' . $e->getMessage())->danger()->send();
         }
     }

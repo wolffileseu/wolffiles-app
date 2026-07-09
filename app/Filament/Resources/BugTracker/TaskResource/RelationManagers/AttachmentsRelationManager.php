@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\BugTracker\TaskResource\RelationManagers;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\DeleteAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,15 +19,15 @@ class AttachmentsRelationManager extends RelationManager
             ->recordTitleAttribute('original_filename')
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('original_filename')->searchable(),
-                Tables\Columns\TextColumn::make('mime_type')->color('gray')->size('sm'),
-                Tables\Columns\TextColumn::make('size_bytes')->formatStateUsing(fn ($state) =>
+                TextColumn::make('original_filename')->searchable(),
+                TextColumn::make('mime_type')->color('gray')->size('sm'),
+                TextColumn::make('size_bytes')->formatStateUsing(fn ($state) =>
                     $state ? number_format($state / 1024, 1).' KB' : '—'),
-                Tables\Columns\TextColumn::make('uploader.name')->placeholder('—'),
-                Tables\Columns\TextColumn::make('created_at')->since(),
+                TextColumn::make('uploader.name')->placeholder('—'),
+                TextColumn::make('created_at')->since(),
             ])
-            ->actions([
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                DeleteAction::make(),
             ]);
     }
 }

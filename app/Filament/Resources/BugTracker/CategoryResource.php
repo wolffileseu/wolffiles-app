@@ -2,11 +2,22 @@
 
 namespace App\Filament\Resources\BugTracker;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Str;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\BugTracker\CategoryResource\Pages\ListCategories;
+use App\Filament\Resources\BugTracker\CategoryResource\Pages\CreateCategory;
+use App\Filament\Resources\BugTracker\CategoryResource\Pages\EditCategory;
 use App\Filament\Resources\BugTracker\CategoryResource\Pages;
 use App\Models\BugTracker\Category;
 use App\Models\BugTracker\Project;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,25 +25,25 @@ use Filament\Tables\Table;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Bug Tracker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bug Tracker';
     protected static ?string $navigationLabel = 'Categories';
     protected static ?int $navigationSort = 20;
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('project_id')
+        return $schema->components([
+            Select::make('project_id')
                 ->label('Project')
                 ->options(fn () => Project::where('is_active', true)->orderBy('sort_order')->pluck('name', 'id'))
                 ->required()->searchable(),
-            Forms\Components\TextInput::make('name')->required()->maxLength(120)->live(onBlur: true)
+            TextInput::make('name')->required()->maxLength(120)->live(onBlur: true)
                 ->afterStateUpdated(fn ($state, $set, $context) =>
-                    $context === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
-            Forms\Components\TextInput::make('slug')->required()->maxLength(60),
-            Forms\Components\Textarea::make('description')->rows(2)->columnSpanFull(),
-            Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
+                    $context === 'create' ? $set('slug', Str::slug($state)) : null),
+            TextInput::make('slug')->required()->maxLength(60),
+            Textarea::make('description')->rows(2)->columnSpanFull(),
+            TextInput::make('sort_order')->numeric()->default(0),
         ]);
     }
 
@@ -41,29 +52,29 @@ class CategoryResource extends Resource
         return $table
             ->defaultSort('project_id')
             ->columns([
-                Tables\Columns\TextColumn::make('project.name')->sortable()
+                TextColumn::make('project.name')->sortable()
                     ->badge()->color(fn ($record) => $record->project?->color ? null : 'gray'),
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('slug')->color('gray')->size('sm'),
-                Tables\Columns\TextColumn::make('tasks_count')->counts('tasks')->label('Tasks')->badge(),
-                Tables\Columns\TextColumn::make('sort_order')->sortable(),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('slug')->color('gray')->size('sm'),
+                TextColumn::make('tasks_count')->counts('tasks')->label('Tasks')->badge(),
+                TextColumn::make('sort_order')->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('project_id')->label('Project')
+                SelectFilter::make('project_id')->label('Project')
                     ->options(fn () => Project::orderBy('sort_order')->pluck('name', 'id')),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit'   => Pages\EditCategory::route('/{record}/edit'),
+            'index'  => ListCategories::route('/'),
+            'create' => CreateCategory::route('/create'),
+            'edit'   => EditCategory::route('/{record}/edit'),
         ];
     }
 }

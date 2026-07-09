@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrackerPlayerResource\RelationManagers;
 
+use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,7 +16,7 @@ class AliasesRelationManager extends RelationManager
 {
     protected static string $relationship = 'aliases';
     protected static ?string $title = 'Aliases (names used)';
-    protected static ?string $icon = 'heroicon-o-identification';
+    protected static string | \BackedEnum | null $icon = 'heroicon-o-identification';
 
     public function isReadOnly(): bool { return true; }
 
@@ -24,21 +25,21 @@ class AliasesRelationManager extends RelationManager
         return $table
             ->defaultSort('times_used', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('name_html')
+                TextColumn::make('name_html')
                     ->label('Name')
                     ->formatStateUsing(fn ($state, $record) => $state ?: e($record->name_clean ?: $record->name ?: '—'))
                     ->html()
                     ->description(fn ($record) => $record->name_clean)
                     ->wrap(),
 
-                Tables\Columns\TextColumn::make('times_used')
+                TextColumn::make('times_used')
                     ->label('Used')->numeric()->sortable()->alignEnd()
                     ->badge()->color('gray'),
 
-                Tables\Columns\TextColumn::make('first_seen_at')
+                TextColumn::make('first_seen_at')
                     ->label('First seen')->dateTime()->sortable()->placeholder('—')->toggleable(),
 
-                Tables\Columns\TextColumn::make('last_seen_at')
+                TextColumn::make('last_seen_at')
                     ->label('Last seen')->since()->sortable()->placeholder('—'),
             ])
             ->paginated([10, 25, 50]);

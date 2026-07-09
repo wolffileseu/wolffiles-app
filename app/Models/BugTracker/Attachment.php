@@ -2,6 +2,7 @@
 
 namespace App\Models\BugTracker;
 
+use Throwable;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -43,7 +44,7 @@ class Attachment extends Model
     {
         try {
             return Storage::disk($this->disk)->temporaryUrl($this->stored_path, now()->addMinutes(15));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return null;
         }
     }

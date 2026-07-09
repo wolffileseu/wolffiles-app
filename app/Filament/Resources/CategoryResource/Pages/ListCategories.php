@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\CategoryResource\Pages;
 
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\CategoryResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -18,7 +20,7 @@ class ListCategories extends ListRecords
     {
         return [
             // === CSV Export ===
-            Actions\Action::make('export_csv')
+            Action::make('export_csv')
                 ->label('Export CSV')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('gray')
@@ -74,7 +76,7 @@ class ListCategories extends ListRecords
                 }),
 
             // === XLSX Export ===
-            Actions\Action::make('export_xlsx')
+            Action::make('export_xlsx')
                 ->label('Export XLSX')
                 ->icon('heroicon-o-document-arrow-down')
                 ->color('success')
@@ -154,7 +156,7 @@ class ListCategories extends ListRecords
                     );
                 }),
 
-            Actions\CreateAction::make(),
+            CreateAction::make(),
         ];
     }
 }

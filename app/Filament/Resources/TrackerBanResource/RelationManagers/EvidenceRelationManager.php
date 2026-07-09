@@ -2,9 +2,24 @@
 
 namespace App\Filament\Resources\TrackerBanResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\FileUpload;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Hidden;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Throwable;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use App\Models\Tracker\TrackerServer;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,39 +32,39 @@ class EvidenceRelationManager extends RelationManager
     protected static ?string $title = 'Evidence';
     protected static ?string $recordTitleAttribute = 'caption';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('type')->required()->default('screenshot')->live()
+        return $schema->components([
+            Select::make('type')->required()->default('screenshot')->live()
                 ->options(['screenshot'=>'Screenshot','demo'=>'Demo','video'=>'Video','link'=>'Link']),
 
             // File upload for screenshot/demo (private S3, same pattern as DemoResource)
-            Forms\Components\FileUpload::make('file_path')
+            FileUpload::make('file_path')
                 ->label('File (screenshot / demo)')
                 ->disk('s3')->directory('ban-evidence')->visibility('private')
                 ->maxSize(20480)
-                ->visible(fn (Forms\Get $get) => in_array($get('type'), ['screenshot','demo']))
-                ->acceptedFileTypes(fn (Forms\Get $get) => $get('type') === 'screenshot'
+                ->visible(fn (Get $get) => in_array($get('type'), ['screenshot','demo']))
+                ->acceptedFileTypes(fn (Get $get) => $get('type') === 'screenshot'
                     ? ['image/jpeg','image/png','image/webp','image/gif']
                     : null),
 
             // External URL for link/video
-            Forms\Components\TextInput::make('external_url')->label('URL (video / link)')->url()->maxLength(512)
-                ->visible(fn (Forms\Get $get) => in_array($get('type'), ['video','link'])),
+            TextInput::make('external_url')->label('URL (video / link)')->url()->maxLength(512)
+                ->visible(fn (Get $get) => in_array($get('type'), ['video','link'])),
 
-            Forms\Components\TextInput::make('caption')->label('Caption')->maxLength(255)->columnSpanFull(),
+            TextInput::make('caption')->label('Caption')->maxLength(255)->columnSpanFull(),
 
-            Forms\Components\Select::make('server_id')->label('Server')->searchable()
+            Select::make('server_id')->label('Server')->searchable()
                 ->options(fn () => TrackerServer::orderBy('hostname_clean')->limit(1000)->get()
                     ->mapWithKeys(fn ($s) => [$s->id => $s->hostname_clean ?: $s->hostname ?: "Server #{$s->id}"])->all()),
 
-            Forms\Components\DateTimePicker::make('occurred_at')->label('When recorded'),
+            DateTimePicker::make('occurred_at')->label('When recorded'),
 
-            Forms\Components\Toggle::make('is_public')->label('Public evidence')
+            Toggle::make('is_public')->label('Public evidence')
                 ->helperText('Only public evidence is shown on the public badge.'),
 
-            Forms\Components\Hidden::make('uploaded_by')->default(fn () => auth()->id()),
-            Forms\Components\Hidden::make('created_at')->default(fn () => now()),
+            Hidden::make('uploaded_by')->default(fn () => auth()->id()),
+            Hidden::make('created_at')->default(fn () => now()),
         ])->columns(2);
     }
 
@@ -59,34 +74,34 @@ class EvidenceRelationManager extends RelationManager
             ->recordTitleAttribute('caption')
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('type')->badge(),
-                Tables\Columns\ImageColumn::make('file_path')
+                TextColumn::make('type')->badge(),
+                ImageColumn::make('file_path')
                     ->label('Preview')
                     ->disk('s3')->visibility('private')
                     ->visible(fn () => true)
                     ->getStateUsing(function ($record) {
                         if ($record->file_path && $record->type === 'screenshot') {
                             try { return Storage::disk('s3')->temporaryUrl($record->file_path, now()->addHour()); }
-                            catch (\Throwable $e) { return null; }
+                            catch (Throwable $e) { return null; }
                         }
                         return null;
                     }),
-                Tables\Columns\TextColumn::make('caption')->limit(30)->placeholder('—'),
-                Tables\Columns\IconColumn::make('is_public')->label('Public')->boolean(),
-                Tables\Columns\TextColumn::make('server.hostname_clean')->label('Server')->limit(20)->placeholder('—'),
-                Tables\Columns\TextColumn::make('uploadedBy.name')->label('By')->placeholder('—'),
-                Tables\Columns\TextColumn::make('created_at')->since(),
+                TextColumn::make('caption')->limit(30)->placeholder('—'),
+                IconColumn::make('is_public')->label('Public')->boolean(),
+                TextColumn::make('server.hostname_clean')->label('Server')->limit(20)->placeholder('—'),
+                TextColumn::make('uploadedBy.name')->label('By')->placeholder('—'),
+                TextColumn::make('created_at')->since(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
-                Tables\Actions\Action::make('open')
+            ->recordActions([
+                Action::make('open')
                     ->label('Open')->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn ($record) => $record->url(60), true)
                     ->visible(fn ($record) => $record->file_path || $record->external_url),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 }

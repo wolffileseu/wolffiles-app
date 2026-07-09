@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+use Exception;
+use RuntimeException;
 use App\Models\Demo;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -130,8 +134,8 @@ class DemoUploadService
                 $this->extractArchive($tempFile, $extractedDir);
 
                 // List all archive contents
-                $iterator = new \RecursiveIteratorIterator(
-                    new \RecursiveDirectoryIterator($extractedDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($extractedDir, RecursiveDirectoryIterator::SKIP_DOTS)
                 );
                 foreach ($iterator as $file) {
                     if ($file->isFile()) {
@@ -171,7 +175,7 @@ class DemoUploadService
             }
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("DemoUploadService::analyzeFromS3 failed", ['demo' => $demo->id, 'error' => $e->getMessage()]);
             return ['error' => 'Analysis failed: ' . $e->getMessage()];
         } finally {
@@ -210,7 +214,7 @@ class DemoUploadService
             // Sort by key
             ksort($configs);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("extractConfigStrings failed", ['path' => $path, 'error' => $e->getMessage()]);
         }
 
@@ -277,7 +281,7 @@ class DemoUploadService
     protected function findDemoFiles(string $dir): array
     {
         $found = [];
-        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS));
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS));
         foreach ($it as $f) {
             if ($f->isFile() && $this->isDemoFile($f->getFilename())) $found[] = $f->getPathname();
         }
@@ -370,7 +374,7 @@ class DemoUploadService
                 $meta['duration_seconds'] = (int) round($fileSize / $bps);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("parseDemoFile failed", ['path' => $path, 'error' => $e->getMessage()]);
         }
 
@@ -452,12 +456,12 @@ class DemoUploadService
     protected function validateExtractedSize(string $dir, int $maxBytes): void
     {
         $totalSize = 0;
-        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS));
+        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS));
         foreach ($it as $f) {
             if ($f->isFile()) {
                 $totalSize += $f->getSize();
                 if ($totalSize > $maxBytes) {
-                    throw new \RuntimeException('Extracted archive exceeds maximum allowed size of ' . round($maxBytes / 1024 / 1024) . 'MB');
+                    throw new RuntimeException('Extracted archive exceeds maximum allowed size of ' . round($maxBytes / 1024 / 1024) . 'MB');
                 }
             }
         }
@@ -466,9 +470,9 @@ class DemoUploadService
     protected function cleanupDir(string $dir): void
     {
         if (!is_dir($dir)) return;
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($files as $f) { $f->isDir() ? rmdir($f->getPathname()) : unlink($f->getPathname()); }
         rmdir($dir);

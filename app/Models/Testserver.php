@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Log;
+use App\Services\TestserverService;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -96,18 +99,18 @@ class Testserver extends Model
             $changed = $server->wasChanged(['enabled', 'public_visible']);
             if (!$changed) return;
 
-            \Log::info('Testserver auto-onboard triggered', [
+            Log::info('Testserver auto-onboard triggered', [
                 'slot' => $server->slot_number,
                 'name' => $server->name,
             ]);
 
             // Idle-Mode triggern (async via Queue, nicht blockierend)
             dispatch(function () use ($server) {
-                $svc = app(\App\Services\TestserverService::class);
+                $svc = app(TestserverService::class);
                 $svc->enterIdleMode($server);
 
                 // Tracker-Discovery so dass Server in deinem eigenen Tracker auftaucht
-                \Illuminate\Support\Facades\Artisan::call('tracker:discover-servers');
+                Artisan::call('tracker:discover-servers');
             })->onQueue('default')->afterCommit();
         });
     }

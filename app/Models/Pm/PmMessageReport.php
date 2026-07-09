@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $reason_text
  * @property string $status open|reviewing|resolved|dismissed
  * @property int|null $resolved_by
- * @property \Carbon\Carbon|null $resolved_at
+ * @property Carbon|null $resolved_at
  * @property string|null $resolution_note
  */
 class PmMessageReport extends Model

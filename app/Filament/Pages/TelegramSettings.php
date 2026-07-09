@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Artisan;
 use App\Services\TelegramNotificationService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -13,13 +14,13 @@ class TelegramSettings extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-bell-alert';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-bell-alert';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Telegram Notifications';
     protected static ?string $title = 'Telegram Notifications';
     protected static ?int $navigationSort = 50;
 
-    protected static string $view = 'filament.pages.telegram-settings';
+    protected string $view = 'filament.pages.telegram-settings';
 
     public bool $enabled = true;
     public string $bot_token = '';
@@ -60,7 +61,7 @@ class TelegramSettings extends Page
         ]);
 
         // Clear config cache
-        \Artisan::call('config:clear');
+        Artisan::call('config:clear');
 
         Notification::make()
             ->title('Telegram settings saved!')

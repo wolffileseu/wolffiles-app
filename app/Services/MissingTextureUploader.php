@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Throwable;
+use RuntimeException;
 use App\Models\MissingTexture;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
@@ -65,7 +67,7 @@ class MissingTextureUploader
             Log::info("MissingTextureUploader: uploaded {$miss->texture_path} -> {$target}");
 
             return ["success" => true, "target" => $target, "error" => null];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error("MissingTextureUploader failed: {$e->getMessage()}", [
                 "miss_id" => $miss->id,
                 "destination" => $destination,
@@ -78,12 +80,12 @@ class MissingTextureUploader
     {
         $folder = GameAssetMapper::folderFor($miss->game);
         if (!$folder) {
-            throw new \RuntimeException("No pool folder for game={$miss->game}");
+            throw new RuntimeException("No pool folder for game={$miss->game}");
         }
 
         $path = ltrim($miss->texture_path, "/");
         if (str_contains($path, "..")) {
-            throw new \RuntimeException("Invalid path");
+            throw new RuntimeException("Invalid path");
         }
 
         $full = public_path("{$folder}/{$path}");
@@ -93,7 +95,7 @@ class MissingTextureUploader
         }
 
         if (file_put_contents($full, $contents) === false) {
-            throw new \RuntimeException("Failed to write {$full}");
+            throw new RuntimeException("Failed to write {$full}");
         }
         @chown($full, "wolffiles.eu_lkiogmaiktl");
         @chgrp($full, "psacln");
@@ -106,7 +108,7 @@ class MissingTextureUploader
     {
         $path = ltrim($miss->texture_path, "/");
         if (str_contains($path, "..")) {
-            throw new \RuntimeException("Invalid path");
+            throw new RuntimeException("Invalid path");
         }
 
         $s3Path = "bsp/{$miss->file_id}/assets/{$path}";

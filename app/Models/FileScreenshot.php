@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Storage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -33,11 +34,11 @@ class FileScreenshot extends Model
 
     public function getUrlAttribute(): string
     {
-        return \Storage::disk('s3')->url($this->path);
+        return Storage::disk('s3')->url($this->path);
     }
 
     public function getThumbnailUrlAttribute(): string
     {
-        return \Storage::disk('s3')->url($this->thumbnail_path ?? $this->path);
+        return Storage::disk('s3')->url($this->thumbnail_path ?? $this->path);
     }
 }

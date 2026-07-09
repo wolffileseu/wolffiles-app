@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Throwable;
+use Log;
 use App\Http\Controllers\Controller;
 use App\Models\Tracker\PlayerScreenshot;
 use App\Models\Tracker\TrackerPlayer;
@@ -70,8 +72,8 @@ class PlayerScreenshotController extends Controller
                     'sort_order'          => $nextOrder++,
                 ]);
                 $uploaded++;
-            } catch (\Throwable $e) {
-                \Log::warning('Player screenshot upload failed', [
+            } catch (Throwable $e) {
+                Log::warning('Player screenshot upload failed', [
                     'player_id' => $player->id,
                     'error'     => $e->getMessage(),
                 ]);
@@ -110,8 +112,8 @@ class PlayerScreenshotController extends Controller
             if ($screenshot->file_path) {
                 Storage::disk('s3')->delete($screenshot->file_path);
             }
-        } catch (\Throwable $e) {
-            \Log::warning('S3 delete failed for screenshot', [
+        } catch (Throwable $e) {
+            Log::warning('S3 delete failed for screenshot', [
                 'screenshot_id' => $screenshot->id,
                 'error'         => $e->getMessage(),
             ]);

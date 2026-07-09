@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\BugTracker\ProjectResource\RelationManagers;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\Action;
 use App\Enums\BugTracker\TaskPriority;
 use App\Enums\BugTracker\TaskStatus;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -19,19 +21,19 @@ class TasksRelationManager extends RelationManager
             ->recordTitleAttribute('title')
             ->defaultSort('last_activity_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('task_number')->label('#')->prefix('#')->color('gray')->size('sm'),
-                Tables\Columns\TextColumn::make('title')->searchable()->limit(50)->weight('medium'),
-                Tables\Columns\TextColumn::make('status')->badge()
+                TextColumn::make('task_number')->label('#')->prefix('#')->color('gray')->size('sm'),
+                TextColumn::make('title')->searchable()->limit(50)->weight('medium'),
+                TextColumn::make('status')->badge()
                     ->formatStateUsing(fn (TaskStatus $state) => $state->label())
                     ->color(fn (TaskStatus $state) => $state->color()),
-                Tables\Columns\TextColumn::make('priority')->badge()
+                TextColumn::make('priority')->badge()
                     ->formatStateUsing(fn (TaskPriority $state) => $state->label())
                     ->color(fn (TaskPriority $state) => $state->color()),
-                Tables\Columns\TextColumn::make('assignee.name')->placeholder('—'),
-                Tables\Columns\TextColumn::make('last_activity_at')->since(),
+                TextColumn::make('assignee.name')->placeholder('—'),
+                TextColumn::make('last_activity_at')->since(),
             ])
-            ->actions([
-                Tables\Actions\Action::make('open')->label('Open')
+            ->recordActions([
+                Action::make('open')->label('Open')
                     ->icon('heroicon-o-arrow-top-right-on-square')
                     ->url(fn ($record) => route('filament.admin.resources.bug-tracker.tasks.edit', ['record' => $record])),
             ]);

@@ -2,6 +2,7 @@
 
 namespace App\Services\Pm;
 
+use App\Exceptions\Pm\PmServiceException;
 use App\Models\Pm\PmConversation;
 use App\Models\Pm\PmUserBlock;
 use App\Models\Pm\PmUserSetting;
@@ -84,7 +85,7 @@ class PmPolicyService
     public function block(User $blocker, User $blocked, ?string $reason = null): PmUserBlock
     {
         if ($blocker->id === $blocked->id) {
-            throw new \App\Exceptions\Pm\PmServiceException(
+            throw new PmServiceException(
                 "self_block",
                 "Cannot block yourself."
             );

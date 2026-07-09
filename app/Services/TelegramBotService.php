@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use Exception;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use Illuminate\Support\Facades\Cache;
 use App\Models\File;
 use App\Models\Tracker\TrackerServer;
 use App\Models\Tracker\TrackerGame;
@@ -44,7 +49,7 @@ class TelegramBotService
             if (isset($update['message']['text'])) {
                 $this->handleMessage($update['message']);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Telegram bot error: ' . $e->getMessage());
         }
     }
@@ -175,7 +180,7 @@ class TelegramBotService
 
         foreach ($files as $i => $file) {
             $num = $i + 1;
-            $ago = ($file->published_at ? \Carbon\Carbon::parse($file->published_at)->diffForHumans() : null) ?? 'Unknown';
+            $ago = ($file->published_at ? Carbon::parse($file->published_at)->diffForHumans() : null) ?? 'Unknown';
             $text .= "{$num}. <b>{$file->title}</b>\n"
                 . "   📁 " . ($file->category->name ?? 'N/A') . " | ⏰ {$ago}\n\n";
 
@@ -243,7 +248,7 @@ class TelegramBotService
         // Try to send with screenshot
         $screenshot = $file->screenshots()->first();
         if ($screenshot && $screenshot->path) {
-            $imageUrl = \Illuminate\Support\Facades\Storage::disk('s3')->url($screenshot->path);
+            $imageUrl = Storage::disk('s3')->url($screenshot->path);
             $this->sendPhoto($chatId, $imageUrl, $text, $buttons);
         } else {
             $this->sendMessage($chatId, $text, $buttons['inline_keyboard'] ? $buttons : null);
@@ -274,7 +279,7 @@ class TelegramBotService
 
         $screenshot = $file->screenshots()->first();
         if ($screenshot && $screenshot->path) {
-            $imageUrl = \Illuminate\Support\Facades\Storage::disk('s3')->url($screenshot->path);
+            $imageUrl = Storage::disk('s3')->url($screenshot->path);
             $this->sendPhoto($chatId, $imageUrl, $text, $buttons);
         } else {
             $this->sendMessage($chatId, $text, $buttons);
@@ -285,7 +290,7 @@ class TelegramBotService
     {
         $totalFiles = File::where('status', 'approved')->count();
         $totalDownloads = File::where('status', 'approved')->sum('download_count');
-        $totalUsers = \App\Models\User::count();
+        $totalUsers = User::count();
         $pendingFiles = File::where('status', 'pending')->count();
 
         // Server stats
@@ -424,7 +429,7 @@ class TelegramBotService
             return;
         }
 
-        $service = app(\App\Services\FileUploadService::class);
+        $service = app(FileUploadService::class);
         $service->approve($file, 1); // user_id 1 = admin
 
         $this->sendMessage($chatId,
@@ -451,7 +456,7 @@ class TelegramBotService
             return;
         }
 
-        $service = app(\App\Services\FileUploadService::class);
+        $service = app(FileUploadService::class);
         $service->reject($file, 1, $reason);
 
         $this->sendMessage($chatId,
@@ -471,7 +476,7 @@ class TelegramBotService
 
     protected function cmdAck(int $chatId): void
     {
-        \Illuminate\Support\Facades\Cache::put('tracker:alert_acked', true, today()->addDay()->setHour(6)->setMinute(0)->setSecond(0));
+        Cache::put('tracker:alert_acked', true, today()->addDay()->setHour(6)->setMinute(0)->setSecond(0));
         $this->sendMessage($chatId, '✅ <b>Alert quittiert</b> — keine Benachrichtigungen bis morgen 06:00 Uhr.');
     }
     // ─── Inline Query (search from any chat) ─────────────────

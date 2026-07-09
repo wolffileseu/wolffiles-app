@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\File;
+use App\Models\LuaScript;
+use App\Models\Post;
+use App\Models\Demo;
+use App\Models\Tutorial;
+use App\Models\WikiArticle;
 use App\Http\Controllers\Controller;
 use App\Models\Comment;
 use Illuminate\Http\Request;
@@ -20,13 +26,13 @@ class CommentController extends Controller
 
         // Map short names to full class names, but also accept full class names
         $typeMap = [
-            'file' => \App\Models\File::class,
-            'lua_script' => \App\Models\LuaScript::class,
-            'post' => \App\Models\Post::class,
+            'file' => File::class,
+            'lua_script' => LuaScript::class,
+            'post' => Post::class,
             // Also accept full class names directly
-            'App\Models\File' => \App\Models\File::class,
-            'App\Models\LuaScript' => \App\Models\LuaScript::class,
-            'App\Models\Post' => \App\Models\Post::class,
+            'App\Models\File' => File::class,
+            'App\Models\LuaScript' => LuaScript::class,
+            'App\Models\Post' => Post::class,
         ];
 
         $requestType = $request->commentable_type;
@@ -47,14 +53,13 @@ class CommentController extends Controller
         ]);
 
         ActivityLogger::comment($comment, $commentable);
-        /** @var \App\Models\File|\App\Models\Demo|\App\Models\Tutorial|\App\Models\WikiArticle $commentable */
-
+        /** @var File|Demo|Tutorial|WikiArticle $commentable */
         // Notify file/content owner about new comment
         if ($commentable->user && $commentable->user->id !== auth()->id()) {
             $title = $commentable->title ?? $commentable->name ?? 'your content';
             $url = method_exists($commentable, 'getUrlAttribute') 
                 ? $commentable->url 
-                : (($commentable instanceof \App\Models\File) ? route('files.show', $commentable) : url('/'));
+                : (($commentable instanceof File) ? route('files.show', $commentable) : url('/'));
             $commentable->user->notify(new NewComment($comment, $title, $url));
         }
 

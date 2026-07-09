@@ -1,5 +1,7 @@
 <?php
 namespace App\Console\Commands;
+use DB;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Tracker\TrackerServer;
 use App\Services\TelegramNotificationService;
 use Illuminate\Console\Command;
@@ -12,7 +14,7 @@ class TrackerHealthCheck extends Command
     {
         $telegram = new TelegramNotificationService();
         $issues = [];
-        $lastPoll = \App\Models\Tracker\TrackerServer::where('is_online', true)->max('last_poll_at');
+        $lastPoll = TrackerServer::where('is_online', true)->max('last_poll_at');
         if (!$lastPoll || now()->diffInMinutes($lastPoll) > 5) {
             $issues[] = '⚠️ <b>Tracker Poll hängt</b> (>5min) — letzter Poll: ' . ($lastPoll ? $lastPoll : 'nie');
         }
@@ -29,7 +31,7 @@ class TrackerHealthCheck extends Command
             $issues[] = "⚠️ <b>{$ghosts} Ghost-Server</b> entdeckt — Discovery läuft heiß";
         }
         // === Neuer Check: failed_jobs Spike (Incident 2026-05-23 prevention) ===
-        $failedLastHour = \DB::table('failed_jobs')
+        $failedLastHour = DB::table('failed_jobs')
             ->where('failed_at', '>=', now()->subHour())
             ->count();
         if ($failedLastHour > 1000) {
@@ -49,7 +51,7 @@ class TrackerHealthCheck extends Command
         }
 
         // Wenn Alert quittiert wurde, nicht senden
-        if (!empty($issues) && \Illuminate\Support\Facades\Cache::get('tracker:alert_acked')) {
+        if (!empty($issues) && Cache::get('tracker:alert_acked')) {
             $this->info('Alert acked, skipping notification.');
             return 0;
         }

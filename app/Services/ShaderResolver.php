@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Throwable;
 use App\Services\GameAssetMapper;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -87,7 +88,7 @@ class ShaderResolver
                         $merged = array_merge($merged, $this->parseShaderFile($content));
                     }
                     return $merged;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::warning("ShaderResolver loadMapShaders failed [{$fileId}]: {$e->getMessage()}");
                     return [];
                 }

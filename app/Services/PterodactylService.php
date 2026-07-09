@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Exception;
+use App\Models\ServerOrder;
 use App\Models\EttvSlot;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -40,7 +42,7 @@ class PterodactylService
                     'signal' => $signal,
                 ]);
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Pterodactyl power: {$e->getMessage()}", compact('uuid', 'signal'));
             return false;
         }
@@ -67,7 +69,7 @@ class PterodactylService
                     'value' => $value,
                 ]);
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Variable update failed: {$e->getMessage()}");
             return false;
         }
@@ -122,7 +124,7 @@ class PterodactylService
             $response = Http::attach('files', file_get_contents($localPath), "{$demoName}.tv_84")
                 ->post($uploadUrl . '&directory=/etpro/demos');
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Demo upload failed: {$e->getMessage()}");
             return false;
         }
@@ -134,7 +136,7 @@ class PterodactylService
             $response = Http::withHeaders($this->headers())
                 ->get("{$this->baseUrl}/api/client/servers/{$slot->pterodactyl_uuid}/resources");
             return $response->successful() ? $response->json('attributes') : null;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return null;
         }
     }
@@ -180,7 +182,7 @@ class PterodactylService
         return null;
     }
 
-    public function createServer(\App\Models\ServerOrder $order, int $userId, int $allocationId): ?array
+    public function createServer(ServerOrder $order, int $userId, int $allocationId): ?array
     {
         return null;
     }

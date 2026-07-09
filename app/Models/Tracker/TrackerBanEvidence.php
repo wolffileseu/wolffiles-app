@@ -2,6 +2,7 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -29,7 +30,7 @@ class TrackerBanEvidence extends Model
 
     public function ban(): BelongsTo { return $this->belongsTo(TrackerBan::class, 'ban_id'); }
     public function server(): BelongsTo { return $this->belongsTo(TrackerServer::class, 'server_id'); }
-    public function uploadedBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'uploaded_by'); }
+    public function uploadedBy(): BelongsTo { return $this->belongsTo(User::class, 'uploaded_by'); }
 
     /**
      * Signed, expiring S3 URL for the evidence file (screenshots/demos are

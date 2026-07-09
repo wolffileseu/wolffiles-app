@@ -2,6 +2,8 @@
 
 namespace App\Services\Wiki;
 
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 use App\Models\WikiArticle;
 use Illuminate\Support\Str;
 
@@ -575,9 +577,9 @@ class WikitextParser
             $url = '/storage/wiki/' . ltrim($path, '/');
             try {
                 if (function_exists('config') && config('filesystems.disks.s3')) {
-                    $url = \Illuminate\Support\Facades\Storage::disk('s3')->url('wiki/' . ltrim($path, '/'));
+                    $url = Storage::disk('s3')->url('wiki/' . ltrim($path, '/'));
                 }
-            } catch (\Throwable $e) { /* fallback */ }
+            } catch (Throwable $e) { /* fallback */ }
 
             $widthAttr = $width ? ' width="' . $width . '"' : '';
             $alignClass = $align ? ' wiki-img-' . $align : '';

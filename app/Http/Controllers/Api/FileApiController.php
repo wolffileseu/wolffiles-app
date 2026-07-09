@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\User;
+use App\Models\Comment;
+use App\Models\WikiArticle;
+use App\Models\Tutorial;
+use Carbon\Carbon;
 use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\LuaScript;
@@ -130,8 +135,8 @@ class FileApiController extends Controller
             'total_files' => File::approved()->count(),
             'total_downloads' => (int) File::sum('download_count'),
             'total_maps' => File::approved()->whereHas('category', fn ($q) => $q->where('name', 'like', '%Map%'))->count(),
-            'total_users' => \App\Models\User::count(),
-            'total_comments' => \App\Models\Comment::count(),
+            'total_users' => User::count(),
+            'total_comments' => Comment::count(),
             'total_lua_scripts' => LuaScript::where('status', 'approved')->count(),
             'pending_files' => File::where('status', 'pending')->count(),
             'categories' => Category::where('type', 'file')->active()
@@ -162,7 +167,7 @@ class FileApiController extends Controller
         $query = $request->input('q');
         $limit = min((int) $request->input('limit', 5), 20);
 
-        $articles = \App\Models\WikiArticle::published()
+        $articles = WikiArticle::published()
             ->with(['category', 'user'])
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
@@ -194,7 +199,7 @@ class FileApiController extends Controller
         $query = $request->input('q');
         $limit = min((int) $request->input('limit', 5), 20);
 
-        $tutorials = \App\Models\Tutorial::published()
+        $tutorials = Tutorial::published()
             ->with(['category', 'user'])
             ->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
@@ -241,7 +246,7 @@ class FileApiController extends Controller
             'download_url' => route('files.download', $file),
             'thumbnail' => $file->thumbnail_url ?? ($file->screenshots && $file->screenshots->first() ? Storage::disk('s3')->url($file->screenshots->first()->path) : null),
             'author' => $file->original_author ?? $file->user?->name,
-            'published_at' => ($file->published_at ? \Carbon\Carbon::parse($file->published_at)->toIso8601String() : null),
+            'published_at' => ($file->published_at ? Carbon::parse($file->published_at)->toIso8601String() : null),
             'mod_compatibility' => $file->mod_compatibility,
             'readme_content' => $file->readme_content,
         ];

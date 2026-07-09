@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BugTracker\TaskResource\RelationManagers;
 
+use Filament\Tables\Columns\TextColumn;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,11 +19,11 @@ class HistoryRelationManager extends RelationManager
             ->recordTitleAttribute('field')
             ->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')->since(),
-                Tables\Columns\TextColumn::make('user.name')->placeholder('System')->color('gray'),
-                Tables\Columns\TextColumn::make('field')->badge(),
-                Tables\Columns\TextColumn::make('old_value')->limit(40)->placeholder('—'),
-                Tables\Columns\TextColumn::make('new_value')->limit(40)->placeholder('—'),
+                TextColumn::make('created_at')->since(),
+                TextColumn::make('user.name')->placeholder('System')->color('gray'),
+                TextColumn::make('field')->badge(),
+                TextColumn::make('old_value')->limit(40)->placeholder('—'),
+                TextColumn::make('new_value')->limit(40)->placeholder('—'),
             ]);
     }
 }

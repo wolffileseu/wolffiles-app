@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
@@ -122,7 +123,7 @@ public function scanFile(File $file): array
                 Log::info("OmnibotSync: " . count($results['new']) . " new {$game} maps from {$file->file_name}", $results['new']);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $results['errors'][] = $e->getMessage();
             Log::error('OmnibotSync error: ' . $e->getMessage());
             if (isset($tmp) && file_exists($tmp)) unlink($tmp);
@@ -212,7 +213,7 @@ public function scanFile(File $file): array
                     } else {
                         Log::warning("GitHub push failed: {$fileName} - " . $response->body());
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     Log::warning("GitHub push error: {$fileName} - " . $e->getMessage());
                 }
             }
@@ -239,7 +240,7 @@ public function scanFile(File $file): array
                 'draft' => false,
                 'prerelease' => false,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("GitHub release error: " . $e->getMessage());
         }
     }

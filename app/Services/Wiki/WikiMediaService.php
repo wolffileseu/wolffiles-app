@@ -2,6 +2,9 @@
 
 namespace App\Services\Wiki;
 
+use InvalidArgumentException;
+use Throwable;
+use Log;
 use App\Models\WikiMedia;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -23,10 +26,10 @@ class WikiMediaService
     {
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?: ''));
         if (! in_array($ext, self::ALLOWED_EXT, true)) {
-            throw new \InvalidArgumentException("Dateityp .{$ext} nicht erlaubt. Erlaubt: " . implode(', ', self::ALLOWED_EXT));
+            throw new InvalidArgumentException("Dateityp .{$ext} nicht erlaubt. Erlaubt: " . implode(', ', self::ALLOWED_EXT));
         }
         if ($file->getSize() > self::MAX_BYTES) {
-            throw new \InvalidArgumentException('Datei zu gross (max ' . (self::MAX_BYTES / 1048576) . ' MB).');
+            throw new InvalidArgumentException('Datei zu gross (max ' . (self::MAX_BYTES / 1048576) . ' MB).');
         }
 
         $base     = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME)) ?: 'bild';
@@ -39,8 +42,8 @@ class WikiMediaService
         // Expliziter PutObjectAcl-Call via setVisibility, sonst 403 vom CDN.
         try {
             Storage::disk(self::DISK)->setVisibility($key, 'public');
-        } catch (\Throwable $e) {
-            \Log::warning('WikiMediaService: setVisibility failed for '.$key.': '.$e->getMessage());
+        } catch (Throwable $e) {
+            Log::warning('WikiMediaService: setVisibility failed for '.$key.': '.$e->getMessage());
         }
 
         return WikiMedia::create([

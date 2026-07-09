@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Testserver;
 
+use Throwable;
 use App\Models\Testserver;
 use App\Services\TestserverService;
 use Illuminate\Console\Command;
@@ -51,7 +52,7 @@ class RotateIdleMaps extends Command
                     'mod'  => $server->current_idle_mod,
                 ]);
                 sleep(2);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error("Testserver: rotation failed for slot {$server->slot_number}: " . $e->getMessage());
                 $this->error("  ❌ Server {$server->slot_number} failed: " . $e->getMessage());
             }

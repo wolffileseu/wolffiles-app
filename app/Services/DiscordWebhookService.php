@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
+use Exception;
 use App\Models\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +24,7 @@ class DiscordWebhookService
         try {
             $embed = [
                 'title' => '📦 ' . $file->title,
-                'description' => \Illuminate\Support\Str::limit(strip_tags($file->description ?? ''), 200),
+                'description' => Str::limit(strip_tags($file->description ?? ''), 200),
                 'url' => route('files.show', $file),
                 'color' => 0xF59E0B, // amber
                 'fields' => [
@@ -60,7 +62,7 @@ class DiscordWebhookService
                 'avatar_url' => config('app.url') . '/images/wolffiles_logo.png',
                 'embeds' => [$embed],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Discord webhook failed: ' . $e->getMessage());
         }
     }
@@ -81,7 +83,7 @@ class DiscordWebhookService
                 'username' => 'Wolffiles.eu',
                 'content' => $content,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Discord webhook failed: ' . $e->getMessage());
         }
     }

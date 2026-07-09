@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $type direct|group
  * @property string|null $hash_key
  * @property int $created_by
- * @property \Carbon\Carbon|null $last_message_at
+ * @property Carbon|null $last_message_at
  * @property int $message_count
  * @property bool $locked
  */

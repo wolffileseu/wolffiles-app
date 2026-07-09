@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Throwable;
 use App\Models\File;
 use App\Models\MissingTexture;
 use App\Services\GameAssetMapper;
@@ -87,7 +88,7 @@ class TextureResolutionChecker
                 if (strtolower($rel) === $key) return true;
             }
             return false;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }

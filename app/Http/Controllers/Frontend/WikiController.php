@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Services\Wiki\WikitextDiff;
+use App\Models\WikiRevision;
+use App\Services\Wiki\WikitextParser;
+use App\Models\WikiTalkThread;
+use App\Models\WikiTalkMessage;
 use App\Http\Controllers\Controller;
 use App\Models\WikiArticle;
 use App\Models\WikiCategory;
@@ -146,7 +151,7 @@ class WikiController extends Controller
             [$left, $right] = [$right, $left];
         }
 
-        $diff = new \App\Services\Wiki\WikitextDiff();
+        $diff = new WikitextDiff();
         $diffHtml = $diff->renderSideBySide(
             (string) ($left->content ?? ''),
             (string) ($right->content ?? '')
@@ -187,7 +192,7 @@ class WikiController extends Controller
         $days  = (int) $request->input('days', 30);
         $limit = min(500, max(10, (int) $request->input('limit', 100)));
 
-        $revisions = \App\Models\WikiRevision::with(['article', 'user'])
+        $revisions = WikiRevision::with(['article', 'user'])
             ->whereHas('article', fn($q) => $q->whereNull('deleted_at'))
             ->where('created_at', '>=', now()->subDays($days))
             ->orderByDesc('created_at')
@@ -279,21 +284,21 @@ class WikiController extends Controller
             'wikitext' => 'required|string|max:50000',
         ]);
 
-        $parser = \App\Services\Wiki\WikitextParser::make([
+        $parser = WikitextParser::make([
             'locale'     => 'de',
             'article_id' => $article->id,
             'namespace'  => 'talk',
         ]);
         $parsed = $parser->parse($data['wikitext']);
 
-        $thread = \App\Models\WikiTalkThread::create([
+        $thread = WikiTalkThread::create([
             'wiki_article_id' => $article->id,
             'title'           => $data['title'],
             'created_by'      => auth()->id(),
             'last_reply_at'   => now(),
         ]);
 
-        \App\Models\WikiTalkMessage::create([
+        WikiTalkMessage::create([
             'wiki_talk_thread_id' => $thread->id,
             'user_id'             => auth()->id(),
             'wikitext'            => $data['wikitext'],
@@ -307,20 +312,20 @@ class WikiController extends Controller
     public function reply(Request $request, string $slug, int $thread)
     {
         $article = WikiArticle::where('slug', $slug)->firstOrFail();
-        $threadModel = \App\Models\WikiTalkThread::where('wiki_article_id', $article->id)->findOrFail($thread);
+        $threadModel = WikiTalkThread::where('wiki_article_id', $article->id)->findOrFail($thread);
         $data = $request->validate([
             'wikitext'    => 'required|string|max:50000',
             'reply_to_id' => 'nullable|integer|exists:wiki_talk_messages,id',
         ]);
 
-        $parser = \App\Services\Wiki\WikitextParser::make([
+        $parser = WikitextParser::make([
             'locale'     => 'de',
             'article_id' => $article->id,
             'namespace'  => 'talk',
         ]);
         $parsed = $parser->parse($data['wikitext']);
 
-        \App\Models\WikiTalkMessage::create([
+        WikiTalkMessage::create([
             'wiki_talk_thread_id' => $threadModel->id,
             'user_id'             => auth()->id(),
             'wikitext'            => $data['wikitext'],
@@ -335,7 +340,7 @@ class WikiController extends Controller
 
     public function toggleResolve(string $slug, int $thread)
     {
-        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+        $threadModel = WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
                                                   ->findOrFail($thread);
         if (!auth()->user()->hasRole('admin') && auth()->id() !== $threadModel->created_by) {
             abort(403);
@@ -347,7 +352,7 @@ class WikiController extends Controller
     public function togglePin(string $slug, int $thread)
     {
         $this->ensureAdmin();
-        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+        $threadModel = WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
                                                   ->findOrFail($thread);
         $threadModel->update(['is_pinned' => !$threadModel->is_pinned]);
         return back();
@@ -356,7 +361,7 @@ class WikiController extends Controller
     public function deleteThread(string $slug, int $thread)
     {
         $this->ensureAdmin();
-        $threadModel = \App\Models\WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
+        $threadModel = WikiTalkThread::whereHas('article', fn($q) => $q->where('slug', $slug))
                                                   ->findOrFail($thread);
         $threadModel->delete();
         return redirect()->route('wiki.talk', $slug)->with('success', 'Thread gelöscht.');
@@ -365,7 +370,7 @@ class WikiController extends Controller
     public function deleteMessage(string $slug, int $message)
     {
         $this->ensureAdmin();
-        $msg = \App\Models\WikiTalkMessage::findOrFail($message);
+        $msg = WikiTalkMessage::findOrFail($message);
         $msg->delete();
         return back();
     }

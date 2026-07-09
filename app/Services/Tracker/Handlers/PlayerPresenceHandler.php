@@ -2,6 +2,8 @@
 
 namespace App\Services\Tracker\Handlers;
 
+use stdClass;
+use Illuminate\Support\Carbon;
 use App\Models\Tracker\TrackerRawEvent;
 use App\Services\Tracker\PollerHashService;
 use Illuminate\Support\Facades\DB;
@@ -156,7 +158,7 @@ class PlayerPresenceHandler extends AbstractHandler
      * Update an existing player row with Enhanced fields.
      * Never touches Poller-owned columns (name, first_seen_at, etc.).
      */
-    private function updateExisting(\stdClass $player, string $realGuidHash, bool $isBot, \Illuminate\Support\Carbon $now): void
+    private function updateExisting(stdClass $player, string $realGuidHash, bool $isBot, Carbon $now): void
     {
         $updates = [
             'real_guid_hash' => $realGuidHash,

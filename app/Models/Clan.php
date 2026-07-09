@@ -1,6 +1,9 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use App\Models\Tracker\TrackerClanMember;
+use App\Models\Tracker\TrackerServer;
 use App\Models\Tracker\TrackerClan;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -65,11 +68,11 @@ class Clan extends Model
     public function trackerClan(): BelongsTo { return $this->belongsTo(TrackerClan::class, "tracker_clan_id"); }
     public function managers(): HasMany { return $this->hasMany(ClanManager::class); }
     /** Members of this clan, via the linked tracker_clan. */
-    public function members(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    public function members(): HasManyThrough
     {
         return $this->hasManyThrough(
-            \App\Models\Tracker\TrackerClanMember::class,
-            \App\Models\Tracker\TrackerClan::class,
+            TrackerClanMember::class,
+            TrackerClan::class,
             'id',              // tracker_clans.id (Foreign on this)
             'clan_id',         // tracker_clan_members.clan_id (Foreign on through)
             'tracker_clan_id', // clans.tracker_clan_id (Local)
@@ -110,7 +113,7 @@ class Clan extends Model
     public function autoDetectedServersQuery() {
         $prefix = $this->server_match_prefix;
         $like = addcslashes($prefix, '%_\\') . '%';
-        return \App\Models\Tracker\TrackerServer::query()
+        return TrackerServer::query()
             ->whereNull('claimed_by_clan_id')
             ->where(function($q) use ($like) {
                 $q->where('hostname_clean', 'LIKE', $like)

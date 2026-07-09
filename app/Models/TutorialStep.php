@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Mews\Purifier\Facades\Purifier;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ class TutorialStep extends Model
     protected function content(): Attribute
     {
         return Attribute::make(
-            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+            set: fn (?string $value) => $value ? Purifier::clean($value) : null,
         );
     }
 

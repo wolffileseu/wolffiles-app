@@ -2,13 +2,17 @@
 
 namespace App\Models\Tracker;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\User;
+use DB;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 /**
- * @property \Carbon\Carbon|null $first_seen_at
- * @property \Carbon\Carbon|null $last_seen_at
+ * @property Carbon|null $first_seen_at
+ * @property Carbon|null $last_seen_at
  * @property float $elo_rating
  * @property float $elo_peak
  * @property int $id
@@ -56,8 +60,8 @@ class TrackerPlayer extends Model
         return $this->hasMany(PlayerScreenshot::class, 'player_id')->orderBy('sort_order')->orderBy('id');
     }
     public function bans(): HasMany { return $this->hasMany(TrackerBan::class, 'player_id'); }
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
-    public function isClaimedBy(?\App\Models\User $user): bool { return $user && $this->claimed_by_user_id === $user->id; }
+    public function user(): BelongsTo { return $this->belongsTo(User::class, 'claimed_by_user_id'); }
+    public function isClaimedBy(?User $user): bool { return $user && $this->claimed_by_user_id === $user->id; }
     public function isClaimed(): bool { return $this->claimed_by_user_id !== null; }
 
     public function scopeActive($query) { return $query->where('status', 'active'); }
@@ -152,7 +156,7 @@ class TrackerPlayer extends Model
 
         // --- Heatmap: sessions grouped by (day_of_week, hour) ---
         // MySQL DAYOFWEEK: 1=Sun..7=Sat. Shift so 0=Mon..6=Sun.
-        $heatmapRows = \DB::table('tracker_player_sessions')
+        $heatmapRows = DB::table('tracker_player_sessions')
             ->where('player_id', $this->id)
             ->whereNotNull('started_at')
             ->selectRaw('((DAYOFWEEK(started_at) + 5) % 7) AS dow, HOUR(started_at) AS hr, COUNT(*) AS c')
@@ -171,7 +175,7 @@ class TrackerPlayer extends Model
         }
 
         // --- Streaks: distinct play-days, ordered ---
-        $days = \DB::table('tracker_player_sessions')
+        $days = DB::table('tracker_player_sessions')
             ->where('player_id', $this->id)
             ->whereNotNull('started_at')
             ->selectRaw('DATE(started_at) AS day')
@@ -206,7 +210,7 @@ class TrackerPlayer extends Model
         }
 
         // --- Distinct maps played ---
-        $distinctMaps = \DB::table('tracker_player_sessions')
+        $distinctMaps = DB::table('tracker_player_sessions')
             ->where('player_id', $this->id)
             ->whereNotNull('map_name')
             ->where('map_name', '!=', '')

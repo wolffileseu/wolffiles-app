@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\ServerOrder;
 use App\Models\ServerProduct;
 use App\Models\ServerNode;
@@ -110,7 +111,7 @@ class ServerProvisioningService
 
             return true;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Provisioning: Unexpected error', [
                 'order_id' => $order->id,
                 'error' => $e->getMessage(),
@@ -233,7 +234,7 @@ class ServerProvisioningService
         ]);
 
         // If server was suspended, reactivate
-        /** @var \App\Models\ServerOrder $order */
+        /** @var ServerOrder $order */
         if ($order->status === 'suspended') {
             $this->unsuspend($order);
         }

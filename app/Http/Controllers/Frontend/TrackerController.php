@@ -2,6 +2,21 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\StringValueBinder;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use App\Services\Tracker\EngineVersionParser;
+use App\Services\Tracker\TrackerServerExportService;
+use Throwable;
+use Carbon\Carbon;
+use App\Services\Tracker\EloService;
+use App\Services\Tracker\TrackerClass;
+use App\Models\Tracker\TrackerPlayerSession;
+use App\Services\Tracker\ServerQueryService;
+use App\Services\Tracker\MapLinkService;
+use App\Models\Tracker\TrackerServerMapStat;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
@@ -46,7 +61,7 @@ class TrackerController extends Controller
     /**
      * Server List
      */
-    private function buildServerQuery(\Illuminate\Http\Request $request)
+    private function buildServerQuery(Request $request)
     {
         $query = TrackerServer::active()->with('game');
 
@@ -196,7 +211,7 @@ class TrackerController extends Controller
         return $query;
     }
 
-    public function exportServers(\Illuminate\Http\Request $request)
+    public function exportServers(Request $request)
     {
         $servers = $this->buildServerQuery($request)->get([
             'id','game_id','hostname_clean','ip','port','country','country_code',
@@ -205,7 +220,7 @@ class TrackerController extends Controller
             'enhanced_event_count','enhanced_last_event_at','last_seen_at',
         ]);
 
-        \PhpOffice\PhpSpreadsheet\Cell\Cell::setValueBinder(new \PhpOffice\PhpSpreadsheet\Cell\StringValueBinder());
+        Cell::setValueBinder(new StringValueBinder());
 
         $groups = [];
         foreach ($servers as $sv) {
@@ -238,7 +253,7 @@ class TrackerController extends Controller
                 'https://wolffiles.eu/servers/'.$sv->id];
         }
 
-        $ss = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $ss = new Spreadsheet();
         $a = $ss->getActiveSheet(); $a->setTitle('Summary');
         $a->fromArray($sumHeader,null,'A1'); $a->fromArray($sumRows,null,'A2');
         $b = $ss->createSheet(); $b->setTitle('Servers');
@@ -247,16 +262,16 @@ class TrackerController extends Controller
         foreach ([$a,$b] as $sh) {
             $highest = $sh->getHighestColumn();
             $sh->getStyle("A1:{$highest}1")->getFont()->setBold(true);
-            $colIdx = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highest);
+            $colIdx = Coordinate::columnIndexFromString($highest);
             for ($i = 1; $i <= $colIdx; $i++) {
-                $col = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($i);
+                $col = Coordinate::stringFromColumnIndex($i);
                 $sh->getColumnDimension($col)->setAutoSize(true);
             }
             $sh->freezePane('A2');
         }
 
         $tmp = tempnam(sys_get_temp_dir(), 'srvexp_').'.xlsx';
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($ss);
+        $writer = new Xlsx($ss);
         $writer->setPreCalculateFormulas(false);
         $writer->save($tmp);
 
@@ -332,7 +347,7 @@ class TrackerController extends Controller
             ->orderByDesc('cnt')
             ->get()
             ->map(function ($row) {
-                $row->label = \App\Services\Tracker\EngineVersionParser::FAMILY_LABELS[$row->engine_family] ?? $row->engine_family;
+                $row->label = EngineVersionParser::FAMILY_LABELS[$row->engine_family] ?? $row->engine_family;
                 return $row;
             });
 
@@ -349,7 +364,7 @@ class TrackerController extends Controller
      * Per-server Excel export (all tracked data, multi-tab).
      * Cached 6h on disk so repeated/public hits don't rebuild.
      */
-    public function serverExport($identifier, \App\Services\Tracker\TrackerServerExportService $svc)
+    public function serverExport($identifier, TrackerServerExportService $svc)
     {
         // Resolve: numeric -> tracker_servers.id, string -> tracker_servers.slug
         if (ctype_digit((string) $identifier)) {
@@ -371,7 +386,7 @@ class TrackerController extends Controller
         if (! $fresh) {
             try {
                 $svc->export($id, $path);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 \Log::error('serverExport failed', ['server_id' => $id, 'err' => $e->getMessage()]);
                 abort(500, 'Export konnte nicht erstellt werden.');
             }
@@ -744,7 +759,7 @@ class TrackerController extends Controller
         if ($player->merged_into) {
             $target = (int) $player->merged_into;
             for ($i = 0; $i < 5; $i++) {
-                $next = \App\Models\Tracker\TrackerPlayer::where('id', $target)->value('merged_into');
+                $next = TrackerPlayer::where('id', $target)->value('merged_into');
                 if (!$next) break;
                 $target = (int) $next;
             }
@@ -767,7 +782,7 @@ class TrackerController extends Controller
                 ->orderByDesc('polled_at')
                 ->value('name');
             if ($liveSnap !== null) {
-                $liveNameHtml = \App\Services\Tracker\ColorCodeService::toHtml($liveSnap);
+                $liveNameHtml = ColorCodeService::toHtml($liveSnap);
             }
         }
 
@@ -779,9 +794,9 @@ class TrackerController extends Controller
         // Score-less servers (trickjump/fun) produce NULL on purpose.
         if (!$player->is_bot) {
             $stale = $player->elo_updated_at === null
-                || \Carbon\Carbon::parse($player->elo_updated_at)->lt(now()->subDay());
+                || Carbon::parse($player->elo_updated_at)->lt(now()->subDay());
             if ($stale) {
-                app(\App\Services\Tracker\EloService::class)
+                app(EloService::class)
                     ->calculateForPlayer($player->id);
                 $player->refresh();
             }
@@ -1133,7 +1148,7 @@ class TrackerController extends Controller
             ->selectRaw('m.class, COUNT(*) matches, COALESCE(SUM(w.k),0) kills, COALESCE(SUM(w.d),0) deaths, COALESCE(SUM(w.h),0) headshots')
             ->groupBy('m.class')->orderByDesc('matches')->get()
             ->map(fn($r) => [
-                'name'      => \App\Services\Tracker\TrackerClass::name((int) $r->class) ?? 'Unknown',
+                'name'      => TrackerClass::name((int) $r->class) ?? 'Unknown',
                 'matches'   => (int) $r->matches,
                 'kills'     => (int) $r->kills,
                 'deaths'    => (int) $r->deaths,
@@ -1193,7 +1208,7 @@ class TrackerController extends Controller
             ->orderByDesc('current_players')
             ->limit($limit)
             ->get()
-            ->map(fn (\App\Models\Tracker\TrackerServer $s) => [
+            ->map(fn (TrackerServer $s) => [
                 'id' => $s->id,
                 'name' => $s->hostname_clean,
                 'ip' => $s->ip,
@@ -1302,7 +1317,7 @@ class TrackerController extends Controller
      * - 30s cooldown per (user, server) tuple via cache
      * - Dispatches PollServerJob on tracker-high queue (same as Filament admin action)
      */
-    public function forcePoll(\Illuminate\Http\Request $request, TrackerServer $server)
+    public function forcePoll(Request $request, TrackerServer $server)
     {
         $userId = $request->user()->id;
         $cooldownKey = "force_poll:user:{$userId}:server:{$server->id}";
@@ -1397,7 +1412,7 @@ class TrackerController extends Controller
                     ->where('match_id', $openMatch->id)
                     ->get(['name_clean_snapshot', 'class', 'kills', 'deaths']);
                 foreach ($msRows as $r) {
-                    $key = mb_strtolower(\App\Services\Tracker\ColorCodeService::toClean($r->name_clean_snapshot ?? ''));
+                    $key = mb_strtolower(ColorCodeService::toClean($r->name_clean_snapshot ?? ''));
                     if ($key === '') continue;
                     // last write wins (rows share one ws-sync timestamp anyway)
                     $matchStatsByName[$key] = [
@@ -1409,15 +1424,15 @@ class TrackerController extends Controller
             }
         }
 
-        $humanPlayers = $sessions->map(function (\App\Models\Tracker\TrackerPlayerSession $s) use ($latestPings, $latestTeams, $latestClasses, $matchStatsByName, $latestNames) {
-            $nameKey = mb_strtolower(\App\Services\Tracker\ColorCodeService::toClean($s->player?->name_clean ?? ''));
+        $humanPlayers = $sessions->map(function (TrackerPlayerSession $s) use ($latestPings, $latestTeams, $latestClasses, $matchStatsByName, $latestNames) {
+            $nameKey = mb_strtolower(ColorCodeService::toClean($s->player?->name_clean ?? ''));
             $ms = $matchStatsByName[$nameKey] ?? null;
             return [
                 // Live coloured name from the freshest snapshot (raw ^x string).
                 // Falls back to the frozen name_html (Decision A) when no snapshot
                 // name is present for this session.
                 'player_name'  => (!empty($latestNames[$s->id]))
-                    ? \App\Services\Tracker\ColorCodeService::toHtml($latestNames[$s->id])
+                    ? ColorCodeService::toHtml($latestNames[$s->id])
                     : ($s->player?->name_html ?: e($s->player->name_clean ?? 'Unknown')),
                 'player_url'   => $s->player ? route('tracker.player.show', $s->player) : null,
                 'country_code' => $s->player?->country_code,
@@ -1440,14 +1455,14 @@ class TrackerController extends Controller
         // ---- Bots: pulled live from the server, cached 60s to avoid UDP-spamming ----
         // Bots don't get tracked in the DB (generic names, no aliases, no statistics).
         // We poll the server on page load (cached) to show a live list of who's bot-fighting.
-        $botPlayers = \Illuminate\Support\Facades\Cache::remember(
+        $botPlayers = Cache::remember(
             "tracker:live_bots:{$server->id}",
             now()->addSeconds(60),
             function () use ($server) {
                 try {
                     // Kurzer Timeout (1s) und keine Retries fuer Frontend-Live-Polling.
                     // Tote Server bremsen sonst Worker bis zu 9 Sekunden.
-                    $q = new \App\Services\Tracker\ServerQueryService(timeout: 1, retries: 0);
+                    $q = new ServerQueryService(timeout: 1, retries: 0);
                     $data = $q->queryServer($server->ip, $server->port);
                     if ($data === null || empty($data['players'])) {
                         return [];
@@ -1459,8 +1474,8 @@ class TrackerController extends Controller
                         if ($ping !== 0) continue; // not a bot
 
                         $rawName = (string) ($p['name'] ?? 'Bot');
-                        $clean = \App\Services\Tracker\ColorCodeService::toClean($rawName);
-                        $html  = \App\Services\Tracker\ColorCodeService::toHtml($rawName);
+                        $clean = ColorCodeService::toClean($rawName);
+                        $html  = ColorCodeService::toHtml($rawName);
 
                         $bots[] = [
                             'player_name'  => $html ?: e($clean),
@@ -1478,7 +1493,7 @@ class TrackerController extends Controller
                         ];
                     }
                     return $bots;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     // If live poll fails, just show humans (no bots)
                     return [];
                 }
@@ -1497,7 +1512,7 @@ class TrackerController extends Controller
             'gametype' => $server->gametype,
             'players' => $allPlayers,
             'last_seen' => $server->last_seen_at?->diffForHumans(),
-            'map_file_slug' => \App\Services\Tracker\MapLinkService::findFile($server->current_map)?->slug ?? null,
+            'map_file_slug' => MapLinkService::findFile($server->current_map)?->slug ?? null,
             // Phase 1b: map progress for live elapsed/remaining/timelimit display.
             // Sending elapsed seconds (server-computed) instead of ISO string lets the
             // client tick locally between fetches without depending on client clock accuracy.
@@ -1513,7 +1528,7 @@ class TrackerController extends Controller
      */
     public function apiPlayer($id)
     {
-        $player = \App\Models\Tracker\TrackerPlayer::findOrFail($id);
+        $player = TrackerPlayer::findOrFail($id);
         $recentSessions = $player->sessions()
             ->with('server:id,hostname_clean,ip,port')
             ->orderByDesc('started_at')
@@ -1553,8 +1568,8 @@ class TrackerController extends Controller
     public function apiOnline()
     {
         return response()->json([
-            'players_online' => \App\Models\Tracker\TrackerServer::where('is_online', true)->sum('current_players'),
-            'servers_online' => \App\Models\Tracker\TrackerServer::where('is_online', true)->count(),
+            'players_online' => TrackerServer::where('is_online', true)->sum('current_players'),
+            'servers_online' => TrackerServer::where('is_online', true)->count(),
         ]);
     }
 
@@ -1563,7 +1578,7 @@ class TrackerController extends Controller
      */
     public function apiMapStats($mapName)
     {
-        $serversNow = \App\Models\Tracker\TrackerServer::with('game')
+        $serversNow = TrackerServer::with('game')
             ->where('is_online', true)
             ->where('current_map', $mapName)
             ->orderByDesc('current_players')
@@ -1582,7 +1597,7 @@ class TrackerController extends Controller
                 'url' => route('tracker.server.show', $s),
             ]);
 
-        $stats = \App\Models\Tracker\TrackerServerMapStat::where('map_name', $mapName)
+        $stats = TrackerServerMapStat::where('map_name', $mapName)
             ->selectRaw('SUM(times_played) as total_played, SUM(total_time_minutes) as total_minutes, AVG(avg_players) as avg_players, MAX(peak_players) as peak_players, MAX(last_played_at) as last_played_at')
             ->first();
 
@@ -1697,7 +1712,7 @@ class TrackerController extends Controller
      */
     public function apiServerDetail(int $id)
     {
-        $s = \App\Models\Tracker\TrackerServer::find($id);
+        $s = TrackerServer::find($id);
         if (!$s) {
             return response()->json(['error' => 'server_not_found'], 404);
         }
@@ -1839,7 +1854,7 @@ class TrackerController extends Controller
      * GET /api/v1/tracker/servers/{id}/history?hours=24
      * Time-series poll data (up to 168h = 1 week).
      */
-    public function apiServerHistory(int $id, \Illuminate\Http\Request $request)
+    public function apiServerHistory(int $id, Request $request)
     {
         $hours = max(1, min(168, (int) $request->query('hours', 24)));
 

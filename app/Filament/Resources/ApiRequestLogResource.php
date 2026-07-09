@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Resources\ApiRequestLogResource\Pages\ListApiRequestLogs;
 use App\Filament\Resources\ApiRequestLogResource\Pages;
 use App\Models\ApiRequestLog;
 use Filament\Resources\Resource;
@@ -12,20 +15,20 @@ use Illuminate\Database\Eloquent\Model;
 class ApiRequestLogResource extends Resource
 {
     protected static ?string $model = ApiRequestLog::class;
-    protected static ?string $navigationIcon = 'heroicon-o-signal';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-signal';
     protected static ?string $navigationLabel = 'API Logs';
-    protected static ?string $navigationGroup = 'Analytics';
+    protected static string | \UnitEnum | null $navigationGroup = 'Analytics';
     protected static ?int $navigationSort = 20;
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Time')
                     ->dateTime('d.m.Y H:i:s')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('method')
+                TextColumn::make('method')
                     ->label('Method')
                     ->badge()
                     ->color(fn (string $state): string => match($state) {
@@ -33,14 +36,14 @@ class ApiRequestLogResource extends Resource
                         'POST' => 'warning',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('endpoint')
+                TextColumn::make('endpoint')
                     ->label('Endpoint')
                     ->searchable()
                     ->copyable(),
-                Tables\Columns\TextColumn::make('query_string')
+                TextColumn::make('query_string')
                     ->label('Query')
                     ->limit(40),
-                Tables\Columns\TextColumn::make('client_type')
+                TextColumn::make('client_type')
                     ->label('Client')
                     ->badge()
                     ->color(fn (?string $state): string => match($state) {
@@ -51,7 +54,7 @@ class ApiRequestLogResource extends Resource
                         'browser'      => 'gray',
                         default        => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('status_code')
+                TextColumn::make('status_code')
                     ->label('Status')
                     ->badge()
                     ->color(fn (int $state): string => match(true) {
@@ -59,13 +62,13 @@ class ApiRequestLogResource extends Resource
                         $state >= 400 => 'danger',
                         default => 'warning',
                     }),
-                Tables\Columns\TextColumn::make('response_ms')
+                TextColumn::make('response_ms')
                     ->label('ms')
                     ->suffix(' ms')
                     ->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('client_type')
+                SelectFilter::make('client_type')
                     ->options([
                         'discord_bot'  => 'Discord Bot',
                         'telegram_bot' => 'Telegram Bot',
@@ -83,7 +86,7 @@ class ApiRequestLogResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListApiRequestLogs::route('/'),
+            'index' => ListApiRequestLogs::route('/'),
         ];
     }
 

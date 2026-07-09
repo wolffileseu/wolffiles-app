@@ -11,11 +11,11 @@ class SiteAnalytics extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationGroup = 'Analytics';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string | \UnitEnum | null $navigationGroup = 'Analytics';
     protected static ?string $navigationLabel = 'Analytics';
     protected static ?int $navigationSort = 11;
-    protected static string $view = 'filament.pages.site-analytics';
+    protected string $view = 'filament.pages.site-analytics';
 
     public string $period = '7';
 

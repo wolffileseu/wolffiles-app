@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Throwable;
 use App\Services\GameAssetMapper;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -98,7 +99,7 @@ class SkyboxResolver
                 'rel'  => $chosen['rel'],
                 'ext'  => strtolower(pathinfo($chosen['rel'], PATHINFO_EXTENSION)),
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return null;
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Illuminate\Support\Str;
 use App\Models\KnowledgeBase;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -11,11 +12,11 @@ class KnowledgeBasePage extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-book-open';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Knowledge Base';
     protected static ?int $navigationSort = 12;
-    protected static string $view = 'filament.pages.knowledge-base';
+    protected string $view = 'filament.pages.knowledge-base';
 
     public ?string $selectedCategory = null;
     public ?int $selectedArticle = null;
@@ -102,7 +103,7 @@ class KnowledgeBasePage extends Page
         }
 
         if (empty($this->editSlug)) {
-            $this->editSlug = \Illuminate\Support\Str::slug($this->editTitle);
+            $this->editSlug = Str::slug($this->editTitle);
         }
 
         $data = [

@@ -14,9 +14,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $pterodactyl_server_id
  * @property string $status
  * @property string $server_name
- * @property-read \App\Models\ServerNode|null $node
- * @property-read \App\Models\ServerProduct|null $product
- * @property-read \App\Models\User|null $user
+ * @property-read ServerNode|null $node
+ * @property-read ServerProduct|null $product
+ * @property-read User|null $user
  */
 class ServerOrder extends Model
 {

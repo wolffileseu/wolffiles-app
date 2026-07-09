@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Throwable;
 use App\Models\File;
 use App\Models\MissingTexture;
 use App\Services\GameAssetMapper;
@@ -114,7 +115,7 @@ class TexProxyController extends Controller
                 'Cache-Control'    => 'public, max-age=' . self::HIT_CACHE_TTL,
                 'X-Texture-Source' => 's3',
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("TexProxy S3 lookup failed [{$fileId}/{$path}]: {$e->getMessage()}");
             return null;
         }
@@ -176,7 +177,7 @@ class TexProxyController extends Controller
                     return $this->serveImageData($data, $relExt, $f, 's3-fuzzy');
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("TexProxy fuzzy S3 [{$fileId}/{$path}]: {$e->getMessage()}");
         }
 
@@ -199,7 +200,7 @@ class TexProxyController extends Controller
                     }
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("TexProxy fuzzy pool [{$fileId}/{$path}]: {$e->getMessage()}");
         }
 
@@ -314,7 +315,7 @@ class TexProxyController extends Controller
                     ]);
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // continue to pool
         }
 
@@ -361,7 +362,7 @@ class TexProxyController extends Controller
             }
             $row->last_seen_at = now();
             $row->save();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("TexProxy miss-log failed [{$fileId}/{$path}]: {$e->getMessage()}");
         }
     }
@@ -380,7 +381,7 @@ class TexProxyController extends Controller
     private function autoResolveMiss(int $fileId, string $path, string $sourceLabel): void
     {
         try {
-            $m = \App\Models\MissingTexture::where('file_id', $fileId)
+            $m = MissingTexture::where('file_id', $fileId)
                 ->where('texture_path', $path)
                 ->where('resolved', false)
                 ->first();
@@ -389,8 +390,8 @@ class TexProxyController extends Controller
                 $m->notes = trim(($m->notes ?? '') . ' [auto-resolved via ' . $sourceLabel . ' on ' . now()->toDateTimeString() . ']');
                 $m->save();
             }
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("TexProxy auto-resolve failed [{$fileId}/{$path}]: {$e->getMessage()}");
+        } catch (Throwable $e) {
+            Log::warning("TexProxy auto-resolve failed [{$fileId}/{$path}]: {$e->getMessage()}");
         }
     }
 }

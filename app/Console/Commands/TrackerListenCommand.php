@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use App\Jobs\ProcessTrackerEventJob;
 use App\Models\Tracker\TrackerRawEvent;
 use App\Services\Tracker\EnhancedTrackerPacketParser;
@@ -181,7 +182,7 @@ class TrackerListenCommand extends Command
             ]);
 
             ProcessTrackerEventJob::dispatch($event->id);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error('Tracker listener: failed to persist packet', [
                 'src' => "{$sourceIp}:{$sourcePort}",
                 'cmd' => $envelope['cmd'] ?? '?',

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -53,7 +54,7 @@ class EmbeddingService
                 ]]
             ]);
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("Embedding failed for file {$file->id}: {$e->getMessage()}");
             return false;
         }

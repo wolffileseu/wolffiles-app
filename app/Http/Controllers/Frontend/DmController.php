@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\User;
+use App\Exceptions\Pm\PmServiceException;
+use App\Exceptions\Pm\RateLimitExceededException;
+use Illuminate\Support\Facades\Cache;
+use App\Models\Pm\PmUserBlock;
 use App\Http\Controllers\Controller;
 use App\Models\Pm\PmConversation;
 use App\Models\Pm\PmParticipant;
@@ -104,13 +109,13 @@ class DmController extends Controller
     {
         $recipientId = $request->query("to");
         $recipient = $recipientId
-            ? \App\Models\User::find($recipientId)
+            ? User::find($recipientId)
             : null;
 
         // Load all active users (excluding self) for the recipient suggestions datalist.
         // For wolffiles.eu small user-base (~ a few hundred max), this is fine.
         // If you scale to thousands of users, switch to AJAX search.
-        $allUsers = \App\Models\User::query()
+        $allUsers = User::query()
             ->select("id", "name")
             ->where("id", "!=", Auth::id())
             ->orderBy("name")
@@ -146,9 +151,9 @@ class DmController extends Controller
         // Resolve recipient: prefer ID, fallback to name lookup
         $recipient = null;
         if (! empty($validated["recipient_id"])) {
-            $recipient = \App\Models\User::find($validated["recipient_id"]);
+            $recipient = User::find($validated["recipient_id"]);
         } elseif (! empty($validated["recipient_name"])) {
-            $recipient = \App\Models\User::where("name", $validated["recipient_name"])->first();
+            $recipient = User::where("name", $validated["recipient_name"])->first();
         }
 
         if (! $recipient) {
@@ -168,7 +173,7 @@ class DmController extends Controller
         // Find-or-create the 1:1 conversation
         try {
             $conversation = $this->conversations->findOrCreateDirect($sender, $recipient);
-        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+        } catch (PmServiceException $e) {
             return back()
                 ->withInput()
                 ->withErrors(["recipient_id" => __("messages.dm_reason_" . $e->reasonCode)]);
@@ -184,20 +189,20 @@ class DmController extends Controller
                 $request->ip(),
                 $request->userAgent()
             );
-        } catch (\App\Exceptions\Pm\RateLimitExceededException $e) {
+        } catch (RateLimitExceededException $e) {
             return back()
                 ->withInput()
                 ->withErrors(["body" => __("messages.dm_rate_limit", [
                     "minutes" => ceil($e->retryAfterSeconds / 60),
                 ])]);
-        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+        } catch (PmServiceException $e) {
             return back()
                 ->withInput()
                 ->withErrors(["body" => __("messages.dm_reason_" . $e->reasonCode)]);
         }
 
         // Invalidate the dmUnreadCount cache for the recipient (composer cache)
-        \Illuminate\Support\Facades\Cache::forget("pm:unread_count:{$recipient->id}");
+        Cache::forget("pm:unread_count:{$recipient->id}");
 
         return redirect()
             ->route("dm.show", $conversation)
@@ -233,13 +238,13 @@ class DmController extends Controller
                 $request->ip(),
                 $request->userAgent()
             );
-        } catch (\App\Exceptions\Pm\RateLimitExceededException $e) {
+        } catch (RateLimitExceededException $e) {
             return back()
                 ->withInput()
                 ->withErrors(["body" => __("messages.dm_rate_limit", [
                     "minutes" => ceil($e->retryAfterSeconds / 60),
                 ])]);
-        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+        } catch (PmServiceException $e) {
             return back()
                 ->withInput()
                 ->withErrors(["body" => __("messages.dm_reason_" . $e->reasonCode)]);
@@ -248,7 +253,7 @@ class DmController extends Controller
         // Invalidate dmUnreadCount cache for all OTHER participants
         foreach ($conversation->participants()->whereNull("left_at")->get() as $p) {
             if ($p->user_id !== $sender->id) {
-                \Illuminate\Support\Facades\Cache::forget("pm:unread_count:{$p->user_id}");
+                Cache::forget("pm:unread_count:{$p->user_id}");
             }
         }
 
@@ -278,14 +283,14 @@ class DmController extends Controller
         $settings = $this->policy->getOrCreateSettings($user);
 
         // Loaded blocks: blockerships I created
-        $blocks = \App\Models\Pm\PmUserBlock::with("blocked:id,name")
+        $blocks = PmUserBlock::with("blocked:id,name")
             ->where("blocker_id", $user->id)
             ->orderByDesc("created_at")
             ->get();
 
         // Suggestion list for adding new blocks (excludes self + already-blocked)
         $alreadyBlockedIds = $blocks->pluck("blocked_id")->push($user->id)->all();
-        $allUsers = \App\Models\User::query()
+        $allUsers = User::query()
             ->select("id", "name")
             ->whereNotIn("id", $alreadyBlockedIds)
             ->orderBy("name")
@@ -299,7 +304,7 @@ class DmController extends Controller
         ]);
     }
 
-    public function updateSettings(\Illuminate\Http\Request $request)
+    public function updateSettings(Request $request)
     {
         $user = Auth::user();
         $settings = $this->policy->getOrCreateSettings($user);
@@ -325,7 +330,7 @@ class DmController extends Controller
             ->with("status", __("messages.dm_settings_saved"));
     }
 
-    public function blockUser(\Illuminate\Http\Request $request)
+    public function blockUser(Request $request)
     {
         $user = Auth::user();
 
@@ -334,7 +339,7 @@ class DmController extends Controller
             "reason"       => "nullable|string|max:200",
         ]);
 
-        $target = \App\Models\User::where("name", $validated["blocked_name"])->first();
+        $target = User::where("name", $validated["blocked_name"])->first();
 
         if (! $target) {
             return back()->withErrors(["blocked_name" => __("messages.dm_recipient_not_found")]);
@@ -342,7 +347,7 @@ class DmController extends Controller
 
         try {
             $this->policy->block($user, $target, $validated["reason"] ?? null);
-        } catch (\App\Exceptions\Pm\PmServiceException $e) {
+        } catch (PmServiceException $e) {
             return back()->withErrors(["blocked_name" => __("messages.dm_reason_" . $e->reasonCode)]);
         }
 
@@ -351,7 +356,7 @@ class DmController extends Controller
             ->with("status", __("messages.dm_blocked", ["name" => $target->name]));
     }
 
-    public function unblockUser(\App\Models\Pm\PmUserBlock $block)
+    public function unblockUser(PmUserBlock $block)
     {
         $user = Auth::user();
 

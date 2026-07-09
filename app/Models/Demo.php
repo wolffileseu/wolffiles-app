@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Storage;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,10 +21,10 @@ use Spatie\Sluggable\SlugOptions;
  * @property string $slug
  * @property string|null $path
  * @property string $status
- * @property \Carbon\Carbon|null $published_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tag[] $tags
- * @property-read \App\Models\Category|null $category
- * @property-read \App\Models\User|null $user
+ * @property Carbon|null $published_at
+ * @property-read Collection|Tag[] $tags
+ * @property-read Category|null $category
+ * @property-read User|null $user
  */
 class Demo extends Model
 {
@@ -75,7 +79,7 @@ class Demo extends Model
     public function primaryScreenshot() { return $this->hasOne(DemoScreenshot::class)->where('is_primary', true); }
     public function comments(): MorphMany { return $this->morphMany(Comment::class, 'commentable')->whereNull('parent_id'); }
     public function allComments(): MorphMany { return $this->morphMany(Comment::class, 'commentable'); }
-    public function tags(): \Illuminate\Database\Eloquent\Relations\MorphToMany { return $this->morphToMany(Tag::class, 'taggable'); }
+    public function tags(): MorphToMany { return $this->morphToMany(Tag::class, 'taggable'); }
     public function reports(): MorphMany { return $this->morphMany(Report::class, 'reportable'); }
 
     public function scopeApproved($query) { return $query->where('status', 'approved'); }
@@ -157,7 +161,7 @@ class Demo extends Model
     {
         $screenshot = $this->primaryScreenshot ?? $this->screenshots->first();
         if (!$screenshot) return null;
-        return \Storage::disk('s3')->url($screenshot->path);
+        return Storage::disk('s3')->url($screenshot->path);
     }
 
     public function isPending(): bool { return $this->status === 'pending'; }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\WallpaperService;
 use Illuminate\Database\Eloquent\Model;
 
 class Setting extends Model
@@ -33,7 +34,7 @@ class Setting extends Model
         );
 
         if (str_starts_with($key, 'wallpaper_')) {
-            app(\App\Services\WallpaperService::class)->flushCache();
+            app(WallpaperService::class)->flushCache();
         }
     }
 }

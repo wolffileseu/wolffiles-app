@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Illuminate\Support\Collection;
 use App\Models\FastDl\FastDlFile;
 use App\Models\FastDl\FastDlGame;
 use Filament\Pages\Page;
@@ -12,11 +13,11 @@ class FastDlMonitor extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationGroup = 'Fast Download';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-chart-bar';
+    protected static string | \UnitEnum | null $navigationGroup = 'Fast Download';
     protected static ?string $navigationLabel = 'Monitor';
     protected static ?int $navigationSort = 5;
-    protected static string $view = 'filament.pages.fastdl-monitor';
+    protected string $view = 'filament.pages.fastdl-monitor';
 
 
     public function getStats(): array
@@ -31,7 +32,7 @@ class FastDlMonitor extends Page
         ];
     }
 
-    public function getTopFiles(): \Illuminate\Support\Collection
+    public function getTopFiles(): Collection
     {
         return FastDlFile::where('download_count', '>', 0)
             ->with('directory.game')
@@ -40,7 +41,7 @@ class FastDlMonitor extends Page
             ->get();
     }
 
-    public function getDailyStats(): \Illuminate\Support\Collection
+    public function getDailyStats(): Collection
     {
         return DB::table('fastdl_downloads')
             ->where('created_at', '>=', now()->subDays(30))
@@ -50,7 +51,7 @@ class FastDlMonitor extends Page
             ->get();
     }
 
-    public function getGameStats(): \Illuminate\Support\Collection
+    public function getGameStats(): Collection
     {
         return FastDlGame::where('is_active', true)
             ->get()
@@ -65,7 +66,7 @@ class FastDlMonitor extends Page
             });
     }
 
-    public function getRecentDownloads(): \Illuminate\Support\Collection
+    public function getRecentDownloads(): Collection
     {
         return DB::table('fastdl_downloads')
             ->orderByDesc('created_at')

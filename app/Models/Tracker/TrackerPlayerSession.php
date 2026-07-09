@@ -2,20 +2,21 @@
 
 namespace App\Models\Tracker;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property \Carbon\Carbon|null $started_at
- * @property \Carbon\Carbon|null $ended_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $ended_at
  * @property int $id
  * @property int $player_id
  * @property int $server_id
  * @property int|null $score
  * @property int|null $duration_minutes
  * @property string|null $player_name
- * @property \Carbon\Carbon|null $last_seen
+ * @property Carbon|null $last_seen
  */
 class TrackerPlayerSession extends Model
 {

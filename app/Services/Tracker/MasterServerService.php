@@ -2,6 +2,7 @@
 
 namespace App\Services\Tracker;
 
+use Exception;
 use App\Models\Tracker\TrackerGame;
 use App\Models\Tracker\TrackerMasterServer;
 use Illuminate\Support\Facades\Log;
@@ -51,7 +52,7 @@ class MasterServerService
                     $master->increment('failures_count');
                     Log::warning("Tracker: Master {$master->full_address} returned 0 servers for {$game->short_name}");
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $master->increment('failures_count');
                 Log::error("Tracker: Master {$master->full_address} error: {$e->getMessage()}");
             }

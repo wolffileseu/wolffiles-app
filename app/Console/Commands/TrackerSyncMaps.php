@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tracker\TrackerMap;
 use App\Services\Tracker\MapLinkService;
 use Illuminate\Console\Command;
 
@@ -13,7 +14,7 @@ class TrackerSyncMaps extends Command
     public function handle(): int
     {
         $count = MapLinkService::syncMaps();
-        $linked = \App\Models\Tracker\TrackerMap::whereNotNull('file_id')->count();
+        $linked = TrackerMap::whereNotNull('file_id')->count();
         $this->info("✅ {$count} maps synced, {$linked} linked to files");
         return 0;
     }

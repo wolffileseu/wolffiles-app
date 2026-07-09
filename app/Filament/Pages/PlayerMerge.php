@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use Illuminate\Support\Facades\Schema;
 use App\Services\Tracker\PlayerMergeService;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -13,11 +14,11 @@ class PlayerMerge extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-users';
-    protected static ?string $navigationGroup = 'Tracker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-users';
+    protected static string | \UnitEnum | null $navigationGroup = 'Tracker';
     protected static ?string $navigationLabel = 'Spieler zusammenführen';
     protected static ?int $navigationSort = 20;
-    protected static string $view = 'filament.pages.player-merge';
+    protected string $view = 'filament.pages.player-merge';
 
     /** Manual merge form (free-form IDs for pairs the auto-detector misses). */
     public ?int $manualKeepId = null;
@@ -163,7 +164,7 @@ class PlayerMerge extends Page
     {
         // Context-independent backup: snapshot affected rows as JSON into a
         // backup table (no shell/mysqldump dependency, works under FPM).
-        \Illuminate\Support\Facades\Schema::hasTable('player_merge_backups') || \Illuminate\Support\Facades\Schema::create('player_merge_backups', function ($t) {
+        Schema::hasTable('player_merge_backups') || Schema::create('player_merge_backups', function ($t) {
             $t->id();
             $t->unsignedBigInteger('keep_id');
             $t->unsignedBigInteger('merge_id');
@@ -175,7 +176,7 @@ class PlayerMerge extends Page
         $tables = ['tracker_player_sessions','tracker_player_snapshots','tracker_player_match_stats','tracker_match_player_weapon_stats','tracker_player_weapon_stats','tracker_server_slots','tracker_player_aliases','tracker_player_rankings_30d'];
 
         foreach ($tables as $t) {
-            if (!\Illuminate\Support\Facades\Schema::hasTable($t)) continue;
+            if (!Schema::hasTable($t)) continue;
             $rows = DB::table($t)->whereIn('player_id', [$keepId, $mergeId])->get();
             if ($rows->isEmpty()) continue;
             DB::table('player_merge_backups')->insert([

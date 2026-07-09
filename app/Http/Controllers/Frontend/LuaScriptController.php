@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\LuaScript;
 use App\Models\Download;
@@ -79,7 +82,7 @@ class LuaScriptController extends Controller
 
         $luaScript = LuaScript::create([
             'title' => $request->title,
-            'slug' => \Illuminate\Support\Str::slug($request->title),
+            'slug' => Str::slug($request->title),
             'description' => $request->description,
             'category_id' => $request->category_id,
             'user_id' => auth()->id(),
@@ -104,7 +107,7 @@ class LuaScriptController extends Controller
 
         // Log download without foreign key constraint (lua_scripts != files table)
         try {
-            \Illuminate\Support\Facades\DB::table('downloads')->insert([
+            DB::table('downloads')->insert([
                 'file_id' => null,
                 'user_id' => auth()->id(),
                 'ip_address' => request()->ip(),
@@ -112,7 +115,7 @@ class LuaScriptController extends Controller
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Ignore download tracking errors
         }
 

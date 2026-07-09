@@ -2,6 +2,10 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use App\Models\File;
 use App\Models\FileScreenshot;
 use Illuminate\Console\Command;
@@ -65,7 +69,7 @@ class GenerateVideoThumbnails extends Command
         foreach ($files as $file) {
             try {
                 $this->processFile($file);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->errors++;
                 $this->warn("\n  Error [{$file->id}] {$file->title}: {$e->getMessage()}");
             }
@@ -115,7 +119,7 @@ class GenerateVideoThumbnails extends Command
             // Try to list contents with ZipArchive
             $videos = [];
             if (in_array($ext, ['zip', 'pk3'])) {
-                $zip = new \ZipArchive();
+                $zip = new ZipArchive();
                 if ($zip->open($tempArchive) === true) {
                     for ($i = 0; $i < $zip->numFiles; $i++) {
                         $name = $zip->getNameIndex($i);
@@ -284,9 +288,9 @@ class GenerateVideoThumbnails extends Command
     {
         if (!is_dir($dir)) return;
 
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
 
         foreach ($files as $file) {

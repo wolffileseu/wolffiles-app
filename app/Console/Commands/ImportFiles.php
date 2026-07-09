@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\File;
 use App\Models\Category;
 use App\Services\FileAnalyzerService;
@@ -128,7 +129,7 @@ class ImportFiles extends Command
                 try {
                     $fileData['file_size'] = Storage::disk('s3')->size($filePath);
                     $fileData['mime_type'] = Storage::disk('s3')->mimeType($filePath);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $fileData['file_size'] = 0;
                     $fileData['mime_type'] = 'application/octet-stream';
                 }
@@ -169,7 +170,7 @@ class ImportFiles extends Command
                         }
 
                         @unlink($tempPath);
-                    } catch (\Exception $e) {
+                    } catch (Exception $e) {
                         $this->newLine();
                         $this->warn("  Analysis failed for {$fileName}: {$e->getMessage()}");
                     }
@@ -182,7 +183,7 @@ class ImportFiles extends Command
                     $file->category->increment('files_count');
                 }
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors++;
                 $this->newLine();
                 $this->error("  Failed: {$fileName} - {$e->getMessage()}");

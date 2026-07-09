@@ -2,6 +2,8 @@
 
 namespace App\Services\SocialMedia\Providers;
 
+use Exception;
+use Illuminate\Http\Client\Response;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaProvider;
 use Illuminate\Support\Facades\Http;
@@ -112,7 +114,7 @@ class TwitterProvider implements SocialMediaProvider
             }
 
             return ['success' => false, 'message' => 'X API returned: ' . $response->status() . ' — ' . $response->body()];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
         }
     }
@@ -137,7 +139,7 @@ class TwitterProvider implements SocialMediaProvider
 
             $channel->markFailed('X API HTTP ' . $response->status() . ': ' . $response->body());
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $channel->markFailed($e->getMessage());
             Log::error('Twitter broadcast failed', [
                 'channel' => $channel->name,
@@ -150,7 +152,7 @@ class TwitterProvider implements SocialMediaProvider
     /**
      * Make an OAuth 1.0a signed request to the X API.
      */
-    protected function makeRequest(SocialMediaChannel $channel, string $method, string $url, array $body = []): \Illuminate\Http\Client\Response
+    protected function makeRequest(SocialMediaChannel $channel, string $method, string $url, array $body = []): Response
     {
         $apiKey = $channel->getConfigValue('api_key');
         $apiSecret = $channel->getConfigValue('api_secret');
@@ -220,7 +222,7 @@ class TwitterProvider implements SocialMediaProvider
         if ($template) {
             $text = $this->parseTemplate($template, $data);
         } else {
-            $text = "📰 " . ($data['title'] ?? 'News') . "\n\n" . \Illuminate\Support\Str::limit($data['description'] ?? '', 150) . "\n\n" . ($data['url'] ?? '');
+            $text = "📰 " . ($data['title'] ?? 'News') . "\n\n" . Str::limit($data['description'] ?? '', 150) . "\n\n" . ($data['url'] ?? '');
         }
 
         return $this->tweet($channel, $text);

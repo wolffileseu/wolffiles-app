@@ -2,6 +2,8 @@
 
 namespace App\Services\Tracker;
 
+use App\Models\Tracker\TrackerMap;
+use Exception;
 use App\Models\File;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -63,7 +65,7 @@ class LevelshotService
 
         // Try tracker_maps table (manually linked)
         if (!$file) {
-            $trackerMap = \App\Models\Tracker\TrackerMap::where('name_clean', $mapName)->whereNotNull('file_id')->first();
+            $trackerMap = TrackerMap::where('name_clean', $mapName)->whereNotNull('file_id')->first();
             if ($trackerMap) {
                 $file = $trackerMap->file;
             }
@@ -136,7 +138,7 @@ class LevelshotService
             Log::info("Levelshot extracted for {$mapName}");
             return $disk->url($s3Path);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("Levelshot extraction failed for {$mapName}: {$e->getMessage()}");
             if (isset($tmpFile) && file_exists($tmpFile)) unlink($tmpFile);
             return null;
@@ -211,7 +213,7 @@ class LevelshotService
                 return $data;
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning("TGA conversion failed: {$e->getMessage()}");
         }
 

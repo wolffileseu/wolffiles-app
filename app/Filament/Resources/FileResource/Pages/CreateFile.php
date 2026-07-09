@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\FileResource\Pages;
 
+use Storage;
+use Exception;
 use App\Filament\Resources\FileResource;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -18,9 +20,9 @@ class CreateFile extends CreateRecord
             $data['file_extension'] = $data['file_extension'] ?? pathinfo($data['file_path'], PATHINFO_EXTENSION);
 
             try {
-                $data['file_size'] = \Storage::disk('s3')->size($data['file_path']);
-                $data['mime_type'] = \Storage::disk('s3')->mimeType($data['file_path']);
-            } catch (\Exception $e) {
+                $data['file_size'] = Storage::disk('s3')->size($data['file_path']);
+                $data['mime_type'] = Storage::disk('s3')->mimeType($data['file_path']);
+            } catch (Exception $e) {
                 $data['file_size'] = 0;
                 $data['mime_type'] = 'application/octet-stream';
             }

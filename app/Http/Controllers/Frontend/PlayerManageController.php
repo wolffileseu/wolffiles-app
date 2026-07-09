@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Helpers\CountryList;
 use App\Http\Controllers\Controller;
 use App\Models\Tracker\TrackerPlayer;
 use Illuminate\Http\Request;
@@ -49,7 +50,7 @@ class PlayerManageController extends Controller
         // Country: derive country name from code, lock against future auto-updates
         if (isset($data['country_code']) && $data['country_code']) {
             $data['country_code']   = strtoupper($data['country_code']);
-            $data['country']        = \App\Helpers\CountryList::nameFromCode($data['country_code']);
+            $data['country']        = CountryList::nameFromCode($data['country_code']);
             $data['country_locked'] = true;
         }
 

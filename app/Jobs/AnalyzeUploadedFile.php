@@ -2,6 +2,11 @@
 
 namespace App\Jobs;
 
+use Exception;
+use Log;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use App\Jobs\TranscodeVideoJob;
 use App\Models\File;
 use App\Models\FileScreenshot;
@@ -34,7 +39,7 @@ class AnalyzeUploadedFile implements ShouldQueue
         $stream = Storage::disk('s3')->readStream($this->file->file_path);
 
         if (!$stream) {
-            $this->fail(new \Exception('Could not read file from S3'));
+            $this->fail(new Exception('Could not read file from S3'));
             return;
         }
 
@@ -79,8 +84,8 @@ class AnalyzeUploadedFile implements ShouldQueue
                                 $image['original_name'] ?? 'screenshot.png',
                                 $image['source'] ?? 'extracted'
                             );
-                        } catch (\Exception $e) {
-                            \Log::warning("Failed to store extracted image: {$e->getMessage()}");
+                        } catch (Exception $e) {
+                            Log::warning("Failed to store extracted image: {$e->getMessage()}");
                         }
                     }
                 }
@@ -121,8 +126,8 @@ class AnalyzeUploadedFile implements ShouldQueue
         try {
             $extractor = app(BspExtractorService::class);
             $extractor->extract($this->file, $tempPath);
-        } catch (\Exception $e) {
-            \Log::warning("BSP extraction in upload job [{$this->file->id}]: {$e->getMessage()}");
+        } catch (Exception $e) {
+            Log::warning("BSP extraction in upload job [{$this->file->id}]: {$e->getMessage()}");
         }
     }
 
@@ -149,7 +154,7 @@ class AnalyzeUploadedFile implements ShouldQueue
             return;
         }
 
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($tempPath) !== true) {
             return;
         }
@@ -168,7 +173,7 @@ class AnalyzeUploadedFile implements ShouldQueue
             return;
         }
 
-        \Log::info("VideoThumbnails: Found " . count($videos) . " video(s) in [{$this->file->id}] {$this->file->title}");
+        Log::info("VideoThumbnails: Found " . count($videos) . " video(s) in [{$this->file->id}] {$this->file->title}");
 
         $tempDir = storage_path("app/temp/video-extract-{$this->file->id}");
         @mkdir($tempDir, 0755, true);
@@ -186,7 +191,7 @@ class AnalyzeUploadedFile implements ShouldQueue
                 }
             }
 
-            \Log::info("VideoThumbnails: Generated {$count} contact sheet(s) for [{$this->file->id}]");
+            Log::info("VideoThumbnails: Generated {$count} contact sheet(s) for [{$this->file->id}]");
         } finally {
             $zip->close();
             $this->cleanDir($tempDir);
@@ -263,12 +268,12 @@ class AnalyzeUploadedFile implements ShouldQueue
                     'source' => 'video_extract',
                 ]);
 
-                \Log::info("VideoThumbnails: Uploaded contact sheet for [{$this->file->id}]: {$s3Path}");
+                Log::info("VideoThumbnails: Uploaded contact sheet for [{$this->file->id}]: {$s3Path}");
             } else {
-                \Log::warning("VideoThumbnails: Failed to generate sheet for [{$this->file->id}] video: {$videoName}");
+                Log::warning("VideoThumbnails: Failed to generate sheet for [{$this->file->id}] video: {$videoName}");
             }
-        } catch (\Exception $e) {
-            \Log::warning("VideoThumbnails: Error for [{$this->file->id}]: {$e->getMessage()}");
+        } catch (Exception $e) {
+            Log::warning("VideoThumbnails: Error for [{$this->file->id}]: {$e->getMessage()}");
         } finally {
             $this->cleanDir($tempDir);
         }
@@ -308,9 +313,9 @@ class AnalyzeUploadedFile implements ShouldQueue
     {
         if (!is_dir($dir)) return;
 
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
 
         foreach ($files as $file) {
@@ -352,6 +357,6 @@ class AnalyzeUploadedFile implements ShouldQueue
 
         TranscodeVideoJob::dispatch($this->file->id)->onQueue('default');
 
-        \Log::info("AnalyzeUploadedFile: dispatched TranscodeVideoJob for file {$this->file->id}");
+        Log::info("AnalyzeUploadedFile: dispatched TranscodeVideoJob for file {$this->file->id}");
     }
 }

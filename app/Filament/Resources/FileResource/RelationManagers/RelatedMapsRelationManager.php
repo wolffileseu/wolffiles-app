@@ -2,9 +2,18 @@
 
 namespace App\Filament\Resources\FileResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\AttachAction;
+use Filament\Actions\Action;
+use Filament\Actions\DetachAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DetachBulkAction;
 use App\Models\File;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -17,17 +26,17 @@ class RelatedMapsRelationManager extends RelationManager
 
     protected static ?string $title = 'Maps';
 
-    protected static ?string $icon = 'heroicon-o-map';
+    protected static string | \BackedEnum | null $icon = 'heroicon-o-map';
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return (int) $ownerRecord->category_id === 12; // only on bot files
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('relation_type')
+        return $schema->components([
+            Select::make('relation_type')
                 ->options([
                     'bot_files' => 'Bot files',
                     'waypoints' => 'Waypoints',
@@ -42,11 +51,11 @@ class RelatedMapsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('file_name')
             ->columns([
-                Tables\Columns\TextColumn::make('id')->sortable()->toggleable(),
-                Tables\Columns\TextColumn::make('title')->limit(40)->searchable(),
-                Tables\Columns\TextColumn::make('file_name')->limit(40)->searchable()->copyable(),
-                Tables\Columns\TextColumn::make('map_name_clean')->label('Map name')->badge(),
-                Tables\Columns\TextColumn::make('pivot.confidence')
+                TextColumn::make('id')->sortable()->toggleable(),
+                TextColumn::make('title')->limit(40)->searchable(),
+                TextColumn::make('file_name')->limit(40)->searchable()->copyable(),
+                TextColumn::make('map_name_clean')->label('Map name')->badge(),
+                TextColumn::make('pivot.confidence')
                     ->label('Conf.')
                     ->numeric(decimalPlaces: 2)
                     ->badge()
@@ -55,11 +64,11 @@ class RelatedMapsRelationManager extends RelationManager
                         (float) $state >= 0.70 => 'warning',
                         default                => 'danger',
                     }),
-                Tables\Columns\IconColumn::make('pivot.is_manual')->label('Manual')->boolean(),
-                Tables\Columns\TextColumn::make('download_count')->label('DLs')->numeric()->sortable(),
+                IconColumn::make('pivot.is_manual')->label('Manual')->boolean(),
+                TextColumn::make('download_count')->label('DLs')->numeric()->sortable(),
             ])
             ->filters([
-                Tables\Filters\TernaryFilter::make('manual')
+                TernaryFilter::make('manual')
                     ->label('Manual only')
                     ->queries(
                         true: fn (Builder $q) => $q->wherePivot('is_manual', true),
@@ -68,13 +77,13 @@ class RelatedMapsRelationManager extends RelationManager
                     ),
             ])
             ->headerActions([
-                Tables\Actions\AttachAction::make()
+                AttachAction::make()
                     ->preloadRecordSelect()
                     ->recordSelectSearchColumns(['title', 'file_name', 'map_name_clean'])
                     ->recordSelectOptionsQuery(fn (Builder $q) => $q->where('category_id', 10))
-                    ->form(fn (Tables\Actions\AttachAction $action): array => [
+                    ->form(fn (AttachAction $action): array => [
                         $action->getRecordSelect(),
-                        Forms\Components\Select::make('relation_type')
+                        Select::make('relation_type')
                             ->options(['bot_files' => 'Bot files', 'waypoints' => 'Waypoints', 'goals' => 'Goals'])
                             ->default('bot_files')->required(),
                     ])
@@ -85,13 +94,13 @@ class RelatedMapsRelationManager extends RelationManager
                         return $data;
                     }),
             ])
-            ->actions([
-                Tables\Actions\Action::make('open')
+            ->recordActions([
+                Action::make('open')
                     ->label('Open')
                     ->icon('heroicon-m-arrow-top-right-on-square')
                     ->url(fn (File $record) => route('filament.admin.resources.files.edit', ['record' => $record->slug]))
                     ->openUrlInNewTab(),
-                Tables\Actions\Action::make('promote')
+                Action::make('promote')
                     ->label('Mark verified')
                     ->icon('heroicon-m-check-badge')
                     ->color('success')
@@ -105,11 +114,11 @@ class RelatedMapsRelationManager extends RelationManager
                             'updated_at' => now(),
                         ]);
                     }),
-                Tables\Actions\DetachAction::make(),
+                DetachAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DetachBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DetachBulkAction::make(),
                 ]),
             ])
             ->defaultSort('pivot_confidence', 'desc');

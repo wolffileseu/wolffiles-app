@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\DemoResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\DemoResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -12,6 +13,6 @@ class ListDemos extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()];
+        return [CreateAction::make()];
     }
 }

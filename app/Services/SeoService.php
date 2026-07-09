@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
 use App\Models\File;
 use App\Models\Category;
 use App\Models\Page;
@@ -14,7 +15,7 @@ class SeoService
      */
     public static function forFile(File $file): array
     {
-        $description = \Illuminate\Support\Str::limit(strip_tags($file->description ?? ''), 160);
+        $description = Str::limit(strip_tags($file->description ?? ''), 160);
         $image = $file->screenshots->first()?->url;
 
         return [
@@ -56,7 +57,7 @@ class SeoService
     {
         return [
             'title' => $post->title . ' - Wolffiles.eu',
-            'description' => \Illuminate\Support\Str::limit(strip_tags($post->content), 160),
+            'description' => Str::limit(strip_tags($post->content), 160),
             'og:title' => $post->title,
             'og:type' => 'article',
             'og:url' => route('posts.show', $post),

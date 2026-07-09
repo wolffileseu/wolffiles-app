@@ -2,6 +2,8 @@
 
 namespace App\Models\Pm;
 
+use RuntimeException;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $reason
  * @property int|null $related_report_id
  * @property int $created_by
- * @property \Carbon\Carbon $created_at
+ * @property Carbon $created_at
  */
 class PmEvidenceSnapshot extends Model
 {
@@ -43,7 +45,7 @@ class PmEvidenceSnapshot extends Model
     protected static function booted(): void
     {
         static::updating(function () {
-            throw new \RuntimeException("PmEvidenceSnapshot is write-once and cannot be updated.");
+            throw new RuntimeException("PmEvidenceSnapshot is write-once and cannot be updated.");
         });
     }
 

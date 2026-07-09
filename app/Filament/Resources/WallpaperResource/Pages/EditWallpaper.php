@@ -1,5 +1,6 @@
 <?php
 namespace App\Filament\Resources\WallpaperResource\Pages;
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\WallpaperResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -10,6 +11,6 @@ class EditWallpaper extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [Actions\DeleteAction::make()];
+        return [DeleteAction::make()];
     }
 }

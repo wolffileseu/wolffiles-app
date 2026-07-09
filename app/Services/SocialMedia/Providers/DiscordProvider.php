@@ -2,6 +2,7 @@
 
 namespace App\Services\SocialMedia\Providers;
 
+use Exception;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaProvider;
 use Illuminate\Support\Facades\Http;
@@ -158,7 +159,7 @@ class DiscordProvider implements SocialMediaProvider
             }
 
             return ['success' => false, 'message' => 'Discord returned: ' . $response->status() . ' — ' . $response->body()];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
         }
     }
@@ -181,7 +182,7 @@ class DiscordProvider implements SocialMediaProvider
 
             $channel->markFailed('HTTP ' . $response->status() . ': ' . $response->body());
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $channel->markFailed($e->getMessage());
             Log::error('Discord broadcast failed', [
                 'channel' => $channel->name,
@@ -216,13 +217,13 @@ class DiscordProvider implements SocialMediaProvider
         ]);
     }
 
-    protected function sendWebhook(\App\Models\SocialMediaChannel $channel, array $payload): bool
+    protected function sendWebhook(SocialMediaChannel $channel, array $payload): bool
     {
         try {
-            $response = \Illuminate\Support\Facades\Http::post($channel->webhook_url, $payload);
+            $response = Http::post($channel->webhook_url, $payload);
             return $response->successful();
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error("Discord webhook failed: {$e->getMessage()}");
+        } catch (Exception $e) {
+            Log::error("Discord webhook failed: {$e->getMessage()}");
             return false;
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Pm;
 
+use Illuminate\Database\UniqueConstraintViolationException;
 use App\Exceptions\Pm\PmServiceException;
 use App\Models\Pm\PmConversation;
 use App\Models\Pm\PmMessage;
@@ -80,7 +81,7 @@ class PmConversationService
 
                 return $conv;
             });
-        } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+        } catch (UniqueConstraintViolationException $e) {
             // Concurrent insert: refetch
             return PmConversation::where("hash_key", $hash)->firstOrFail();
         }
