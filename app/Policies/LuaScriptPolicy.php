@@ -3,37 +3,106 @@
 namespace App\Policies;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\LuaScript;
+use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LuaScriptPolicy
 {
+    use HandlesAuthorization;
+
+    /**
+     * Determine whether the user can view any models.
+     */
     public function viewAny(User $user): bool
     {
-        return $user->hasRole('admin') || $user->can('view_lua_scripts');
+        return $user->can('view_any_lua::script');
     }
 
-    public function view(User $user, Model $record): bool
+    /**
+     * Determine whether the user can view the model.
+     */
+    public function view(User $user, LuaScript $luaScript): bool
     {
-        return $user->hasRole('admin') || $user->can('view_lua_scripts');
+        return $user->can('view_lua::script');
     }
 
+    /**
+     * Determine whether the user can create models.
+     */
     public function create(User $user): bool
     {
-        return $user->hasRole('admin') || $user->can('create_lua_scripts');
+        return $user->can('create_lua::script');
     }
 
-    public function update(User $user, Model $record): bool
+    /**
+     * Determine whether the user can update the model.
+     */
+    public function update(User $user, LuaScript $luaScript): bool
     {
-        return $user->hasRole('admin') || $user->can('update_lua_scripts');
+        return $user->can('update_lua::script');
     }
 
-    public function delete(User $user, Model $record): bool
+    /**
+     * Determine whether the user can delete the model.
+     */
+    public function delete(User $user, LuaScript $luaScript): bool
     {
-        return $user->hasRole('admin') || $user->can('delete_lua_scripts');
+        return $user->can('delete_lua::script');
     }
 
+    /**
+     * Determine whether the user can bulk delete.
+     */
     public function deleteAny(User $user): bool
     {
-        return $user->hasRole('admin') || $user->can('delete_lua_scripts');
+        return $user->can('delete_any_lua::script');
+    }
+
+    /**
+     * Determine whether the user can permanently delete.
+     */
+    public function forceDelete(User $user, LuaScript $luaScript): bool
+    {
+        return $user->can('force_delete_lua::script');
+    }
+
+    /**
+     * Determine whether the user can permanently bulk delete.
+     */
+    public function forceDeleteAny(User $user): bool
+    {
+        return $user->can('force_delete_any_lua::script');
+    }
+
+    /**
+     * Determine whether the user can restore.
+     */
+    public function restore(User $user, LuaScript $luaScript): bool
+    {
+        return $user->can('restore_lua::script');
+    }
+
+    /**
+     * Determine whether the user can bulk restore.
+     */
+    public function restoreAny(User $user): bool
+    {
+        return $user->can('restore_any_lua::script');
+    }
+
+    /**
+     * Determine whether the user can replicate.
+     */
+    public function replicate(User $user, LuaScript $luaScript): bool
+    {
+        return $user->can('replicate_lua::script');
+    }
+
+    /**
+     * Determine whether the user can reorder.
+     */
+    public function reorder(User $user): bool
+    {
+        return $user->can('reorder_lua::script');
     }
 }

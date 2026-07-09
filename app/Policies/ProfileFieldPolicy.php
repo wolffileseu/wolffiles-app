@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Poll;
+use App\Models\ProfileField;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class PollPolicy
+class ProfileFieldPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class PollPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_poll');
+        return $user->can('view_any_profile::field');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Poll $poll): bool
+    public function view(User $user, ProfileField $profileField): bool
     {
-        return $user->can('view_poll');
+        return $user->can('view_profile::field');
     }
 
     /**
@@ -31,23 +31,23 @@ class PollPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_poll');
+        return $user->can('create_profile::field');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Poll $poll): bool
+    public function update(User $user, ProfileField $profileField): bool
     {
-        return $user->can('update_poll');
+        return $user->can('update_profile::field');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Poll $poll): bool
+    public function delete(User $user, ProfileField $profileField): bool
     {
-        return $user->can('delete_poll');
+        return $user->can('delete_profile::field');
     }
 
     /**
@@ -55,15 +55,15 @@ class PollPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_poll');
+        return $user->can('delete_any_profile::field');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Poll $poll): bool
+    public function forceDelete(User $user, ProfileField $profileField): bool
     {
-        return $user->can('force_delete_poll');
+        return $user->can('force_delete_profile::field');
     }
 
     /**
@@ -71,15 +71,15 @@ class PollPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_poll');
+        return $user->can('force_delete_any_profile::field');
     }
 
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Poll $poll): bool
+    public function restore(User $user, ProfileField $profileField): bool
     {
-        return $user->can('restore_poll');
+        return $user->can('restore_profile::field');
     }
 
     /**
@@ -87,15 +87,15 @@ class PollPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_poll');
+        return $user->can('restore_any_profile::field');
     }
 
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Poll $poll): bool
+    public function replicate(User $user, ProfileField $profileField): bool
     {
-        return $user->can('replicate_poll');
+        return $user->can('replicate_profile::field');
     }
 
     /**
@@ -103,6 +103,6 @@ class PollPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_poll');
+        return $user->can('reorder_profile::field');
     }
 }
