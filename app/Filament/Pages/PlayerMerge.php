@@ -4,12 +4,15 @@ namespace App\Filament\Pages;
 
 use App\Services\Tracker\PlayerMergeService;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
 class PlayerMerge extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Tracker';
     protected static ?string $navigationLabel = 'Spieler zusammenführen';
@@ -28,10 +31,6 @@ class PlayerMerge extends Page
         $this->showSuspects = true;
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->hasRole('admin') ?? false;
-    }
 
     /**
      * Suspect duplicate pairs: an Enhanced player (real_guid_hash set) whose

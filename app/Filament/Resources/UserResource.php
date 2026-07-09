@@ -16,10 +16,6 @@ class UserResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationGroup = 'Community';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_users');
-    }
 
     public static function form(Form $form): Form
     {

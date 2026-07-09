@@ -17,10 +17,6 @@ class PostResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
     protected static ?string $navigationGroup = 'Content';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_posts');
-    }
 
     public static function form(Form $form): Form
     {

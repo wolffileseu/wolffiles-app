@@ -26,10 +26,6 @@ class TutorialResource extends Resource
     }
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tutorials');
-    }
 
     public static function form(Form $form): Form
     {

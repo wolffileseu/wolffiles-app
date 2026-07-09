@@ -18,10 +18,6 @@ class CategoryResource extends Resource
     protected static ?int $navigationSort = 2;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_categories');
-    }
 
     public static function form(Form $form): Form
     {

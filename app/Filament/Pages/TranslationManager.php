@@ -3,12 +3,15 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\File;
 use Livewire\WithFileUploads;
 
 class TranslationManager extends Page
 {
+    use HasPageShield;
+
     use WithFileUploads;
     protected static ?string $navigationIcon = 'heroicon-o-language';
     protected static ?string $navigationGroup = 'Settings';
@@ -23,10 +26,6 @@ class TranslationManager extends Page
     public string $newLangCode = '';
     public array $editValues = [];
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public function mount(): void
     {

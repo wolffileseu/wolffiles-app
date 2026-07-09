@@ -19,10 +19,6 @@ class TrackerGameResource extends Resource
     protected static ?string $navigationLabel = 'Games';
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tracker_games');
-    }
 
     public static function form(Form $form): Form
     {

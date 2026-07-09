@@ -20,10 +20,6 @@ class FastDlFileResource extends Resource
     protected static ?string $navigationLabel = 'Files';
     protected static ?int $navigationSort = 3;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_fastdl_files');
-    }
 
     public static function form(Form $form): Form
     {

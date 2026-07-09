@@ -18,10 +18,6 @@ class ServerProductResource extends Resource
     protected static ?string $navigationLabel = 'Products';
     protected static ?int $navigationSort = 1;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public static function form(Form $form): Form
     {

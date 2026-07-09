@@ -83,7 +83,7 @@ class ViewPmConversation extends ViewRecord
                 ->label("Create evidence snapshot")
                 ->icon("heroicon-o-camera")
                 ->color("danger")
-                ->visible(fn () => Auth::user()?->can("create_pm_evidence_snapshot"))
+                ->visible(fn () => Auth::user()?->can("create_pm::evidence::snapshot"))
                 ->requiresConfirmation()
                 ->modalHeading("Create evidence snapshot")
                 ->modalDescription("This freezes the current state of the conversation as immutable evidence (write-once). Use for legal/moderation cases. The conversation will be exempt from retention purge as long as a snapshot exists.")

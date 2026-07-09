@@ -18,10 +18,6 @@ class DonationResource extends Resource
     protected static ?int $navigationSort = 1;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_donations');
-    }
 
     public static function form(Form $form): Form
     {

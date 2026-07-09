@@ -18,10 +18,6 @@ class WallpaperResource extends Resource
     protected static ?string $navigationLabel = 'Wallpapers';
     protected static ?int $navigationSort = 60;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public static function form(Form $form): Form
     {

@@ -16,10 +16,6 @@ class ActivityLogResource extends Resource
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Activity Log';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_activity_log');
-    }
 
     public static function canCreate(): bool
     {

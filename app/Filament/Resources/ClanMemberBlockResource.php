@@ -17,10 +17,6 @@ class ClanMemberBlockResource extends Resource
     protected static ?string $navigationLabel = 'Member Blocks';
     protected static ?int $navigationSort = 30;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->hasRole('admin') ?? false;
-    }
 
     public static function form(Form $form): Form
     {

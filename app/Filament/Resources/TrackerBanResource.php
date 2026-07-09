@@ -24,10 +24,6 @@ class TrackerBanResource extends Resource
     protected static ?string $modelLabel = 'Flag';
     protected static ?string $pluralModelLabel = 'Cheat Flags / Bans';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_tracker_bans');
-    }
 
     public static function form(Form $form): Form
     {

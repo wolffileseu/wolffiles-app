@@ -56,11 +56,15 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($panel->getId() === 'admin') {
-            return $this->hasAnyRole(['admin', 'moderator']);
+        if ($panel->getId() !== 'admin') {
+            return true;
         }
 
-        return true;
+        // Filament Shield: super admins and panel users always have access;
+        // anyone holding at least one permission may enter the panel too.
+        return $this->hasRole(config('filament-shield.super_admin.name'))
+            || $this->hasRole(config('filament-shield.panel_user.name'))
+            || $this->getAllPermissions()->isNotEmpty();
     }
 
     public function files(): HasMany

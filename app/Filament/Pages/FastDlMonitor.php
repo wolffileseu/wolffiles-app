@@ -5,20 +5,19 @@ namespace App\Filament\Pages;
 use App\Models\FastDl\FastDlFile;
 use App\Models\FastDl\FastDlGame;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Illuminate\Support\Facades\DB;
 
 class FastDlMonitor extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationGroup = 'Fast Download';
     protected static ?string $navigationLabel = 'Monitor';
     protected static ?int $navigationSort = 5;
     protected static string $view = 'filament.pages.fastdl-monitor';
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_fastdl_monitor');
-    }
 
     public function getStats(): array
     {

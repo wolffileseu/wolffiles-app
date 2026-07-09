@@ -19,10 +19,6 @@ class PartnerLinkResource extends Resource
     protected static ?int $navigationSort = 50;
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_partner_links');
-    }
 
 
     public static function form(Form $form): Form

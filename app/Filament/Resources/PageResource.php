@@ -18,10 +18,6 @@ class PageResource extends Resource
     protected static ?string $navigationLabel = 'Pages';
 
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin') || auth()->user()->can('view_pages');
-    }
 
 
 

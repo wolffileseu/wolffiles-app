@@ -3,11 +3,14 @@
 namespace App\Filament\Pages;
 
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
 class SiteAnalytics extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationGroup = 'Analytics';
     protected static ?string $navigationLabel = 'Analytics';
@@ -106,10 +109,6 @@ class SiteAnalytics extends Page
         });
     }
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public function getStartDate(): ?string
     {

@@ -24,10 +24,6 @@ class PmAdminAccessLogResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()?->can("view_any_pm_admin_access_log") ?? false;
-    }
 
     public static function canCreate(): bool { return false; }
     public static function canEdit($record): bool { return false; }

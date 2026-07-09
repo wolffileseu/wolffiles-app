@@ -7,12 +7,15 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 /**
  * @property \Filament\Forms\Form $form
  */
 class WallpaperSettings extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
     protected static ?string $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Wallpaper Settings';
@@ -22,10 +25,6 @@ class WallpaperSettings extends Page
 
     public ?array $data = [];
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public function mount(): void
     {

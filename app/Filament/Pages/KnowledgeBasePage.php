@@ -4,10 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Models\KnowledgeBase;
 use Filament\Pages\Page;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Notifications\Notification;
 
 class KnowledgeBasePage extends Page
 {
+    use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-o-book-open';
     protected static ?string $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Knowledge Base';
@@ -29,10 +32,6 @@ class KnowledgeBasePage extends Page
     public bool $editPinned = false;
     public int $editSortOrder = 0;
 
-    public static function canAccess(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
 
     public function getArticles()
     {
