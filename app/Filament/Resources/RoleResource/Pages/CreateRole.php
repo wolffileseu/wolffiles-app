@@ -7,6 +7,16 @@ class CreateRole extends CreateRecord
 {
     protected static string $resource = RoleResource::class;
 
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        foreach (array_keys($data) as $key) {
+            if (str_starts_with($key, 'permissions_')) {
+                unset($data[$key]);
+            }
+        }
+        return $data;
+    }
+
     protected function afterCreate(): void
     {
         $this->syncPermissions();

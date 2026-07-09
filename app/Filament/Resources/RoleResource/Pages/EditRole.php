@@ -10,6 +10,16 @@ class EditRole extends EditRecord
 
     protected function getHeaderActions(): array { return [Actions\DeleteAction::make()]; }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        foreach (array_keys($data) as $key) {
+            if (str_starts_with($key, 'permissions_')) {
+                unset($data[$key]);
+            }
+        }
+        return $data;
+    }
+
     protected function afterSave(): void
     {
         $this->syncPermissions();
