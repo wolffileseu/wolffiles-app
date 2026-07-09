@@ -2,10 +2,23 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PartnerLinkResource\Pages\ListPartnerLinks;
+use App\Filament\Resources\PartnerLinkResource\Pages\CreatePartnerLink;
+use App\Filament\Resources\PartnerLinkResource\Pages\EditPartnerLink;
 use App\Filament\Resources\PartnerLinkResource\Pages;
 use App\Models\PartnerLink;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,27 +26,27 @@ use Filament\Tables\Table;
 class PartnerLinkResource extends Resource
 {
     protected static ?string $model = PartnerLink::class;
-    protected static ?string $navigationIcon = 'heroicon-o-link';
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-link';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Partner Links';
     protected static ?int $navigationSort = 50;
 
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required()->maxLength(255),
-            Forms\Components\TextInput::make('url')->required()->url()->maxLength(255),
-            Forms\Components\FileUpload::make('image')
+        return $schema->components([
+            TextInput::make('name')->required()->maxLength(255),
+            TextInput::make('url')->required()->url()->maxLength(255),
+            FileUpload::make('image')
                 ->disk('s3')
-                ->directory('partners')
+                ->directory('partners')->visibility('public')
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp'])
                 ->maxSize(10240)
                 ->imagePreviewHeight('80')
                 ->helperText('Erlaubt: JPG, PNG, GIF, WebP (max. 10MB)'),
-            Forms\Components\Select::make('group')
+            Select::make('group')
                 ->options([
                     'clan' => 'Clan / Community',
                     'mod' => 'Mod / Project',
@@ -41,8 +54,8 @@ class PartnerLinkResource extends Resource
                 ])
                 ->default('clan')
                 ->required(),
-            Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
-            Forms\Components\Toggle::make('is_active')->default(true),
+            TextInput::make('sort_order')->numeric()->default(0),
+            Toggle::make('is_active')->default(true),
         ]);
     }
 
@@ -50,33 +63,33 @@ class PartnerLinkResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')->disk('s3')->height(30),
-                Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('url')->limit(40)->url(fn ($record) => $record->url, true),
-                Tables\Columns\TextColumn::make('group')->badge()
+                ImageColumn::make('image')->disk('s3')->height(30),
+                TextColumn::make('name')->sortable()->searchable(),
+                TextColumn::make('url')->limit(40)->url(fn ($record) => $record->url, true),
+                TextColumn::make('group')->badge()
                     ->color(fn ($state) => match ($state) {
                         'clan' => 'success',
                         'mod' => 'info',
                         default => 'gray',
                     }),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
-                Tables\Columns\TextColumn::make('sort_order')->sortable(),
+                IconColumn::make('is_active')->boolean(),
+                TextColumn::make('sort_order')->sortable(),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->toolbarActions([DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListPartnerLinks::route('/'),
-            'create' => Pages\CreatePartnerLink::route('/create'),
-            'edit' => Pages\EditPartnerLink::route('/{record}/edit'),
+            'index' => ListPartnerLinks::route('/'),
+            'create' => CreatePartnerLink::route('/create'),
+            'edit' => EditPartnerLink::route('/{record}/edit'),
         ];
     }
 }

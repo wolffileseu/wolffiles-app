@@ -2,11 +2,26 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Utilities\Get;
+use App\Models\MenuItem;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\KeyValue;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\MenuResource\Pages\ListMenus;
+use App\Filament\Resources\MenuResource\Pages\CreateMenu;
+use App\Filament\Resources\MenuResource\Pages\EditMenu;
 use App\Filament\Resources\MenuResource\Pages;
 use App\Models\Menu;
 use App\Models\Page;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,74 +29,74 @@ use Filament\Tables\Table;
 class MenuResource extends Resource
 {
     protected static ?string $model = Menu::class;
-    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-bars-3';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
 
 
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\Select::make('location')
+        return $schema->components([
+            TextInput::make('name')->required(),
+            Select::make('location')
                 ->options(['header' => 'Header', 'footer' => 'Footer', 'sidebar' => 'Sidebar'])
                 ->required()
                 ->unique(ignoreRecord: true),
-            Forms\Components\Repeater::make('allItems')
+            Repeater::make('allItems')
                 ->relationship()
                 ->schema([
-                    Forms\Components\Grid::make(2)->schema([
-                        Forms\Components\TextInput::make('title')->required(),
-                        Forms\Components\Select::make('parent_id')
+                    Grid::make(2)->schema([
+                        TextInput::make('title')->required(),
+                        Select::make('parent_id')
                             ->label('Parent (for dropdown)')
-                            ->options(function (Forms\Get $get) {
+                            ->options(function (Get $get) {
                                 $menuId = $get('../../id');
                                 if (!$menuId) return [];
-                                return \App\Models\MenuItem::where('menu_id', $menuId)
+                                return MenuItem::where('menu_id', $menuId)
                                     ->whereNull('parent_id')
                                     ->pluck('title', 'id');
                             })
                             ->placeholder('— Top Level —')
                             ->nullable(),
                     ]),
-                    Forms\Components\Grid::make(2)->schema([
-                        Forms\Components\Select::make('page_select')
+                    Grid::make(2)->schema([
+                        Select::make('page_select')
                             ->label('Link to Page')
                             ->options(Page::where('is_published', true)->pluck('title', 'slug'))
                             ->placeholder('— Or enter URL/Route below —')
-                            ->afterStateHydrated(function (Forms\Components\Select $component, $record) {
+                            ->afterStateHydrated(function (Select $component, $record) {
                                 // If URL matches a page slug, pre-select it
                                 if ($record && $record->url && str_starts_with($record->url, '/page/')) {
                                     $slug = str_replace('/page/', '', $record->url);
                                     $component->state($slug);
                                 }
                             })
-                            ->afterStateUpdated(function (Forms\Set $set, $state) {
+                            ->afterStateUpdated(function (Set $set, $state) {
                                 if ($state) {
                                     $set('url', '/page/' . $state);
                                     $set('route', null);
                                 }
                             })
-                            ->reactive()
+                            ->live()
                             ->dehydrated(false),
-                        Forms\Components\TextInput::make('url')
+                        TextInput::make('url')
                             ->label('URL')
                             ->placeholder('/page/impressum or https://...')
                             ->helperText('Auto-filled when selecting a page'),
                     ]),
-                    Forms\Components\Grid::make(4)->schema([
-                        Forms\Components\TextInput::make('route')
+                    Grid::make(4)->schema([
+                        TextInput::make('route')
                             ->label('Route name')
                             ->placeholder('e.g. files.index'),
-                        Forms\Components\Select::make('target')
+                        Select::make('target')
                             ->options(['_self' => 'Same Tab', '_blank' => 'New Tab'])
                             ->default('_self'),
-                        Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
-                        Forms\Components\Toggle::make('is_active')->default(true),
+                        TextInput::make('sort_order')->numeric()->default(0),
+                        Toggle::make('is_active')->default(true),
                     ]),
-                    Forms\Components\KeyValue::make('title_translations')
+                    KeyValue::make('title_translations')
                         ->label('Translations (de, en)')
                         ->keyLabel('Language')
                         ->valueLabel('Title'),
@@ -102,20 +117,20 @@ class MenuResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->sortable(),
-                Tables\Columns\TextColumn::make('location')->badge(),
-                Tables\Columns\TextColumn::make('allItems_count')->counts('allItems')->label('Items'),
+                TextColumn::make('name')->sortable(),
+                TextColumn::make('location')->badge(),
+                TextColumn::make('allItems_count')->counts('allItems')->label('Items'),
             ])
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->recordActions([EditAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListMenus::route('/'),
-            'create' => Pages\CreateMenu::route('/create'),
-            'edit' => Pages\EditMenu::route('/{record}/edit'),
+            'index' => ListMenus::route('/'),
+            'create' => CreateMenu::route('/create'),
+            'edit' => EditMenu::route('/{record}/edit'),
         ];
     }
 }

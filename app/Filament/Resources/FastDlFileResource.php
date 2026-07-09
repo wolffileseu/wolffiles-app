@@ -2,12 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\FastDlFileResource\Pages\ListFastDlFiles;
+use App\Filament\Resources\FastDlFileResource\Pages\CreateFastDlFile;
+use App\Filament\Resources\FastDlFileResource\Pages\EditFastDlFile;
 use App\Filament\Resources\FastDlFileResource\Pages;
 use App\Models\FastDl\FastDlFile;
 use App\Models\FastDl\FastDlDirectory;
 use Filament\Forms;
 use Filament\Forms\Get;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,39 +28,39 @@ use Filament\Tables\Table;
 class FastDlFileResource extends Resource
 {
     protected static ?string $model = FastDlFile::class;
-    protected static ?string $navigationIcon = 'heroicon-o-document-arrow-down';
-    protected static ?string $navigationGroup = 'Fast Download';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-document-arrow-down';
+    protected static string | \UnitEnum | null $navigationGroup = 'Fast Download';
     protected static ?string $navigationLabel = 'Files';
     protected static ?int $navigationSort = 3;
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('File')->schema([
-                Forms\Components\Select::make('directory_id')
+        return $schema->components([
+            Section::make('File')->schema([
+                Select::make('directory_id')
                     ->label('Directory')
                     ->options(
                         FastDlDirectory::with('game')->get()->mapWithKeys(fn ($d) => [$d->id => $d->game->name . ' / ' . $d->name])
                     )
                     ->required()
                     ->searchable(),
-                Forms\Components\TextInput::make('filename')->required()
+                TextInput::make('filename')->required()
                     ->helperText('e.g. goldrush.pk3'),
-                Forms\Components\FileUpload::make('upload')
+                FileUpload::make('upload')
                     ->label('Upload PK3')
                     ->disk('s3')
-                    ->directory('fastdl')
+                    ->directory('fastdl')->visibility('public')
                     ->preserveFilenames()
                     
                     ->maxSize(102400)
                     ->helperText('Max 100MB. The file will be stored on S3.'),
-                Forms\Components\TextInput::make('s3_path')
+                TextInput::make('s3_path')
                     ->helperText('S3 path (auto-filled on upload, or enter manually)'),
-                Forms\Components\Select::make('source')
+                Select::make('source')
                     ->options(['manual' => 'Manual Upload', 'auto_sync' => 'Auto-Sync', 'clan_upload' => 'Clan Upload'])
                     ->default('manual'),
-                Forms\Components\Toggle::make('is_active')->default(true),
+                Toggle::make('is_active')->default(true),
             ])->columns(2),
         ]);
     }
@@ -56,42 +69,42 @@ class FastDlFileResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('directory.game.name')->label('Game')->sortable(),
-                Tables\Columns\TextColumn::make('directory.name')->label('Directory')->sortable(),
-                Tables\Columns\TextColumn::make('filename')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('human_size')->label('Size'),
-                Tables\Columns\TextColumn::make('source')->badge()
+                TextColumn::make('directory.game.name')->label('Game')->sortable(),
+                TextColumn::make('directory.name')->label('Directory')->sortable(),
+                TextColumn::make('filename')->sortable()->searchable(),
+                TextColumn::make('human_size')->label('Size'),
+                TextColumn::make('source')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'auto_sync' => 'success',
                         'manual' => 'warning',
                         'clan_upload' => 'info',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('download_count')->sortable()->label('DLs'),
-                Tables\Columns\IconColumn::make('is_active')->boolean(),
+                TextColumn::make('download_count')->sortable()->label('DLs'),
+                IconColumn::make('is_active')->boolean(),
             ])
             ->defaultSort('filename')
             ->filters([
-                Tables\Filters\SelectFilter::make('directory_id')
+                SelectFilter::make('directory_id')
                     ->options(
                         FastDlDirectory::with('game')->get()->mapWithKeys(fn ($d) => [$d->id => $d->game->name . ' / ' . $d->name])
                     )
                     ->label('Directory'),
-                Tables\Filters\SelectFilter::make('source')
+                SelectFilter::make('source')
                     ->options(['auto_sync' => 'Auto-Sync', 'manual' => 'Manual', 'clan_upload' => 'Clan']),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListFastDlFiles::route('/'),
-            'create' => Pages\CreateFastDlFile::route('/create'),
-            'edit' => Pages\EditFastDlFile::route('/{record}/edit'),
+            'index' => ListFastDlFiles::route('/'),
+            'create' => CreateFastDlFile::route('/create'),
+            'edit' => EditFastDlFile::route('/{record}/edit'),
         ];
     }
 }

@@ -2,14 +2,46 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Support\Str;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Placeholder;
+use Illuminate\Support\HtmlString;
+use Filament\Schemas\Components\Actions;
+use Filament\Actions\Action;
+use App\Models\WikiMedia;
+use Filament\Forms\Components\FileUpload;
+use Filament\Schemas\Components\Section;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\UploadedFile;
+use App\Services\Wiki\WikiMediaService;
+use Throwable;
+use Filament\Forms\Components\ViewField;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\WikiArticleResource\Pages\ListWikiArticles;
+use App\Filament\Resources\WikiArticleResource\Pages\CreateWikiArticle;
+use App\Filament\Resources\WikiArticleResource\Pages\EditWikiArticle;
 use App\Filament\Resources\WikiArticleResource\Pages;
 use App\Models\WikiArticle;
 use App\Models\WikiCategory;
 use App\Services\Wiki\WikitextParser;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,8 +50,8 @@ use Filament\Notifications\Notification;
 class WikiArticleResource extends Resource
 {
     protected static ?string $model = WikiArticle::class;
-    protected static ?string $navigationIcon = 'heroicon-o-book-open';
-    protected static ?string $navigationGroup = 'Wiki & Tutorials';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-book-open';
+    protected static string | \UnitEnum | null $navigationGroup = 'Wiki & Tutorials';
     protected static ?string $navigationLabel = 'Wiki Articles';
     protected static ?int $navigationSort = 1;
 
@@ -34,34 +66,34 @@ class WikiArticleResource extends Resource
     }
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Tabs::make('Wiki Article')->tabs([
+        return $schema->components([
+            Tabs::make('Wiki Article')->tabs([
 
                 // ===== TAB 1: HAUPTDATEN =====
-                Forms\Components\Tabs\Tab::make('Hauptdaten')
+                Tab::make('Hauptdaten')
                     ->icon('heroicon-o-identification')
                     ->schema([
-                        Forms\Components\TextInput::make('title')
+                        TextInput::make('title')
                             ->label('Titel (Master, Deutsch)')
                             ->required()
                             ->maxLength(255)
                             ->live(onBlur: true)
                             ->afterStateUpdated(function (Set $set, Get $get, ?string $state, ?WikiArticle $record) {
                                 if (!$record && $state) {
-                                    $set('slug', \Illuminate\Support\Str::slug($state));
+                                    $set('slug', Str::slug($state));
                                 }
                             })
                             ->columnSpanFull(),
 
-                        Forms\Components\Grid::make(3)->schema([
-                            Forms\Components\TextInput::make('slug')
+                        Grid::make(3)->schema([
+                            TextInput::make('slug')
                                 ->maxLength(255)
                                 ->required()
                                 ->hint('URL-Pfad: /wiki/{slug}'),
 
-                            Forms\Components\Select::make('namespace')
+                            Select::make('namespace')
                                 ->options([
                                     'main'     => 'Main (Standardartikel)',
                                     'help'     => 'Help: (Hilfe-Seiten)',
@@ -70,26 +102,26 @@ class WikiArticleResource extends Resource
                                 ->default('main')
                                 ->required(),
 
-                            Forms\Components\Select::make('wiki_category_id')
+                            Select::make('wiki_category_id')
                                 ->label('Hauptkategorie (legacy)')
                                 ->options(WikiCategory::where('is_active', true)->pluck('name', 'id'))
                                 ->searchable()
                                 ->hint('Optional. Auto-Sync aus [[Category:X]] im Wikitext.'),
                         ]),
 
-                        Forms\Components\Textarea::make('excerpt')
+                        Textarea::make('excerpt')
                             ->rows(2)
                             ->hint('Kurzbeschreibung. Wird automatisch generiert falls leer.')
                             ->columnSpanFull(),
                     ]),
 
                 // ===== TAB 2: WIKITEXT + PREVIEW =====
-                Forms\Components\Tabs\Tab::make('Wikitext')
+                Tab::make('Wikitext')
                     ->icon('heroicon-o-pencil-square')
                     ->schema([
-                        Forms\Components\Placeholder::make('wikitext_help')
+                        Placeholder::make('wikitext_help')
                             ->label('')
-                            ->content(new \Illuminate\Support\HtmlString(
+                            ->content(new HtmlString(
                                 '<div style="background:#1f2937; padding:0.75rem 1rem; border-radius:4px; font-size:13px; color:#d1d5db;">'
                                 . '<strong style="color:#fbbf24;">Wikitext-Syntax:</strong> '
                                 . '<code>== Heading ==</code> · '
@@ -105,8 +137,8 @@ class WikiArticleResource extends Resource
                             ->columnSpanFull(),
 
                         // ----- Bild-Einfuegen-Action -----
-                        Forms\Components\Actions::make([
-                            Forms\Components\Actions\Action::make('insertImage')
+                        Actions::make([
+                            Action::make('insertImage')
                                 ->label('Bild einfügen')
                                 ->icon('heroicon-o-photo')
                                 ->color('primary')
@@ -114,17 +146,17 @@ class WikiArticleResource extends Resource
                                 ->modalDescription('Wähle ein Bild aus dem Pool oder lade ein neues hoch.')
                                 ->modalWidth('2xl')
                                 ->modalSubmitActionLabel('Einfügen')
-                                ->form([
-                                    Forms\Components\Tabs::make('imageSource')->tabs([
+                                ->schema([
+                                    Tabs::make('imageSource')->tabs([
 
-                                        Forms\Components\Tabs\Tab::make('Aus Pool')
+                                        Tab::make('Aus Pool')
                                             ->icon('heroicon-o-photo')
                                             ->schema([
-                                                Forms\Components\Select::make('pool_media_id')
+                                                Select::make('pool_media_id')
                                                     ->label('Vorhandenes Bild')
                                                     ->placeholder('Bild aus Pool wählen oder suchen…')
                                                     ->searchable()
-                                                    ->options(fn () => \App\Models\WikiMedia::query()
+                                                    ->options(fn () => WikiMedia::query()
                                                         ->where('type', 'image')
                                                         ->orderByDesc('id')
                                                         ->limit(50)
@@ -132,7 +164,7 @@ class WikiArticleResource extends Resource
                                                         ->toArray())
                                                     ->getSearchResultsUsing(function (string $search) {
                                                         $like = '%' . $search . '%';
-                                                        return \App\Models\WikiMedia::query()
+                                                        return WikiMedia::query()
                                                             ->where('type', 'image')
                                                             ->where(function ($q) use ($like) {
                                                                 $q->where('filename', 'like', $like)
@@ -142,21 +174,21 @@ class WikiArticleResource extends Resource
                                                             ->pluck('filename', 'id')
                                                             ->toArray();
                                                     })
-                                                    ->getOptionLabelUsing(fn ($value) => \App\Models\WikiMedia::find($value)?->filename)
+                                                    ->getOptionLabelUsing(fn ($value) => WikiMedia::find($value)?->filename)
                                                     ->live(),
 
-                                                Forms\Components\Placeholder::make('pool_preview')
+                                                Placeholder::make('pool_preview')
                                                     ->label('')
                                                     ->content(function (Get $get) {
                                                         $id = $get('pool_media_id');
                                                         if (! $id) {
-                                                            return new \Illuminate\Support\HtmlString(
+                                                            return new HtmlString(
                                                                 '<div style="color:#9ca3af; font-style:italic; padding:1rem; text-align:center;">Wähle ein Bild oben, um eine Vorschau zu sehen.</div>'
                                                             );
                                                         }
-                                                        $m = \App\Models\WikiMedia::find($id);
+                                                        $m = WikiMedia::find($id);
                                                         if (! $m) return '';
-                                                        return new \Illuminate\Support\HtmlString(
+                                                        return new HtmlString(
                                                             '<div style="text-align:center; padding:0.5rem 0;">'
                                                             . '<img src="' . htmlspecialchars($m->url, ENT_QUOTES) . '" alt="" '
                                                             . 'style="max-width:100%; max-height:240px; border-radius:6px; border:1px solid rgba(255,255,255,0.1);" />'
@@ -167,10 +199,10 @@ class WikiArticleResource extends Resource
                                                     }),
                                             ]),
 
-                                        Forms\Components\Tabs\Tab::make('Neu hochladen')
+                                        Tab::make('Neu hochladen')
                                             ->icon('heroicon-o-arrow-up-tray')
                                             ->schema([
-                                                Forms\Components\FileUpload::make('upload_file')
+                                                FileUpload::make('upload_file')
                                                     ->label('Bild-Datei')
                                                     ->image()
                                                     ->maxSize(8 * 1024) // 8 MB in KB
@@ -182,14 +214,14 @@ class WikiArticleResource extends Resource
 
                                     ]),
 
-                                    Forms\Components\Section::make('Anzeige-Optionen')
+                                    Section::make('Anzeige-Optionen')
                                         ->collapsible()
                                         ->schema([
-                                            Forms\Components\TextInput::make('caption')
+                                            TextInput::make('caption')
                                                 ->label('Bildunterschrift')
                                                 ->placeholder('z.B. „ETF Hauptmenü mit allen Slots"')
                                                 ->columnSpanFull(),
-                                            Forms\Components\Select::make('size')
+                                            Select::make('size')
                                                 ->label('Größe')
                                                 ->options([
                                                     'thumb-200'  => 'Thumb · 200px',
@@ -200,7 +232,7 @@ class WikiArticleResource extends Resource
                                                 ])
                                                 ->default('thumb-400')
                                                 ->required(),
-                                            Forms\Components\Select::make('align')
+                                            Select::make('align')
                                                 ->label('Ausrichtung')
                                                 ->options([
                                                     'none'   => 'Standard',
@@ -218,9 +250,9 @@ class WikiArticleResource extends Resource
                                     if (! empty($data['upload_file'])) {
                                         $tmpRel = is_array($data['upload_file']) ? reset($data['upload_file']) : $data['upload_file'];
                                         if ($tmpRel) {
-                                            $abs = \Illuminate\Support\Facades\Storage::disk('public')->path($tmpRel);
+                                            $abs = Storage::disk('public')->path($tmpRel);
                                             if (file_exists($abs)) {
-                                                $file = new \Illuminate\Http\UploadedFile(
+                                                $file = new UploadedFile(
                                                     $abs,
                                                     basename($tmpRel),
                                                     mime_content_type($abs) ?: 'image/png',
@@ -228,10 +260,10 @@ class WikiArticleResource extends Resource
                                                     true
                                                 );
                                                 try {
-                                                    $media = (new \App\Services\Wiki\WikiMediaService())
+                                                    $media = (new WikiMediaService())
                                                         ->store($file, auth()->id());
-                                                } catch (\Throwable $e) {
-                                                    \Filament\Notifications\Notification::make()
+                                                } catch (Throwable $e) {
+                                                    Notification::make()
                                                         ->title('Upload fehlgeschlagen')
                                                         ->body($e->getMessage())
                                                         ->danger()->send();
@@ -241,11 +273,11 @@ class WikiArticleResource extends Resource
                                             }
                                         }
                                     } elseif (! empty($data['pool_media_id'])) {
-                                        $media = \App\Models\WikiMedia::find($data['pool_media_id']);
+                                        $media = WikiMedia::find($data['pool_media_id']);
                                     }
 
                                     if (! $media) {
-                                        \Filament\Notifications\Notification::make()
+                                        Notification::make()
                                             ->title('Kein Bild gewählt')
                                             ->body('Wähle ein Bild aus dem Pool oder lade eines neu hoch.')
                                             ->warning()->send();
@@ -275,15 +307,15 @@ class WikiArticleResource extends Resource
                                     // 3) An den CM6-Editor schicken (Livewire dispatch -> Window-Event)
                                     $livewire->dispatch('wikitext-insert', snippet: $snippet);
 
-                                    \Filament\Notifications\Notification::make()
+                                    Notification::make()
                                         ->title('Bild eingefügt')
                                         ->body($snippet)
                                         ->success()->send();
                                 }),
                         ])->columnSpanFull(),
 
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\ViewField::make('wikitext')
+                        Grid::make(2)->schema([
+                            ViewField::make('wikitext')
                                 ->label('Wikitext-Quelle')
                                 ->view('forms.components.wikitext-editor')
                                 ->live(debounce: 800)
@@ -291,16 +323,16 @@ class WikiArticleResource extends Resource
                                     $set('_preview', static::renderPreview((string) $state));
                                 }),
 
-                            Forms\Components\Placeholder::make('_preview')
+                            Placeholder::make('_preview')
                                 ->label('Live-Vorschau')
                                 ->content(function (Get $get) {
                                     $wt = (string) $get('wikitext');
                                     if (trim($wt) === '') {
-                                        return new \Illuminate\Support\HtmlString(
+                                        return new HtmlString(
                                             '<div style="color:#9ca3af; font-style:italic;">Schreibe Wikitext links — Vorschau erscheint hier.</div>'
                                         );
                                     }
-                                    return new \Illuminate\Support\HtmlString(
+                                    return new HtmlString(
                                         '<div class="wiki-skin"><div class="wiki-bodycontent" style="background:#1f2937; color:#e5e7eb; padding:1rem; border-radius:4px; max-height:600px; overflow-y:auto;">'
                                         . static::renderPreview($wt)
                                         . '</div></div>'
@@ -308,7 +340,7 @@ class WikiArticleResource extends Resource
                                 }),
                         ]),
 
-                        Forms\Components\TextInput::make('change_summary')
+                        TextInput::make('change_summary')
                             ->label('Änderungs-Zusammenfassung')
                             ->maxLength(255)
                             ->hint('Wird in Revisionshistorie angezeigt')
@@ -317,22 +349,22 @@ class WikiArticleResource extends Resource
                     ]),
 
                 // ===== TAB 3: TRANSLATIONS =====
-                Forms\Components\Tabs\Tab::make('Übersetzungen')
+                Tab::make('Übersetzungen')
                     ->icon('heroicon-o-language')
                     ->schema([
-                        Forms\Components\Placeholder::make('translations_help')
+                        Placeholder::make('translations_help')
                             ->label('')
-                            ->content(new \Illuminate\Support\HtmlString(
+                            ->content(new HtmlString(
                                 '<div style="background:#1f2937; padding:0.5rem 0.75rem; border-radius:4px; font-size:12px; color:#9ca3af;">'
                                 . 'Deutsch ist Master und wird oben im Wikitext-Tab editiert. Hier nur weitere Sprachen.'
                                 . '</div>'
                             ))
                             ->columnSpanFull(),
 
-                        Forms\Components\Repeater::make('translations')
+                        Repeater::make('translations')
                             ->relationship(modifyQueryUsing: fn ($query) => $query->where('locale', '!=', 'de'))
                             ->schema([
-                                Forms\Components\Select::make('locale')
+                                Select::make('locale')
                                     ->options([
                                         'en' => 'English',
                                         'fr' => 'Français',
@@ -342,8 +374,8 @@ class WikiArticleResource extends Resource
                                     ])
                                     ->required()
                                     ->distinct(),
-                                Forms\Components\TextInput::make('title')->required()->maxLength(255),
-                                Forms\Components\Textarea::make('wikitext')
+                                TextInput::make('title')->required()->maxLength(255),
+                                Textarea::make('wikitext')
                                     ->rows(12)
                                     ->extraInputAttributes(['style' => 'font-family: monospace; font-size: 13px;']),
                             ])
@@ -358,12 +390,12 @@ class WikiArticleResource extends Resource
                     ]),
 
                 // ===== TAB 4: MEDIA =====
-                Forms\Components\Tabs\Tab::make('Anhänge')
+                Tab::make('Anhänge')
                     ->icon('heroicon-o-paper-clip')
                     ->schema([
-                        Forms\Components\FileUpload::make('attachments')
+                        FileUpload::make('attachments')
                             ->disk('s3')
-                            ->directory('wiki/attachments')
+                            ->directory('wiki/attachments')->visibility('public')
                             ->multiple()
                             ->maxFiles(10)
                             ->maxSize(51200)
@@ -373,10 +405,10 @@ class WikiArticleResource extends Resource
                     ]),
 
                 // ===== TAB 5: SETTINGS =====
-                Forms\Components\Tabs\Tab::make('Einstellungen')
+                Tab::make('Einstellungen')
                     ->icon('heroicon-o-cog-6-tooth')
                     ->schema([
-                        Forms\Components\Select::make('status')
+                        Select::make('status')
                             ->options([
                                 'draft'     => '📝 Entwurf',
                                 'pending'   => '⏳ Wartet auf Review',
@@ -385,21 +417,21 @@ class WikiArticleResource extends Resource
                             ])
                             ->default('draft')
                             ->required(),
-                        Forms\Components\TagsInput::make('tags')
+                        TagsInput::make('tags')
                             ->separator(',')
                             ->hint('z.B. ET, Mapping, ETPub'),
-                        Forms\Components\Grid::make(2)->schema([
-                            Forms\Components\Toggle::make('is_featured')->label('Featured'),
-                            Forms\Components\Toggle::make('is_locked')->label('Locked (keine Edits)'),
+                        Grid::make(2)->schema([
+                            Toggle::make('is_featured')->label('Featured'),
+                            Toggle::make('is_locked')->label('Locked (keine Edits)'),
                         ]),
-                        Forms\Components\DateTimePicker::make('published_at')->default(now()),
+                        DateTimePicker::make('published_at')->default(now()),
                     ]),
 
                 // ===== TAB 6: REVISIONS =====
-                Forms\Components\Tabs\Tab::make('Versionshistorie')
+                Tab::make('Versionshistorie')
                     ->icon('heroicon-o-clock')
                     ->schema([
-                        Forms\Components\Placeholder::make('revision_info')
+                        Placeholder::make('revision_info')
                             ->label('')
                             ->content(function (?WikiArticle $record) {
                                 if (!$record) return 'Speichere den Artikel um Revisionen zu sehen.';
@@ -417,7 +449,7 @@ class WikiArticleResource extends Resource
                                     $html .= '</div>';
                                 }
                                 $html .= '</div>';
-                                return new \Illuminate\Support\HtmlString($html);
+                                return new HtmlString($html);
                             })
                             ->columnSpanFull(),
                     ])->visibleOn('edit'),
@@ -435,7 +467,7 @@ class WikiArticleResource extends Resource
         try {
             $parser = WikitextParser::make(['locale' => 'de', 'namespace' => 'main']);
             return $parser->parse($wikitext)->html;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return '<div style="color:#ef4444;">Render-Fehler: ' . htmlspecialchars($e->getMessage()) . '</div>';
         }
     }
@@ -444,11 +476,11 @@ class WikiArticleResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable()->sortable()->limit(50),
-                Tables\Columns\TextColumn::make('namespace')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('category.name')->badge()->sortable()->label('Cat'),
-                Tables\Columns\TextColumn::make('user.name')->label('Autor')->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge()
+                TextColumn::make('title')->searchable()->sortable()->limit(50),
+                TextColumn::make('namespace')->badge()->sortable(),
+                TextColumn::make('category.name')->badge()->sortable()->label('Cat'),
+                TextColumn::make('user.name')->label('Autor')->sortable(),
+                TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'published' => 'success',
                         'pending'   => 'warning',
@@ -456,24 +488,24 @@ class WikiArticleResource extends Resource
                         'archived'  => 'danger',
                         default     => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('view_count')->sortable()->label('Views'),
-                Tables\Columns\TextColumn::make('revision_count')->label('Rev')->sortable(),
-                Tables\Columns\IconColumn::make('is_featured')->boolean(),
-                Tables\Columns\IconColumn::make('is_redirect')->boolean()->label('↪'),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime('d.m.Y')->sortable(),
+                TextColumn::make('view_count')->sortable()->label('Views'),
+                TextColumn::make('revision_count')->label('Rev')->sortable(),
+                IconColumn::make('is_featured')->boolean(),
+                IconColumn::make('is_redirect')->boolean()->label('↪'),
+                TextColumn::make('updated_at')->dateTime('d.m.Y')->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options(['draft' => 'Draft', 'pending' => 'Pending', 'published' => 'Published', 'archived' => 'Archived']),
-                Tables\Filters\SelectFilter::make('namespace')
+                SelectFilter::make('namespace')
                     ->options(['main' => 'Main', 'help' => 'Help', 'template' => 'Template']),
-                Tables\Filters\SelectFilter::make('wiki_category_id')
+                SelectFilter::make('wiki_category_id')
                     ->label('Category')
                     ->options(WikiCategory::pluck('name', 'id')),
             ])
-            ->actions([
-                Tables\Actions\Action::make('approve')
+            ->recordActions([
+                Action::make('approve')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
@@ -482,22 +514,22 @@ class WikiArticleResource extends Resource
                         $record->update(['status' => 'published', 'published_at' => now(), 'approved_by' => auth()->id()]);
                         Notification::make()->title('Article published!')->success()->send();
                     }),
-                Tables\Actions\Action::make('view')
+                Action::make('view')
                     ->icon('heroicon-o-eye')
                     ->url(fn (WikiArticle $record) => route('wiki.show', $record->slug))
                     ->openUrlInNewTab(),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->toolbarActions([DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListWikiArticles::route('/'),
-            'create' => Pages\CreateWikiArticle::route('/create'),
-            'edit'   => Pages\EditWikiArticle::route('/{record}/edit'),
+            'index'  => ListWikiArticles::route('/'),
+            'create' => CreateWikiArticle::route('/create'),
+            'edit'   => EditWikiArticle::route('/{record}/edit'),
         ];
     }
 

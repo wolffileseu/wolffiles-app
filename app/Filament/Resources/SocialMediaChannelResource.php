@@ -2,11 +2,32 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\SocialMediaChannelResource\Pages\ListSocialMediaChannels;
+use App\Filament\Resources\SocialMediaChannelResource\Pages\CreateSocialMediaChannel;
+use App\Filament\Resources\SocialMediaChannelResource\Pages\EditSocialMediaChannel;
 use App\Filament\Resources\SocialMediaChannelResource\Pages;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaService;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -15,80 +36,80 @@ use Filament\Tables\Table;
 class SocialMediaChannelResource extends Resource
 {
     protected static ?string $model = SocialMediaChannel::class;
-    protected static ?string $navigationIcon = 'heroicon-o-megaphone';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-megaphone';
     protected static ?string $navigationLabel = 'Social Media Broadcast';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?int $navigationSort = 50;
     protected static ?string $modelLabel = 'Social Media Channel';
     protected static ?string $pluralModelLabel = 'Social Media Channels';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Channel Configuration')
+        return $schema->components([
+            Section::make('Channel Configuration')
                 ->description('Configure a social media channel for automatic notifications.')
                 ->schema([
-                    Forms\Components\Grid::make(2)->schema([
-                        Forms\Components\TextInput::make('name')
+                    Grid::make(2)->schema([
+                        TextInput::make('name')
                             ->label('Channel Name')
                             ->required()
                             ->placeholder('e.g. Discord #announcements, Reddit r/enemyterritory')
                             ->maxLength(255),
 
-                        Forms\Components\Select::make('provider')
+                        Select::make('provider')
                             ->label('Platform')
                             ->options(SocialMediaChannel::PROVIDERS)
                             ->required()
-                            ->reactive()
-                            ->afterStateUpdated(fn (Forms\Set $set) => $set('config', [])),
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('config', [])),
                     ]),
 
-                    Forms\Components\Toggle::make('is_active')
+                    Toggle::make('is_active')
                         ->label('Active')
                         ->default(true)
                         ->helperText('Disable to temporarily stop posting to this channel.'),
 
-                    Forms\Components\CheckboxList::make('enabled_events')
+                    CheckboxList::make('enabled_events')
                         ->label('Enabled Events')
                         ->options(SocialMediaChannel::EVENTS)
                         ->columns(3)
                         ->required()
                         ->helperText('Select which events should be posted to this channel.'),
 
-                    Forms\Components\TextInput::make('sort_order')
+                    TextInput::make('sort_order')
                         ->numeric()
                         ->default(0)
                         ->helperText('Lower numbers are processed first.'),
                 ]),
 
             // Dynamic provider config section
-            Forms\Components\Section::make('Provider Settings')
+            Section::make('Provider Settings')
                 ->description('API credentials and settings for the selected platform.')
-                ->schema(fn (Forms\Get $get) => static::getProviderConfigSchema($get('provider')))
-                ->visible(fn (Forms\Get $get) => !empty($get('provider'))),
+                ->schema(fn (Get $get) => static::getProviderConfigSchema($get('provider')))
+                ->visible(fn (Get $get) => !empty($get('provider'))),
 
             // Custom message templates
-            Forms\Components\Section::make('Custom Message Templates')
+            Section::make('Custom Message Templates')
                 ->description('Optional: Customize the message format. Use {title}, {description}, {url}, {category}, {uploader}, {author}, {amount}, {donor} as placeholders.')
                 ->collapsible()
                 ->collapsed()
                 ->schema([
-                    Forms\Components\Textarea::make('message_template_file')
+                    Textarea::make('message_template_file')
                         ->label('File Approved Template')
                         ->rows(3)
                         ->placeholder('📁 New file: {title} — Category: {category} — {url}')
                         ->helperText('Placeholders: {title}, {description}, {url}, {category}, {file_size}, {uploader}'),
 
-                    Forms\Components\Textarea::make('message_template_donation')
+                    Textarea::make('message_template_donation')
                         ->label('Donation Template')
                         ->rows(3)
                         ->placeholder('💝 Thank you {donor} for €{amount}!')
                         ->helperText('Placeholders: {amount}, {donor}, {message}'),
 
-                    Forms\Components\Textarea::make('message_template_motw')
+                    Textarea::make('message_template_motw')
                             ->label('Map of the Week Template')
                             ->rows(3),
-                        Forms\Components\Textarea::make('message_template_news')
+                        Textarea::make('message_template_news')
                         ->label('Map of the Week Template')
                         ->rows(3)
                         ->placeholder('🏆 Map of the Week: {title} by {author}')
@@ -101,11 +122,11 @@ class SocialMediaChannelResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('provider')
+                TextColumn::make('provider')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => SocialMediaChannel::PROVIDERS[$state] ?? $state)
                     ->color(fn (string $state) => match ($state) {
@@ -116,11 +137,11 @@ class SocialMediaChannelResource extends Resource
                         default => 'secondary',
                     }),
 
-                Tables\Columns\IconColumn::make('is_active')
+                IconColumn::make('is_active')
                     ->label('Active')
                     ->boolean(),
 
-                Tables\Columns\TextColumn::make('enabled_events')
+                TextColumn::make('enabled_events')
                     ->label('Events')
                     ->formatStateUsing(function ($state) {
                         if (is_array($state)) {
@@ -131,12 +152,12 @@ class SocialMediaChannelResource extends Resource
                     ->wrap()
                     ->limit(50),
 
-                Tables\Columns\TextColumn::make('last_posted_at')
+                TextColumn::make('last_posted_at')
                     ->label('Last Posted')
                     ->since()
                     ->placeholder('Never'),
 
-                Tables\Columns\TextColumn::make('last_error')
+                TextColumn::make('last_error')
                     ->label('Status')
                     ->formatStateUsing(fn (?string $state) => $state ? '❌ Error' : '✅ OK')
                     ->tooltip(fn (?string $state) => $state)
@@ -145,13 +166,13 @@ class SocialMediaChannelResource extends Resource
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->filters([
-                Tables\Filters\SelectFilter::make('provider')
+                SelectFilter::make('provider')
                     ->options(SocialMediaChannel::PROVIDERS),
-                Tables\Filters\TernaryFilter::make('is_active')
+                TernaryFilter::make('is_active')
                     ->label('Active'),
             ])
-            ->actions([
-                Tables\Actions\Action::make('test')
+            ->recordActions([
+                Action::make('test')
                     ->label('Test')
                     ->icon('heroicon-o-paper-airplane')
                     ->color('info')
@@ -176,12 +197,12 @@ class SocialMediaChannelResource extends Resource
                                 ->send();
                         }
                     }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -189,9 +210,9 @@ class SocialMediaChannelResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSocialMediaChannels::route('/'),
-            'create' => Pages\CreateSocialMediaChannel::route('/create'),
-            'edit' => Pages\EditSocialMediaChannel::route('/{record}/edit'),
+            'index' => ListSocialMediaChannels::route('/'),
+            'create' => CreateSocialMediaChannel::route('/create'),
+            'edit' => EditSocialMediaChannel::route('/{record}/edit'),
         ];
     }
 
@@ -207,16 +228,16 @@ class SocialMediaChannelResource extends Resource
 
         return collect($fields)->map(function ($field, $key) {
             $component = match ($field['type'] ?? 'text') {
-                'password' => Forms\Components\TextInput::make("config.{$key}")
+                'password' => TextInput::make("config.{$key}")
                     ->label($field['label'])
                     ->password()
                     ->revealable(),
-                'url' => Forms\Components\TextInput::make("config.{$key}")
+                'url' => TextInput::make("config.{$key}")
                     ->label($field['label'])
                     ->url(),
-                'textarea' => Forms\Components\Textarea::make("config.{$key}")
+                'textarea' => Textarea::make("config.{$key}")
                     ->label($field['label']),
-                default => Forms\Components\TextInput::make("config.{$key}")
+                default => TextInput::make("config.{$key}")
                     ->label($field['label']),
             };
 

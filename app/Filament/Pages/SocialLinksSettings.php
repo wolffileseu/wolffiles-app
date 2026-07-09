@@ -2,26 +2,33 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\ColorPicker;
 use App\Models\Setting;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 
 /**
- * @property \Filament\Forms\Form $form
+ * @property \Filament\Schemas\Schema $form
  */
 class SocialLinksSettings extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon = 'heroicon-o-share';
-    protected static ?string $navigationGroup = 'Settings';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-share';
+    protected static string | \UnitEnum | null $navigationGroup = 'Settings';
     protected static ?string $navigationLabel = 'Social Links';
     protected static ?string $title = 'Social Links';
     protected static ?int $navigationSort = 15;
-    protected static string $view = 'filament.pages.social-links-settings';
+    protected string $view = 'filament.pages.social-links-settings';
 
     public ?array $data = [];
 
@@ -38,16 +45,16 @@ class SocialLinksSettings extends Page
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('Display Settings')
+        return $schema
+            ->components([
+                Section::make('Display Settings')
                     ->schema([
-                        Forms\Components\Toggle::make('is_active')
+                        Toggle::make('is_active')
                             ->label('Show Social Links')
                             ->default(true),
-                        Forms\Components\Select::make('position')
+                        Select::make('position')
                             ->label('Position')
                             ->options([
                                 'left' => 'Left Side',
@@ -56,12 +63,12 @@ class SocialLinksSettings extends Page
                             ->default('left'),
                     ])->columns(2),
 
-                Forms\Components\Section::make('Social Links')
+                Section::make('Social Links')
                     ->schema([
-                        Forms\Components\Repeater::make('links')
+                        Repeater::make('links')
                             ->label('')
                             ->schema([
-                                Forms\Components\Select::make('platform')
+                                Select::make('platform')
                                     ->label('Platform')
                                     ->options([
                                         'discord' => 'Discord',
@@ -79,21 +86,21 @@ class SocialLinksSettings extends Page
                                         'custom' => 'Custom',
                                     ])
                                     ->required()
-                                    ->reactive(),
-                                Forms\Components\TextInput::make('url')
+                                    ->live(),
+                                TextInput::make('url')
                                     ->label('URL')
                                     ->url()
                                     ->required()
                                     ->placeholder('https://discord.gg/...'),
-                                Forms\Components\TextInput::make('label')
+                                TextInput::make('label')
                                     ->label('Tooltip Label')
                                     ->placeholder('Join our Discord')
                                     ->maxLength(50),
-                                Forms\Components\TextInput::make('custom_icon_svg')
+                                TextInput::make('custom_icon_svg')
                                     ->label('Custom SVG Icon (only for Custom platform)')
                                     ->placeholder('<svg>...</svg>')
-                                    ->visible(fn (Forms\Get $get) => $get('platform') === 'custom'),
-                                Forms\Components\ColorPicker::make('color')
+                                    ->visible(fn (Get $get) => $get('platform') === 'custom'),
+                                ColorPicker::make('color')
                                     ->label('Custom Color (optional)')
                                     ->placeholder('Uses platform default'),
                             ])

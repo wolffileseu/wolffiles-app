@@ -2,11 +2,35 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TagsInput;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\KeyValue;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\TutorialResource\Pages\ListTutorials;
+use App\Filament\Resources\TutorialResource\Pages\CreateTutorial;
+use App\Filament\Resources\TutorialResource\Pages\EditTutorial;
 use App\Filament\Resources\TutorialResource\Pages;
 use App\Models\Tutorial;
 use App\Models\TutorialCategory;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -15,8 +39,8 @@ use Filament\Notifications\Notification;
 class TutorialResource extends Resource
 {
     protected static ?string $model = Tutorial::class;
-    protected static ?string $navigationIcon = 'heroicon-o-academic-cap';
-    protected static ?string $navigationGroup = 'Wiki & Tutorials';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string | \UnitEnum | null $navigationGroup = 'Wiki & Tutorials';
     protected static ?string $navigationLabel = 'Tutorials';
     protected static ?int $navigationSort = 2;
 
@@ -27,26 +51,26 @@ class TutorialResource extends Resource
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Tabs::make('Tutorial')->tabs([
-                Forms\Components\Tabs\Tab::make('Content')->schema([
-                    Forms\Components\TextInput::make('title')
+        return $schema->components([
+            Tabs::make('Tutorial')->tabs([
+                Tab::make('Content')->schema([
+                    TextInput::make('title')
                         ->required()
                         ->maxLength(255)
                         ->columnSpanFull(),
-                    Forms\Components\TextInput::make('slug')
+                    TextInput::make('slug')
                         ->maxLength(255)
                         ->unique(ignoreRecord: true)
                         ->hint('Leave empty to auto-generate'),
-                    Forms\Components\Grid::make(3)->schema([
-                        Forms\Components\Select::make('tutorial_category_id')
+                    Grid::make(3)->schema([
+                        Select::make('tutorial_category_id')
                             ->label('Category')
                             ->options(TutorialCategory::where('is_active', true)->pluck('name', 'id'))
                             ->searchable()
                             ->required(),
-                        Forms\Components\Select::make('difficulty')
+                        Select::make('difficulty')
                             ->options([
                                 'beginner' => '🟢 Beginner',
                                 'intermediate' => '🟡 Intermediate',
@@ -54,18 +78,18 @@ class TutorialResource extends Resource
                             ])
                             ->default('beginner')
                             ->required(),
-                        Forms\Components\TextInput::make('estimated_minutes')
+                        TextInput::make('estimated_minutes')
                             ->label('Duration (minutes)')
                             ->numeric()
                             ->hint('Estimated reading/follow-along time'),
                     ]),
-                    Forms\Components\Textarea::make('excerpt')
+                    Textarea::make('excerpt')
                         ->rows(2)
                         ->hint('Short summary. Auto-generated if empty.'),
-                    Forms\Components\Textarea::make('prerequisites')
+                    Textarea::make('prerequisites')
                         ->rows(2)
                         ->hint('What does the reader need? e.g. "GTKRadiant installed, basic mapping knowledge"'),
-                    Forms\Components\RichEditor::make('content')
+                    RichEditor::make('content')
                         ->required()
                         ->columnSpanFull()
                         ->fileAttachmentsDisk('s3')
@@ -77,56 +101,56 @@ class TutorialResource extends Resource
                             'underline', 'undo', 'table',
                         ]),
                 ]),
-                Forms\Components\Tabs\Tab::make('Video')->schema([
-                    Forms\Components\TextInput::make('youtube_url')
+                Tab::make('Video')->schema([
+                    TextInput::make('youtube_url')
                         ->label('YouTube URL')
                         ->url()
                         ->hint('Paste a YouTube link — auto-embedded on the page')
                         ->columnSpanFull(),
-                    Forms\Components\FileUpload::make('video_path')
+                    FileUpload::make('video_path')
                         ->disk('s3')
-                        ->directory('tutorials/videos')
+                        ->directory('tutorials/videos')->visibility('public')
                         ->label('Or upload a video')
                         ->acceptedFileTypes(['video/mp4', 'video/webm', 'video/ogg'])
                         ->maxSize(512000) // 500MB
                         ->columnSpanFull(),
                 ]),
-                Forms\Components\Tabs\Tab::make('Attachments')->schema([
-                    Forms\Components\FileUpload::make('attachments')
+                Tab::make('Attachments')->schema([
+                    FileUpload::make('attachments')
                         ->disk('s3')
-                        ->directory('tutorials/attachments')
+                        ->directory('tutorials/attachments')->visibility('public')
                         ->multiple()
                         ->maxFiles(10)
                         ->maxSize(102400) // 100MB
                         ->label('Attachments (project files, configs, PDFs)')
                         ->columnSpanFull(),
                 ]),
-                Forms\Components\Tabs\Tab::make('Steps')->schema([
-                    Forms\Components\Repeater::make('steps')
+                Tab::make('Steps')->schema([
+                    Repeater::make('steps')
                         ->relationship()
                         ->schema([
-                            Forms\Components\TextInput::make('step_number')
+                            TextInput::make('step_number')
                                 ->numeric()
                                 ->required()
                                 ->default(fn ($get) => 1),
-                            Forms\Components\TextInput::make('title')
+                            TextInput::make('title')
                                 ->required()
                                 ->maxLength(255)
                                 ->columnSpanFull(),
-                            Forms\Components\RichEditor::make('content')
+                            RichEditor::make('content')
                                 ->required()
                                 ->columnSpanFull()
                                 ->fileAttachmentsDisk('s3')
                                 ->fileAttachmentsDirectory('tutorials/step-images'),
-                            Forms\Components\FileUpload::make('image_path')
+                            FileUpload::make('image_path')
                                 ->disk('s3')
-                                ->directory('tutorials/step-images')
+                                ->directory('tutorials/step-images')->visibility('public')
                                 ->image()
                                 ->label('Step Screenshot'),
-                            Forms\Components\TextInput::make('video_url')
+                            TextInput::make('video_url')
                                 ->url()
                                 ->label('Step Video URL (YouTube)'),
-                            Forms\Components\Textarea::make('tip')
+                            Textarea::make('tip')
                                 ->rows(2)
                                 ->label('💡 Pro Tip (optional)'),
                         ])
@@ -136,24 +160,24 @@ class TutorialResource extends Resource
                         ->itemLabel(fn (array $state): ?string => "Step {$state['step_number']}: " . ($state['title'] ?? ''))
                         ->columnSpanFull(),
                 ]),
-                Forms\Components\Tabs\Tab::make('Series')->schema([
-                    Forms\Components\Toggle::make('is_series')
+                Tab::make('Series')->schema([
+                    Toggle::make('is_series')
                         ->label('This is a multi-part tutorial series')
                         ->live(),
-                    Forms\Components\Select::make('series_parent_id')
+                    Select::make('series_parent_id')
                         ->label('Part of series')
                         ->options(Tutorial::where('is_series', true)->pluck('title', 'id'))
                         ->searchable()
                         ->hint('Select the parent tutorial if this is part of a series')
-                        ->visible(fn (Forms\Get $get) => !$get('is_series')),
-                    Forms\Components\TextInput::make('series_order')
+                        ->visible(fn (Get $get) => !$get('is_series')),
+                    TextInput::make('series_order')
                         ->numeric()
                         ->default(0)
                         ->label('Order in series')
-                        ->visible(fn (Forms\Get $get) => !$get('is_series')),
+                        ->visible(fn (Get $get) => !$get('is_series')),
                 ]),
-                Forms\Components\Tabs\Tab::make('Settings')->schema([
-                    Forms\Components\Select::make('status')
+                Tab::make('Settings')->schema([
+                    Select::make('status')
                         ->options([
                             'draft' => '📝 Draft',
                             'pending' => '⏳ Pending Review',
@@ -162,12 +186,12 @@ class TutorialResource extends Resource
                         ])
                         ->default('draft')
                         ->required(),
-                    Forms\Components\TagsInput::make('tags')
+                    TagsInput::make('tags')
                         ->separator(',')
                         ->hint('e.g. Mapping, GTKRadiant, ET'),
-                    Forms\Components\Toggle::make('is_featured')->label('Featured Tutorial'),
-                    Forms\Components\DateTimePicker::make('published_at')->default(now()),
-                    Forms\Components\KeyValue::make('title_translations')
+                    Toggle::make('is_featured')->label('Featured Tutorial'),
+                    DateTimePicker::make('published_at')->default(now()),
+                    KeyValue::make('title_translations')
                         ->label('Title Translations'),
                 ]),
             ])->columnSpanFull(),
@@ -178,40 +202,40 @@ class TutorialResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('title')->searchable()->sortable()->limit(50),
-                Tables\Columns\TextColumn::make('category.name')->badge()->sortable(),
-                Tables\Columns\TextColumn::make('user.name')->label('Author')->sortable(),
-                Tables\Columns\TextColumn::make('difficulty')->badge()
+                TextColumn::make('title')->searchable()->sortable()->limit(50),
+                TextColumn::make('category.name')->badge()->sortable(),
+                TextColumn::make('user.name')->label('Author')->sortable(),
+                TextColumn::make('difficulty')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'beginner' => 'success',
                         'intermediate' => 'warning',
                         'advanced' => 'danger',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('status')->badge()
+                TextColumn::make('status')->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'published' => 'success',
                         'pending' => 'warning',
                         'draft' => 'gray',
                         default => 'gray',
                     }),
-                Tables\Columns\TextColumn::make('view_count')->sortable(),
-                Tables\Columns\TextColumn::make('helpful_count')->label('👍')->sortable(),
-                Tables\Columns\IconColumn::make('is_featured')->boolean(),
-                Tables\Columns\TextColumn::make('updated_at')->dateTime('d.m.Y')->sortable(),
+                TextColumn::make('view_count')->sortable(),
+                TextColumn::make('helpful_count')->label('👍')->sortable(),
+                IconColumn::make('is_featured')->boolean(),
+                TextColumn::make('updated_at')->dateTime('d.m.Y')->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options(['draft' => 'Draft', 'pending' => 'Pending', 'published' => 'Published']),
-                Tables\Filters\SelectFilter::make('difficulty')
+                SelectFilter::make('difficulty')
                     ->options(['beginner' => 'Beginner', 'intermediate' => 'Intermediate', 'advanced' => 'Advanced']),
-                Tables\Filters\SelectFilter::make('tutorial_category_id')
+                SelectFilter::make('tutorial_category_id')
                     ->label('Category')
                     ->options(TutorialCategory::pluck('name', 'id')),
             ])
-            ->actions([
-                Tables\Actions\Action::make('approve')
+            ->recordActions([
+                Action::make('approve')
                     ->icon('heroicon-o-check')
                     ->color('success')
                     ->requiresConfirmation()
@@ -220,18 +244,18 @@ class TutorialResource extends Resource
                         $record->update(['status' => 'published', 'published_at' => now(), 'approved_by' => auth()->id()]);
                         Notification::make()->title('Tutorial published!')->success()->send();
                     }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->toolbarActions([DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTutorials::route('/'),
-            'create' => Pages\CreateTutorial::route('/create'),
-            'edit' => Pages\EditTutorial::route('/{record}/edit'),
+            'index' => ListTutorials::route('/'),
+            'create' => CreateTutorial::route('/create'),
+            'edit' => EditTutorial::route('/{record}/edit'),
         ];
     }
 }
