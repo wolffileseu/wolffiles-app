@@ -148,12 +148,17 @@ class WeaponStatsParser
                     $deaths    = (int) $tokens[$i++];
                     $headshots = (int) $tokens[$i++];
                 }
+                // Clamp to >= 0. Malformed/overflowed game-server payloads
+                // occasionally emit negative counters (observed: atts = -1),
+                // which blow up on the unsigned tracker_match_player_weapon_stats
+                // columns with SQLSTATE 22003. This is the single choke point
+                // feeding both the per-match snapshot and lifetime aggregation.
                 $weapons[$bit] = [
-                    'hits'      => $hits,
-                    'atts'      => $atts,
-                    'kills'     => $kills,
-                    'deaths'    => $deaths,
-                    'headshots' => $headshots,
+                    'hits'      => max(0, $hits),
+                    'atts'      => max(0, $atts),
+                    'kills'     => max(0, $kills),
+                    'deaths'    => max(0, $deaths),
+                    'headshots' => max(0, $headshots),
                 ];
             }
         }
