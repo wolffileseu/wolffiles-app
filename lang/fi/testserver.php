@@ -7,7 +7,7 @@ return [
     'launch_heading' => '[TODO:fi] Launch Map',
     'session_page_title' => '[TODO:fi] Your Session',
     'session_heading' => '[TODO:fi] Session running',
-    'breadcrumb_home' => '[TODO:fi] Home',
+    'breadcrumb_home' => 'Etusivu',
     'breadcrumb_testserver' => '[TODO:fi] Test Servers',
     'breadcrumb_session' => '[TODO:fi] Session',
     'no_servers_available' => '[TODO:fi] No test servers are currently available.',

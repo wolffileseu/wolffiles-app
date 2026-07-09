@@ -9,7 +9,7 @@ return [
     'starting_upload' => '[TODO:fi] Starting upload…',
     'uploading' => '[TODO:fi] Uploading…',
     'finalizing' => '[TODO:fi] Finalizing…',
-    'cancel' => '[TODO:fi] Cancel',
+    'cancel' => 'Peruuta',
     'success' => '[TODO:fi] Successfully uploaded — you can now submit the form',
     'choose_other' => '[TODO:fi] Choose another file',
     'try_again' => '[TODO:fi] Try again',
