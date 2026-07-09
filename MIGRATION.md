@@ -252,3 +252,79 @@ Laravel 13 remains blocked until Filament is upgraded. When ready, the path is:
   <https://laravel.com/docs/13.x/upgrade> guide.
 
 Treat that as a separate, planned Filament-major project — not a drop-in bump.
+
+---
+
+# Filament 3 → 4 → 5 + Shield 3 → 4 Migration
+
+Branch: `feature/filament-5`. Filament was upgraded 3 → 4 → 5 and
+`bezhansalleh/filament-shield` 3.9 → 4.x. Livewire moves to 4 as part of
+Filament 5. This is a behavioural migration — read the notes below before deploy.
+
+## Shield 4: legacy permission-key compatibility (CRITICAL)
+
+Shield 4 changed its default permission-key format (pascal case + `:` separator,
+e.g. `ViewAny:Post`). Production stores permissions in the **legacy Shield 3.x
+format** (`view_any_tracker::server`, `page_FastDlMonitor`, `widget_StatsOverview`)
+and those names **must not change** or every existing role→permission assignment
+breaks.
+
+To preserve them, `AppServiceProvider::boot()` registers
+`FilamentShield::buildPermissionKeyUsing()` reproducing the exact 3.x naming:
+
+- **Resources**: `{snake_affix}_{snake('::')_subject}`, where the *subject* is the
+  resource's path relative to `Resources\` with backslashes stripped and the
+  `Resource` suffix removed — **not** the model basename. This matters where they
+  diverge:
+  - `BugTracker\TaskResource` → `bug::tracker::task` (not `task`)
+  - `PlayerReportResource` (model `TrackerPlayerReport`) → `player::report`
+    (not `tracker::player::report`)
+- **Pages**: `page_{ClassBasename}` (e.g. `page_FastDlMonitor`)
+- **Widgets**: `widget_{ClassBasename}` (e.g. `widget_StatsOverview`)
+- **Special case**: Shield's own `RoleResource` moved to `Resources\Roles\` in v4;
+  it is pinned back to the `role` subject so `view_any_role` etc. stay valid.
+
+This closure governs both permission generation *and* the runtime
+`HasPageShield`/`HasWidgetShield` access checks. Verified: all 702 existing
+production permission keys are reproduced unchanged (the only additions are 6
+additive `*_role` methods Shield 4 generates for the role resource).
+
+`super_admin` keeps `define_via_gate => false` (matching the old config): the role
+works by **holding all permissions** in the DB, so `shield:generate` must be run
+on deploy to grant any newly added permissions. `User::canAccessPanel()` is
+unchanged (super_admin OR panel_user OR any permission).
+
+The old `config/filament-shield.php` was deleted and the Shield 4 config published
+fresh (`vendor:publish --tag=filament-shield-config`).
+
+## Filament 4 behaviour changes to be aware of
+
+- **File visibility defaults to `private` on non-local disks.** In Filament 3,
+  S3 uploads were effectively public. Every public-facing `FileUpload` on the
+  `s3` disk now carries an explicit `->visibility('public')` (avatars,
+  screenshots, wallpapers, fastdl, posts, categories, partners, lua scripts,
+  tutorials, wiki attachments, page PDFs…). Genuinely private uploads
+  (`demos`, `ban-evidence`) keep `->visibility('private')`. If you add a new S3
+  `FileUpload` that must be reachable via cdn.wolffiles.eu, set
+  `->visibility('public')` explicitly.
+- **Table filters are deferred by default.** Filters no longer apply live as you
+  change them — the user must click **Apply**. If you want the old live
+  behaviour on a specific table, add `->deferFilters(false)`.
+- **`unique()` validation defaults to `ignoreRecord: true`** on edit forms.
+  Existing explicit `unique(ignoreRecord: true)` calls are unaffected; just be
+  aware the default flipped.
+- **Grid/column span defaults changed.** Components now span a single column by
+  default in more contexts; if a field that used to stretch full-width no longer
+  does, add `->columnSpanFull()` (or an explicit `->columnSpan(...)`).
+
+## Code migration notes
+
+- Ran `vendor/bin/filament-v4` then `filament-v5` (Rector). These also enabled
+  `importNames()`/`importShortClasses()`, which normalised fully-qualified class
+  references into `use` imports across `app/` — a large but purely cosmetic diff.
+- Manual fixes Rector missed: `->reactive()` → `->live()`;
+  `callable $get`/`callable $set` → `Filament\Schemas\Components\Utilities\Get`/`Set`.
+- `form()`/`infolist()` signatures are now `Schema $schema): Schema` with
+  `->components([...])`. Infolist entry classes
+  (`Filament\Infolists\Components\TextEntry` etc.) still resolve in Filament 4/5,
+  so their imports were left as-is.
