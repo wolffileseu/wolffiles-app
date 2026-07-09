@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\Tracker;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Tracker\TrackerBan;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TrackerBanPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_tracker::ban');
+        return $authUser->can('view_any_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, TrackerBan $trackerBan): bool
+    public function view(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('view_tracker::ban');
+        return $authUser->can('view_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_tracker::ban');
+        return $authUser->can('create_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, TrackerBan $trackerBan): bool
+    public function update(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('update_tracker::ban');
+        return $authUser->can('update_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TrackerBan $trackerBan): bool
+    public function delete(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('delete_tracker::ban');
+        return $authUser->can('delete_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_tracker::ban');
+        return $authUser->can('delete_any_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, TrackerBan $trackerBan): bool
+    public function restore(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('force_delete_tracker::ban');
+        return $authUser->can('restore_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('force_delete_any_tracker::ban');
+        return $authUser->can('force_delete_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, TrackerBan $trackerBan): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_tracker::ban');
+        return $authUser->can('force_delete_any_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_tracker::ban');
+        return $authUser->can('restore_any_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, TrackerBan $trackerBan): bool
+    public function replicate(AuthUser $authUser, TrackerBan $trackerBan): bool
     {
-        return $user->can('replicate_tracker::ban');
+        return $authUser->can('replicate_tracker::ban');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_tracker::ban');
+        return $authUser->can('reorder_tracker::ban');
     }
+
 }
