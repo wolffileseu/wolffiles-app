@@ -27,7 +27,7 @@ use Filament\Widgets;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
@@ -135,7 +135,7 @@ class AdminPanelProvider extends PanelProvider
                 StartSession::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
-                VerifyCsrfToken::class,
+                PreventRequestForgery::class,
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,

@@ -363,7 +363,7 @@ Route::prefix('hosting')->name('hosting.')->group(function () {
 // PayPal IPN for Hosting (no CSRF)
 Route::post('/hosting/paypal/ipn', [\App\Http\Controllers\Frontend\HostingController::class, 'paypalIpn'])
     ->name('hosting.paypal.ipn')
-    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\PreventRequestForgery::class]);
 
 // Credits
 Route::get('/credits', [\App\Http\Controllers\Frontend\CreditsController::class, 'index'])->name('credits');
