@@ -495,7 +495,7 @@ return [
     'ob_all' => 'Kaikki',
     'ob_complete' => 'Valmis',
     'ob_download' => 'Lataa',
-    'ob_download_full' => 'Lataa kaikk',
+    'ob_download_full' => 'Lataa kaikki',
     'ob_files' => 'Tiedostot',
     'ob_github' => 'GitHub-tietovarasto',
     'ob_how_to_use' => 'Käyttöohje',
