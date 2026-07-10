@@ -422,3 +422,117 @@ No schema changes were made, so rollback is code-only:
 1. `git checkout main` (Filament 3 tree) and re-run `composer install` + asset build.
 2. Existing permission rows are untouched (names never changed), so Shield 3 reads
    them exactly as before. `permission:cache-reset` + `optimize:clear` after.
+
+---
+
+# Laravel 12 → 13 — Production Deploy Guide
+
+Branch: `feature/laravel-13`. This is a **pure framework upgrade** — no new
+Laravel 13 features adopted. Filament 5.6 / Livewire 4 / filament-shield 4.2 (all
+already on `main`) support Laravel 13, so no Filament/Livewire/Shield changes were
+needed.
+
+Final stack: **Laravel 13.19**, PHP 8.3, Filament 5.6, Livewire 4.3, Shield 4.2,
+Sanctum 4.3, spatie/permission 6.25.
+
+## What changed
+
+- `composer.json`: `laravel/framework ^12.0 → ^13.0`, `laravel/tinker ^2.10.1 → ^3.0`
+  (tinker 2.x caps at `illuminate ^12`), `php ^8.2 → ^8.3` (L13 minimum).
+  `composer why-not laravel/framework 13.0` confirmed **only** framework + tinker
+  blocked; every other package already permitted `illuminate ^13`.
+- Transitive bumps: `brick/math 0.14→0.18`, `nesbot/carbon 3.13.0→3.13.1`,
+  new `symfony/polyfill-php86`. `composer audit`: no advisories.
+
+## Upgrade-guide changes applied
+
+Followed <https://laravel.com/docs/13.x/upgrade>. The only code change required:
+
+- **CSRF middleware renamed** `VerifyCsrfToken`/`ValidateCsrfToken` →
+  `PreventRequestForgery` (old names remain as deprecated **subclasses**). L13's
+  global middleware stack now registers `PreventRequestForgery`, so a
+  `->withoutMiddleware([VerifyCsrfToken::class])` exclusion **no longer matches**
+  (a parent class is not a subclass of its child). This affected the **PayPal IPN
+  webhook** (`routes/web.php`, `hosting.paypal.ipn`) — left unfixed, CSRF would
+  wrongly re-apply and PayPal's token-less POST would 419. Updated all three
+  references: `routes/web.php`, `AdminPanelProvider` panel middleware, and
+  `config/sanctum.php` (`validate_csrf_token`).
+
+Guide items reviewed and **not applicable** to this codebase:
+
+- `upsert()` empty-`uniqueBy` exception — both calls in `WeaponStatsHandler` pass
+  non-empty keys (`['match_id','player_id','weapon_bit']`, `['match_id','slot']`).
+- `cache.serializable_classes` hardening — config key absent, so `RedisStore`
+  unserialize stays unrestricted (identical to L12). **Not** adopting the opt-in
+  hardening (would be a behaviour change / new feature).
+- Cache prefix / session cookie default change — `config/cache.php` and
+  `config/session.php` already use the hyphenated form, so no key/cookie churn on
+  deploy (users stay logged in, cache keys unchanged).
+- No `JobAttempted`/`QueueBusy` listeners, `Manager::extend` closures,
+  `array_first()`/`array_last()` calls, `laravel/helpers`, custom morph pivots,
+  or `pagination::default` references.
+- Domain-route precedence change is behavioural only; the tracker/bug subdomain
+  routes still resolve (verified via `route:list`).
+
+## Environment reference (Plesk / AlmaLinux / MariaDB)
+
+| Item          | Value                                                          |
+|---------------|----------------------------------------------------------------|
+| App path      | `/var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app/`         |
+| PHP binary    | `/opt/plesk/php/8.3/bin/php`                                    |
+| Composer      | `/usr/local/psa/var/modules/composer/composer.phar`            |
+| Run as user   | `wolffiles.eu_lkiogmaiktl`                                      |
+
+## Deploy steps
+
+Run every command as `wolffiles.eu_lkiogmaiktl` from the app path. **No database
+migrations** are added by this upgrade.
+
+```bash
+cd /var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app/
+
+# 1. Pull the branch (or merge to main first)
+git pull
+
+# 2. Install locked deps (production, no dev, optimised autoloader)
+/opt/plesk/php/8.3/bin/php /usr/local/psa/var/modules/composer/composer.phar \
+    install --no-dev --optimize-autoloader --no-interaction
+
+# 3. Clear + rebuild framework and Filament caches for the L13 tree.
+#    IMPORTANT: run optimize:clear FIRST so no stale L12 bootstrap/cache/*.php
+#    (e.g. a cached CSRF-middleware class name) survives the upgrade.
+/opt/plesk/php/8.3/bin/php artisan optimize:clear
+/opt/plesk/php/8.3/bin/php artisan config:cache
+/opt/plesk/php/8.3/bin/php artisan route:cache
+/opt/plesk/php/8.3/bin/php artisan view:cache
+/opt/plesk/php/8.3/bin/php artisan filament:optimize
+
+# 4. No migrations in this release, but run --force for safety (no-op expected)
+/opt/plesk/php/8.3/bin/php artisan migrate --force
+
+# 5. Restart the 36 queue workers + PM2 listener so they load the L13 code
+sudo systemctl restart 'wolffiles-worker-tracker@*' \
+    'wolffiles-worker-tracker-high@*' 'wolffiles-worker-tracker-low@*'
+pm2 restart tracker-listener
+
+# 6. Sanity check
+/opt/plesk/php/8.3/bin/php artisan about | grep -i "laravel version"   # -> 13.19.x
+```
+
+### Smoke-test checklist (after deploy)
+
+- [ ] `php artisan about` shows **Laravel 13.19.x**.
+- [ ] Homepage loads (the pageview counter hits `site_stats` — works on MariaDB;
+      it 500s only on the local sqlite tooling DB where migrate stops at the
+      fullText index).
+- [ ] Admin panel login works; a resource list, a page, and a widget all render.
+- [ ] **PayPal IPN** (`/hosting/paypal/ipn`) accepts a token-less POST (returns
+      2xx, not 419) — confirms the `PreventRequestForgery` exclusion still applies.
+- [ ] Sanctum SPA/stateful auth still works (login via the web guard).
+
+## Rollback
+
+No schema changes, so rollback is code-only:
+
+1. `git checkout main` (Laravel 12.63 tree) and re-run `composer install` (step 2).
+2. `optimize:clear` + rebuild caches (step 3). No DB rollback needed.
