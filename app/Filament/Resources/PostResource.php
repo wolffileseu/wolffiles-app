@@ -1,12 +1,35 @@
 <?php
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Toggle;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\PostResource\Pages\ListPosts;
+use App\Filament\Resources\PostResource\Pages\CreatePost;
+use App\Filament\Resources\PostResource\Pages\EditPost;
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Clan;
 use App\Models\Post;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,22 +37,22 @@ use Filament\Tables\Table;
 class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
-    protected static ?string $navigationIcon = 'heroicon-o-newspaper';
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-newspaper';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
+        return $schema->components([
 
-            Forms\Components\Section::make('Allgemein')->schema([
-                Forms\Components\Select::make('type')
+            Section::make('Allgemein')->schema([
+                Select::make('type')
                     ->label('Typ')
                     ->options(Post::TYPES)
                     ->default(Post::TYPE_NEWS)
                     ->required()
                     ->live(),
-                Forms\Components\Select::make('clan_id')
+                Select::make('clan_id')
                     ->label('Clan')
                     ->options(Clan::where('is_active', true)->pluck('name', 'id'))
                     ->searchable()
@@ -38,68 +61,68 @@ class PostResource extends Resource
                     ->visible(fn(Get $get) => $get('type') !== Post::TYPE_NEWS || true),
             ])->columns(2),
 
-            Forms\Components\Section::make('Inhalt & Übersetzungen')->schema([
-                Forms\Components\TextInput::make('slug')
+            Section::make('Inhalt & Übersetzungen')->schema([
+                TextInput::make('slug')
                     ->maxLength(255)
                     ->hint('Leer lassen für automatische Generierung aus DE-Titel')
                     ->unique(ignoreRecord: true)
                     ->columnSpanFull(),
-                Forms\Components\Textarea::make('excerpt')
+                Textarea::make('excerpt')
                     ->label('Kurzbeschreibung (DE)')
                     ->rows(3)
                     ->columnSpanFull(),
-                Forms\Components\Tabs::make('translations')
+                Tabs::make('translations')
                     ->columnSpanFull()
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('🇩🇪 Deutsch (Standard)')
+                        Tab::make('🇩🇪 Deutsch (Standard)')
                             ->schema([
-                                Forms\Components\TextInput::make('title')
+                                TextInput::make('title')
                                     ->label('Titel')
                                     ->required()
                                     ->maxLength(255),
-                                Forms\Components\RichEditor::make('content')
+                                RichEditor::make('content')
                                     ->label('Inhalt')
                                     ->required(),
                             ]),
-                        Forms\Components\Tabs\Tab::make('🇬🇧 English')
+                        Tab::make('🇬🇧 English')
                             ->schema([
-                                Forms\Components\TextInput::make('title_translations.en')
+                                TextInput::make('title_translations.en')
                                     ->label('Title (EN)')->maxLength(255),
-                                Forms\Components\RichEditor::make('content_translations.en')
+                                RichEditor::make('content_translations.en')
                                     ->label('Content (EN)'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('🇫🇷 Français')
+                        Tab::make('🇫🇷 Français')
                             ->schema([
-                                Forms\Components\TextInput::make('title_translations.fr')
+                                TextInput::make('title_translations.fr')
                                     ->label('Titre (FR)')->maxLength(255),
-                                Forms\Components\RichEditor::make('content_translations.fr')
+                                RichEditor::make('content_translations.fr')
                                     ->label('Contenu (FR)'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('🇳🇱 Nederlands')
+                        Tab::make('🇳🇱 Nederlands')
                             ->schema([
-                                Forms\Components\TextInput::make('title_translations.nl')
+                                TextInput::make('title_translations.nl')
                                     ->label('Titel (NL)')->maxLength(255),
-                                Forms\Components\RichEditor::make('content_translations.nl')
+                                RichEditor::make('content_translations.nl')
                                     ->label('Inhoud (NL)'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('🇵🇱 Polski')
+                        Tab::make('🇵🇱 Polski')
                             ->schema([
-                                Forms\Components\TextInput::make('title_translations.pl')
+                                TextInput::make('title_translations.pl')
                                     ->label('Tytuł (PL)')->maxLength(255),
-                                Forms\Components\RichEditor::make('content_translations.pl')
+                                RichEditor::make('content_translations.pl')
                                     ->label('Treść (PL)'),
                             ]),
-                        Forms\Components\Tabs\Tab::make('🇹🇷 Türkçe')
+                        Tab::make('🇹🇷 Türkçe')
                             ->schema([
-                                Forms\Components\TextInput::make('title_translations.tr')
+                                TextInput::make('title_translations.tr')
                                     ->label('Başlık (TR)')->maxLength(255),
-                                Forms\Components\RichEditor::make('content_translations.tr')
+                                RichEditor::make('content_translations.tr')
                                     ->label('İçerik (TR)'),
                             ]),
                     ]),
-                Forms\Components\FileUpload::make('featured_image')
+                FileUpload::make('featured_image')
                     ->disk('s3')
-                    ->directory('posts/images')
+                    ->directory('posts/images')->visibility('public')
                     ->image()
                     ->imageResizeMode('cover')
                     ->imageCropAspectRatio('16:9')
@@ -110,12 +133,12 @@ class PostResource extends Resource
             ])->columns(1),
 
             // Event Felder
-            Forms\Components\Section::make('Event Details')
+            Section::make('Event Details')
                 ->schema([
-                    Forms\Components\DateTimePicker::make('event_date')
+                    DateTimePicker::make('event_date')
                         ->label('Event Datum & Uhrzeit')
                         ->required(),
-                    Forms\Components\TextInput::make('event_location')
+                    TextInput::make('event_location')
                         ->label('Ort / Server')
                         ->maxLength(255),
                 ])
@@ -123,31 +146,31 @@ class PostResource extends Resource
                 ->visible(fn(Get $get) => $get('type') === Post::TYPE_EVENT),
 
             // Match Felder
-            Forms\Components\Section::make('Match Details')
+            Section::make('Match Details')
                 ->schema([
-                    Forms\Components\TextInput::make('match_opponent')
+                    TextInput::make('match_opponent')
                         ->label('Gegner-Clan')
                         ->required()
                         ->maxLength(100),
-                    Forms\Components\TextInput::make('match_result')
+                    TextInput::make('match_result')
                         ->label('Ergebnis (z.B. 2:1)')
                         ->maxLength(50),
-                    Forms\Components\TextInput::make('match_map')
+                    TextInput::make('match_map')
                         ->label('Map')
                         ->maxLength(100),
-                    Forms\Components\DateTimePicker::make('event_date')
+                    DateTimePicker::make('event_date')
                         ->label('Match Datum'),
                 ])
                 ->columns(2)
                 ->visible(fn(Get $get) => $get('type') === Post::TYPE_MATCH),
 
             // Rekrutierung Felder
-            Forms\Components\Section::make('Rekrutierung Details')
+            Section::make('Rekrutierung Details')
                 ->schema([
-                    Forms\Components\Repeater::make('recruitment_requirements')
+                    Repeater::make('recruitment_requirements')
                         ->label('Anforderungen')
                         ->schema([
-                            Forms\Components\TextInput::make('requirement')
+                            TextInput::make('requirement')
                                 ->label('Anforderung')
                                 ->required(),
                         ])
@@ -155,10 +178,10 @@ class PostResource extends Resource
                 ])
                 ->visible(fn(Get $get) => $get('type') === Post::TYPE_RECRUITMENT),
 
-            Forms\Components\Section::make('Veröffentlichung')->schema([
-                Forms\Components\Toggle::make('is_published')->label('Veröffentlicht')->default(false),
-                Forms\Components\Toggle::make('is_pinned')->label('Angepinnt')->default(false),
-                Forms\Components\DateTimePicker::make('published_at')->label('Veröffentlichungsdatum')->default(now()),
+            Section::make('Veröffentlichung')->schema([
+                Toggle::make('is_published')->label('Veröffentlicht')->default(false),
+                Toggle::make('is_pinned')->label('Angepinnt')->default(false),
+                DateTimePicker::make('published_at')->label('Veröffentlichungsdatum')->default(now()),
             ])->columns(3),
 
         ]);
@@ -168,12 +191,12 @@ class PostResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('featured_image')
+                ImageColumn::make('featured_image')
                     ->disk('s3')
                     ->label('Bild')
                     ->width(60)
                     ->height(40),
-                Tables\Columns\TextColumn::make('type')
+                TextColumn::make('type')
                     ->label('Typ')
                     ->badge()
                     ->color(fn(string $state): string => match($state) {
@@ -184,42 +207,42 @@ class PostResource extends Resource
                         default                => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => Post::TYPES[$state] ?? $state),
-                Tables\Columns\TextColumn::make('clan.name')
+                TextColumn::make('clan.name')
                     ->label('Clan')
                     ->placeholder('Wolffiles')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('title')
+                TextColumn::make('title')
                     ->label('Titel')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\IconColumn::make('is_published')
+                IconColumn::make('is_published')
                     ->label('Veröffentlicht')
                     ->boolean(),
-                Tables\Columns\IconColumn::make('is_pinned')
+                IconColumn::make('is_pinned')
                     ->label('Angepinnt')
                     ->boolean(),
-                Tables\Columns\TextColumn::make('published_at')
+                TextColumn::make('published_at')
                     ->label('Datum')
                     ->dateTime('d.m.Y'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
+                SelectFilter::make('type')
                     ->label('Typ')
                     ->options(Post::TYPES),
-                Tables\Filters\SelectFilter::make('clan_id')
+                SelectFilter::make('clan_id')
                     ->label('Clan')
                     ->options(Clan::pluck('name', 'id')),
-                Tables\Filters\TernaryFilter::make('is_published')
+                TernaryFilter::make('is_published')
                     ->label('Veröffentlicht'),
             ])
             ->defaultSort('created_at', 'desc')
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -227,9 +250,9 @@ class PostResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPosts::route('/'),
-            'create' => Pages\CreatePost::route('/create'),
-            'edit'   => Pages\EditPost::route('/{record}/edit'),
+            'index'  => ListPosts::route('/'),
+            'create' => CreatePost::route('/create'),
+            'edit'   => EditPost::route('/{record}/edit'),
         ];
     }
 }

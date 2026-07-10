@@ -2,6 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\TextInput;
+use App\Filament\Resources\PmAdminAccessLogResource\Pages\ListPmAdminAccessLogs;
 use App\Filament\Resources\PmAdminAccessLogResource\Pages;
 use App\Models\Pm\PmAdminAccessLog;
 use Filament\Resources\Resource;
@@ -12,9 +17,9 @@ class PmAdminAccessLogResource extends Resource
 {
     protected static ?string $model = PmAdminAccessLog::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-document-magnifying-glass";
+    protected static string | \BackedEnum | null $navigationIcon = "heroicon-o-document-magnifying-glass";
 
-    protected static ?string $navigationGroup = "PM System";
+    protected static string | \UnitEnum | null $navigationGroup = "PM System";
 
     protected static ?string $navigationLabel = "Audit Log";
 
@@ -33,20 +38,20 @@ class PmAdminAccessLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("created_at")
+                TextColumn::make("created_at")
                     ->label("When")
                     ->dateTime("Y-m-d H:i:s")
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("admin.name")
+                TextColumn::make("admin.name")
                     ->label("Admin")
                     ->searchable()
                     ->sortable()
                     ->size("sm")
                     ->color("warning"),
 
-                Tables\Columns\TextColumn::make("action")
+                TextColumn::make("action")
                     ->label("Action")
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -62,14 +67,14 @@ class PmAdminAccessLogResource extends Resource
                     })
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("conversation_id")
+                TextColumn::make("conversation_id")
                     ->label("Conv")
                     ->numeric()
                     ->sortable()
                     ->size("sm")
                     ->placeholder("-"),
 
-                Tables\Columns\TextColumn::make("message_id")
+                TextColumn::make("message_id")
                     ->label("Msg")
                     ->numeric()
                     ->sortable()
@@ -77,20 +82,20 @@ class PmAdminAccessLogResource extends Resource
                     ->placeholder("-")
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make("reason")
+                TextColumn::make("reason")
                     ->label("Reason")
                     ->limit(80)
                     ->wrap()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("admin_ip")
+                TextColumn::make("admin_ip")
                     ->label("IP")
                     ->size("sm")
                     ->copyable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make("action")
+                SelectFilter::make("action")
                     ->options([
                         "view_inbox"        => "View inbox",
                         "view_conversation" => "View conversation",
@@ -102,13 +107,13 @@ class PmAdminAccessLogResource extends Resource
                         "resolve_report"    => "Resolve report",
                     ]),
 
-                Tables\Filters\SelectFilter::make("admin_id")
+                SelectFilter::make("admin_id")
                     ->label("Admin")
                     ->relationship("admin", "name"),
 
-                Tables\Filters\Filter::make("conversation_id")
-                    ->form([
-                        \Filament\Forms\Components\TextInput::make("conversation_id")
+                Filter::make("conversation_id")
+                    ->schema([
+                        TextInput::make("conversation_id")
                             ->numeric()
                             ->label("Conversation ID"),
                     ])
@@ -116,15 +121,15 @@ class PmAdminAccessLogResource extends Resource
                         ->when($data["conversation_id"] ?? null,
                             fn ($q, $id) => $q->where("conversation_id", $id))),
             ])
-            ->actions([])
-            ->bulkActions([])
+            ->recordActions([])
+            ->toolbarActions([])
             ->defaultSort("created_at", "desc");
     }
 
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListPmAdminAccessLogs::route("/"),
+            "index" => ListPmAdminAccessLogs::route("/"),
         ];
     }
 }

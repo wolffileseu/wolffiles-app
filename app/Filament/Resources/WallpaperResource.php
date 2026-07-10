@@ -2,10 +2,28 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\WallpaperResource\Pages\ListWallpapers;
+use App\Filament\Resources\WallpaperResource\Pages\CreateWallpaper;
+use App\Filament\Resources\WallpaperResource\Pages\EditWallpaper;
 use App\Filament\Resources\WallpaperResource\Pages;
 use App\Models\Wallpaper;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,26 +31,26 @@ use Filament\Tables\Table;
 class WallpaperResource extends Resource
 {
     protected static ?string $model = Wallpaper::class;
-    protected static ?string $navigationIcon = 'heroicon-o-photo';
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-photo';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
     protected static ?string $navigationLabel = 'Wallpapers';
     protected static ?int $navigationSort = 60;
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Image')
+        return $schema->components([
+            Section::make('Image')
                 ->schema([
-                    Forms\Components\TextInput::make('name')
+                    TextInput::make('name')
                         ->required()
                         ->maxLength(255)
                         ->placeholder('e.g. Adlernest Sunset'),
-                    Forms\Components\FileUpload::make('image_path')
+                    FileUpload::make('image_path')
                         ->label('Wallpaper Image')
                         ->required()
                         ->disk('s3')
-                        ->directory('wallpapers')
+                        ->directory('wallpapers')->visibility('public')
                         ->image()
                         ->imageEditor()
                         ->imageEditorAspectRatios(['16:9', '21:9', null])
@@ -42,31 +60,31 @@ class WallpaperResource extends Resource
                         ->helperText('Recommended: 1920×1080 or larger. Max 15 MB. JPG/PNG/WebP.'),
                 ])->columns(1),
 
-            Forms\Components\Section::make('Display')
+            Section::make('Display')
                 ->schema([
-                    Forms\Components\CheckboxList::make('display_areas')
+                    CheckboxList::make('display_areas')
                         ->label('Show on these areas')
                         ->options(Wallpaper::AREAS)
                         ->required()
                         ->columns(2)
                         ->helperText('Pick "Layout-wide" to show on every page.'),
-                    Forms\Components\Toggle::make('is_active')
+                    Toggle::make('is_active')
                         ->label('Active')
                         ->default(true)
                         ->inline(false),
-                    Forms\Components\TextInput::make('sort_order')
+                    TextInput::make('sort_order')
                         ->numeric()
                         ->default(0)
                         ->helperText('Order in slideshow (lower = first).'),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Overlay')
+            Section::make('Overlay')
                 ->description('Tint and blur applied on top of the image so content stays readable.')
                 ->schema([
-                    Forms\Components\ColorPicker::make('overlay_color')
+                    ColorPicker::make('overlay_color')
                         ->default('#111827')
                         ->helperText('Default #111827 = dark gray (matches site theme).'),
-                    Forms\Components\TextInput::make('overlay_opacity')
+                    TextInput::make('overlay_opacity')
                         ->label('Overlay Opacity (%)')
                         ->numeric()
                         ->minValue(0)
@@ -74,7 +92,7 @@ class WallpaperResource extends Resource
                         ->default(70)
                         ->suffix('%')
                         ->helperText('0 = no overlay, 100 = fully opaque'),
-                    Forms\Components\TextInput::make('overlay_blur')
+                    TextInput::make('overlay_blur')
                         ->label('Image Blur (px)')
                         ->numeric()
                         ->minValue(0)
@@ -90,32 +108,32 @@ class WallpaperResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image_path')
+                ImageColumn::make('image_path')
                     ->label('Preview')
                     ->disk('s3')
                     ->height(50),
-                Tables\Columns\TextColumn::make('name')->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('display_areas')
+                TextColumn::make('name')->sortable()->searchable(),
+                TextColumn::make('display_areas')
                     ->label('Areas')
                     ->badge()
                     ->formatStateUsing(fn ($state) => is_array($state) ? array_map(fn ($a) => Wallpaper::AREAS[$a] ?? $a, $state) : []),
-                Tables\Columns\ColorColumn::make('overlay_color')->label('Overlay'),
-                Tables\Columns\TextColumn::make('overlay_opacity')->label('Opacity')->suffix('%'),
-                Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),
-                Tables\Columns\TextColumn::make('sort_order')->label('Order')->sortable(),
+                ColorColumn::make('overlay_color')->label('Overlay'),
+                TextColumn::make('overlay_opacity')->label('Opacity')->suffix('%'),
+                IconColumn::make('is_active')->boolean()->label('Active'),
+                TextColumn::make('sort_order')->label('Order')->sortable(),
             ])
             ->defaultSort('sort_order')
             ->reorderable('sort_order')
             ->filters([
-                Tables\Filters\TernaryFilter::make('is_active')->label('Active'),
+                TernaryFilter::make('is_active')->label('Active'),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -123,9 +141,9 @@ class WallpaperResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListWallpapers::route('/'),
-            'create' => Pages\CreateWallpaper::route('/create'),
-            'edit' => Pages\EditWallpaper::route('/{record}/edit'),
+            'index' => ListWallpapers::route('/'),
+            'create' => CreateWallpaper::route('/create'),
+            'edit' => EditWallpaper::route('/{record}/edit'),
         ];
     }
 }

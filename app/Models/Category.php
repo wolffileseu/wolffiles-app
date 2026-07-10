@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -109,7 +110,7 @@ class Category extends Model
     {
         $count = $this->files_count;
         foreach ($this->children as $child) {
-            /** @var \App\Models\Category $child */
+            /** @var Category $child */
             $count += $child->getTotalFilesCount();
         }
         return $count;
@@ -118,8 +119,8 @@ class Category extends Model
     protected static function booted(): void
     {
         $clearCaches = function () {
-            \Illuminate\Support\Facades\Cache::forget('api.categories.v2');
-            \Illuminate\Support\Facades\Cache::forget('api.uploader.tree.v1');
+            Cache::forget('api.categories.v2');
+            Cache::forget('api.uploader.tree.v1');
         };
 
         static::saved($clearCaches);

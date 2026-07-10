@@ -2,11 +2,16 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\User;
+use App\Models\Report;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * @property \Carbon\Carbon|null $expires_at
+ * @property Carbon|null $expires_at
  * @property bool $is_active
  * @property int $id
  * @property int $player_id
@@ -33,21 +38,21 @@ class TrackerBan extends Model
     }
 
     public function player(): BelongsTo { return $this->belongsTo(TrackerPlayer::class, 'player_id'); }
-    public function bannedBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'banned_by'); }
+    public function bannedBy(): BelongsTo { return $this->belongsTo(User::class, 'banned_by'); }
 
-    public function sourceReport(): BelongsTo { return $this->belongsTo(\App\Models\Report::class, 'source_report_id'); }
+    public function sourceReport(): BelongsTo { return $this->belongsTo(Report::class, 'source_report_id'); }
 
-    public function evidence(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function evidence(): HasMany
     {
         return $this->hasMany(TrackerBanEvidence::class, 'ban_id');
     }
 
-    public function publicEvidence(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function publicEvidence(): HasMany
     {
         return $this->hasMany(TrackerBanEvidence::class, 'ban_id')->where('is_public', true);
     }
 
-    public function servers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function servers(): BelongsToMany
     {
         return $this->belongsToMany(TrackerServer::class, 'tracker_ban_servers', 'ban_id', 'server_id');
     }

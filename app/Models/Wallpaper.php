@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\WallpaperService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,7 +72,7 @@ class Wallpaper extends Model
 
     protected static function booted(): void
     {
-        $flush = fn () => app(\App\Services\WallpaperService::class)->flushCache();
+        $flush = fn () => app(WallpaperService::class)->flushCache();
         static::saved($flush);
         static::deleted($flush);
     }

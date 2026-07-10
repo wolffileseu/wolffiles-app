@@ -1,9 +1,15 @@
 <?php
 namespace App\Filament\Resources\ClanResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use App\Models\ClanManager;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
@@ -16,15 +22,15 @@ class ManagersRelationManager extends RelationManager
     protected static ?string $title = 'Managers';
     protected static ?string $recordTitleAttribute = 'role';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('user_id')
+        return $schema->components([
+            Select::make('user_id')
                 ->label('User')
                 ->relationship('user', 'name')
                 ->searchable()
                 ->required(),
-            Forms\Components\Select::make('role')
+            Select::make('role')
                 ->options([
                     'leader' => 'Leader',
                     'owner'  => 'Owner',
@@ -39,22 +45,22 @@ class ManagersRelationManager extends RelationManager
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('user.name')->label('User')->searchable(),
-                Tables\Columns\TextColumn::make('user.email')->label('Email')->searchable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('role')->badge()->color(fn ($state) => match($state) {
+                TextColumn::make('user.name')->label('User')->searchable(),
+                TextColumn::make('user.email')->label('Email')->searchable()->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('role')->badge()->color(fn ($state) => match($state) {
                     'leader' => 'warning',
                     'owner'  => 'success',
                     'editor' => 'info',
                     default  => 'gray',
                 }),
-                Tables\Columns\TextColumn::make('created_at')->since()->sortable(),
+                TextColumn::make('created_at')->since()->sortable(),
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('transfer')
+            ->recordActions([
+                EditAction::make(),
+                Action::make('transfer')
                     ->label('Transfer Ownership')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->color('warning')
@@ -73,7 +79,7 @@ class ManagersRelationManager extends RelationManager
                             ->body($record->user->name . ' is now the Owner.')
                             ->success()->send();
                     }),
-                Tables\Actions\DeleteAction::make()
+                DeleteAction::make()
                     ->visible(fn (ClanManager $record) => $record->role !== 'owner')
                     ->modalDescription('Cannot delete the owner. Transfer ownership first.'),
             ]);

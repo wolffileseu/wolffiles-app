@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Tracker\TrackerPlayer;
+use App\Models\Tracker\TrackerServer;
+use Storage;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,14 +23,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
- * @property \Carbon\Carbon|null $last_activity_at
- * @property \Carbon\Carbon|null $last_login_at
- * @property \Carbon\Carbon|null $email_verified_at
+ * @property Carbon|null $last_activity_at
+ * @property Carbon|null $last_login_at
+ * @property Carbon|null $email_verified_at
  * @property int $id
  * @property string $name
  * @property string $email
  * @property bool $is_active
- * @property-read \Illuminate\Database\Eloquent\Collection $badges
+ * @property-read Collection $badges
  */
 class User extends Authenticatable implements FilamentUser
 {
@@ -113,16 +118,16 @@ class User extends Authenticatable implements FilamentUser
     }
 
     // --- Clan-Pages / Claim relations ---
-    public function claimedPlayers(): HasMany { return $this->hasMany(\App\Models\Tracker\TrackerPlayer::class, 'claimed_by_user_id'); }
-    public function claimedServers(): HasMany { return $this->hasMany(\App\Models\Tracker\TrackerServer::class, 'claimed_by_user_id'); }
-    public function clanManagerRoles(): HasMany { return $this->hasMany(\App\Models\ClanManager::class); }
-    public function managedClans(): BelongsToMany { return $this->belongsToMany(\App\Models\Clan::class, 'clan_managers')->withPivot('role')->withTimestamps(); }
-    public function clanApplications(): HasMany { return $this->hasMany(\App\Models\ClanApplication::class, 'applicant_user_id'); }
+    public function claimedPlayers(): HasMany { return $this->hasMany(TrackerPlayer::class, 'claimed_by_user_id'); }
+    public function claimedServers(): HasMany { return $this->hasMany(TrackerServer::class, 'claimed_by_user_id'); }
+    public function clanManagerRoles(): HasMany { return $this->hasMany(ClanManager::class); }
+    public function managedClans(): BelongsToMany { return $this->belongsToMany(Clan::class, 'clan_managers')->withPivot('role')->withTimestamps(); }
+    public function clanApplications(): HasMany { return $this->hasMany(ClanApplication::class, 'applicant_user_id'); }
 
     public function getAvatarUrlAttribute(): string
     {
         if ($this->avatar) {
-            return \Storage::disk('s3')->url($this->avatar);
+            return Storage::disk('s3')->url($this->avatar);
         }
 
         return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=random';

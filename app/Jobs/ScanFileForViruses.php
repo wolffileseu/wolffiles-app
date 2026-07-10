@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Exception;
 use App\Models\File;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -55,7 +56,7 @@ class ScanFileForViruses implements ShouldQueue
                     'rejection_reason' => 'Virus detected: ' . $scanResult,
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->file->update([
                 'virus_scanned' => true,
                 'virus_clean' => null,

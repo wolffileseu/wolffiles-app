@@ -2,10 +2,20 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\KeyValue;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\TagResource\Pages\ListTags;
+use App\Filament\Resources\TagResource\Pages\CreateTag;
+use App\Filament\Resources\TagResource\Pages\EditTag;
 use App\Filament\Resources\TagResource\Pages;
 use App\Models\Tag;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,20 +23,20 @@ use Filament\Tables\Table;
 class TagResource extends Resource
 {
     protected static ?string $model = Tag::class;
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
-    protected static ?string $navigationGroup = 'Content';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-tag';
+    protected static string | \UnitEnum | null $navigationGroup = 'Content';
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required(),
-            Forms\Components\TextInput::make('slug')->unique(ignoreRecord: true),
-            Forms\Components\Select::make('type')->options([
+        return $schema->components([
+            TextInput::make('name')->required(),
+            TextInput::make('slug')->unique(ignoreRecord: true),
+            Select::make('type')->options([
                 'general' => 'General', 'game' => 'Game', 'mod' => 'Mod', 'feature' => 'Feature',
             ])->default('general'),
-            Forms\Components\KeyValue::make('name_translations'),
+            KeyValue::make('name_translations'),
         ]);
     }
 
@@ -34,20 +44,20 @@ class TagResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('slug'),
-                Tables\Columns\TextColumn::make('type')->badge(),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('slug'),
+                TextColumn::make('type')->badge(),
             ])
-            ->actions([Tables\Actions\EditAction::make(), Tables\Actions\DeleteAction::make()])
-            ->bulkActions([Tables\Actions\DeleteBulkAction::make()]);
+            ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->toolbarActions([DeleteBulkAction::make()]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTags::route('/'),
-            'create' => Pages\CreateTag::route('/create'),
-            'edit' => Pages\EditTag::route('/{record}/edit'),
+            'index' => ListTags::route('/'),
+            'create' => CreateTag::route('/create'),
+            'edit' => EditTag::route('/{record}/edit'),
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Illuminate\Support\Str;
 use App\Models\Comment;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,7 +41,7 @@ class NewComment extends Notification implements ShouldQueue
             'comment_id' => $this->comment->id,
             'commenter_name' => $this->comment->user->name,
             'commentable_title' => $this->commentableTitle,
-            'body' => \Illuminate\Support\Str::limit($this->comment->body, 100),
+            'body' => Str::limit($this->comment->body, 100),
             'url' => $this->commentableUrl,
         ];
     }

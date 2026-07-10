@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Throwable;
 use App\Models\TestserverSession;
 use App\Services\TestserverService;
 use Illuminate\Bus\Queueable;
@@ -124,7 +125,7 @@ class LaunchTestSessionJob implements ShouldQueue
                 . "expires at " . $session->fresh()->expires_at?->format('H:i:s'));
     }
 
-    public function failed(\Throwable $exception): void
+    public function failed(Throwable $exception): void
     {
         Log::error("LaunchJob: Session #{$this->sessionId} permanently failed: "
                  . $exception->getMessage());

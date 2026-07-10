@@ -2,6 +2,9 @@
 
 namespace App\Services\Tracker;
 
+use Throwable;
+use RuntimeException;
+
 /**
  * Parses the payload of a 'ws' (weapon stats) tracker packet.
  *
@@ -82,7 +85,7 @@ class WeaponStatsParser
 
         try {
             return $this->parseStructured($tokens, $clientinfoPart, $fieldsPerWeapon);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Malformed packet — let caller log the raw payload for inspection.
             return null;
         }
@@ -129,7 +132,7 @@ class WeaponStatsParser
                 // jaymod field order (g_match.cpp:422, logPrint=false):
                 //   hits atts subshots kills deaths headshots
                 if ($i + $fieldsPerWeapon - 1 >= count($tokens)) {
-                    throw new \RuntimeException("truncated weapon stats at bit $bit");
+                    throw new RuntimeException("truncated weapon stats at bit $bit");
                 }
                 if ($fieldsPerWeapon === 6) {
                     $hits      = (int) $tokens[$i++];
@@ -145,12 +148,17 @@ class WeaponStatsParser
                     $deaths    = (int) $tokens[$i++];
                     $headshots = (int) $tokens[$i++];
                 }
+                // Clamp to >= 0. Malformed/overflowed game-server payloads
+                // occasionally emit negative counters (observed: atts = -1),
+                // which blow up on the unsigned tracker_match_player_weapon_stats
+                // columns with SQLSTATE 22003. This is the single choke point
+                // feeding both the per-match snapshot and lifetime aggregation.
                 $weapons[$bit] = [
-                    'hits'      => $hits,
-                    'atts'      => $atts,
-                    'kills'     => $kills,
-                    'deaths'    => $deaths,
-                    'headshots' => $headshots,
+                    'hits'      => max(0, $hits),
+                    'atts'      => max(0, $atts),
+                    'kills'     => max(0, $kills),
+                    'deaths'    => max(0, $deaths),
+                    'headshots' => max(0, $headshots),
                 ];
             }
         }

@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Str;
+use Throwable;
 use App\Jobs\TranscodeVideoJob;
 use App\Models\File;
 use App\Services\VideoTranscoderService;
@@ -78,7 +80,7 @@ class BackfillPlayableVideos extends Command
                 $files->map(fn ($f) => [
                     $f->id,
                     $f->slug,
-                    \Illuminate\Support\Str::limit($f->title, 40),
+                    Str::limit($f->title, 40),
                     $f->file_extension,
                     round($f->file_size / 1048576, 1).' MB',
                     $f->playable_status ?? '—',
@@ -109,7 +111,7 @@ class BackfillPlayableVideos extends Command
         $failed = 0;
 
         foreach ($files as $file) {
-            $bar->setMessage("file #{$file->id}: ".\Illuminate\Support\Str::limit($file->title, 30));
+            $bar->setMessage("file #{$file->id}: ".Str::limit($file->title, 30));
 
             if ($sync) {
                 try {
@@ -121,7 +123,7 @@ class BackfillPlayableVideos extends Command
                     } else {
                         $failed++;
                     }
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $failed++;
                     $this->newLine();
                     $this->warn("  Error on #{$file->id}: ".$e->getMessage());

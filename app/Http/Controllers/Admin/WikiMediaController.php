@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
+use InvalidArgumentException;
+use Throwable;
+use Log;
 use App\Http\Controllers\Controller;
 use App\Models\WikiMedia;
 use App\Services\Wiki\WikiMediaService;
@@ -40,10 +43,10 @@ class WikiMediaController extends Controller implements HasMiddleware
                 $request->user()->id,
                 $request->integer('article_id') ?: null,
             );
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json(['error' => $e->getMessage()], 422);
-        } catch (\Throwable $e) {
-            \Log::error('WikiMedia upload failed: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            Log::error('WikiMedia upload failed: ' . $e->getMessage());
             return response()->json(['error' => 'Upload fehlgeschlagen'], 500);
         }
 
@@ -82,8 +85,8 @@ class WikiMediaController extends Controller implements HasMiddleware
     {
         try {
             Storage::disk(WikiMediaService::DISK)->delete($media->path);
-        } catch (\Throwable $e) {
-            \Log::warning('S3-Delete fuer WikiMedia ' . $media->id . ' fehlgeschlagen: ' . $e->getMessage());
+        } catch (Throwable $e) {
+            Log::warning('S3-Delete fuer WikiMedia ' . $media->id . ' fehlgeschlagen: ' . $e->getMessage());
         }
         $media->delete();
         return response()->json(['deleted' => true]);

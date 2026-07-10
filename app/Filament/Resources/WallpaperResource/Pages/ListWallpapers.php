@@ -1,5 +1,6 @@
 <?php
 namespace App\Filament\Resources\WallpaperResource\Pages;
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\WallpaperResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -10,6 +11,6 @@ class ListWallpapers extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()];
+        return [CreateAction::make()];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\SocialMediaChannelResource\Pages;
 
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use App\Filament\Resources\SocialMediaChannelResource;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaService;
@@ -16,10 +18,10 @@ class ListSocialMediaChannels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            CreateAction::make(),
 
             // Quick broadcast test action
-            Actions\Action::make('broadcast_test')
+            Action::make('broadcast_test')
                 ->label('Test Broadcast')
                 ->icon('heroicon-o-signal')
                 ->color('warning')

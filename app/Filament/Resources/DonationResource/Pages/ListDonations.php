@@ -1,5 +1,7 @@
 <?php
 namespace App\Filament\Resources\DonationResource\Pages;
+use Filament\Actions\CreateAction;
+use Filament\Actions\Action;
 use App\Filament\Resources\DonationResource;
 use App\Models\Donation;
 use Filament\Actions;
@@ -12,8 +14,8 @@ class ListDonations extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('Add Manual Donation'),
-            Actions\Action::make('settings')
+            CreateAction::make()->label('Add Manual Donation'),
+            Action::make('settings')
                 ->label('Settings')
                 ->icon('heroicon-o-cog-6-tooth')
                 ->url(DonationResource::getUrl('settings')),

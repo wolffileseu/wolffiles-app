@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use App\Models\ServerOrder;
 use App\Models\ServerInvoice;
 use Illuminate\Support\Facades\Http;
@@ -36,7 +37,7 @@ class HostingDiscordNotifier
                     'timestamp' => now()->toIso8601String(),
                 ]],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord hosting webhook failed: ' . $e->getMessage());
         }
     }
@@ -60,7 +61,7 @@ class HostingDiscordNotifier
                     'timestamp' => now()->toIso8601String(),
                 ]],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord hosting webhook failed: ' . $e->getMessage());
         }
     }
@@ -85,7 +86,7 @@ class HostingDiscordNotifier
                     'timestamp' => now()->toIso8601String(),
                 ]],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord hosting webhook failed: ' . $e->getMessage());
         }
     }
@@ -109,7 +110,7 @@ class HostingDiscordNotifier
                     'timestamp' => now()->toIso8601String(),
                 ]],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord hosting webhook failed: ' . $e->getMessage());
         }
     }
@@ -132,7 +133,7 @@ class HostingDiscordNotifier
                     'timestamp' => now()->toIso8601String(),
                 ]],
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord hosting webhook failed: ' . $e->getMessage());
         }
     }

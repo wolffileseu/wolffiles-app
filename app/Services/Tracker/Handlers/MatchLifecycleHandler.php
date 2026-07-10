@@ -2,6 +2,7 @@
 
 namespace App\Services\Tracker\Handlers;
 
+use stdClass;
 use App\Models\Tracker\TrackerRawEvent;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -184,7 +185,7 @@ class MatchLifecycleHandler extends AbstractHandler
         }
     }
 
-    private function closeOpenMatch(int $serverId, Carbon $endedAt, string $reason): ?\stdClass
+    private function closeOpenMatch(int $serverId, Carbon $endedAt, string $reason): ?stdClass
     {
         $open = DB::table('tracker_matches')
             ->where('server_id', $serverId)

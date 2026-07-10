@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Tracker;
 
+use Illuminate\Http\Request;
+use App\Services\Banner\PlayerEmbedDataService;
 use App\Http\Controllers\Controller;
 use App\Models\Tracker\TrackerPlayer;
 use App\Models\Tracker\TrackerServer;
@@ -39,7 +41,7 @@ class BannerController extends Controller
     /**
      * Dynamic PNG banner for a tracker player (forum signature style).
      */
-    public function player(TrackerPlayer $player, \Illuminate\Http\Request $request): Response
+    public function player(TrackerPlayer $player, Request $request): Response
     {
         $variant = max(1, min(4, (int) $request->query('variant', 1)));
 
@@ -62,7 +64,7 @@ class BannerController extends Controller
      * Returns a Blade view rendered with full server + players data.
      * X-Frame-Options is removed so external sites can embed it.
      */
-    public function serverEmbed(TrackerServer $server, \Illuminate\Http\Request $request): \Illuminate\Http\Response
+    public function serverEmbed(TrackerServer $server, Request $request): Response
     {
         $width = max(200, min(600, (int) $request->query('w', 240)));
         $opts = [
@@ -98,7 +100,7 @@ class BannerController extends Controller
      * Vertical HTML embed banner for a player (iframe-friendly).
      * Supports ?variant=1-4 (matches PNG banner variants) and ?w=200-600.
      */
-    public function playerEmbed(\App\Models\Tracker\TrackerPlayer $player, \Illuminate\Http\Request $request): \Illuminate\Http\Response
+    public function playerEmbed(TrackerPlayer $player, Request $request): Response
     {
         $width   = max(200, min(600, (int) $request->query('w', 240)));
         $variant = max(1, min(4, (int) $request->query('variant', 1)));
@@ -108,7 +110,7 @@ class BannerController extends Controller
             $cacheKey,
             now()->addSeconds(120),
             function () use ($player, $width, $variant) {
-                $data = (new \App\Services\Banner\PlayerEmbedDataService())->collect($player);
+                $data = (new PlayerEmbedDataService())->collect($player);
                 return view('frontend.tracker.partials.player-embed', [
                     'd'       => $data,
                     'width'   => $width,

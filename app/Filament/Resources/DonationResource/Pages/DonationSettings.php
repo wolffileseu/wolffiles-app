@@ -2,24 +2,30 @@
 
 namespace App\Filament\Resources\DonationResource\Pages;
 
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
 use App\Models\DonationSetting;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Page;
 use App\Filament\Resources\DonationResource;
 
 /**
- * @property \Filament\Forms\Form $form
+ * @property \Filament\Schemas\Schema $form
  */
-class DonationSettings extends Page implements Forms\Contracts\HasForms
+class DonationSettings extends Page implements HasForms
 {
-    use Forms\Concerns\InteractsWithForms;
+    use InteractsWithForms;
 
     protected static string $resource = DonationResource::class;
-    protected static string $view = 'filament.pages.donation-settings';
+    protected string $view = 'filament.pages.donation-settings';
     protected static ?string $title = 'Donation Settings';
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
     public ?array $data = [];
 
@@ -41,51 +47,51 @@ class DonationSettings extends Page implements Forms\Contracts\HasForms
         ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\Section::make('General')
+        return $schema
+            ->components([
+                Section::make('General')
                     ->schema([
-                        Forms\Components\TextInput::make('monthly_goal')
+                        TextInput::make('monthly_goal')
                             ->label('Monthly Goal (€)')
                             ->numeric()
                             ->prefix('€')
                             ->required(),
-                        Forms\Components\Textarea::make('donation_message')
+                        Textarea::make('donation_message')
                             ->label('Donation Page Message')
                             ->rows(3)
                             ->helperText('Shown on the donate page'),
-                        Forms\Components\Textarea::make('thank_you_text')
+                        Textarea::make('thank_you_text')
                             ->label('Thank You Message')
                             ->rows(2)
                             ->helperText('Shown after successful donation'),
                     ]),
 
-                Forms\Components\Section::make('Monthly Costs (shown on donate page)')
+                Section::make('Monthly Costs (shown on donate page)')
                     ->schema([
-                        Forms\Components\TextInput::make('cost_servers')->label('Server Hosting (€)')->numeric()->prefix('€'),
-                        Forms\Components\TextInput::make('cost_storage')->label('File Storage S3 (€)')->numeric()->prefix('€'),
-                        Forms\Components\TextInput::make('cost_domain')->label('Domain & SSL (€)')->numeric()->prefix('€'),
-                        Forms\Components\TextInput::make('cost_other')->label('Other Costs (€)')->numeric()->prefix('€'),
+                        TextInput::make('cost_servers')->label('Server Hosting (€)')->numeric()->prefix('€'),
+                        TextInput::make('cost_storage')->label('File Storage S3 (€)')->numeric()->prefix('€'),
+                        TextInput::make('cost_domain')->label('Domain & SSL (€)')->numeric()->prefix('€'),
+                        TextInput::make('cost_other')->label('Other Costs (€)')->numeric()->prefix('€'),
                     ])->columns(2),
 
-                Forms\Components\Section::make('PayPal')
+                Section::make('PayPal')
                     ->schema([
-                        Forms\Components\Toggle::make('paypal_enabled')->label('PayPal Enabled'),
-                        Forms\Components\TextInput::make('paypal_email')
+                        Toggle::make('paypal_enabled')->label('PayPal Enabled'),
+                        TextInput::make('paypal_email')
                             ->label('PayPal Business E-Mail')
                             ->email()
                             ->helperText('Your PayPal e-mail for receiving donations'),
                     ]),
 
-                Forms\Components\Section::make('Notifications')
+                Section::make('Notifications')
                     ->schema([
-                        Forms\Components\TextInput::make('notification_email')
+                        TextInput::make('notification_email')
                             ->label('E-Mail Notification')
                             ->email()
                             ->helperText('Receive e-mail for every donation'),
-                        Forms\Components\TextInput::make('discord_webhook_url')
+                        TextInput::make('discord_webhook_url')
                             ->label('Discord Webhook URL')
                             ->url()
                             ->helperText('Webhook for donation announcements in Discord'),

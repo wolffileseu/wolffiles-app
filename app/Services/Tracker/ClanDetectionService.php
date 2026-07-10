@@ -2,6 +2,8 @@
 
 namespace App\Services\Tracker;
 
+use App\Models\Clan;
+use App\Models\ClanMemberBlock;
 use App\Models\Tracker\TrackerClan;
 use App\Models\Tracker\TrackerClanMember;
 use App\Models\Tracker\TrackerPlayer;
@@ -82,10 +84,10 @@ class ClanDetectionService
 
                         // Check block-list of the linked registered clan, if any
                         $isBlocked = false;
-                        $registered = \App\Models\Clan::where('tracker_clan_id', $clan->id)->first();
+                        $registered = Clan::where('tracker_clan_id', $clan->id)->first();
                         if ($registered) {
-                            $isBlocked = \App\Models\ClanMemberBlock::isPlayerBlocked($registered->id, $player->id)
-                                || \App\Models\ClanMemberBlock::isNameBlocked($registered->id, $player->name_clean ?? $player->name ?? '');
+                            $isBlocked = ClanMemberBlock::isPlayerBlocked($registered->id, $player->id)
+                                || ClanMemberBlock::isNameBlocked($registered->id, $player->name_clean ?? $player->name ?? '');
                         }
                         // Auto-Join: only proceed if the clan opted-in (default off)
                         if (!$clan->auto_join_enabled) {

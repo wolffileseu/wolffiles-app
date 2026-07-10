@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use Exception;
+use GeoIp2\Exception\AddressNotFoundException;
+use Throwable;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -69,7 +72,7 @@ class TrackUserActivity
                 'is_unique_today' => $isUniqueToday,
                 'created_at' => now(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silent fail — Analytics darf nie die Seite blocken
         }
 
@@ -229,9 +232,9 @@ class TrackUserActivity
             }
             $record = $reader->country($ip);
             return $record->country->isoCode ?? null;
-        } catch (\GeoIp2\Exception\AddressNotFoundException $e) {
+        } catch (AddressNotFoundException $e) {
             return null;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning("GeoIP lookup failed for {$ip}: " . $e->getMessage());
             return null;
         }

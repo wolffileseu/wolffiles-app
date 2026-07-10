@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Throwable;
 use App\Models\Tracker\TrackerBan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -65,7 +66,7 @@ class FlagDiscordNotifier
                     'embeds' => [$embed],
                 ]);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning('Discord flag webhook failed: ' . $e->getMessage());
         }
     }

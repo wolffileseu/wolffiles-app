@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Notifications\BadgeEarned;
 use App\Models\User;
 use App\Models\Badge;
 use Illuminate\Support\Facades\Log;
@@ -41,7 +42,7 @@ class AchievementService
         $user->badges()->attach($badge->id, ['earned_at' => now()]);
 
         // Notify user
-        $user->notify(new \App\Notifications\BadgeEarned($badge));
+        $user->notify(new BadgeEarned($badge));
 
         return $badge;
     }

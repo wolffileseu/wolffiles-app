@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use App\Jobs\ProcessTrackerEventJob;
 use App\Services\Tracker\PollerHashService;
 use Illuminate\Console\Command;
@@ -314,7 +315,7 @@ class TrackerSimulateMergeCommand extends Command
                 $this->info('');
                 $this->info('✓ COMMIT applied. Changes are permanent.');
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             $this->error('Execution failed, rolling back:');
             $this->error($e->getMessage());

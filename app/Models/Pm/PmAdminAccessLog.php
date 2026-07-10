@@ -2,6 +2,8 @@
 
 namespace App\Models\Pm;
 
+use RuntimeException;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $reason
  * @property string|null $admin_ip
  * @property string|null $user_agent
- * @property \Carbon\Carbon $created_at
+ * @property Carbon $created_at
  */
 class PmAdminAccessLog extends Model
 {
@@ -55,11 +57,11 @@ class PmAdminAccessLog extends Model
     protected static function booted(): void
     {
         static::updating(function () {
-            throw new \RuntimeException("PmAdminAccessLog is write-once and cannot be updated.");
+            throw new RuntimeException("PmAdminAccessLog is write-once and cannot be updated.");
         });
 
         static::deleting(function () {
-            throw new \RuntimeException("PmAdminAccessLog records cannot be deleted.");
+            throw new RuntimeException("PmAdminAccessLog records cannot be deleted.");
         });
     }
 

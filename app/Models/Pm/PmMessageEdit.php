@@ -2,6 +2,8 @@
 
 namespace App\Models\Pm;
 
+use RuntimeException;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -12,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $message_id
  * @property string $old_body
- * @property \Carbon\Carbon $edited_at
+ * @property Carbon $edited_at
  * @property string|null $edited_from_ip
- * @property \Carbon\Carbon $created_at
+ * @property Carbon $created_at
  */
 class PmMessageEdit extends Model
 {
@@ -39,7 +41,7 @@ class PmMessageEdit extends Model
     protected static function booted(): void
     {
         static::updating(function () {
-            throw new \RuntimeException("PmMessageEdit is write-once and cannot be updated.");
+            throw new RuntimeException("PmMessageEdit is write-once and cannot be updated.");
         });
     }
 

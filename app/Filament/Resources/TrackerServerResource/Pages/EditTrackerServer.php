@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\TrackerServerResource\Pages;
 
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\TrackerServerResource;
 use App\Jobs\Tracker\PollServerJob;
 use App\Services\Tracker\ServerQueryService;
@@ -16,7 +18,7 @@ class EditTrackerServer extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('pollNow')
+            Action::make('pollNow')
                 ->label('Poll Now')
                 ->icon('heroicon-o-arrow-path')
                 ->color('primary')
@@ -33,7 +35,7 @@ class EditTrackerServer extends EditRecord
                         ->send();
                 }),
 
-            Actions\Action::make('testConnection')
+            Action::make('testConnection')
                 ->label('Test Connection')
                 ->icon('heroicon-o-signal')
                 ->color('gray')
@@ -69,7 +71,7 @@ class EditTrackerServer extends EditRecord
                         ->send();
                 }),
 
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

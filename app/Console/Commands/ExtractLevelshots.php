@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +112,7 @@ class ExtractLevelshots extends Command
             try {
                 $result = $this->extractOne($file, $target);
                 $stats[$result]++;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->newLine();
                 $this->warn("  {$file->map_name}: " . $e->getMessage());
                 $stats['error']++;

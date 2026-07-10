@@ -2,15 +2,16 @@
 
 namespace App\Filament\Pages;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use App\Models\TestserverSetting;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
@@ -21,9 +22,9 @@ class TestserverSettingsPage extends Page implements HasForms
 
     use InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
-    protected static string $view = 'filament.pages.testserver-settings-page';
-    protected static ?string $navigationGroup = 'Server Hosting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected string $view = 'filament.pages.testserver-settings-page';
+    protected static string | \UnitEnum | null $navigationGroup = 'Server Hosting';
     protected static ?string $navigationLabel = 'Testserver Settings';
     protected static ?int $navigationSort = 12;
     protected static ?string $title = 'Testserver Settings';
@@ -36,11 +37,11 @@ class TestserverSettingsPage extends Page implements HasForms
         $this->form->fill($settings->toArray());
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
+        return $schema
             ->statePath('data')
-            ->schema([
+            ->components([
                 Section::make('🎮 Feature Toggles')
                     ->description('Hauptschalter für das Testserver-System')
                     ->columns(3)
@@ -71,13 +72,13 @@ class TestserverSettingsPage extends Page implements HasForms
                             ->password()
                             ->revealable()
                             ->maxLength(128)
-                            ->visible(fn (callable $get) => $get('turnstile_enabled')),
+                            ->visible(fn (Get $get) => $get('turnstile_enabled')),
                         TextInput::make('turnstile_secret_key')
                             ->label('Turnstile Secret Key')
                             ->password()
                             ->revealable()
                             ->maxLength(128)
-                            ->visible(fn (callable $get) => $get('turnstile_enabled')),
+                            ->visible(fn (Get $get) => $get('turnstile_enabled')),
                     ])
                     ->collapsible()
                     ->collapsed(fn ($get) => !$get('turnstile_enabled')),

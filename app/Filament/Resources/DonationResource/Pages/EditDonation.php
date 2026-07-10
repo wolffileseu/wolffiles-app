@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\DonationResource\Pages;
 
+use Filament\Actions\Action;
+use Throwable;
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\DonationResource;
 use App\Services\DonationDiscordService;
 use App\Services\TelegramNotificationService;
@@ -16,7 +19,7 @@ class EditDonation extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\Action::make('repostDiscord')
+            Action::make('repostDiscord')
                 ->label('Repost → Discord')
                 ->icon('heroicon-o-megaphone')
                 ->color('success')
@@ -33,7 +36,7 @@ class EditDonation extends EditRecord
                             ->body($ok ? 'Die Donation wurde im Discord-Kanal erneut gepostet.' : 'Webhook-Antwort war nicht erfolgreich.')
                             ->{$ok ? 'success' : 'warning'}()
                             ->send();
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Notification::make()
                             ->title('Discord Post fehlgeschlagen')
                             ->body($e->getMessage())
@@ -42,7 +45,7 @@ class EditDonation extends EditRecord
                     }
                 }),
 
-            Actions\Action::make('repostTelegram')
+            Action::make('repostTelegram')
                 ->label('Repost → Telegram')
                 ->icon('heroicon-o-paper-airplane')
                 ->color('info')
@@ -58,7 +61,7 @@ class EditDonation extends EditRecord
                             ->title('Telegram Post gesendet ✅')
                             ->success()
                             ->send();
-                    } catch (\Throwable $e) {
+                    } catch (Throwable $e) {
                         Notification::make()
                             ->title('Telegram Post fehlgeschlagen')
                             ->body($e->getMessage())
@@ -67,7 +70,7 @@ class EditDonation extends EditRecord
                     }
                 }),
 
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 }

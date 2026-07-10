@@ -2,6 +2,7 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -20,7 +21,7 @@ class TrackerScrim extends Model
         return ['scheduled_at' => 'datetime'];
     }
 
-    public function createdBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'created_by_user_id'); }
+    public function createdBy(): BelongsTo { return $this->belongsTo(User::class, 'created_by_user_id'); }
     public function clan(): BelongsTo { return $this->belongsTo(TrackerClan::class, 'clan_id'); }
 
     public function scopeOpen($query) { return $query->where('status', 'open'); }

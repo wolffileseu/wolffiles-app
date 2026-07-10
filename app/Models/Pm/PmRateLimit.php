@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $user_id
  * @property string $action
  * @property int $count
- * @property \Carbon\Carbon $window_start
+ * @property Carbon $window_start
  */
 class PmRateLimit extends Model
 {

@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use ZipArchive;
 
 /**
@@ -290,9 +292,9 @@ class ArchiveHelper
     protected function deleteDirectory(string $dir): void
     {
         if (!is_dir($dir)) return;
-        $items = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $items = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($items as $item) {
             $item->isDir() ? @rmdir($item->getRealPath()) : @unlink($item->getRealPath());

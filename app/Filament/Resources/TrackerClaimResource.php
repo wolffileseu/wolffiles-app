@@ -2,25 +2,36 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\BulkAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Infolists\Components\TextEntry;
+use App\Filament\Resources\TrackerClaimResource\Pages\ListTrackerClaims;
+use App\Filament\Resources\TrackerClaimResource\Pages\ViewTrackerClaim;
 use App\Filament\Resources\TrackerClaimResource\Pages;
 use App\Models\Tracker\TrackerClaim;
 use App\Models\Tracker\TrackerClan;
 use App\Models\Tracker\TrackerPlayer;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Infolists;
-use Filament\Infolists\Infolist;
-use Filament\Tables\Actions\Action;
 use Filament\Notifications\Notification;
 
 class TrackerClaimResource extends Resource
 {
     protected static ?string $model = TrackerClaim::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
-    protected static ?string $navigationGroup = 'Tracker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-shield-check';
+    protected static string | \UnitEnum | null $navigationGroup = 'Tracker';
     protected static ?int $navigationSort = 5;
     protected static ?string $navigationLabel = 'Claims';
     protected static ?string $modelLabel = 'Claim';
@@ -38,12 +49,12 @@ class TrackerClaimResource extends Resource
         return 'warning';
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Claim Details')
+        return $schema->components([
+            Section::make('Claim Details')
                 ->schema([
-                    Forms\Components\Select::make('status')
+                    Select::make('status')
                         ->options([
                             'pending' => 'Pending',
                             'approved' => 'Approved',
@@ -51,7 +62,7 @@ class TrackerClaimResource extends Resource
                         ])
                         ->required()
                         ->native(false),
-                    Forms\Components\Textarea::make('review_note')
+                    Textarea::make('review_note')
                         ->label('Moderator Note')
                         ->rows(3)
                         ->maxLength(500),
@@ -63,11 +74,11 @@ class TrackerClaimResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
+                TextColumn::make('id')
                     ->label('#')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('claimable_type')
+                TextColumn::make('claimable_type')
                     ->label('Type')
                     ->badge()
                     ->formatStateUsing(fn (string $state) => ucfirst($state))
@@ -78,7 +89,7 @@ class TrackerClaimResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('entity_name')
+                TextColumn::make('entity_name')
                     ->label('Entity')
                     ->getStateUsing(function (TrackerClaim $record): string {
                         if ($record->claimable_type === 'player') {
@@ -103,23 +114,23 @@ class TrackerClaimResource extends Resource
                         });
                     }),
 
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('Claimed By')
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('proof_type')
+                TextColumn::make('proof_type')
                     ->label('Proof')
                     ->formatStateUsing(fn (?string $state) => $state ? ucfirst(str_replace('_', ' ', $state)) : '-')
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('message')
+                TextColumn::make('message')
                     ->label('Message')
                     ->limit(50)
                     ->tooltip(fn (TrackerClaim $record) => $record->message)
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'pending' => 'warning',
@@ -129,22 +140,22 @@ class TrackerClaimResource extends Resource
                     })
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('reviewer.name')
+                TextColumn::make('reviewer.name')
                     ->label('Reviewed By')
                     ->default('-')
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('review_note')
+                TextColumn::make('review_note')
                     ->label('Note')
                     ->limit(30)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Submitted')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('reviewed_at')
+                TextColumn::make('reviewed_at')
                     ->label('Reviewed')
                     ->dateTime('d M Y H:i')
                     ->sortable()
@@ -152,7 +163,7 @@ class TrackerClaimResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'pending' => 'Pending',
                         'approved' => 'Approved',
@@ -160,14 +171,14 @@ class TrackerClaimResource extends Resource
                     ])
                     ->default('pending'),
 
-                Tables\Filters\SelectFilter::make('claimable_type')
+                SelectFilter::make('claimable_type')
                     ->label('Type')
                     ->options([
                         'player' => 'Player',
                         'clan' => 'Clan',
                     ]),
             ])
-            ->actions([
+            ->recordActions([
                 // Approve action
                 Action::make('approve')
                     ->label('Approve')
@@ -176,8 +187,8 @@ class TrackerClaimResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Approve Claim')
                     ->modalDescription(fn (TrackerClaim $record) => 'Approve this ' . $record->claimable_type . ' claim by ' . ($record->user->name ?? 'Unknown') . '?')
-                    ->form([
-                        Forms\Components\Textarea::make('review_note')
+                    ->schema([
+                        Textarea::make('review_note')
                             ->label('Note (optional)')
                             ->rows(2)
                             ->maxLength(500),
@@ -198,8 +209,8 @@ class TrackerClaimResource extends Resource
                     ->color('danger')
                     ->requiresConfirmation()
                     ->modalHeading('Reject Claim')
-                    ->form([
-                        Forms\Components\Textarea::make('review_note')
+                    ->schema([
+                        Textarea::make('review_note')
                             ->label('Reason (required)')
                             ->required()
                             ->rows(2)
@@ -230,12 +241,12 @@ class TrackerClaimResource extends Resource
                     })
                     ->openUrlInNewTab(),
 
-                Tables\Actions\DeleteAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
+            ->toolbarActions([
+                BulkActionGroup::make([
                     // Bulk approve
-                    Tables\Actions\BulkAction::make('bulk_approve')
+                    BulkAction::make('bulk_approve')
                         ->label('Approve Selected')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
@@ -253,13 +264,13 @@ class TrackerClaimResource extends Resource
                         }),
 
                     // Bulk reject
-                    Tables\Actions\BulkAction::make('bulk_reject')
+                    BulkAction::make('bulk_reject')
                         ->label('Reject Selected')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
                         ->form([
-                            Forms\Components\Textarea::make('review_note')
+                            Textarea::make('review_note')
                                 ->label('Reason')
                                 ->required()
                                 ->rows(2),
@@ -276,56 +287,56 @@ class TrackerClaimResource extends Resource
                                 ->send();
                         }),
 
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist->schema([
-            Infolists\Components\Section::make('Claim')
+        return $schema->components([
+            Section::make('Claim')
                 ->schema([
-                    Infolists\Components\TextEntry::make('id')->label('#'),
-                    Infolists\Components\TextEntry::make('claimable_type')->label('Type')
+                    TextEntry::make('id')->label('#'),
+                    TextEntry::make('claimable_type')->label('Type')
                         ->badge()
                         ->formatStateUsing(fn (string $state) => ucfirst($state))
                         ->color(fn (string $state) => $state === 'player' ? 'info' : 'purple'),
-                    Infolists\Components\TextEntry::make('status')
+                    TextEntry::make('status')
                         ->badge()
                         ->color(fn (string $state) => match ($state) {
                             'pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger', default => 'gray',
                         }),
-                    Infolists\Components\TextEntry::make('created_at')->dateTime('d M Y H:i'),
+                    TextEntry::make('created_at')->dateTime('d M Y H:i'),
                 ])->columns(4),
 
-            Infolists\Components\Section::make('Claimant')
+            Section::make('Claimant')
                 ->schema([
-                    Infolists\Components\TextEntry::make('user.name')->label('User'),
-                    Infolists\Components\TextEntry::make('user.email')->label('Email'),
-                    Infolists\Components\TextEntry::make('proof_type')->label('Proof Type')
+                    TextEntry::make('user.name')->label('User'),
+                    TextEntry::make('user.email')->label('Email'),
+                    TextEntry::make('proof_type')->label('Proof Type')
                         ->formatStateUsing(fn (?string $state) => $state ? ucfirst(str_replace('_', ' ', $state)) : '-'),
                 ])->columns(3),
 
-            Infolists\Components\Section::make('Message')
+            Section::make('Message')
                 ->schema([
-                    Infolists\Components\TextEntry::make('message')->columnSpanFull(),
+                    TextEntry::make('message')->columnSpanFull(),
                 ]),
 
-            Infolists\Components\Section::make('Clan Details')
+            Section::make('Clan Details')
                 ->schema([
-                    Infolists\Components\TextEntry::make('clan_email')->label('Email')->default('-'),
-                    Infolists\Components\TextEntry::make('clan_website')->label('Website')->default('-'),
-                    Infolists\Components\TextEntry::make('clan_discord')->label('Discord')->default('-'),
-                    Infolists\Components\TextEntry::make('clan_description')->label('Description')->default('-')->columnSpanFull(),
+                    TextEntry::make('clan_email')->label('Email')->default('-'),
+                    TextEntry::make('clan_website')->label('Website')->default('-'),
+                    TextEntry::make('clan_discord')->label('Discord')->default('-'),
+                    TextEntry::make('clan_description')->label('Description')->default('-')->columnSpanFull(),
                 ])->columns(3)
                 ->visible(fn (TrackerClaim $record) => $record->claimable_type === 'clan'),
 
-            Infolists\Components\Section::make('Review')
+            Section::make('Review')
                 ->schema([
-                    Infolists\Components\TextEntry::make('reviewer.name')->label('Reviewed By')->default('-'),
-                    Infolists\Components\TextEntry::make('reviewed_at')->dateTime('d M Y H:i')->default('-'),
-                    Infolists\Components\TextEntry::make('review_note')->label('Note')->default('-')->columnSpanFull(),
+                    TextEntry::make('reviewer.name')->label('Reviewed By')->default('-'),
+                    TextEntry::make('reviewed_at')->dateTime('d M Y H:i')->default('-'),
+                    TextEntry::make('review_note')->label('Note')->default('-')->columnSpanFull(),
                 ])->columns(2),
         ]);
     }
@@ -333,8 +344,8 @@ class TrackerClaimResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTrackerClaims::route('/'),
-            'view' => Pages\ViewTrackerClaim::route('/{record}'),
+            'index' => ListTrackerClaims::route('/'),
+            'view' => ViewTrackerClaim::route('/{record}'),
         ];
     }
 }

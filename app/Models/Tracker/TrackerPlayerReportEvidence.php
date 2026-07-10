@@ -2,6 +2,7 @@
 
 namespace App\Models\Tracker;
 
+use Throwable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,6 @@ class TrackerPlayerReportEvidence extends Model
     {
         if (!$this->file_path) return null;
         try { return Storage::disk('s3')->temporaryUrl($this->file_path, now()->addMinutes($minutes)); }
-        catch (\Throwable $e) { return null; }
+        catch (Throwable $e) { return null; }
     }
 }

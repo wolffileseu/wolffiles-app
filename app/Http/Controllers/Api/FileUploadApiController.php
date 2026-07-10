@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Category;
 use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\FileScreenshot;
@@ -78,7 +79,7 @@ class FileUploadApiController extends Controller
         $game = null;
 
         if ($rawGame !== '' && strtolower($rawGame) !== 'auto') {
-            $gameRow = \App\Models\Category::query()
+            $gameRow = Category::query()
                 ->whereNull('parent_id')
                 ->where('type', 'game')
                 ->where('is_active', 1)

@@ -2,6 +2,7 @@
 
 namespace App\Services\Tracker;
 
+use Exception;
 use App\Models\Tracker\TrackerServer;
 use App\Services\Tracker\GeoIpService;
 use App\Models\Tracker\TrackerServerHistory;
@@ -40,7 +41,7 @@ class ServerPollerService
                 } else {
                     $results['offline']++;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $results['errors']++;
                 Log::error("Tracker: Error polling {$server->full_address}: {$e->getMessage()}");
             }

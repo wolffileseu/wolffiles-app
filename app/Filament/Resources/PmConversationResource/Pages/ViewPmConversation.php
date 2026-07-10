@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\PmConversationResource\Pages;
 
+use Filament\Actions\Action;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use App\Filament\Resources\PmConversationResource;
 use App\Models\Pm\PmAdminAccessLog;
 use App\Models\Pm\PmEvidenceSnapshot;
@@ -42,7 +45,7 @@ class ViewPmConversation extends ViewRecord
     {
         return [
             // Lock / Unlock toggle
-            Actions\Action::make("toggle_lock")
+            Action::make("toggle_lock")
                 ->label(fn () => $this->record->locked ? "Unlock conversation" : "Lock conversation")
                 ->icon(fn () => $this->record->locked ? "heroicon-o-lock-open" : "heroicon-o-lock-closed")
                 ->color(fn () => $this->record->locked ? "success" : "warning")
@@ -52,8 +55,8 @@ class ViewPmConversation extends ViewRecord
                 ->modalDescription(fn () => $this->record->locked
                     ? "Participants will be able to send new messages again."
                     : "Participants will not be able to send new messages until you unlock it.")
-                ->form([
-                    Forms\Components\Textarea::make("reason")
+                ->schema([
+                    Textarea::make("reason")
                         ->label("Reason (audit-logged)")
                         ->required()
                         ->maxLength(500),
@@ -79,7 +82,7 @@ class ViewPmConversation extends ViewRecord
                 }),
 
             // Create evidence snapshot
-            Actions\Action::make("create_snapshot")
+            Action::make("create_snapshot")
                 ->label("Create evidence snapshot")
                 ->icon("heroicon-o-camera")
                 ->color("danger")
@@ -87,12 +90,12 @@ class ViewPmConversation extends ViewRecord
                 ->requiresConfirmation()
                 ->modalHeading("Create evidence snapshot")
                 ->modalDescription("This freezes the current state of the conversation as immutable evidence (write-once). Use for legal/moderation cases. The conversation will be exempt from retention purge as long as a snapshot exists.")
-                ->form([
-                    Forms\Components\Textarea::make("reason")
+                ->schema([
+                    Textarea::make("reason")
                         ->label("Reason (mandatory, audit-logged)")
                         ->required()
                         ->maxLength(500),
-                    Forms\Components\TextInput::make("related_report_id")
+                    TextInput::make("related_report_id")
                         ->label("Related report ID (optional)")
                         ->numeric()
                         ->nullable(),

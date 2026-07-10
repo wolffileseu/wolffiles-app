@@ -2,12 +2,15 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\User;
+use App\Models\Clan;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * @property \Carbon\Carbon|null $last_seen_at
+ * @property Carbon|null $last_seen_at
  * @property int $id
  * @property string $ip
  * @property int $port
@@ -95,9 +98,9 @@ class TrackerServer extends Model
     }
 
     public function game(): BelongsTo { return $this->belongsTo(TrackerGame::class, 'game_id'); }
-    public function addedBy(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'added_by'); }
-    public function claimedByUser(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
-    public function clan(): BelongsTo { return $this->belongsTo(\App\Models\Clan::class, 'claimed_by_clan_id'); }
+    public function addedBy(): BelongsTo { return $this->belongsTo(User::class, 'added_by'); }
+    public function claimedByUser(): BelongsTo { return $this->belongsTo(User::class, 'claimed_by_user_id'); }
+    public function clan(): BelongsTo { return $this->belongsTo(Clan::class, 'claimed_by_clan_id'); }
     public function settings(): HasMany { return $this->hasMany(TrackerServerSetting::class, 'server_id'); }
     public function history(): HasMany { return $this->hasMany(TrackerServerHistory::class, 'server_id'); }
     public function mapStats(): HasMany { return $this->hasMany(TrackerServerMapStat::class, 'server_id'); }

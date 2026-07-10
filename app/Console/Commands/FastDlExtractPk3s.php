@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use DB;
+use Exception;
 use App\Models\FastDl\FastDlDirectory;
 use App\Models\FastDl\FastDlFile;
 use App\Models\FastDl\FastDlGame;
@@ -48,7 +50,7 @@ class FastDlExtractPk3s extends Command
         $categoryName = $this->option('category');
         $categoryId = null;
         if ($categoryName) {
-            $categoryId = \DB::table('categories')->where('name', $categoryName)->value('id');
+            $categoryId = DB::table('categories')->where('name', $categoryName)->value('id');
             if (!$categoryId) {
                 $this->error("Category '$categoryName' not found!");
                 return;
@@ -105,7 +107,7 @@ class FastDlExtractPk3s extends Command
                 } else {
                     $skipped++;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors++;
                 $this->newLine();
                 $this->warn("Error [{$file->file_name}]: " . $e->getMessage());
@@ -133,7 +135,7 @@ class FastDlExtractPk3s extends Command
             // Download ZIP from S3
             $stream = Storage::disk('s3')->readStream($file->file_path);
             if (!$stream) {
-                throw new \Exception("Cannot read from S3: {$file->file_path}");
+                throw new Exception("Cannot read from S3: {$file->file_path}");
             }
 
             file_put_contents($tmpZip, $stream);
@@ -143,7 +145,7 @@ class FastDlExtractPk3s extends Command
             $zip = new ZipArchive();
             $result = $zip->open($tmpZip);
             if ($result !== true) {
-                throw new \Exception("Cannot open ZIP (error: {$result})");
+                throw new Exception("Cannot open ZIP (error: {$result})");
             }
 
             // Find PK3 files

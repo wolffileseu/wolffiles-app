@@ -2,6 +2,10 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\Clan;
+use Illuminate\Support\Str;
+use App\Models\ClanManager;
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,8 +17,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $claimable_id
  * @property string $status
  * @property string|null $message
- * @property \Carbon\Carbon|null $reviewed_at
- * @property \Illuminate\Database\Eloquent\Model|null $entity
+ * @property Carbon|null $reviewed_at
+ * @property Model|null $entity
  */
 class TrackerClaim extends Model
 {
@@ -142,7 +146,7 @@ class TrackerClaim extends Model
      */
     protected function linkRegisteredClan(TrackerClan $trackerClan): void
     {
-        $registered = \App\Models\Clan::firstOrNew(['tracker_clan_id' => $trackerClan->id]);
+        $registered = Clan::firstOrNew(['tracker_clan_id' => $trackerClan->id]);
         $registered->fill([
             'tracker_clan_id' => $trackerClan->id,
             'name'            => $registered->name ?: ($trackerClan->name ?: $trackerClan->tag_clean),
@@ -154,16 +158,16 @@ class TrackerClaim extends Model
             'is_published'    => $registered->exists ? $registered->is_published : false,
         ]);
         if (empty($registered->slug)) {
-            $base = \Illuminate\Support\Str::slug($registered->name) ?: 'clan';
+            $base = Str::slug($registered->name) ?: 'clan';
             $slug = $base; $i = 2;
-            while (\App\Models\Clan::where('slug', $slug)->where('id', '!=', $registered->id ?? 0)->exists()) { $slug = $base.'-'.$i; $i++; }
+            while (Clan::where('slug', $slug)->where('id', '!=', $registered->id ?? 0)->exists()) { $slug = $base.'-'.$i; $i++; }
             $registered->slug = $slug;
         }
         $registered->save();
 
-        \App\Models\ClanManager::firstOrCreate(
+        ClanManager::firstOrCreate(
             ['clan_id' => $registered->id, 'user_id' => $this->user_id],
-            ['role' => \App\Models\ClanManager::ROLE_OWNER]
+            ['role' => ClanManager::ROLE_OWNER]
         );
     }
 

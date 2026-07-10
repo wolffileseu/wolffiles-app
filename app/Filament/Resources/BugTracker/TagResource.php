@@ -2,10 +2,20 @@
 
 namespace App\Filament\Resources\BugTracker;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Str;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Tables\Columns\ColorColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use App\Filament\Resources\BugTracker\TagResource\Pages\ListTags;
+use App\Filament\Resources\BugTracker\TagResource\Pages\CreateTag;
+use App\Filament\Resources\BugTracker\TagResource\Pages\EditTag;
 use App\Filament\Resources\BugTracker\TagResource\Pages;
 use App\Models\BugTracker\Tag;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,20 +23,20 @@ use Filament\Tables\Table;
 class TagResource extends Resource
 {
     protected static ?string $model = Tag::class;
-    protected static ?string $navigationIcon = 'heroicon-o-hashtag';
-    protected static ?string $navigationGroup = 'Bug Tracker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-hashtag';
+    protected static string | \UnitEnum | null $navigationGroup = 'Bug Tracker';
     protected static ?string $navigationLabel = 'Tags';
     protected static ?int $navigationSort = 30;
     protected static ?string $recordTitleAttribute = 'name';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required()->maxLength(50)->live(onBlur: true)
+        return $schema->components([
+            TextInput::make('name')->required()->maxLength(50)->live(onBlur: true)
                 ->afterStateUpdated(fn ($state, $set, $context) =>
-                    $context === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
-            Forms\Components\TextInput::make('slug')->required()->maxLength(50)->unique(ignoreRecord: true),
-            Forms\Components\ColorPicker::make('color')->default('#94a3b8'),
+                    $context === 'create' ? $set('slug', Str::slug($state)) : null),
+            TextInput::make('slug')->required()->maxLength(50)->unique(ignoreRecord: true),
+            ColorPicker::make('color')->default('#94a3b8'),
         ]);
     }
 
@@ -34,23 +44,23 @@ class TagResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ColorColumn::make('color'),
-                Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('slug')->color('gray')->size('sm'),
-                Tables\Columns\TextColumn::make('tasks_count')->counts('tasks')->badge(),
+                ColorColumn::make('color'),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('slug')->color('gray')->size('sm'),
+                TextColumn::make('tasks_count')->counts('tasks')->badge(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTags::route('/'),
-            'create' => Pages\CreateTag::route('/create'),
-            'edit'   => Pages\EditTag::route('/{record}/edit'),
+            'index'  => ListTags::route('/'),
+            'create' => CreateTag::route('/create'),
+            'edit'   => EditTag::route('/{record}/edit'),
         ];
     }
 }

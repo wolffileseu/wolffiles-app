@@ -252,3 +252,173 @@ Laravel 13 remains blocked until Filament is upgraded. When ready, the path is:
   <https://laravel.com/docs/13.x/upgrade> guide.
 
 Treat that as a separate, planned Filament-major project — not a drop-in bump.
+
+---
+
+# Filament 3 → 4 → 5 + Shield 3 → 4 Migration
+
+Branch: `feature/filament-5`. Filament was upgraded 3 → 4 → 5 and
+`bezhansalleh/filament-shield` 3.9 → 4.x. Livewire moves to 4 as part of
+Filament 5. This is a behavioural migration — read the notes below before deploy.
+
+## Shield 4: legacy permission-key compatibility (CRITICAL)
+
+Shield 4 changed its default permission-key format (pascal case + `:` separator,
+e.g. `ViewAny:Post`). Production stores permissions in the **legacy Shield 3.x
+format** (`view_any_tracker::server`, `page_FastDlMonitor`, `widget_StatsOverview`)
+and those names **must not change** or every existing role→permission assignment
+breaks.
+
+To preserve them, `AppServiceProvider::boot()` registers
+`FilamentShield::buildPermissionKeyUsing()` reproducing the exact 3.x naming:
+
+- **Resources**: `{snake_affix}_{snake('::')_subject}`, where the *subject* is the
+  resource's path relative to `Resources\` with backslashes stripped and the
+  `Resource` suffix removed — **not** the model basename. This matters where they
+  diverge:
+  - `BugTracker\TaskResource` → `bug::tracker::task` (not `task`)
+  - `PlayerReportResource` (model `TrackerPlayerReport`) → `player::report`
+    (not `tracker::player::report`)
+- **Pages**: `page_{ClassBasename}` (e.g. `page_FastDlMonitor`)
+- **Widgets**: `widget_{ClassBasename}` (e.g. `widget_StatsOverview`)
+- **Special case**: Shield's own `RoleResource` moved to `Resources\Roles\` in v4;
+  it is pinned back to the `role` subject so `view_any_role` etc. stay valid.
+
+This closure governs both permission generation *and* the runtime
+`HasPageShield`/`HasWidgetShield` access checks. Verified: all 702 existing
+production permission keys are reproduced unchanged (the only additions are 6
+additive `*_role` methods Shield 4 generates for the role resource).
+
+`super_admin` keeps `define_via_gate => false` (matching the old config): the role
+works by **holding all permissions** in the DB, so `shield:generate` must be run
+on deploy to grant any newly added permissions. `User::canAccessPanel()` is
+unchanged (super_admin OR panel_user OR any permission).
+
+The old `config/filament-shield.php` was deleted and the Shield 4 config published
+fresh (`vendor:publish --tag=filament-shield-config`).
+
+## Filament 4 behaviour changes to be aware of
+
+- **File visibility defaults to `private` on non-local disks.** In Filament 3,
+  S3 uploads were effectively public. Every public-facing `FileUpload` on the
+  `s3` disk now carries an explicit `->visibility('public')` (avatars,
+  screenshots, wallpapers, fastdl, posts, categories, partners, lua scripts,
+  tutorials, wiki attachments, page PDFs…). Genuinely private uploads
+  (`demos`, `ban-evidence`) keep `->visibility('private')`. If you add a new S3
+  `FileUpload` that must be reachable via cdn.wolffiles.eu, set
+  `->visibility('public')` explicitly.
+- **Table filters are deferred by default.** Filters no longer apply live as you
+  change them — the user must click **Apply**. If you want the old live
+  behaviour on a specific table, add `->deferFilters(false)`.
+- **`unique()` validation defaults to `ignoreRecord: true`** on edit forms.
+  Existing explicit `unique(ignoreRecord: true)` calls are unaffected; just be
+  aware the default flipped.
+- **Grid/column span defaults changed.** Components now span a single column by
+  default in more contexts; if a field that used to stretch full-width no longer
+  does, add `->columnSpanFull()` (or an explicit `->columnSpan(...)`).
+
+## Code migration notes
+
+- Ran `vendor/bin/filament-v4` then `filament-v5` (Rector). These also enabled
+  `importNames()`/`importShortClasses()`, which normalised fully-qualified class
+  references into `use` imports across `app/` — a large but purely cosmetic diff.
+- Manual fixes Rector missed: `->reactive()` → `->live()`;
+  `callable $get`/`callable $set` → `Filament\Schemas\Components\Utilities\Get`/`Set`.
+- `form()`/`infolist()` signatures are now `Schema $schema): Schema` with
+  `->components([...])`. Infolist entry classes
+  (`Filament\Infolists\Components\TextEntry` etc.) still resolve in Filament 4/5,
+  so their imports were left as-is.
+
+## Livewire 3 → 4
+
+Filament 5 pulls in Livewire 4 (`livewire/livewire` 3.8 → 4.3.3). The two custom
+Livewire components (`app/Livewire/Settings/Privacy`,
+`app/Livewire/Frontend/MapServerActivity`) use only stable APIs (`mount`,
+`#[Computed]`, `validate`, `render()->layout()`, `redirect(navigate:)`) — no
+removed `emit()`/`$listeners`/`wire:model.defer`/`@entangle` patterns — and Rector
+made no changes to them. No action required.
+
+## Filament 5 — Production Deploy Guide
+
+Final stack: Laravel 12.63, PHP 8.3, **Filament 5.6.x**, **Livewire 4.3.x**,
+**filament-shield 4.2.x**, spatie/laravel-permission 6.25.
+
+### Environment reference (Plesk / AlmaLinux / MariaDB)
+
+| Item          | Value                                                          |
+|---------------|----------------------------------------------------------------|
+| App path      | `/var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app/`         |
+| PHP binary    | `/opt/plesk/php/8.3/bin/php`                                    |
+| Composer      | `/usr/local/psa/var/modules/composer/composer.phar`            |
+| Run as user   | `wolffiles.eu_lkiogmaiktl`                                      |
+
+### Deploy steps
+
+Run every command as `wolffiles.eu_lkiogmaiktl` from the app path. No database
+migrations are added by this upgrade, but **permissions must be (re)generated** so
+Shield 4 creates any new permission rows (e.g. the 6 additive `*_role` ones) and
+re-grants them to `super_admin` (which works by holding all permissions).
+
+```bash
+cd /var/www/vhosts/wolffiles.eu/httpdocs/wolffiles-app/
+
+# 1. Pull the branch (or merge to main first)
+git pull
+
+# 2. Install locked deps (production, no dev, optimised autoloader).
+#    post-autoload-dump runs filament:upgrade -> republishes Filament 5 assets.
+/opt/plesk/php/8.3/bin/php /usr/local/psa/var/modules/composer/composer.phar \
+    install --no-dev --optimize-autoloader --no-interaction
+
+# 3. Build front-end assets (Vite manifest is required by the panel render hook)
+npm ci && npm run build
+
+# 4. Regenerate Shield permissions (uses the legacy buildPermissionKeyUsing()
+#    format -> keeps view_any_tracker::server, page_FastDlMonitor, widget_StatsOverview
+#    etc. and grants any new permissions to super_admin). Policies are already in git.
+/opt/plesk/php/8.3/bin/php artisan shield:generate --all --option=permissions
+
+# 5. Reset the spatie permission cache so the new/edited permissions are seen
+/opt/plesk/php/8.3/bin/php artisan permission:cache-reset
+
+# 6. Clear + rebuild framework and Filament caches
+/opt/plesk/php/8.3/bin/php artisan optimize:clear
+/opt/plesk/php/8.3/bin/php artisan filament:optimize
+
+# 7. Restart the 36 queue workers + PM2 listener so they load the new code
+sudo systemctl restart 'wolffiles-worker-tracker@*' \
+    'wolffiles-worker-tracker-high@*' 'wolffiles-worker-tracker-low@*'
+pm2 restart tracker-listener
+
+# 8. Sanity check
+/opt/plesk/php/8.3/bin/php artisan about | grep -iE "filament|livewire|shield"
+```
+
+> If you cache config/routes, run `optimize:clear` **before** `composer install`
+> pulls new code, and rebuild with `filament:optimize` (step 6) after. Never leave
+> a stale `bootstrap/cache/*.php` from the Filament 3 tree in place.
+
+### Smoke-test checklist (do after deploy, in the admin panel)
+
+- [ ] **Login as `super_admin`** — full panel visible, no permission errors, every
+      resource/page/widget reachable.
+- [ ] **Login as a `clan_operator`** — sees **only Donations** (its single granted
+      permission set); no other resources/pages in the nav. Confirms the legacy
+      permission keys still map correctly.
+- [ ] **File upload → S3** — upload an avatar/screenshot/wallpaper and confirm the
+      stored object is **publicly reachable via `cdn.wolffiles.eu`** (not a 403).
+      This validates the `->visibility('public')` additions.
+- [ ] **Role manager at `/admin/shield/roles`** — loads, lists roles, and role
+      edit shows the permission matrix; saving a role persists.
+- [ ] **Table filters** — on any resource list, changing a filter now requires
+      clicking **Apply** (deferred filters are the Filament 4/5 default).
+- [ ] **A private upload** (demo file or ban-evidence) is **not** publicly
+      reachable on S3 (still `private`).
+
+### Rollback
+
+No schema changes were made, so rollback is code-only:
+
+1. `git checkout main` (Filament 3 tree) and re-run `composer install` + asset build.
+2. Existing permission rows are untouched (names never changed), so Shield 3 reads
+   them exactly as before. `permission:cache-reset` + `optimize:clear` after.

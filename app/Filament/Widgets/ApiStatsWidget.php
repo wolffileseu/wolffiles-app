@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class ApiStatsWidget extends BaseWidget
 {
     protected static ?int $sort = 10;
-    protected static ?string $pollingInterval = '30s';
+    protected ?string $pollingInterval = '30s';
 
     protected function getStats(): array
     {

@@ -2,6 +2,10 @@
 
 namespace App\Services;
 
+use Throwable;
+use App\Models\TestserverMod;
+use DB;
+use ZipArchive;
 use App\Models\Testserver;
 use App\Models\TestserverSession;
 use Illuminate\Support\Facades\Http;
@@ -99,7 +103,7 @@ class TestserverService
                 ]);
             }
             return $response->successful();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error("Testserver: setStartupVariable exception: {$e->getMessage()}");
             return false;
         }
@@ -125,7 +129,7 @@ class TestserverService
                     'signal' => $signal,
                 ]);
             return $response->successful() || $response->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error("Testserver: powerSignal exception: {$e->getMessage()}");
             return false;
         }
@@ -137,7 +141,7 @@ class TestserverService
             $response = Http::withHeaders($this->headers())
                 ->get("{$this->baseUrl}/api/client/servers/{$uuid}/resources");
             return $response->successful() ? $response->json('attributes') : null;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return null;
         }
     }
@@ -150,7 +154,7 @@ class TestserverService
                     'command' => $command,
                 ]);
             return $response->successful() || $response->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::error("Testserver: sendCommand exception: {$e->getMessage()}");
             return false;
         }
@@ -170,7 +174,7 @@ class TestserverService
         $uuid   = $server->pterodactyl_uuid;
 
         // 1. Pro Mod den richtigen CONFIG_FILE wählen
-        $mod = \App\Models\TestserverMod::where('fs_game_dir', $session->mod_name)->first();
+        $mod = TestserverMod::where('fs_game_dir', $session->mod_name)->first();
         $configFile = $mod?->default_config_file ?: 'etl_server.cfg';
 
         // 2. BSP-Name aus loaded-maps holen (echter Map-Name, nicht slug)
@@ -313,7 +317,7 @@ class TestserverService
      * - Wenn nichts geladen → neue laden
      * - Wenn Map in pak0/1/2 (vanilla) → keine Aktion, vermerken
      */
-    public function ensureMapLoaded(\App\Models\Testserver $server, string $mapSlug): array
+    public function ensureMapLoaded(Testserver $server, string $mapSlug): array
     {
         // Vanilla-Maps die in pak1/pak2 schon drin sind
         $vanillaMaps = [
@@ -349,7 +353,7 @@ class TestserverService
         }
 
         // Map-File aus Wolffiles-DB suchen
-        $file = \App\Models\File::where('slug', $mapSlug)
+        $file = FileModel::where('slug', $mapSlug)
             ->whereHas('category', function ($q) {
                 $q->where('slug', 'maps')
                   ->whereHas('parent', fn ($p) => $p->where('slug', 'et'));
@@ -394,7 +398,7 @@ class TestserverService
         if ($ext === 'pk3') {
             // ── DIRECT-PK3: kein Decompress nötig ──
             // FastDL filename hat Vorrang (matched mit dem was Client-side erwartet wird)
-            $fastdl = \DB::table('fastdl_files')
+            $fastdl = DB::table('fastdl_files')
                 ->where('wolffiles_file_id', $file->id)
                 ->where('is_active', 1)
                 ->orderByDesc('id')
@@ -412,7 +416,7 @@ class TestserverService
                         'filename' => $autoFilename,
                     ]);
                     // FastDL Base-Directory für ET finden
-                    $etBaseDir = \DB::table('fastdl_directories')
+                    $etBaseDir = DB::table('fastdl_directories')
                         ->join('fastdl_games', 'fastdl_games.id', '=', 'fastdl_directories.game_id')
                         ->where('fastdl_games.slug', 'et')
                         ->where('fastdl_directories.is_base', 1)
@@ -420,15 +424,15 @@ class TestserverService
                         ->first();
                     if ($etBaseDir) {
                         // Check ob's schon einen Eintrag mit diesem Filename gibt (andere Map-Version)
-                        $existing = \DB::table('fastdl_files')
+                        $existing = DB::table('fastdl_files')
                             ->where('directory_id', $etBaseDir->id)
                             ->where('filename', $autoFilename)
                             ->first();
                         if ($existing) {
                             // Existiert schon - aktualisieren falls neuere Version
-                            $existingFile = \App\Models\File::find($existing->wolffiles_file_id);
+                            $existingFile = FileModel::find($existing->wolffiles_file_id);
                             if (!$existingFile || $file->created_at > $existingFile->created_at) {
-                                \DB::table('fastdl_files')
+                                DB::table('fastdl_files')
                                     ->where('id', $existing->id)
                                     ->update([
                                         's3_path' => $file->file_path,
@@ -448,9 +452,9 @@ class TestserverService
                                     'fastdl_id' => $existing->id,
                                 ]);
                             }
-                            $fastdl = \DB::table('fastdl_files')->find($existing->id);
+                            $fastdl = DB::table('fastdl_files')->find($existing->id);
                         } else {
-                            $newId = \DB::table('fastdl_files')->insertGetId([
+                            $newId = DB::table('fastdl_files')->insertGetId([
                                 'directory_id' => $etBaseDir->id,
                                 'filename' => $autoFilename,
                                 's3_path' => $file->file_path,
@@ -461,7 +465,7 @@ class TestserverService
                                 'created_at' => now(),
                                 'updated_at' => now(),
                             ]);
-                            $fastdl = \DB::table('fastdl_files')->find($newId);
+                            $fastdl = DB::table('fastdl_files')->find($newId);
                         }
                     }
                 }
@@ -531,7 +535,7 @@ class TestserverService
             $s3PathForFastdl = 'fastdl/extracted/' . $pk3Filename;
             try {
                 \Storage::disk('s3')->put($s3PathForFastdl, file_get_contents($extracted));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 @unlink($extracted);
                 \Log::error('S3-Upload extracted PK3 failed: ' . $e->getMessage());
                 return ['success' => false, 'error' => 'S3-Upload der PK3 fehlgeschlagen'];
@@ -558,19 +562,19 @@ class TestserverService
             $bspSourcePath = $s3PathForFastdl;
 
             // 4. Auto-Sync FastDL-Eintrag
-            $etBaseDir = \DB::table('fastdl_directories')
+            $etBaseDir = DB::table('fastdl_directories')
                 ->join('fastdl_games', 'fastdl_games.id', '=', 'fastdl_directories.game_id')
                 ->where('fastdl_games.slug', 'et')
                 ->where('fastdl_directories.is_base', 1)
                 ->select('fastdl_directories.id')
                 ->first();
             if ($etBaseDir) {
-                $existing = \DB::table('fastdl_files')
+                $existing = DB::table('fastdl_files')
                     ->where('directory_id', $etBaseDir->id)
                     ->where('filename', $pk3Filename)
                     ->first();
                 if (!$existing) {
-                    \DB::table('fastdl_files')->insert([
+                    DB::table('fastdl_files')->insert([
                         'directory_id' => $etBaseDir->id,
                         'filename' => $pk3Filename,
                         's3_path' => $s3PathForFastdl,
@@ -589,7 +593,7 @@ class TestserverService
             // Unbekannte Extension
             // (oft Bot-Waypoints, Installer). Wir versuchen einen
             // FastDL-Eintrag der Map zu finden ueber den slug.
-            $fastdlAlt = \DB::table('fastdl_files')
+            $fastdlAlt = DB::table('fastdl_files')
                 ->where('filename', 'like', '%' . str_replace(['-', '_'], '%', $mapSlug) . '%.pk3')
                 ->where('is_active', 1)
                 ->orderByDesc('id')
@@ -718,7 +722,7 @@ class TestserverService
             }
             file_put_contents($tmp, $bytes);
 
-            $pk3 = new \ZipArchive();
+            $pk3 = new ZipArchive();
             if ($pk3->open($tmp) !== true) {
                 @unlink($tmp);
                 return $bspName . '.pk3';
@@ -737,7 +741,7 @@ class TestserverService
             @unlink($tmp);
 
             return ($realBspName ?: $bspName) . '.pk3';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error('guessOriginalPk3Name failed: ' . $e->getMessage());
             return $bspName . '.pk3';
         }
@@ -817,7 +821,7 @@ class TestserverService
             @rmdir($extractDir);
 
             return $finalTmp;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error('extractPk3FromArchive failed: ' . $e->getMessage());
             return null;
         }
@@ -836,7 +840,7 @@ class TestserverService
             $contents = file_get_contents($localPath);
             if ($contents === false) return false;
 
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
+            $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $apiKey,
                 'Accept' => 'Application/vnd.pterodactyl.v1+json',
                 'Content-Type' => 'application/octet-stream',
@@ -845,7 +849,7 @@ class TestserverService
               ->put($url);
 
             return $response->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error('uploadFileToContainer failed: ' . $e->getMessage());
             return false;
         }
@@ -863,7 +867,7 @@ class TestserverService
             // Einfachster Weg: getstatus via UDP
             $info = $this->getServerInfo($uuid);
             return (int) ($info['clients'] ?? 0);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return 0;
         }
     }
@@ -874,7 +878,7 @@ class TestserverService
     public function getServerInfo(string $uuid): array
     {
         try {
-            $server = \App\Models\Testserver::where('pterodactyl_uuid', $uuid)->first();
+            $server = Testserver::where('pterodactyl_uuid', $uuid)->first();
             if (!$server) return [];
 
             $sock = @stream_socket_client(
@@ -899,7 +903,7 @@ class TestserverService
                 }
             }
             return $parsed;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [];
         }
     }
@@ -934,7 +938,7 @@ class TestserverService
             sleep(2);
 
             \Log::info('warnAndKickPlayers: done');
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error('warnAndKickPlayers failed: ' . $e->getMessage());
         }
     }
@@ -943,14 +947,14 @@ class TestserverService
      * Server in Idle-Mode bringen: random map + random mod, kein password,
      * Server bleibt running -> im Server-Browser sichtbar
      */
-    public function enterIdleMode(\App\Models\Testserver $server): bool
+    public function enterIdleMode(Testserver $server): bool
     {
         try {
             // 1. Random Mod aus erlaubten Mods (KEIN Duplikat mit anderen Idle-Servern)
             $allowedMods = $server->allowed_mod_slugs ?: ['legacy'];
 
             // Welche Mods laufen GERADE auf anderen idle-Servern?
-            $modsInUse = \App\Models\Testserver::where('id', '!=', $server->id)
+            $modsInUse = Testserver::where('id', '!=', $server->id)
                 ->where('enabled', true)
                 ->where('status', 'idle')
                 ->whereNotNull('current_idle_mod')
@@ -1007,11 +1011,11 @@ class TestserverService
             }
 
             // 4. BSP-Name aus loaded_maps holen falls schon geladen
-            $loaded = \App\Models\TestserverLoadedMap::where('testserver_id', $server->id)->first();
+            $loaded = TestserverLoadedMap::where('testserver_id', $server->id)->first();
             $mapForPtero = $loaded?->bsp_name ?: $randomMap;
 
             // 5. Mod-Config-File holen
-            $modModel = \App\Models\TestserverMod::where('slug', $randomMod)->first();
+            $modModel = TestserverMod::where('slug', $randomMod)->first();
             $configFile = $modModel?->default_config_file ?: 'etl_server.cfg';
             $fsGameDir  = $modModel?->fs_game_dir ?: $randomMod;
 
@@ -1033,7 +1037,7 @@ class TestserverService
             }
 
             return true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error('enterIdleMode failed: ' . $e->getMessage());
             return false;
         }
@@ -1045,14 +1049,14 @@ class TestserverService
      */
     protected function pickRandomIdleMap(string $mod = 'legacy'): ?string
     {
-        $etGame = \DB::table('fastdl_games')->where('slug', 'et')->first();
+        $etGame = DB::table('fastdl_games')->where('slug', 'et')->first();
         if (!$etGame) return null;
 
-        $etDirs = \DB::table('fastdl_directories')
+        $etDirs = DB::table('fastdl_directories')
             ->where('game_id', $etGame->id)
             ->pluck('id');
 
-        $query = \DB::table('fastdl_files as f')
+        $query = DB::table('fastdl_files as f')
             ->join('files as w', 'w.id', '=', 'f.wolffiles_file_id')
             ->whereIn('f.directory_id', $etDirs)
             ->where('f.filename', 'like', '%.pk3')
@@ -1065,10 +1069,10 @@ class TestserverService
         $isTjMod = in_array($mod, $tjMods, true);
 
         if ($isTjMod) {
-            $tjFileIds = \DB::table('taggables as t')
+            $tjFileIds = DB::table('taggables as t')
                 ->join('tags', 'tags.id', '=', 't.tag_id')
                 ->where('tags.slug', 'trickjump')
-                ->where('t.taggable_type', \App\Models\File::class)
+                ->where('t.taggable_type', FileModel::class)
                 ->pluck('t.taggable_id');
 
             if ($tjFileIds->isEmpty()) {
@@ -1094,10 +1098,10 @@ class TestserverService
     protected function getServerState(string $uuid): string
     {
         try {
-            $r = \Illuminate\Support\Facades\Http::withHeaders($this->headers())
+            $r = Http::withHeaders($this->headers())
                 ->get("{$this->baseUrl}/api/client/servers/{$uuid}/resources");
             return $r->json('attributes.current_state') ?? 'unknown';
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return 'unknown';
         }
     }
@@ -1122,7 +1126,7 @@ class TestserverService
                 if (!$bytes) { @unlink($tmpZip); @unlink($tmpPk3); return null; }
                 file_put_contents($tmpZip, $bytes);
 
-                $zip = new \ZipArchive();
+                $zip = new ZipArchive();
                 if ($zip->open($tmpZip) !== true) {
                     @unlink($tmpZip); @unlink($tmpPk3); return null;
                 }
@@ -1144,7 +1148,7 @@ class TestserverService
             }
 
             // PK3 oeffnen, ersten maps/*.bsp finden
-            $pk3 = new \ZipArchive();
+            $pk3 = new ZipArchive();
             if ($pk3->open($tmpPk3) !== true) { @unlink($tmpPk3); return null; }
 
             $bspName = null;
@@ -1159,7 +1163,7 @@ class TestserverService
             @unlink($tmpPk3);
 
             return $bspName;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error("BSP-Extract failed: {$e->getMessage()}");
             return null;
         }
@@ -1176,7 +1180,7 @@ class TestserverService
                     'use_header' => false,
                 ]);
             return $r->successful() || $r->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error("Pull failed: {$e->getMessage()}");
             return false;
         }
@@ -1191,7 +1195,7 @@ class TestserverService
                     'file' => $file,
                 ]);
             return $r->successful() || $r->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error("Decompress failed: {$e->getMessage()}");
             return false;
         }
@@ -1207,7 +1211,7 @@ class TestserverService
                     'files' => array_values($files),
                 ]);
             return $r->successful() || $r->status() === 204;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             \Log::error("Delete failed: {$e->getMessage()}");
             return false;
         }
@@ -1230,7 +1234,7 @@ class TestserverService
                 ];
             }
             return $files;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return [];
         }
     }

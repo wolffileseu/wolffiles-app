@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\FileResource\Pages;
 
+use Filament\Actions\DeleteAction;
+use Exception;
+use App\Models\File;
 use App\Filament\Resources\FileResource;
 use App\Models\FileScreenshot;
 use Filament\Actions;
@@ -9,7 +12,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Support\Facades\Storage;
 
-/** @method \App\Models\File getRecord() */
+/** @method File getRecord() */
 class EditFile extends EditRecord
 {
     protected static string $resource = FileResource::class;
@@ -17,7 +20,7 @@ class EditFile extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            DeleteAction::make(),
         ];
     }
 
@@ -75,7 +78,7 @@ class EditFile extends EditRecord
                     if ($screenshot->thumbnail_path) {
                         Storage::disk('s3')->delete($screenshot->thumbnail_path);
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Ignore S3 delete errors
                 }
                 $screenshot->delete();

@@ -2,8 +2,15 @@
 
 namespace App\Filament\Resources\BugTracker\ProjectResource\RelationManagers;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\TextInput;
+use Illuminate\Support\Str;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\CreateAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,15 +20,15 @@ class CategoriesRelationManager extends RelationManager
     protected static string $relationship = 'categories';
     protected static ?string $recordTitleAttribute = 'name';
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\TextInput::make('name')->required()->maxLength(120)->live(onBlur: true)
+        return $schema->components([
+            TextInput::make('name')->required()->maxLength(120)->live(onBlur: true)
                 ->afterStateUpdated(fn ($state, $set, $context) =>
-                    $context === 'create' ? $set('slug', \Illuminate\Support\Str::slug($state)) : null),
-            Forms\Components\TextInput::make('slug')->required()->maxLength(60),
-            Forms\Components\Textarea::make('description')->rows(2)->columnSpanFull(),
-            Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
+                    $context === 'create' ? $set('slug', Str::slug($state)) : null),
+            TextInput::make('slug')->required()->maxLength(60),
+            Textarea::make('description')->rows(2)->columnSpanFull(),
+            TextInput::make('sort_order')->numeric()->default(0),
         ]);
     }
 
@@ -30,18 +37,18 @@ class CategoriesRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('slug')->color('gray')->size('sm'),
-                Tables\Columns\TextColumn::make('tasks_count')->counts('tasks')->badge(),
-                Tables\Columns\TextColumn::make('sort_order')->sortable(),
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('slug')->color('gray')->size('sm'),
+                TextColumn::make('tasks_count')->counts('tasks')->badge(),
+                TextColumn::make('sort_order')->sortable(),
             ])
             ->defaultSort('sort_order')
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                CreateAction::make(),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ]);
     }
 }

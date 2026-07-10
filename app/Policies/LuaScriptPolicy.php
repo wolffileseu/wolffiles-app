@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\LuaScript;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class LuaScriptPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_lua::script');
+        return $authUser->can('view_any_lua::script');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, LuaScript $luaScript): bool
+    public function view(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('view_lua::script');
+        return $authUser->can('view_lua::script');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_lua::script');
+        return $authUser->can('create_lua::script');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, LuaScript $luaScript): bool
+    public function update(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('update_lua::script');
+        return $authUser->can('update_lua::script');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, LuaScript $luaScript): bool
+    public function delete(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('delete_lua::script');
+        return $authUser->can('delete_lua::script');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_lua::script');
+        return $authUser->can('delete_any_lua::script');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, LuaScript $luaScript): bool
+    public function restore(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('force_delete_lua::script');
+        return $authUser->can('restore_lua::script');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('force_delete_any_lua::script');
+        return $authUser->can('force_delete_lua::script');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, LuaScript $luaScript): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_lua::script');
+        return $authUser->can('force_delete_any_lua::script');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_lua::script');
+        return $authUser->can('restore_any_lua::script');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, LuaScript $luaScript): bool
+    public function replicate(AuthUser $authUser, LuaScript $luaScript): bool
     {
-        return $user->can('replicate_lua::script');
+        return $authUser->can('replicate_lua::script');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_lua::script');
+        return $authUser->can('reorder_lua::script');
     }
+
 }

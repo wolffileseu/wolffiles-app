@@ -2,10 +2,27 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Placeholder;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\TrackerServerResource\Pages\ListTrackerServers;
+use App\Filament\Resources\TrackerServerResource\Pages\CreateTrackerServer;
+use App\Filament\Resources\TrackerServerResource\Pages\EditTrackerServer;
 use App\Filament\Resources\TrackerServerResource\Pages;
 use App\Models\Tracker\TrackerServer;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,80 +30,80 @@ use Filament\Tables\Table;
 class TrackerServerResource extends Resource
 {
     protected static ?string $model = TrackerServer::class;
-    protected static ?string $navigationIcon = 'heroicon-o-server-stack';
-    protected static ?string $navigationGroup = 'Tracker';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-server-stack';
+    protected static string | \UnitEnum | null $navigationGroup = 'Tracker';
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = 'Servers';
 
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Server')
+        return $schema->components([
+            Section::make('Server')
                 ->schema([
-                    Forms\Components\Select::make('game_id')
+                    Select::make('game_id')
                         ->relationship('game', 'short_name')
                         ->required(),
-                    Forms\Components\TextInput::make('ip')->required()->maxLength(45),
-                    Forms\Components\TextInput::make('port')->numeric()->required()->default(27960),
-                    Forms\Components\TextInput::make('hostname')->maxLength(500),
-                    Forms\Components\TextInput::make('hostname_clean')->maxLength(255),
-                    Forms\Components\TextInput::make('slug')->maxLength(50)
+                    TextInput::make('ip')->required()->maxLength(45),
+                    TextInput::make('port')->numeric()->required()->default(27960),
+                    TextInput::make('hostname')->maxLength(500),
+                    TextInput::make('hostname_clean')->maxLength(255),
+                    TextInput::make('slug')->maxLength(50)
                         ->regex('/^[a-z][a-z0-9-]+$/')
                         ->rule('not_in:manage,claim,claims,create,edit,delete,admin,new,tracker,servers')
                         ->unique(ignoreRecord: true)
                         ->helperText('Optional public URL slug. Admin bypass: no 30-day lock.'),
                 ])->columns(2),
 
-            Forms\Components\Section::make('Public Page Content')
+            Section::make('Public Page Content')
                 ->description('Visible on the server\'s public page (/servers/{id})')
                 ->collapsed()
                 ->schema([
-                    Forms\Components\Textarea::make('description')
+                    Textarea::make('description')
                         ->label('Description')
                         ->rows(4)
                         ->maxLength(20000)
                         ->columnSpanFull()
                         ->helperText('Markdown + BBCode supported.'),
-                    Forms\Components\Textarea::make('rules')
+                    Textarea::make('rules')
                         ->label('Server Rules')
                         ->rows(6)
                         ->maxLength(20000)
                         ->columnSpanFull()
                         ->helperText('Markdown + BBCode supported.'),
-                    Forms\Components\TextInput::make('server_logo_url')->label('Logo URL')->url()->maxLength(500),
-                    Forms\Components\TextInput::make('server_banner_url')->label('Banner URL')->url()->maxLength(500),
-                    Forms\Components\TextInput::make('server_website')->label('Website')->url()->maxLength(255),
-                    Forms\Components\TextInput::make('server_discord')->label('Discord')->maxLength(255),
-                    Forms\Components\TextInput::make('server_email')->label('Email')->email()->maxLength(255),
+                    TextInput::make('server_logo_url')->label('Logo URL')->url()->maxLength(500),
+                    TextInput::make('server_banner_url')->label('Banner URL')->url()->maxLength(500),
+                    TextInput::make('server_website')->label('Website')->url()->maxLength(255),
+                    TextInput::make('server_discord')->label('Discord')->maxLength(255),
+                    TextInput::make('server_email')->label('Email')->email()->maxLength(255),
                 ])->columns(2),
-            Forms\Components\Section::make('Clan Link')
+            Section::make('Clan Link')
                 ->collapsed()
                 ->schema([
-                    Forms\Components\Select::make('claimed_by_clan_id')
+                    Select::make('claimed_by_clan_id')
                         ->label('Linked clan')
                         ->relationship('clan', 'name')
                         ->searchable()
                         ->preload()
                         ->nullable()
                         ->helperText('Linked clan appears on the clan\'s public page.'),
-                    Forms\Components\Toggle::make('is_visible_for_clan')
+                    Toggle::make('is_visible_for_clan')
                         ->label('Show on clan page')
                         ->helperText('Toggle visibility independent of link.'),
                 ])->columns(2),
-            Forms\Components\Section::make('Status')
+            Section::make('Status')
                 ->schema([
-                    Forms\Components\Toggle::make('is_online'),
-                    Forms\Components\Toggle::make('is_manually_added'),
-                    Forms\Components\Select::make('status')
+                    Toggle::make('is_online'),
+                    Toggle::make('is_manually_added'),
+                    Select::make('status')
                         ->options(['active' => 'Active', 'inactive' => 'Inactive', 'pending' => 'Pending', 'removed' => 'Removed', 'banned' => 'Banned'])
                         ->default('active'),
                 ])->columns(3),
 
-            Forms\Components\Section::make('Polling')
+            Section::make('Polling')
                 ->schema([
-                    Forms\Components\TextInput::make('custom_poll_interval')
+                    TextInput::make('custom_poll_interval')
                         ->label('Custom Poll Interval')
                         ->numeric()
                         ->minValue(15)
@@ -94,26 +111,26 @@ class TrackerServerResource extends Resource
                         ->suffix('seconds')
                         ->placeholder('Auto')
                         ->helperText('Overrides online cadence AND offline backoff. 15–3600 s. Leave empty for default.'),
-                    Forms\Components\Toggle::make('polling_paused')
+                    Toggle::make('polling_paused')
                         ->label('Pause Polling')
                         ->helperText('Server stays in DB but is not polled.'),
-                    Forms\Components\Placeholder::make('last_poll_display')
+                    Placeholder::make('last_poll_display')
                         ->label('Last Poll')
                         ->content(fn ($record) => $record?->last_poll_at?->diffForHumans() ?? '—'),
-                    Forms\Components\Placeholder::make('next_poll_display')
+                    Placeholder::make('next_poll_display')
                         ->label('Next Poll')
                         ->content(fn ($record) => $record?->next_poll_at?->diffForHumans() ?? '—'),
-                    Forms\Components\Placeholder::make('failures_display')
+                    Placeholder::make('failures_display')
                         ->label('Consecutive Failures')
                         ->content(fn ($record) => (string) ($record?->poll_failures ?? 0)),
                 ])
                 ->columns(3),
 
-            Forms\Components\Section::make('Location')
+            Section::make('Location')
                 ->schema([
-                    Forms\Components\TextInput::make('country')->maxLength(100),
-                    Forms\Components\TextInput::make('country_code')->maxLength(2),
-                    Forms\Components\TextInput::make('city')->maxLength(100),
+                    TextInput::make('country')->maxLength(100),
+                    TextInput::make('country_code')->maxLength(2),
+                    TextInput::make('city')->maxLength(100),
                 ])->columns(3),
         ]);
     }
@@ -122,22 +139,22 @@ class TrackerServerResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\IconColumn::make('is_online')
+                IconColumn::make('is_online')
                     ->boolean()
                     ->label('On')
                     ->trueIcon('heroicon-o-check-circle')
                     ->falseIcon('heroicon-o-x-circle')
                     ->trueColor('success')
                     ->falseColor('danger'),
-                Tables\Columns\TextColumn::make('game.short_name')->label('Game')->sortable(),
-                Tables\Columns\TextColumn::make('hostname_clean')->label('Server')->limit(40)->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('ip')->label('IP')->searchable(),
-                Tables\Columns\TextColumn::make('current_map')->label('Map')->sortable(),
-                Tables\Columns\TextColumn::make('current_players')->label('Players')->sortable()
+                TextColumn::make('game.short_name')->label('Game')->sortable(),
+                TextColumn::make('hostname_clean')->label('Server')->limit(40)->searchable()->sortable(),
+                TextColumn::make('ip')->label('IP')->searchable(),
+                TextColumn::make('current_map')->label('Map')->sortable(),
+                TextColumn::make('current_players')->label('Players')->sortable()
                     ->formatStateUsing(fn ($record) => $record->current_players . '/' . $record->max_players),
-                Tables\Columns\TextColumn::make('country_code')->label('CC')->sortable(),
-                Tables\Columns\TextColumn::make('mod_name')->label('Mod')->sortable(),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('country_code')->label('CC')->sortable(),
+                TextColumn::make('mod_name')->label('Mod')->sortable(),
+                TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'active' => 'success',
@@ -149,20 +166,20 @@ class TrackerServerResource extends Resource
             ])
             ->defaultSort('current_players', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('game_id')
+                SelectFilter::make('game_id')
                     ->relationship('game', 'short_name')
                     ->label('Game'),
-                Tables\Filters\TernaryFilter::make('is_online')->label('Online'),
-                Tables\Filters\SelectFilter::make('status')
+                TernaryFilter::make('is_online')->label('Online'),
+                SelectFilter::make('status')
                     ->options(['active' => 'Active', 'inactive' => 'Inactive', 'pending' => 'Pending', 'removed' => 'Removed', 'banned' => 'Banned']),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -170,9 +187,9 @@ class TrackerServerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListTrackerServers::route('/'),
-            'create' => Pages\CreateTrackerServer::route('/create'),
-            'edit' => Pages\EditTrackerServer::route('/{record}/edit'),
+            'index' => ListTrackerServers::route('/'),
+            'create' => CreateTrackerServer::route('/create'),
+            'edit' => EditTrackerServer::route('/{record}/edit'),
         ];
     }
 }

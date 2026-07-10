@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,8 +16,8 @@ use Illuminate\Support\Facades\DB;
  * @property int $sender_id
  * @property string|null $body
  * @property string $body_format markdown|plain
- * @property \Carbon\Carbon|null $body_purged_at
- * @property \Carbon\Carbon|null $edited_at
+ * @property Carbon|null $body_purged_at
+ * @property Carbon|null $edited_at
  * @property string|null $ip_address
  * @property string|null $user_agent
  */

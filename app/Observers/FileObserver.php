@@ -2,6 +2,9 @@
 
 namespace App\Observers;
 
+use Log;
+use Exception;
+use Throwable;
 use App\Models\File;
 use App\Models\Badge;
 use Illuminate\Support\Facades\Storage;
@@ -26,7 +29,7 @@ class FileObserver
         // logged here is an unexpected toggle and helps identify the source
         // (HTTP request, console command, queued job) if the bug ever recurs.
         if ($file->isDirty('is_featured')) {
-            \Log::info('File.is_featured change (audit)', [
+            Log::info('File.is_featured change (audit)', [
                 'file_id' => $file->id,
                 'title'   => $file->title,
                 'from'    => $file->getOriginal('is_featured'),
@@ -57,8 +60,8 @@ class FileObserver
         if ($file->file_path) {
             try {
                 Storage::disk('s3')->delete($file->file_path);
-            } catch (\Exception $e) {
-                \Log::warning("Failed to delete S3 file: {$file->file_path} - {$e->getMessage()}");
+            } catch (Exception $e) {
+                Log::warning("Failed to delete S3 file: {$file->file_path} - {$e->getMessage()}");
             }
         }
 
@@ -67,13 +70,13 @@ class FileObserver
             if ($screenshot->path) {
                 try {
                     Storage::disk('s3')->delete($screenshot->path);
-                } catch (\Exception $e) {
-                    \Log::warning("Failed to delete S3 screenshot: {$screenshot->path}");
+                } catch (Exception $e) {
+                    Log::warning("Failed to delete S3 screenshot: {$screenshot->path}");
                 }
                 if ($screenshot->thumbnail_path) {
                     try {
                         Storage::disk('s3')->delete($screenshot->thumbnail_path);
-                    } catch (\Exception $e) {}
+                    } catch (Exception $e) {}
                 }
             }
         }
@@ -91,8 +94,8 @@ class FileObserver
         // Remove from Qdrant index
         try {
             app(EmbeddingService::class)->deleteFile($file->id);
-        } catch (\Exception $e) {
-            \Log::warning("Failed to remove file from Qdrant: {$e->getMessage()}");
+        } catch (Exception $e) {
+            Log::warning("Failed to remove file from Qdrant: {$e->getMessage()}");
         }
     }
 
@@ -137,10 +140,10 @@ class FileObserver
             $service = app(OmnibotWaypointService::class);
             $result  = $service->scanFile($file);
             if (!empty($result['new'])) {
-                \Log::info("Omnibot: Found " . count($result['new']) . " new waypoints in {$file->file_name}");
+                Log::info("Omnibot: Found " . count($result['new']) . " new waypoints in {$file->file_name}");
             }
-        } catch (\Exception $e) {
-            \Log::warning("Omnibot scan failed: " . $e->getMessage());
+        } catch (Exception $e) {
+            Log::warning("Omnibot scan failed: " . $e->getMessage());
         }
     }
 
@@ -148,9 +151,9 @@ class FileObserver
     {
         try {
             app(EmbeddingService::class)->indexFile($file);
-            \Log::info("Embedding indexed for file {$file->id}");
-        } catch (\Exception $e) {
-            \Log::warning("Embedding indexing failed: " . $e->getMessage());
+            Log::info("Embedding indexed for file {$file->id}");
+        } catch (Exception $e) {
+            Log::warning("Embedding indexing failed: " . $e->getMessage());
         }
     }
 
@@ -166,16 +169,16 @@ class FileObserver
             if ($cat === FileRelationMatcher::CATEGORY_BOT) {
                 $linked = $matcher->matchBot($file);
                 if (!empty($linked)) {
-                    \Log::info("FileObserver: bot {$file->id} {$event}, linked to maps: " . implode(',', $linked));
+                    Log::info("FileObserver: bot {$file->id} {$event}, linked to maps: " . implode(',', $linked));
                 }
             } elseif ($cat === FileRelationMatcher::CATEGORY_MAP) {
                 $linked = $matcher->matchMap($file);
                 if (!empty($linked)) {
-                    \Log::info("FileObserver: map {$file->id} {$event}, linked to bots: " . implode(',', $linked));
+                    Log::info("FileObserver: map {$file->id} {$event}, linked to bots: " . implode(',', $linked));
                 }
             }
-        } catch (\Throwable $e) {
-            \Log::error("FileObserver syncMapBotRelations failed for file {$file->id}: " . $e->getMessage());
+        } catch (Throwable $e) {
+            Log::error("FileObserver syncMapBotRelations failed for file {$file->id}: " . $e->getMessage());
         }
     }
 
@@ -194,7 +197,7 @@ class FileObserver
                 'method'  => request()->method(),
                 'user_id' => optional(auth()->user())->id,
             ];
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return ['source' => 'unknown'];
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Notifications\ServerSuspended;
 use App\Models\ServerOrder;
 use App\Services\ServerProvisioningService;
 use Illuminate\Console\Command;
@@ -23,7 +24,7 @@ class ServerSuspendExpired extends Command
 
             // Notify user
             if ($order->user) {
-                $order->user->notify(new \App\Notifications\ServerSuspended($order));
+                $order->user->notify(new ServerSuspended($order));
             }
         }
 

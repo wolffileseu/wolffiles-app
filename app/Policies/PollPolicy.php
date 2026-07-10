@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\Poll;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PollPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_poll');
+        return $authUser->can('view_any_poll');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, Poll $poll): bool
+    public function view(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('view_poll');
+        return $authUser->can('view_poll');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_poll');
+        return $authUser->can('create_poll');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, Poll $poll): bool
+    public function update(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('update_poll');
+        return $authUser->can('update_poll');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, Poll $poll): bool
+    public function delete(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('delete_poll');
+        return $authUser->can('delete_poll');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_poll');
+        return $authUser->can('delete_any_poll');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, Poll $poll): bool
+    public function restore(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('force_delete_poll');
+        return $authUser->can('restore_poll');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('force_delete_any_poll');
+        return $authUser->can('force_delete_poll');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, Poll $poll): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_poll');
+        return $authUser->can('force_delete_any_poll');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_poll');
+        return $authUser->can('restore_any_poll');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, Poll $poll): bool
+    public function replicate(AuthUser $authUser, Poll $poll): bool
     {
-        return $user->can('replicate_poll');
+        return $authUser->can('replicate_poll');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_poll');
+        return $authUser->can('reorder_poll');
     }
+
 }

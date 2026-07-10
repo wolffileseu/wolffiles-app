@@ -2,6 +2,7 @@
 
 namespace App\Services\Tracker;
 
+use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -40,7 +41,7 @@ class GeoIpService
                         ];
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning("GeoIP lookup failed for {$ip}: {$e->getMessage()}");
             }
 
@@ -98,7 +99,7 @@ class GeoIpService
                         usleep(500000); // 0.5s
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::warning("GeoIP batch lookup failed: {$e->getMessage()}");
             }
         }

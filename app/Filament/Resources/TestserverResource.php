@@ -2,12 +2,31 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\CheckboxList;
+use App\Models\TestserverMod;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Actions\Action;
+use Filament\Actions\EditAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\TestserverResource\Pages\ListTestservers;
+use App\Filament\Resources\TestserverResource\Pages\CreateTestserver;
+use App\Filament\Resources\TestserverResource\Pages\EditTestserver;
 use App\Filament\Resources\TestserverResource\Pages;
 use App\Jobs\ExpireTestSessionJob;
 use App\Models\Testserver;
 use App\Services\TestserverService;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -17,44 +36,44 @@ use Illuminate\Database\Eloquent\Builder;
 class TestserverResource extends Resource
 {
     protected static ?string $model = Testserver::class;
-    protected static ?string $navigationIcon = 'heroicon-o-beaker';
-    protected static ?string $navigationGroup = 'Server Hosting';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-beaker';
+    protected static string | \UnitEnum | null $navigationGroup = 'Server Hosting';
     protected static ?string $navigationLabel = 'Testservers';
     protected static ?int $navigationSort = 10;
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Section::make('Identifikation')
+        return $schema->components([
+            Section::make('Identifikation')
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('name')
+                    TextInput::make('name')
                         ->required()
                         ->maxLength(64),
-                    Forms\Components\TextInput::make('slug')
+                    TextInput::make('slug')
                         ->required()
                         ->maxLength(64)
                         ->unique(ignoreRecord: true),
-                    Forms\Components\TextInput::make('slot_number')
+                    TextInput::make('slot_number')
                         ->numeric()
                         ->required()
                         ->minValue(1)
                         ->unique(ignoreRecord: true),
                 ]),
 
-            Forms\Components\Section::make('Pterodactyl Anbindung')
+            Section::make('Pterodactyl Anbindung')
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('pterodactyl_uuid')
+                    TextInput::make('pterodactyl_uuid')
                         ->label('Pterodactyl UUID')
                         ->required()
                         ->maxLength(36)
                         ->helperText('UUID aus Pterodactyl Panel'),
-                    Forms\Components\TextInput::make('pterodactyl_server_id')
+                    TextInput::make('pterodactyl_server_id')
                         ->label('Pterodactyl Server ID')
                         ->numeric()
                         ->helperText('Die kurze Server-ID (z.B. 23)'),
-                    Forms\Components\Select::make('pterodactyl_egg_id')
+                    Select::make('pterodactyl_egg_id')
                         ->label('Egg')
                         ->options([
                             17 => 'ET: Legacy (Wolffiles)',
@@ -65,43 +84,43 @@ class TestserverResource extends Resource
                         ->required(),
                 ]),
 
-            Forms\Components\Section::make('Connect-Info (für User sichtbar)')
+            Section::make('Connect-Info (für User sichtbar)')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\TextInput::make('connect_ip')
+                    TextInput::make('connect_ip')
                         ->required()
                         ->maxLength(64)
                         ->placeholder('144.76.234.44'),
-                    Forms\Components\TextInput::make('connect_port')
+                    TextInput::make('connect_port')
                         ->numeric()
                         ->required()
                         ->minValue(1024)
                         ->maxValue(65535),
                 ]),
 
-            Forms\Components\Section::make('Defaults (Idle-State)')
+            Section::make('Defaults (Idle-State)')
                 ->columns(3)
                 ->schema([
-                    Forms\Components\TextInput::make('default_mod')
+                    TextInput::make('default_mod')
                         ->required()
                         ->default('legacy')
                         ->maxLength(32),
-                    Forms\Components\TextInput::make('default_map')
+                    TextInput::make('default_map')
                         ->required()
                         ->default('oasis')
                         ->maxLength(64),
-                    Forms\Components\TextInput::make('default_config')
+                    TextInput::make('default_config')
                         ->required()
                         ->default('etl_server.cfg')
                         ->maxLength(64),
                 ]),
 
-            Forms\Components\Section::make('Erlaubte Mods')
+            Section::make('Erlaubte Mods')
                 ->description('Welche Mods darf der User auf diesem Server starten? Leer lassen = alle aktivierten Mods.')
                 ->schema([
-                    Forms\Components\CheckboxList::make('allowed_mod_slugs')
+                    CheckboxList::make('allowed_mod_slugs')
                         ->label('Mods')
-                        ->options(fn () => \App\Models\TestserverMod::enabled()
+                        ->options(fn () => TestserverMod::enabled()
                             ->orderBy('sort_order')
                             ->pluck('display_name', 'slug')
                             ->toArray())
@@ -111,35 +130,35 @@ class TestserverResource extends Resource
                 ->collapsible()
                 ->collapsed(),
 
-            Forms\Components\Section::make('Limits & Sichtbarkeit')
+            Section::make('Limits & Sichtbarkeit')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\TextInput::make('max_session_minutes')
+                    TextInput::make('max_session_minutes')
                         ->numeric()
                         ->required()
                         ->minValue(1)
                         ->maxValue(120)
                         ->default(20)
                         ->suffix('Minuten'),
-                    Forms\Components\TextInput::make('max_players')
+                    TextInput::make('max_players')
                         ->numeric()
                         ->required()
                         ->minValue(2)
                         ->maxValue(64)
                         ->default(16),
-                    Forms\Components\Toggle::make('enabled')
+                    Toggle::make('enabled')
                         ->label('Aktiv (im Pool nutzbar)')
                         ->default(true),
-                    Forms\Components\Toggle::make('public_visible')
+                    Toggle::make('public_visible')
                         ->label('Public sichtbar')
                         ->default(true)
                         ->helperText('Wenn aus: nur Admins sehen ihn'),
                 ]),
 
-            Forms\Components\Section::make('Live-Status (read-only)')
+            Section::make('Live-Status (read-only)')
                 ->columns(2)
                 ->schema([
-                    Forms\Components\Select::make('status')
+                    Select::make('status')
                         ->options([
                             'idle'        => '🟢 Idle',
                             'reserving'   => '🟡 Reserving',
@@ -149,9 +168,9 @@ class TestserverResource extends Resource
                             'maintenance' => '🔧 Maintenance',
                         ])
                         ->required(),
-                    Forms\Components\DateTimePicker::make('last_session_at')
+                    DateTimePicker::make('last_session_at')
                         ->disabled(),
-                    Forms\Components\Textarea::make('last_error')
+                    Textarea::make('last_error')
                         ->columnSpanFull()
                         ->disabled(),
                 ])
@@ -163,14 +182,14 @@ class TestserverResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('slot_number')
+                TextColumn::make('slot_number')
                     ->label('#')
                     ->sortable()
                     ->badge(),
-                Tables\Columns\TextColumn::make('name')
+                TextColumn::make('name')
                     ->searchable()
                     ->weight('bold'),
-                Tables\Columns\TextColumn::make('status')
+                TextColumn::make('status')
                     ->badge()
                     ->colors([
                         'success' => 'idle',
@@ -179,46 +198,46 @@ class TestserverResource extends Resource
                         'gray'    => ['offline', 'maintenance'],
                     ])
                     ->formatStateUsing(fn (string $state, Testserver $record) => $record->status_badge . ' ' . ucfirst($state)),
-                Tables\Columns\TextColumn::make('connect_string')
+                TextColumn::make('connect_string')
                     ->label('Connect')
                     ->copyable()
                     ->copyMessage('Connect-String kopiert')
                     ->fontFamily('mono')
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('default_mod')
+                TextColumn::make('default_mod')
                     ->label('Mod')
                     ->badge()
                     ->color('info'),
-                Tables\Columns\TextColumn::make('total_sessions')
+                TextColumn::make('total_sessions')
                     ->label('Sessions')
                     ->sortable()
                     ->numeric()
                     ->alignEnd(),
-                Tables\Columns\TextColumn::make('last_session_at')
+                TextColumn::make('last_session_at')
                     ->label('Letzte Session')
                     ->since()
                     ->placeholder('nie'),
-                Tables\Columns\IconColumn::make('enabled')
+                IconColumn::make('enabled')
                     ->boolean()
                     ->label('Aktiv'),
-                Tables\Columns\IconColumn::make('public_visible')
+                IconColumn::make('public_visible')
                     ->boolean()
                     ->label('Public'),
             ])
             ->defaultSort('slot_number')
             ->filters([
-                Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->options([
                         'idle' => 'Idle',
                         'active' => 'Active',
                         'offline' => 'Offline',
                         'maintenance' => 'Maintenance',
                     ]),
-                Tables\Filters\TernaryFilter::make('enabled'),
+                TernaryFilter::make('enabled'),
             ])
-            ->actions([
+            ->recordActions([
                 // CONNECTION TEST
-                Tables\Actions\Action::make('testConnection')
+                Action::make('testConnection')
                     ->label('Test')
                     ->icon('heroicon-o-signal')
                     ->color('info')
@@ -247,7 +266,7 @@ class TestserverResource extends Resource
                     }),
 
                 // FORCE STOP
-                Tables\Actions\Action::make('forceStop')
+                Action::make('forceStop')
                     ->label('Force Stop')
                     ->icon('heroicon-o-stop-circle')
                     ->color('danger')
@@ -279,7 +298,7 @@ class TestserverResource extends Resource
                     }),
 
                 // RESET STATUS (Notfall: stuck in 'reserving' o.ä.)
-                Tables\Actions\Action::make('resetStatus')
+                Action::make('resetStatus')
                     ->label('Reset')
                     ->icon('heroicon-o-arrow-path')
                     ->color('warning')
@@ -291,11 +310,11 @@ class TestserverResource extends Resource
                         Notification::make()->title('Status reset auf idle')->success()->send();
                     }),
 
-                Tables\Actions\EditAction::make(),
+                EditAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
                 ]),
             ])
             ->poll('15s'); // Auto-Refresh alle 15s damit Status live aktualisiert
@@ -309,9 +328,9 @@ class TestserverResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTestservers::route('/'),
-            'create' => Pages\CreateTestserver::route('/create'),
-            'edit'   => Pages\EditTestserver::route('/{record}/edit'),
+            'index'  => ListTestservers::route('/'),
+            'create' => CreateTestserver::route('/create'),
+            'edit'   => EditTestserver::route('/{record}/edit'),
         ];
     }
 

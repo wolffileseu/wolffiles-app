@@ -2,13 +2,14 @@
 
 namespace App\Services\Tracker;
 
+use Carbon\Carbon;
 use App\Models\Tracker\TrackerPlayer;
 use App\Models\Tracker\TrackerRanking;
 use Illuminate\Support\Facades\DB;
 
 class RankingService
 {
-    public function calculateRankings(string $period = 'daily', ?\Carbon\Carbon $date = null): int
+    public function calculateRankings(string $period = 'daily', ?Carbon $date = null): int
     {
         $date = $date ?? now();
         $periodDate = $date->toDateString();

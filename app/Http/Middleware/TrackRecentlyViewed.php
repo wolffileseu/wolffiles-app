@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\File;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -55,7 +56,7 @@ class TrackRecentlyViewed
             return collect();
         }
 
-        return \App\Models\File::whereIn('id', $ids)
+        return File::whereIn('id', $ids)
             ->where('status', 'approved')
             ->with('screenshots')
             ->get()

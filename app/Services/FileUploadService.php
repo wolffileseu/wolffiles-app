@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Exception;
+use App\Services\SocialMedia\SocialMediaService;
 use App\Models\File;
 use App\Services\DiscordWebhookService;
 use App\Services\TelegramNotificationService;
@@ -141,7 +143,7 @@ class FileUploadService
             $thumb->save($tempThumb);
             Storage::disk('s3')->put($thumbnailPath, file_get_contents($tempThumb));
             unlink($tempThumb);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $thumbnailPath = $originalPath;
         }
 
@@ -178,7 +180,7 @@ class FileUploadService
             $thumb->save($tempThumb);
             Storage::disk('s3')->put($thumbPath, file_get_contents($tempThumb));
             unlink($tempThumb);
-        } catch (\Exception) {
+        } catch (Exception) {
             $thumbPath = $s3Path;
         }
 
@@ -233,7 +235,7 @@ class FileUploadService
         DiscordWebhookService::notifyFileApproved($file);
 
         // Broadcast to all social media channels
-        app(\App\Services\SocialMedia\SocialMediaService::class)->broadcastFileApproved($file);
+        app(SocialMediaService::class)->broadcastFileApproved($file);
 
         // Telegram notification
         app(TelegramNotificationService::class)->notifyFileApproved($file);

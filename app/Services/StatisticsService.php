@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Collection;
 use App\Models\File;
 use App\Models\DownloadStat;
 use Illuminate\Support\Facades\DB;
@@ -46,7 +47,7 @@ class StatisticsService
     /**
      * #27 Get top downloaded files in a time range.
      */
-    public static function getTopDownloaded(int $days = 7, int $limit = 10): \Illuminate\Support\Collection
+    public static function getTopDownloaded(int $days = 7, int $limit = 10): Collection
     {
         return DB::table('download_stats')
             ->select('file_id', DB::raw('SUM(count) as total_downloads'))
@@ -131,7 +132,7 @@ class StatisticsService
     /**
      * #31 Get trending files.
      */
-    public static function getTrending(int $limit = 10): \Illuminate\Support\Collection
+    public static function getTrending(int $limit = 10): Collection
     {
         return File::where('status', 'approved')
             ->where('trending_score', '>', 0)

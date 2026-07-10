@@ -2,6 +2,17 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Pages\Dashboard;
+use Filament\Widgets\AccountWidget;
+use App\Filament\Widgets\StatsOverview;
+use App\Filament\Widgets\TrackerStatsWidget;
+use App\Filament\Widgets\DonationStatsWidget;
+use App\Filament\Widgets\FastDlStatsWidget;
+use App\Filament\Widgets\PendingUploadsWidget;
+use App\Filament\Widgets\LatestUploadsWidget;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\Blade;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -106,17 +117,17 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
             ])
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->widgets([
-                Widgets\AccountWidget::class,
-                \App\Filament\Widgets\StatsOverview::class,
-                \App\Filament\Widgets\TrackerStatsWidget::class,
-                \App\Filament\Widgets\DonationStatsWidget::class,
-                \App\Filament\Widgets\FastDlStatsWidget::class,
-                \App\Filament\Widgets\FastDlStatsWidget::class,
-                \App\Filament\Widgets\PendingUploadsWidget::class,
-                \App\Filament\Widgets\LatestUploadsWidget::class,
+                AccountWidget::class,
+                StatsOverview::class,
+                TrackerStatsWidget::class,
+                DonationStatsWidget::class,
+                FastDlStatsWidget::class,
+                FastDlStatsWidget::class,
+                PendingUploadsWidget::class,
+                LatestUploadsWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -139,9 +150,9 @@ class AdminPanelProvider extends PanelProvider
 
     public function boot(): void
     {
-        \Filament\Support\Facades\FilamentView::registerRenderHook(
-            \Filament\View\PanelsRenderHook::HEAD_END,
-            fn (): string => \Illuminate\Support\Facades\Blade::render("@vite('resources/js/wikitext-editor.js')"),
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => Blade::render("@vite('resources/js/wikitext-editor.js')"),
         );
     }
 

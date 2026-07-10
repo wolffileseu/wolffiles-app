@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ServerInvoiceResource\Pages;
 
+use Filament\Actions\DeleteAction;
 use App\Filament\Resources\ServerInvoiceResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
@@ -12,6 +13,6 @@ class EditServerInvoice extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [Actions\DeleteAction::make()];
+        return [DeleteAction::make()];
     }
 }

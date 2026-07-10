@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\File;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaService;
 use Illuminate\Console\Command;
@@ -123,7 +124,7 @@ class TestSocialBroadcast extends Command
     {
         $this->line('  📦 Sending test: New File Approved');
 
-        $file = \App\Models\File::where('status', 'approved')
+        $file = File::where('status', 'approved')
             ->whereHas('category')
             ->latest()
             ->first();
@@ -161,8 +162,8 @@ class TestSocialBroadcast extends Command
     {
         $this->line('  🗺️  Sending test: Map of the Week');
 
-        $file = \App\Models\File::where('is_featured', true)->first()
-            ?? \App\Models\File::where('status', 'approved')->whereHas('category')->latest()->first();
+        $file = File::where('is_featured', true)->first()
+            ?? File::where('status', 'approved')->whereHas('category')->latest()->first();
 
         if ($file) {
             $this->line("    Using real file: {$file->title}");

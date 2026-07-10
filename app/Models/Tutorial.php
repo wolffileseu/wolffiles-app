@@ -2,6 +2,11 @@
 
 namespace App\Models;
 
+use Mews\Purifier\Facades\Purifier;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -18,10 +23,10 @@ use Illuminate\Support\Facades\Storage;
  * @property int|null $user_id
  * @property string $status
  * @property string|null $difficulty
- * @property \Carbon\Carbon|null $published_at
- * @property-read \App\Models\TutorialCategory|null $category
- * @property-read \App\Models\User|null $user
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Comment[] $comments
+ * @property Carbon|null $published_at
+ * @property-read TutorialCategory|null $category
+ * @property-read User|null $user
+ * @property-read Collection|Comment[] $comments
  */
 class Tutorial extends Model
 {
@@ -64,7 +69,7 @@ class Tutorial extends Model
     protected function content(): Attribute
     {
         return Attribute::make(
-            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+            set: fn (?string $value) => $value ? Purifier::clean($value) : null,
         );
     }
 
@@ -85,12 +90,12 @@ class Tutorial extends Model
     }
 
     // Relationships
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(TutorialCategory::class, 'tutorial_category_id');
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -115,7 +120,7 @@ class Tutorial extends Model
         return $this->hasMany(TutorialVote::class);
     }
 
-    public function comments(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    public function comments(): MorphMany
     {
         return $this->morphMany(Comment::class, 'commentable');
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\Tracker\Handlers;
 
+use Illuminate\Support\Carbon;
 use App\Models\Tracker\TrackerRawEvent;
 use App\Services\Tracker\WeaponStatsParser;
 use Illuminate\Support\Facades\DB;
@@ -167,7 +168,7 @@ class WeaponStatsHandler extends AbstractHandler
      * MUST be called BEFORE writeMatchWeaponSnapshots(), which overwrites
      * the snapshot we read here.
      */
-    private function updateLifetimeWeaponStats(int $matchId, int $playerId, array $parsed, \Illuminate\Support\Carbon $receivedAt): void
+    private function updateLifetimeWeaponStats(int $matchId, int $playerId, array $parsed, Carbon $receivedAt): void
     {
         $nowMs = $receivedAt->format('Y-m-d H:i:s.v');
 
@@ -244,7 +245,7 @@ class WeaponStatsHandler extends AbstractHandler
      * unique key — later ws packets in the same match overwrite with newer
      * totals (the game reports cumulative values for the current match).
      */
-    private function writeMatchWeaponSnapshots(int $matchId, int $playerId, array $parsed, \Illuminate\Support\Carbon $receivedAt): void
+    private function writeMatchWeaponSnapshots(int $matchId, int $playerId, array $parsed, Carbon $receivedAt): void
     {
         $nowMs = $receivedAt->format('Y-m-d H:i:s.v');
 
@@ -277,7 +278,7 @@ class WeaponStatsHandler extends AbstractHandler
      * Summarizes damage section + skill tail. Kills/deaths/headshots are
      * summed from per-weapon stats for consistency with match_player_weapon_stats.
      */
-    private function writeMatchPlayerStats(int $matchId, int $serverId, int $playerId, array $parsed, \Illuminate\Support\Carbon $receivedAt): void
+    private function writeMatchPlayerStats(int $matchId, int $serverId, int $playerId, array $parsed, Carbon $receivedAt): void
     {
         $nowMs = $receivedAt->format('Y-m-d H:i:s.v');
 

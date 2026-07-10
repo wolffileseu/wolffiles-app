@@ -2,6 +2,13 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\Clan;
+use App\Models\ClanProposal;
+use App\Models\Post;
+use App\Models\ClanManager;
+use App\Models\ClanApplication;
+use Carbon\Carbon;
+use Throwable;
 use App\Http\Controllers\Controller;
 use App\Models\Tracker\TrackerClan;
 use App\Models\Tracker\TrackerClanMember;
@@ -277,7 +284,7 @@ class TrackerExtendedController extends Controller
      */
     public function recruiting()
     {
-        $clans = \App\Models\Clan::query()
+        $clans = Clan::query()
             ->where('is_published', true)
             ->where('is_recruiting', true)
             ->with(['trackerClan', 'news' => fn($q) => $q->limit(1)])
@@ -291,12 +298,12 @@ class TrackerExtendedController extends Controller
     public function proposeClanForm()
     {
         // User's existing proposals
-        $mine = \App\Models\ClanProposal::where('user_id', auth()->id())
+        $mine = ClanProposal::where('user_id', auth()->id())
             ->orderByDesc('id')->limit(5)->get();
         return view('frontend.clan.propose', compact('mine'));
     }
 
-    public function storeProposal(\Illuminate\Http\Request $request)
+    public function storeProposal(Request $request)
     {
         $data = $request->validate([
             'tag'         => 'required|string|max:50',
@@ -310,8 +317,8 @@ class TrackerExtendedController extends Controller
         ]);
 
         // Anti-spam: max 1 pending proposal per user
-        $hasPending = \App\Models\ClanProposal::where('user_id', auth()->id())
-            ->where('status', \App\Models\ClanProposal::STATUS_PENDING)->exists();
+        $hasPending = ClanProposal::where('user_id', auth()->id())
+            ->where('status', ClanProposal::STATUS_PENDING)->exists();
         if ($hasPending) {
             return back()->withInput()->with('error', __('You already have a pending proposal. Please wait for it to be reviewed.'));
         }
@@ -319,7 +326,7 @@ class TrackerExtendedController extends Controller
         // Hint if a tracker_clan already exists with same tag_clean
         $existing = TrackerClan::where('tag_clean', $data['tag_clean'])->first();
 
-        \App\Models\ClanProposal::create([
+        ClanProposal::create([
             'user_id'     => auth()->id(),
             'tag'         => $data['tag'],
             'tag_clean'   => $data['tag_clean'],
@@ -344,9 +351,9 @@ class TrackerExtendedController extends Controller
     public function clanShowByIdentifier(string $identifier)
     {
         if (ctype_digit($identifier)) {
-            $clan = \App\Models\Tracker\TrackerClan::find((int) $identifier);
+            $clan = TrackerClan::find((int) $identifier);
         } else {
-            $registered = \App\Models\Clan::where('slug', $identifier)->first();
+            $registered = Clan::where('slug', $identifier)->first();
             $clan = $registered?->trackerClan;
         }
         abort_unless($clan, 404);
@@ -370,7 +377,7 @@ class TrackerExtendedController extends Controller
             ->groupBy('date')->orderBy('date')->get();
 
         // --- Registered clan (clans table) = the editable page owner ---
-        $registered = \App\Models\Clan::where('tracker_clan_id', $clan->id)->first();
+        $registered = Clan::where('tracker_clan_id', $clan->id)->first();
 
         $news = collect();
         $recruitmentPost = null;
@@ -382,15 +389,15 @@ class TrackerExtendedController extends Controller
 
         if ($registered) {
             // Published news posts
-            $news = \App\Models\Post::where('clan_id', $registered->id)
-                ->where('type', \App\Models\Post::TYPE_NEWS)
+            $news = Post::where('clan_id', $registered->id)
+                ->where('type', Post::TYPE_NEWS)
                 ->where('is_published', true)
                 ->latest('published_at')
                 ->limit(10)->get();
 
             // Latest published recruitment post (for the Apply tab body)
-            $recruitmentPost = \App\Models\Post::where('clan_id', $registered->id)
-                ->where('type', \App\Models\Post::TYPE_RECRUITMENT)
+            $recruitmentPost = Post::where('clan_id', $registered->id)
+                ->where('type', Post::TYPE_RECRUITMENT)
                 ->where('is_published', true)
                 ->latest('published_at')->first();
 
@@ -416,12 +423,12 @@ class TrackerExtendedController extends Controller
 
             // Current viewer management role (owner/admin/editor) for the manage button
             if (auth()->check()) {
-                $managerRole = \App\Models\ClanManager::where('clan_id', $registered->id)
+                $managerRole = ClanManager::where('clan_id', $registered->id)
                     ->where('user_id', auth()->id())->value('role');
 
-                $userHasApplied = \App\Models\ClanApplication::where('clan_id', $registered->id)
+                $userHasApplied = ClanApplication::where('clan_id', $registered->id)
                     ->where('applicant_user_id', auth()->id())
-                    ->where('status', \App\Models\ClanApplication::STATUS_PENDING)
+                    ->where('status', ClanApplication::STATUS_PENDING)
                     ->exists();
             }
 
@@ -586,10 +593,10 @@ class TrackerExtendedController extends Controller
             ]);
 
         if ($from) {
-            try { $query->where('m.started_at', '>=', \Carbon\Carbon::parse($from)); } catch (\Throwable $e) {}
+            try { $query->where('m.started_at', '>=', Carbon::parse($from)); } catch (Throwable $e) {}
         }
         if ($to) {
-            try { $query->where('m.started_at', '<=', \Carbon\Carbon::parse($to)); } catch (\Throwable $e) {}
+            try { $query->where('m.started_at', '<=', Carbon::parse($to)); } catch (Throwable $e) {}
         }
         if ($serverId) {
             $query->where('m.server_id', (int) $serverId);

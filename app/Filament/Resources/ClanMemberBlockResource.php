@@ -1,10 +1,22 @@
 <?php
 namespace App\Filament\Resources;
 
+use Filament\Schemas\Schema;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use App\Filament\Resources\ClanMemberBlockResource\Pages\ListClanMemberBlocks;
+use App\Filament\Resources\ClanMemberBlockResource\Pages\CreateClanMemberBlock;
+use App\Filament\Resources\ClanMemberBlockResource\Pages\EditClanMemberBlock;
 use App\Filament\Resources\ClanMemberBlockResource\Pages;
 use App\Models\ClanMemberBlock;
 use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -12,42 +24,42 @@ use Filament\Tables\Table;
 class ClanMemberBlockResource extends Resource
 {
     protected static ?string $model = ClanMemberBlock::class;
-    protected static ?string $navigationIcon = 'heroicon-o-no-symbol';
-    protected static ?string $navigationGroup = 'Clans';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-no-symbol';
+    protected static string | \UnitEnum | null $navigationGroup = 'Clans';
     protected static ?string $navigationLabel = 'Member Blocks';
     protected static ?int $navigationSort = 30;
 
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form->schema([
-            Forms\Components\Select::make('clan_id')
+        return $schema->components([
+            Select::make('clan_id')
                 ->relationship('clan', 'name')
                 ->searchable()->preload()->required(),
-            Forms\Components\Select::make('block_type')
+            Select::make('block_type')
                 ->options(['player_id' => 'Player ID', 'name' => 'Name'])
                 ->required()
                 ->live(),
-            Forms\Components\Select::make('target_player_id')
+            Select::make('target_player_id')
                 ->label('Target player')
                 ->relationship('targetPlayer', 'name_clean')
                 ->searchable()
                 ->preload()
                 ->nullable()
                 ->visible(fn ($get) => $get('block_type') === 'player_id'),
-            Forms\Components\TextInput::make('target_name')
+            TextInput::make('target_name')
                 ->label('Target name')
                 ->maxLength(255)
                 ->nullable()
                 ->visible(fn ($get) => $get('block_type') === 'name'),
-            Forms\Components\Select::make('blocked_by_user_id')
+            Select::make('blocked_by_user_id')
                 ->label('Blocked by')
                 ->relationship('blockedBy', 'name')
                 ->searchable()
                 ->preload()
                 ->required()
                 ->default(fn () => auth()->id()),
-            Forms\Components\Textarea::make('reason')->rows(2)->maxLength(500)->columnSpanFull(),
+            Textarea::make('reason')->rows(2)->maxLength(500)->columnSpanFull(),
         ])->columns(2);
     }
 
@@ -55,10 +67,10 @@ class ClanMemberBlockResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('clan.name')->label('Clan')->searchable()->sortable(),
-                Tables\Columns\TextColumn::make('block_type')->badge()
+                TextColumn::make('clan.name')->label('Clan')->searchable()->sortable(),
+                TextColumn::make('block_type')->badge()
                     ->color(fn ($state) => $state === 'player_id' ? 'warning' : 'info'),
-                Tables\Columns\TextColumn::make('target')
+                TextColumn::make('target')
                     ->label('Target')
                     ->getStateUsing(fn ($record) => $record->block_type === 'player_id'
                         ? ($record->targetPlayer?->name_clean . ' #' . $record->target_player_id)
@@ -67,30 +79,30 @@ class ClanMemberBlockResource extends Resource
                         $query->where('target_name', 'like', "%{$search}%")
                               ->orWhereHas('targetPlayer', fn ($q) => $q->where('name_clean', 'like', "%{$search}%"));
                     }),
-                Tables\Columns\TextColumn::make('reason')->limit(40)->tooltip(fn ($record) => $record->reason),
-                Tables\Columns\TextColumn::make('blockedBy.name')->label('By')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->since()->sortable(),
+                TextColumn::make('reason')->limit(40)->tooltip(fn ($record) => $record->reason),
+                TextColumn::make('blockedBy.name')->label('By')->sortable(),
+                TextColumn::make('created_at')->since()->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('clan_id')->relationship('clan', 'name')->label('Clan'),
-                Tables\Filters\SelectFilter::make('block_type')->options(['player_id' => 'Player ID', 'name' => 'Name']),
+                SelectFilter::make('clan_id')->relationship('clan', 'name')->label('Clan'),
+                SelectFilter::make('block_type')->options(['player_id' => 'Player ID', 'name' => 'Name']),
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()]),
+            ->toolbarActions([
+                BulkActionGroup::make([DeleteBulkAction::make()]),
             ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListClanMemberBlocks::route('/'),
-            'create' => Pages\CreateClanMemberBlock::route('/create'),
-            'edit'   => Pages\EditClanMemberBlock::route('/{record}/edit'),
+            'index'  => ListClanMemberBlocks::route('/'),
+            'create' => CreateClanMemberBlock::route('/create'),
+            'edit'   => EditClanMemberBlock::route('/{record}/edit'),
         ];
     }
 }

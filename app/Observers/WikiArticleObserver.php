@@ -2,6 +2,8 @@
 
 namespace App\Observers;
 
+use Throwable;
+use App\Models\WikiCategory;
 use App\Models\WikiArticle;
 use App\Models\WikiArticleTranslation;
 use App\Models\WikiLink;
@@ -46,7 +48,7 @@ class WikiArticleObserver
 
                 // Master content (für altes show.blade fallback) befüllen
                 $article->content = $parsed->html;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error('WikiArticleObserver: parse failed on saving', [
                     'article_id' => $article->id,
                     'error'      => $e->getMessage(),
@@ -84,7 +86,7 @@ class WikiArticleObserver
 
             // 2. Categories M2M-Sync (aus [[Category:X]] Links im Wikitext)
             if (!empty($parsed->categories)) {
-                $catIds = \App\Models\WikiCategory::whereIn('slug', $parsed->categories)->pluck('id')->all();
+                $catIds = WikiCategory::whereIn('slug', $parsed->categories)->pluck('id')->all();
                 $article->categoriesM2M()->syncWithoutDetaching($catIds);
             }
 

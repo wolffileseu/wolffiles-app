@@ -1,6 +1,7 @@
 <?php
 namespace App\Filament\Pages;
 
+use Artisan;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
@@ -11,11 +12,11 @@ class ManageAppRelease extends Page
 {
     use HasPageShield;
 
-    protected static ?string $navigationIcon  = 'heroicon-o-arrow-down-tray';
-    protected static ?string $navigationGroup = 'Clans';
+    protected static string | \BackedEnum | null $navigationIcon  = 'heroicon-o-arrow-down-tray';
+    protected static string | \UnitEnum | null $navigationGroup = 'Clans';
     protected static ?string $navigationLabel = 'Tool Release';
     protected static ?int    $navigationSort  = 3;
-    protected static string  $view            = 'filament.pages.manage-app-release';
+    protected string  $view            = 'filament.pages.manage-app-release';
 
     public string $version      = '';
     public string $changelog    = '';
@@ -42,7 +43,7 @@ class ManageAppRelease extends Page
 
         file_put_contents($path, $content);
 
-        \Artisan::call('config:clear');
+        Artisan::call('config:clear');
 
         Notification::make()
             ->title('Release gespeichert!')

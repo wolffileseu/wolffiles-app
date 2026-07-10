@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use RuntimeException;
+use Exception;
 use App\Models\Donation;
 use App\Models\DonationSetting;
 use Illuminate\Support\Facades\Http;
@@ -12,13 +14,13 @@ class DonationDiscordService
     /**
      * Sendet (oder re-sendet) einen Donation-Post in den Discord Webhook.
      *
-     * @throws \RuntimeException wenn kein Webhook konfiguriert ist
+     * @throws RuntimeException wenn kein Webhook konfiguriert ist
      */
     public function notify(Donation $donation): bool
     {
         $webhookUrl = DonationSetting::get('discord_webhook_url');
         if (!$webhookUrl) {
-            throw new \RuntimeException('Discord Webhook URL ist nicht in den Donation Settings hinterlegt.');
+            throw new RuntimeException('Discord Webhook URL ist nicht in den Donation Settings hinterlegt.');
         }
 
         try {
@@ -60,7 +62,7 @@ class DonationDiscordService
             ]);
 
             return $response->successful();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Discord donation webhook failed: ' . $e->getMessage(), ['donation_id' => $donation->id]);
             throw $e;
         }

@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use Illuminate\Support\Str;
 use App\Models\File;
 use App\Models\Comment;
 use Illuminate\Bus\Queueable;
@@ -26,7 +27,7 @@ class FileCommented extends Notification
             'file_title' => $this->file->title,
             'comment_id' => $this->comment->id,
             'commenter_name' => $this->comment->user->name ?? 'Guest',
-            'comment_excerpt' => \Illuminate\Support\Str::limit($this->comment->body, 100),
+            'comment_excerpt' => Str::limit($this->comment->body, 100),
             'url' => route('files.show', $this->file),
         ];
     }

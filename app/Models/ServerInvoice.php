@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property float $amount
  * @property string $status
  * @property string|null $period
- * @property \Carbon\Carbon|null $period_end
+ * @property Carbon|null $period_end
  */
 class ServerInvoice extends Model
 {

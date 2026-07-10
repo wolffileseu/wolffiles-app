@@ -2,6 +2,10 @@
 
 namespace App\Services\SocialMedia;
 
+use Exception;
+use App\Models\Donation;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\Providers\DiscordProvider;
 use App\Services\SocialMedia\Providers\FacebookProvider;
@@ -54,7 +58,7 @@ class SocialMediaService
                     'success' => $success,
                     'provider' => $channel->provider,
                 ];
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Social media broadcast failed for {$channel->name}", [
                     'event' => $event,
                     'error' => $e->getMessage(),
@@ -96,7 +100,7 @@ class SocialMediaService
     public function broadcastDonation(mixed $donation): array
     {
         // Calculate yearly progress
-        $yearlyTotal = \App\Models\Donation::whereYear('created_at', now()->year)->sum('amount');
+        $yearlyTotal = Donation::whereYear('created_at', now()->year)->sum('amount');
         $yearlyGoal = config('wolffiles.yearly_donation_goal', 500);
 
         $data = [
@@ -184,10 +188,10 @@ class SocialMediaService
     {
         $data = [
             'title' => $post->title ?? 'News',
-            'description' => \Illuminate\Support\Str::limit(strip_tags($post->excerpt ?? $post->content ?? ''), 200),
+            'description' => Str::limit(strip_tags($post->excerpt ?? $post->content ?? ''), 200),
             'url' => route('posts.show', $post),
             'author' => $post->user->name ?? 'Wolffiles.eu',
-            'image_url' => $post->featured_image ? \Illuminate\Support\Facades\Storage::disk('s3')->url($post->featured_image) : null,
+            'image_url' => $post->featured_image ? Storage::disk('s3')->url($post->featured_image) : null,
             'published_at' => $post->published_at?->format('d.m.Y H:i') ?? now()->format('d.m.Y H:i'),
         ];
 

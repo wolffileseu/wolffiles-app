@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\File;
 use App\Services\FileAnalyzerService;
 use Illuminate\Console\Command;
@@ -101,7 +102,7 @@ class AnalyzeFiles extends Command
                 if (!$file->file_size || $file->file_size === 0) {
                     try {
                         $file->update(['file_size' => Storage::disk('s3')->size($filePath)]);
-                    } catch (\Exception $e) {}
+                    } catch (Exception $e) {}
                 }
 
                 // Skip if too large
@@ -147,7 +148,7 @@ class AnalyzeFiles extends Command
                         foreach ($file->screenshots as $oldScreenshot) {
                             try {
                                 Storage::disk('s3')->delete($oldScreenshot->path);
-                            } catch (\Exception $e) {}
+                            } catch (Exception $e) {}
                         }
                         $file->screenshots()->delete();
                     }
@@ -167,7 +168,7 @@ class AnalyzeFiles extends Command
                             ]);
                             $isFirst = false;
                             $screenshotsFound++;
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             // Skip this image
                         }
                     }
@@ -176,7 +177,7 @@ class AnalyzeFiles extends Command
                 @unlink($tempPath);
                 $analyzed++;
 
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors++;
                 $this->newLine();
                 $this->warn("  ✗ {$file->file_name}: " . Str::limit($e->getMessage(), 100));

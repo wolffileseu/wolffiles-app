@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use App\Models\Badge;
+use App\Models\Tracker\TrackerPlayer;
+use App\Models\Clan;
+use App\Models\Tracker\TrackerServer;
+use App\Models\ProfileField;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,7 +22,7 @@ class ProfileController extends Controller
         if ($user->badges->isEmpty()) {
             $badgeIds = DB::table('badge_user')->where('user_id', $user->id)->pluck('badge_id');
             if ($badgeIds->isNotEmpty()) {
-                $user->setRelation('badges', \App\Models\Badge::whereIn('id', $badgeIds)->get());
+                $user->setRelation('badges', Badge::whereIn('id', $badgeIds)->get());
             }
         }
         $uploadHeatmap = $user->files()->where('status', 'approved')->selectRaw('DATE(created_at) as date, COUNT(*) as count')->groupBy('date')->pluck('count', 'date')->toArray();
@@ -25,18 +30,18 @@ class ProfileController extends Controller
         $luaScripts = $user->luaScripts()->where('status', 'approved')->orderByDesc('created_at')->get();
 
         // Claimed entities (players, clans, servers)
-        $claimedPlayers = \App\Models\Tracker\TrackerPlayer::where('claimed_by_user_id', $user->id)
+        $claimedPlayers = TrackerPlayer::where('claimed_by_user_id', $user->id)
             ->orderByDesc('last_seen_at')
             ->limit(24)
             ->get();
 
-        $claimedClans = \App\Models\Clan::whereIn('id', function ($q) use ($user) {
+        $claimedClans = Clan::whereIn('id', function ($q) use ($user) {
                 $q->select('clan_id')->from('clan_managers')->where('user_id', $user->id);
             })
             ->with('trackerClan')
             ->get();
 
-        $claimedServers = \App\Models\Tracker\TrackerServer::where('claimed_by_user_id', $user->id)
+        $claimedServers = TrackerServer::where('claimed_by_user_id', $user->id)
             ->orderByDesc('is_online')
             ->orderByDesc('last_seen_at')
             ->get();
@@ -58,7 +63,7 @@ class ProfileController extends Controller
 
     public function settings()
     {
-        $profileFields = \App\Models\ProfileField::where('is_active', true)->orderBy('sort_order')->get();
+        $profileFields = ProfileField::where('is_active', true)->orderBy('sort_order')->get();
         return view('frontend.profile.settings', compact('profileFields'));
     }
 
@@ -74,7 +79,7 @@ class ProfileController extends Controller
             'favorite_games' => 'nullable|array',
             'locale'  => 'required|string|max:10',
         ]);
-        $profileFields = \App\Models\ProfileField::where('is_active', true)->pluck('key');
+        $profileFields = ProfileField::where('is_active', true)->pluck('key');
         $profileData = [];
         foreach ($profileFields as $key) { $profileData[$key] = $request->input('profile_data.'.$key); }
         auth()->user()->update(array_merge($request->only(['name', 'bio', 'website', 'locale', 'discord_username', 'telegram_username', 'clan']), ['favorite_games' => $request->input('favorite_games', []), 'profile_data' => $profileData]));

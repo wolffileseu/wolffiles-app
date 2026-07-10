@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Str;
 use App\Models\ActivityLog;
 
 class ActivityLogger
@@ -109,14 +110,14 @@ class ActivityLogger
         static::log('comment', 'App\Models\Comment', $comment->id, [
             'file_title' => $file->title,
             'file_id' => $file->id,
-            'excerpt' => \Illuminate\Support\Str::limit($comment->body, 100),
+            'excerpt' => Str::limit($comment->body, 100),
         ]);
     }
 
     public static function commentDelete($comment): void
     {
         static::log('comment_delete', 'App\Models\Comment', $comment->id, [
-            'excerpt' => \Illuminate\Support\Str::limit($comment->body ?? '', 100),
+            'excerpt' => Str::limit($comment->body ?? '', 100),
         ]);
     }
 

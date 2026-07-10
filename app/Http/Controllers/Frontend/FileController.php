@@ -1,5 +1,10 @@
 <?php
 namespace App\Http\Controllers\Frontend;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\TrackRecentlyViewed;
 use App\Models\File;
@@ -98,7 +103,7 @@ class FileController extends Controller
      * Aggregate live-server play statistics for a file's map_name.
      * Returns null when the file has no map_name or no tracker data exists.
      *
-     * @return array{total_plays:int,active_servers:int,peak_players:int,last_played_at:?\Carbon\Carbon,top_servers:\Illuminate\Support\Collection}|null
+     * @return array{total_plays: int, active_servers: int, peak_players: int, last_played_at: ?Carbon, top_servers: Collection}|null
      */
     private function getMapLiveStats(File $file): ?array
     {
@@ -107,11 +112,11 @@ class FileController extends Controller
             return null;
         }
 
-        return \Illuminate\Support\Facades\Cache::remember(
+        return Cache::remember(
             "map-live-stats:{$mapName}",
             now()->addMinutes(10),
             function () use ($mapName) {
-                $agg = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats')
+                $agg = DB::table('tracker_server_map_stats')
                     ->where('map_name', $mapName)
                     ->selectRaw('
                         COALESCE(SUM(times_played), 0) as total_plays,
@@ -125,7 +130,7 @@ class FileController extends Controller
                 }
 
                 // Active servers: played this map in the last 7d AND server reachable in the last 24h
-                $activeServers = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats as sms')
+                $activeServers = DB::table('tracker_server_map_stats as sms')
                     ->join('tracker_servers as s', 's.id', '=', 'sms.server_id')
                     ->where('sms.map_name', $mapName)
                     ->where('sms.last_played_at', '>=', now()->subDays(7))
@@ -135,7 +140,7 @@ class FileController extends Controller
 
                 // Peak players: highest concurrent REAL humans, all-time. Bots never get a
                 // player session, so max simultaneous sessions excludes them by construction.
-                $peakRow = \Illuminate\Support\Facades\DB::selectOne(
+                $peakRow = DB::selectOne(
                     'SELECT COALESCE(MAX(c), 0) AS peak FROM (
                         SELECT SUM(d) OVER (PARTITION BY server_id ORDER BY ts, d DESC, sid ROWS UNBOUNDED PRECEDING) AS c
                         FROM (
@@ -151,7 +156,7 @@ class FileController extends Controller
                 $peakPlayers = (int) ($peakRow->peak ?? 0);
 
                 // Top 5 servers for this map (most plays first)
-                $topServers = \Illuminate\Support\Facades\DB::table('tracker_server_map_stats as sms')
+                $topServers = DB::table('tracker_server_map_stats as sms')
                     ->join('tracker_servers as s', 's.id', '=', 'sms.server_id')
                     ->where('sms.map_name', $mapName)
                     ->where('s.status', 'online')
@@ -171,7 +176,7 @@ class FileController extends Controller
                     'total_plays'    => (int) $agg->total_plays,
                     'active_servers' => $activeServers,
                     'peak_players'   => $peakPlayers,
-                    'last_played_at' => $agg->last_played_at ? \Carbon\Carbon::parse($agg->last_played_at) : null,
+                    'last_played_at' => $agg->last_played_at ? Carbon::parse($agg->last_played_at) : null,
                     'top_servers'    => $topServers,
                 ];
             }
@@ -366,7 +371,7 @@ class FileController extends Controller
                 ->unique()
                 ->map(function ($tagName) {
                     return Tag::firstOrCreate(
-                        ['slug' => \Illuminate\Support\Str::slug($tagName)],
+                        ['slug' => Str::slug($tagName)],
                         ['name' => trim($tagName)]
                     )->id;
                 });

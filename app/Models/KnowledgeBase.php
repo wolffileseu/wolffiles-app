@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Mews\Purifier\Facades\Purifier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
@@ -31,7 +32,7 @@ class KnowledgeBase extends Model
     protected function content(): Attribute
     {
         return Attribute::make(
-            set: fn (?string $value) => $value ? \Mews\Purifier\Facades\Purifier::clean($value) : null,
+            set: fn (?string $value) => $value ? Purifier::clean($value) : null,
         );
     }
 

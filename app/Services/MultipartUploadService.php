@@ -2,6 +2,9 @@
 
 namespace App\Services;
 
+use ReflectionClass;
+use InvalidArgumentException;
+use Exception;
 use Aws\S3\S3Client;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -22,7 +25,7 @@ class MultipartUploadService
         $adapter = $disk->getAdapter();
 
         // Reflection to access private $client property
-        $reflection = new \ReflectionClass($adapter);
+        $reflection = new ReflectionClass($adapter);
         $prop = $reflection->getProperty('client');
         $prop->setAccessible(true);
 
@@ -49,7 +52,7 @@ class MultipartUploadService
     public function generateKey(string $target, string $filename): string
     {
         if (!isset(self::TARGETS[$target])) {
-            throw new \InvalidArgumentException("Invalid upload target: {$target}");
+            throw new InvalidArgumentException("Invalid upload target: {$target}");
         }
 
         $prefix = self::TARGETS[$target];
@@ -136,7 +139,7 @@ class MultipartUploadService
                 'Key' => $key,
                 'UploadId' => $uploadId,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Multipart abort failed', [
                 'uploadId' => $uploadId,
                 'key' => $key,

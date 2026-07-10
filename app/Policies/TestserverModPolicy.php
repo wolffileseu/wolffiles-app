@@ -1,108 +1,75 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies;
 
-use App\Models\User;
+use Illuminate\Foundation\Auth\User as AuthUser;
 use App\Models\TestserverMod;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class TestserverModPolicy
 {
     use HandlesAuthorization;
-
-    /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
+    
+    public function viewAny(AuthUser $authUser): bool
     {
-        return $user->can('view_any_testserver::mod');
+        return $authUser->can('view_any_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, TestserverMod $testserverMod): bool
+    public function view(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('view_testserver::mod');
+        return $authUser->can('view_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
-    public function create(User $user): bool
+    public function create(AuthUser $authUser): bool
     {
-        return $user->can('create_testserver::mod');
+        return $authUser->can('create_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, TestserverMod $testserverMod): bool
+    public function update(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('update_testserver::mod');
+        return $authUser->can('update_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, TestserverMod $testserverMod): bool
+    public function delete(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('delete_testserver::mod');
+        return $authUser->can('delete_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can bulk delete.
-     */
-    public function deleteAny(User $user): bool
+    public function deleteAny(AuthUser $authUser): bool
     {
-        return $user->can('delete_any_testserver::mod');
+        return $authUser->can('delete_any_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can permanently delete.
-     */
-    public function forceDelete(User $user, TestserverMod $testserverMod): bool
+    public function restore(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('force_delete_testserver::mod');
+        return $authUser->can('restore_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can permanently bulk delete.
-     */
-    public function forceDeleteAny(User $user): bool
+    public function forceDelete(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('force_delete_any_testserver::mod');
+        return $authUser->can('force_delete_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can restore.
-     */
-    public function restore(User $user, TestserverMod $testserverMod): bool
+    public function forceDeleteAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_testserver::mod');
+        return $authUser->can('force_delete_any_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can bulk restore.
-     */
-    public function restoreAny(User $user): bool
+    public function restoreAny(AuthUser $authUser): bool
     {
-        return $user->can('restore_any_testserver::mod');
+        return $authUser->can('restore_any_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can replicate.
-     */
-    public function replicate(User $user, TestserverMod $testserverMod): bool
+    public function replicate(AuthUser $authUser, TestserverMod $testserverMod): bool
     {
-        return $user->can('replicate_testserver::mod');
+        return $authUser->can('replicate_testserver::mod');
     }
 
-    /**
-     * Determine whether the user can reorder.
-     */
-    public function reorder(User $user): bool
+    public function reorder(AuthUser $authUser): bool
     {
-        return $user->can('reorder_testserver::mod');
+        return $authUser->can('reorder_testserver::mod');
     }
+
 }

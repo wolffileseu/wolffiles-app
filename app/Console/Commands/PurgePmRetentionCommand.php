@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Throwable;
 use App\Models\Pm\PmAttachment;
 use App\Models\Pm\PmConversation;
 use App\Models\Pm\PmMessage;
@@ -117,7 +118,7 @@ class PurgePmRetentionCommand extends Command
                                 $att->update(["purged_at" => now()]);
                             }
                             $purgedAttachments++;
-                        } catch (\Throwable $e) {
+                        } catch (Throwable $e) {
                             // Do not fail the whole run on a single attachment error
                             Log::warning("PM retention: failed to purge attachment", [
                                 "attachment_id" => $att->id,
@@ -135,7 +136,7 @@ class PurgePmRetentionCommand extends Command
                         ]);
                     }
                     $purgedMessages++;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     Log::error("PM retention: failed to purge message", [
                         "message_id" => $message->id,
                         "error"      => $e->getMessage(),

@@ -2,6 +2,11 @@
 
 namespace App\Services;
 
+use Exception;
+use App\Models\Tracker\TrackerPlayer;
+use App\Models\Tracker\TrackerClan;
+use App\Models\Tracker\TrackerServer;
+use Throwable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -47,7 +52,7 @@ class TelegramNotificationService
                         'body' => $response->body(),
                     ]);
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Telegram notification error for chat {$chatId}: " . $e->getMessage());
             }
         }
@@ -78,7 +83,7 @@ class TelegramNotificationService
                 if ($response->successful()) {
                     $success = true;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Telegram photo error for chat {$chatId}: " . $e->getMessage());
             }
         }
@@ -247,16 +252,16 @@ class TelegramNotificationService
         $targetName = '#' . $claim->claimable_id;
         try {
             if ($claim->claimable_type === 'player') {
-                $p = \App\Models\Tracker\TrackerPlayer::find($claim->claimable_id);
+                $p = TrackerPlayer::find($claim->claimable_id);
                 if ($p) $targetName = ($p->name_clean ?? $p->name) . ' (#' . $claim->claimable_id . ')';
             } elseif ($claim->claimable_type === 'clan') {
-                $c = \App\Models\Tracker\TrackerClan::find($claim->claimable_id);
+                $c = TrackerClan::find($claim->claimable_id);
                 if ($c) $targetName = '[' . $c->tag . '] ' . $c->name . ' (#' . $claim->claimable_id . ')';
             } elseif ($claim->claimable_type === 'server') {
-                $s = \App\Models\Tracker\TrackerServer::find($claim->claimable_id);
+                $s = TrackerServer::find($claim->claimable_id);
                 if ($s) $targetName = ($s->hostname_clean ?? $s->ip) . ' (#' . $claim->claimable_id . ')';
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fallback to ID-only if lookup fails — never block notification
         }
 
@@ -290,7 +295,7 @@ class TelegramNotificationService
                     $allSuccess = false;
                     $errors[] = "Chat {$chatId}: " . $response->body();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $allSuccess = false;
                 $errors[] = "Chat {$chatId}: " . $e->getMessage();
             }

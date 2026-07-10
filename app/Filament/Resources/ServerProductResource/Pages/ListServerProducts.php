@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ServerProductResource\Pages;
 
+use Filament\Actions\CreateAction;
 use App\Filament\Resources\ServerProductResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
@@ -12,6 +13,6 @@ class ListServerProducts extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Actions\CreateAction::make()];
+        return [CreateAction::make()];
     }
 }

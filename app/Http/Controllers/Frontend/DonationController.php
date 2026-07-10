@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Exception;
+use App\Models\User;
+use App\Services\DonationDiscordService;
+use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Services\SocialMedia\SocialMediaService;
@@ -64,7 +68,7 @@ class DonationController extends Controller
                 Log::warning('PayPal IPN: Not verified', $data);
                 return response('INVALID', 400);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('PayPal IPN verification failed: ' . $e->getMessage());
             return response('ERROR', 500);
         }
@@ -89,7 +93,7 @@ class DonationController extends Controller
         // Try to match to user
         $user = null;
         if ($email) {
-            $user = \App\Models\User::where('email', $email)->first();
+            $user = User::where('email', $email)->first();
         }
 
         $donation = Donation::create([
@@ -106,7 +110,7 @@ class DonationController extends Controller
         ]);
 
         // Notifications
-        app(\App\Services\DonationDiscordService::class)->notify($donation);
+        app(DonationDiscordService::class)->notify($donation);
         $this->notifyEmail($donation);
         app(SocialMediaService::class)->broadcastDonation($donation);
 
@@ -119,7 +123,7 @@ class DonationController extends Controller
         if (!$email) return;
 
         try {
-            \Illuminate\Support\Facades\Mail::raw(
+            Mail::raw(
                 "New donation received!\n\n" .
                 "Donor: {$donation->display_name}\n" .
                 "Amount: €{$donation->amount}\n" .
@@ -132,7 +136,7 @@ class DonationController extends Controller
                         ->subject("💰 New Donation: €{$donation->amount} from {$donation->display_name}");
                 }
             );
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Donation email notification failed: ' . $e->getMessage());
         }
     }

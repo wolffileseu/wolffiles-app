@@ -7,7 +7,7 @@ use Filament\Widgets\ChartWidget;
 
 class DownloadChart extends ChartWidget
 {
-    protected static ?string $heading = 'Downloads (Last 30 Days)';
+    protected ?string $heading = 'Downloads (Last 30 Days)';
     protected static ?int $sort = 1;
     protected int | string | array $columnSpan = 'full';
 

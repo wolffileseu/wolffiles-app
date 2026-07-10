@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Illuminate\Validation\Rule;
 use App\Http\Controllers\Controller;
 use App\Models\Clan;
 use App\Models\ClanManager;
@@ -66,7 +67,7 @@ class ServerManageController extends Controller
                 'nullable','string','min:2','max:50',
                 'regex:/^[a-z][a-z0-9-]+$/',
                 'not_in:'.implode(',', $reservedSlugs),
-                \Illuminate\Validation\Rule::unique('tracker_servers','slug')->ignore($server->id),
+                Rule::unique('tracker_servers','slug')->ignore($server->id),
             ],
             'description'       => 'nullable|string|max:20000',
             'rules'             => 'nullable|string|max:20000',

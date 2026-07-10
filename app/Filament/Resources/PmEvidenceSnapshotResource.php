@@ -2,6 +2,17 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Actions\ViewAction;
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Schemas\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use App\Filament\Resources\PmEvidenceSnapshotResource\Pages\ListPmEvidenceSnapshots;
+use App\Filament\Resources\PmEvidenceSnapshotResource\Pages\ViewPmEvidenceSnapshot;
 use App\Filament\Resources\PmEvidenceSnapshotResource\Pages;
 use App\Models\Pm\PmEvidenceSnapshot;
 use Filament\Resources\Resource;
@@ -12,9 +23,9 @@ class PmEvidenceSnapshotResource extends Resource
 {
     protected static ?string $model = PmEvidenceSnapshot::class;
 
-    protected static ?string $navigationIcon = "heroicon-o-camera";
+    protected static string | \BackedEnum | null $navigationIcon = "heroicon-o-camera";
 
-    protected static ?string $navigationGroup = "PM System";
+    protected static string | \UnitEnum | null $navigationGroup = "PM System";
 
     protected static ?string $navigationLabel = "Snapshots";
 
@@ -33,18 +44,18 @@ class PmEvidenceSnapshotResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make("id")
+                TextColumn::make("id")
                     ->label("ID")
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("created_at")
+                TextColumn::make("created_at")
                     ->label("Created")
                     ->dateTime("Y-m-d H:i:s")
                     ->sortable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("conversation_id")
+                TextColumn::make("conversation_id")
                     ->label("Conv")
                     ->numeric()
                     ->sortable()
@@ -54,31 +65,31 @@ class PmEvidenceSnapshotResource extends Resource
                         : null)
                     ->color("warning"),
 
-                Tables\Columns\TextColumn::make("creator.name")
+                TextColumn::make("creator.name")
                     ->label("Created by")
                     ->searchable()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("reason")
+                TextColumn::make("reason")
                     ->label("Reason")
                     ->limit(60)
                     ->wrap()
                     ->size("sm"),
 
-                Tables\Columns\TextColumn::make("related_report_id")
+                TextColumn::make("related_report_id")
                     ->label("Report")
                     ->numeric()
                     ->size("sm")
                     ->placeholder("-"),
 
-                Tables\Columns\TextColumn::make("snapshot_hash")
+                TextColumn::make("snapshot_hash")
                     ->label("SHA256")
                     ->size("sm")
                     ->copyable()
                     ->limit(16)
                     ->tooltip(fn ($record) => $record->snapshot_hash),
 
-                Tables\Columns\TextColumn::make("integrity")
+                TextColumn::make("integrity")
                     ->label("Integrity")
                     ->badge()
                     ->getStateUsing(fn ($record) => $record->verifyIntegrity() ? "VERIFIED" : "TAMPERED")
@@ -86,9 +97,9 @@ class PmEvidenceSnapshotResource extends Resource
                     ->size("sm"),
             ])
             ->filters([
-                Tables\Filters\Filter::make("conversation_id")
-                    ->form([
-                        \Filament\Forms\Components\TextInput::make("conversation_id")
+                Filter::make("conversation_id")
+                    ->schema([
+                        TextInput::make("conversation_id")
                             ->numeric()
                             ->label("Conversation ID"),
                     ])
@@ -96,15 +107,15 @@ class PmEvidenceSnapshotResource extends Resource
                         ->when($data["conversation_id"] ?? null,
                             fn ($q, $id) => $q->where("conversation_id", $id))),
 
-                Tables\Filters\SelectFilter::make("created_by")
+                SelectFilter::make("created_by")
                     ->label("Created by")
                     ->relationship("creator", "name"),
             ])
-            ->actions([
-                Tables\Actions\ViewAction::make()
+            ->recordActions([
+                ViewAction::make()
                     ->label("View"),
 
-                Tables\Actions\Action::make("download_json")
+                Action::make("download_json")
                     ->label("Download JSON")
                     ->icon("heroicon-o-arrow-down-tray")
                     ->color("info")
@@ -116,31 +127,31 @@ class PmEvidenceSnapshotResource extends Resource
                         );
                     }),
             ])
-            ->bulkActions([])
+            ->toolbarActions([])
             ->defaultSort("created_at", "desc");
     }
 
-    public static function infolist(\Filament\Infolists\Infolist $infolist): \Filament\Infolists\Infolist
+    public static function infolist(Schema $schema): Schema
     {
-        return $infolist->schema([
-            \Filament\Infolists\Components\Section::make("Snapshot metadata")
+        return $schema->components([
+            Section::make("Snapshot metadata")
                 ->schema([
-                    \Filament\Infolists\Components\TextEntry::make("id")->label("ID"),
-                    \Filament\Infolists\Components\TextEntry::make("created_at")->dateTime(),
-                    \Filament\Infolists\Components\TextEntry::make("creator.name")->label("Created by"),
-                    \Filament\Infolists\Components\TextEntry::make("conversation_id")
+                    TextEntry::make("id")->label("ID"),
+                    TextEntry::make("created_at")->dateTime(),
+                    TextEntry::make("creator.name")->label("Created by"),
+                    TextEntry::make("conversation_id")
                         ->label("Conversation")
                         ->url(fn ($record) => $record->conversation_id
                             ? route("filament.admin.resources.pm-conversations.view", $record->conversation_id)
                             : null)
                         ->color("warning"),
-                    \Filament\Infolists\Components\TextEntry::make("related_report_id")->label("Related report")->placeholder("-"),
-                    \Filament\Infolists\Components\TextEntry::make("reason")->columnSpanFull(),
-                    \Filament\Infolists\Components\TextEntry::make("snapshot_hash")
+                    TextEntry::make("related_report_id")->label("Related report")->placeholder("-"),
+                    TextEntry::make("reason")->columnSpanFull(),
+                    TextEntry::make("snapshot_hash")
                         ->label("SHA256 hash")
                         ->copyable()
                         ->columnSpanFull(),
-                    \Filament\Infolists\Components\TextEntry::make("integrity_status")
+                    TextEntry::make("integrity_status")
                         ->label("Integrity")
                         ->badge()
                         ->getStateUsing(fn ($record) => $record->verifyIntegrity() ? "VERIFIED" : "TAMPERED")
@@ -148,9 +159,9 @@ class PmEvidenceSnapshotResource extends Resource
                 ])
                 ->columns(3),
 
-            \Filament\Infolists\Components\Section::make("Snapshot data (JSON)")
+            Section::make("Snapshot data (JSON)")
                 ->schema([
-                    \Filament\Infolists\Components\TextEntry::make("snapshot_data")
+                    TextEntry::make("snapshot_data")
                         ->label("")
                         ->getStateUsing(fn ($record) => $record->snapshot_data)
                         ->columnSpanFull()
@@ -163,8 +174,8 @@ class PmEvidenceSnapshotResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => Pages\ListPmEvidenceSnapshots::route("/"),
-            "view"  => Pages\ViewPmEvidenceSnapshot::route("/{record}"),
+            "index" => ListPmEvidenceSnapshots::route("/"),
+            "view"  => ViewPmEvidenceSnapshot::route("/{record}"),
         ];
     }
 }

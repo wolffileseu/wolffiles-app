@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use Exception;
 use App\Models\File;
 use App\Services\FileAnalyzerService;
 use App\Services\FileUploadService;
@@ -58,7 +59,7 @@ class ReanalyzeFiles extends Command
             try {
                 $this->analyzeFile($file);
                 $success++;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $errors++;
                 $this->warn("\n  Error [{$file->id}]: {$e->getMessage()}");
             }
@@ -114,7 +115,7 @@ class ReanalyzeFiles extends Command
                                 $image['original_name'] ?? 'screenshot.png',
                                 $image['source'] ?? 'extracted'
                             );
-                        } catch (\Exception $e) {
+                        } catch (Exception $e) {
                             // Skip
                         }
                     }

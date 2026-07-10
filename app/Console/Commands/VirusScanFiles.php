@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use Log;
 use App\Models\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -80,9 +82,9 @@ class VirusScanFiles extends Command
             $bar->setMessage(Str($file->title)->limit(40));
             try {
                 $this->scanFile($file);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->errors++;
-                \Log::error("VirusScan: Error scanning [{$file->id}]: {$e->getMessage()}");
+                Log::error("VirusScan: Error scanning [{$file->id}]: {$e->getMessage()}");
             }
             $bar->advance();
         }
@@ -189,13 +191,13 @@ class VirusScanFiles extends Command
 
                 $this->updateFile($file, true, false, "INFECTED: {$threat}");
 
-                \Log::warning("VirusScan: INFECTED [{$file->id}] {$file->title}: {$threat}");
+                Log::warning("VirusScan: INFECTED [{$file->id}] {$file->title}: {$threat}");
             } else {
                 $this->errors++;
                 $scanError = \Illuminate\Support\Str::limit($output, 200);
                 $this->updateFile($file, true, null, "Scan error: {$scanError}");
 
-                \Log::error("VirusScan: Error [{$file->id}]: {$output}");
+                Log::error("VirusScan: Error [{$file->id}]: {$output}");
             }
         } finally {
             @unlink($tempFile);

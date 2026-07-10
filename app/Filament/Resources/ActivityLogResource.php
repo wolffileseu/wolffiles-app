@@ -2,6 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\BadgeColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use App\Filament\Resources\ActivityLogResource\Pages\ListActivityLogs;
 use App\Filament\Resources\ActivityLogResource\Pages;
 use App\Models\ActivityLog;
 use Filament\Resources\Resource;
@@ -11,8 +18,8 @@ use Filament\Tables\Table;
 class ActivityLogResource extends Resource
 {
     protected static ?string $model = ActivityLog::class;
-    protected static ?string $navigationIcon = 'heroicon-o-clock';
-    protected static ?string $navigationGroup = 'Analytics';
+    protected static string | \BackedEnum | null $navigationIcon = 'heroicon-o-clock';
+    protected static string | \UnitEnum | null $navigationGroup = 'Analytics';
     protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'Activity Log';
 
@@ -26,17 +33,17 @@ class ActivityLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Time')
                     ->dateTime('d.m.Y H:i:s')
                     ->sortable()
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('user.name')
+                TextColumn::make('user.name')
                     ->label('User')
                     ->default('System / Guest')
                     ->searchable()
                     ->size('sm'),
-                Tables\Columns\BadgeColumn::make('action')
+                BadgeColumn::make('action')
                     ->colors([
                         'success' => fn ($state) => in_array($state, ['upload', 'approve', 'register', 'wiki_submit', 'tutorial_submit']),
                         'danger' => fn ($state) => in_array($state, ['reject', 'delete', 'comment_delete', 'login_failed']),
@@ -74,20 +81,20 @@ class ActivityLogResource extends Resource
                         'fastdl_upload' => '🚀 FastDL Up',
                         default => ucfirst(str_replace('_', ' ', $state)),
                     }),
-                Tables\Columns\TextColumn::make('subject_type')
+                TextColumn::make('subject_type')
                     ->label('Type')
                     ->formatStateUsing(fn ($state) => $state ? class_basename($state) : '-')
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('description')
+                TextColumn::make('description')
                     ->label('Details')
                     ->limit(80)
                     ->wrap()
                     ->size('sm'),
-                Tables\Columns\TextColumn::make('ip_address')
+                TextColumn::make('ip_address')
                     ->label('IP')
                     ->size('sm')
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('properties')
+                TextColumn::make('properties')
                     ->label('Data')
                     ->formatStateUsing(function ($state) {
                         if (!$state) return '-';
@@ -107,7 +114,7 @@ class ActivityLogResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->filters([
-                Tables\Filters\SelectFilter::make('action')
+                SelectFilter::make('action')
                     ->options([
                         // Auth
                         'login' => '🔑 Login',
@@ -144,26 +151,26 @@ class ActivityLogResource extends Resource
                     ])
                     ->multiple()
                     ->label('Action'),
-                Tables\Filters\Filter::make('has_user')
+                Filter::make('has_user')
                     ->label('Logged-in Users Only')
                     ->query(fn ($query) => $query->whereNotNull('user_id')),
-                Tables\Filters\Filter::make('today')
+                Filter::make('today')
                     ->label('Today')
                     ->query(fn ($query) => $query->whereDate('created_at', today())),
-                Tables\Filters\Filter::make('this_week')
+                Filter::make('this_week')
                     ->label('This Week')
                     ->query(fn ($query) => $query->where('created_at', '>=', now()->startOfWeek())),
             ])
-            ->actions([
-                Tables\Actions\Action::make('view_details')
+            ->recordActions([
+                Action::make('view_details')
                     ->label('Details')
                     ->icon('heroicon-o-eye')
                     ->modalHeading(fn ($record) => 'Activity Log #' . $record->id)
                     ->modalContent(fn ($record) => view('filament.modals.activity-log-detail', ['log' => $record]))
                     ->modalSubmitAction(false),
             ])
-            ->bulkActions([
-                Tables\Actions\BulkAction::make('delete_selected')
+            ->toolbarActions([
+                BulkAction::make('delete_selected')
                     ->label('Delete Selected')
                     ->icon('heroicon-o-trash')
                     ->color('danger')
@@ -176,7 +183,7 @@ class ActivityLogResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListActivityLogs::route('/'),
+            'index' => ListActivityLogs::route('/'),
         ];
     }
 }

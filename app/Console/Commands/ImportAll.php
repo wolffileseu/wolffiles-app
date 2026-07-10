@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use Illuminate\Support\Collection;
+use Exception;
 use App\Models\File;
 use App\Models\Category;
 use App\Services\FileAnalyzerService;
@@ -192,7 +194,7 @@ class ImportAll extends Command
     /**
      * Get supported files from a folder
      */
-    private function getFiles(string $folder): \Illuminate\Support\Collection
+    private function getFiles(string $folder): Collection
     {
         return collect(Storage::disk('s3')->files($folder))
             ->filter(function ($file) {
@@ -243,7 +245,7 @@ class ImportAll extends Command
             try {
                 $fileSize = Storage::disk('s3')->size($filePath);
                 $mimeType = Storage::disk('s3')->mimeType($filePath) ?? $mimeType;
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 // Ignore, use defaults
             }
 
@@ -283,7 +285,7 @@ class ImportAll extends Command
                     }
 
                     @unlink($tempPath);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     // Skip hash/analysis for this file
                 }
             }
@@ -291,7 +293,7 @@ class ImportAll extends Command
             $file = File::create($fileData);
             $this->imported++;
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->errors++;
             $this->error("    ✗ {$fileName}: {$e->getMessage()}");
         }
@@ -313,7 +315,7 @@ class ImportAll extends Command
         json_encode($analysis['extracted_metadata'], JSON_INVALID_UTF8_SUBSTITUTE), true
     );
 }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             // Silently skip analysis errors
         }
     }

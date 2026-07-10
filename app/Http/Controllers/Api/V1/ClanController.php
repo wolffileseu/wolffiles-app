@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api\V1;
 
+use Illuminate\Http\JsonResponse;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
 use Illuminate\Http\Request;
@@ -80,7 +81,7 @@ class ClanController extends Controller
         return $this->createPost($request, Post::TYPE_RECRUITMENT, $validated);
     }
 
-    private function createPost(Request $request, string $type, array $data): \Illuminate\Http\JsonResponse
+    private function createPost(Request $request, string $type, array $data): JsonResponse
     {
         $clan = $this->getClan($request);
 

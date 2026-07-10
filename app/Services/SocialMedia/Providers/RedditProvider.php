@@ -2,6 +2,7 @@
 
 namespace App\Services\SocialMedia\Providers;
 
+use Exception;
 use App\Models\SocialMediaChannel;
 use App\Services\SocialMedia\SocialMediaProvider;
 use Illuminate\Support\Facades\Cache;
@@ -157,7 +158,7 @@ class RedditProvider implements SocialMediaProvider
             }
 
             return ['success' => false, 'message' => 'Reddit API returned: ' . $response->status()];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return ['success' => false, 'message' => 'Error: ' . $e->getMessage()];
         }
     }
@@ -236,7 +237,7 @@ class RedditProvider implements SocialMediaProvider
 
             $channel->markFailed('Reddit HTTP ' . $response->status() . ': ' . $response->body());
             return false;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $channel->markFailed($e->getMessage());
             Log::error('Reddit broadcast failed', [
                 'channel' => $channel->name,

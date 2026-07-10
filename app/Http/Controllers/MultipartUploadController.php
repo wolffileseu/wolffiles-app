@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\File;
+use App\Models\Demo;
 use App\Services\MultipartUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -41,8 +43,8 @@ class MultipartUploadController extends Controller
         // Duplicate-Check (nur bei target=files, demos)
         if (!empty($data['file_hash']) && in_array($data['target'], ['files', 'demos'])) {
             $existing = match ($data['target']) {
-                'files' => \App\Models\File::where('file_hash', $data['file_hash'])->first(),
-                'demos' => \App\Models\Demo::where('file_hash', $data['file_hash'])->first(),
+                'files' => File::where('file_hash', $data['file_hash'])->first(),
+                'demos' => Demo::where('file_hash', $data['file_hash'])->first(),
                 default => null,
             };
             if ($existing) {

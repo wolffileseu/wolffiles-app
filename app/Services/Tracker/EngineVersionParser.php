@@ -2,6 +2,8 @@
 
 namespace App\Services\Tracker;
 
+use DateTime;
+
 /**
  * Parses the raw "os" string emitted by ET / RtCW servers into normalized
  * engine_family / engine_version / engine_platform / engine_build_date fields.
@@ -196,7 +198,7 @@ class EngineVersionParser
     private function normalizeBuildDate(string $raw): ?string
     {
         $clean = preg_replace('/\s+/', ' ', trim($raw));
-        $dt = \DateTime::createFromFormat('M j Y', $clean);
+        $dt = DateTime::createFromFormat('M j Y', $clean);
         return $dt ? $dt->format('Y-m-d') : null;
     }
 }

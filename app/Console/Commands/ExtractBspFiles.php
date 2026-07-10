@@ -2,6 +2,11 @@
 
 namespace App\Console\Commands;
 
+use Exception;
+use Log;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use App\Models\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -78,9 +83,9 @@ class ExtractBspFiles extends Command
             $bar->setMessage(Str::limit($file->title, 35));
             try {
                 $this->processFile($file, $hasConvert);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->errors++;
-                \Log::error("BSP Extract [{$file->id}]: {$e->getMessage()}");
+                Log::error("BSP Extract [{$file->id}]: {$e->getMessage()}");
             }
             $bar->advance();
         }
@@ -169,7 +174,7 @@ class ExtractBspFiles extends Command
             $file->update($updateData);
             $this->extracted++;
 
-            \Log::info("BSP Extract [{$file->id}]: Uploaded {$s3BspPath} (" . round($bspSize / 1024) . " KB)");
+            Log::info("BSP Extract [{$file->id}]: Uploaded {$s3BspPath} (" . round($bspSize / 1024) . " KB)");
 
         } finally {
             $this->cleanDir($tempDir);
@@ -181,7 +186,7 @@ class ExtractBspFiles extends Command
      */
     private function extractPk3FromZip(string $zipPath, string $tempDir): ?string
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) return null;
 
         $pk3Files = [];
@@ -220,8 +225,8 @@ class ExtractBspFiles extends Command
         if (!empty($found)) return $found[0];
 
         // Deep search
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($extractDir)
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($extractDir)
         );
         foreach ($iterator as $file) {
             if (str_ends_with(strtolower($file->getFilename()), '.pk3')) {
@@ -256,8 +261,8 @@ class ExtractBspFiles extends Command
             $cmd2 = sprintf('unzip -o %s -d %s 2>&1', escapeshellarg($pk3Path), escapeshellarg($extractDir));
             shell_exec($cmd2);
             $bspFiles = [];
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($extractDir)
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($extractDir)
             );
             foreach ($iterator as $file) {
                 if (str_ends_with(strtolower($file->getFilename()), '.bsp')) {
@@ -306,8 +311,8 @@ class ExtractBspFiles extends Command
 
         // Process textures
         $textures = [];
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($texDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($texDir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $texFile) {
@@ -347,9 +352,9 @@ class ExtractBspFiles extends Command
     private function cleanDir(string $dir): void
     {
         if (!is_dir($dir)) return;
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($files as $file) {
             $file->isDir() ? @rmdir($file->getRealPath()) : @unlink($file->getRealPath());

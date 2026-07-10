@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Throwable;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,7 +49,7 @@ class LogApiRequests
                 'query_string' => $qs,
                 'created_at'   => now(),
             ]);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Logging darf nie den API Request brechen
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -22,5 +23,5 @@ class TrackerServerRating extends Model
     }
 
     public function server(): BelongsTo { return $this->belongsTo(TrackerServer::class, 'server_id'); }
-    public function user(): BelongsTo { return $this->belongsTo(\App\Models\User::class); }
+    public function user(): BelongsTo { return $this->belongsTo(User::class); }
 }

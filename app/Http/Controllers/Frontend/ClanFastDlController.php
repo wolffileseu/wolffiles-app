@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Frontend;
 
+use Exception;
 use App\Http\Controllers\Controller;
 use App\Models\FastDl\FastDlClan;
 use App\Models\FastDl\FastDlClanFile;
@@ -176,7 +177,7 @@ class ClanFastDlController extends Controller
             try {
                 Storage::disk('s3')->copy($tempS3Key, $finalS3Path);
                 Storage::disk('s3')->delete($tempS3Key);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 return back()->with('error', 'S3 copy failed: ' . $e->getMessage());
             }
         } else {

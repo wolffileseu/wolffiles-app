@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use Filament\Tables\Columns\TextColumn;
 use App\Models\File;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -18,10 +19,10 @@ class LatestUploadsWidget extends BaseWidget
         return $table
             ->query(File::query()->where('status', 'approved')->latest('published_at'))
             ->columns([
-                Tables\Columns\TextColumn::make('title')->limit(50),
-                Tables\Columns\TextColumn::make('category.name')->badge(),
-                Tables\Columns\TextColumn::make('download_count')->label('DLs'),
-                Tables\Columns\TextColumn::make('published_at')->since(),
+                TextColumn::make('title')->limit(50),
+                TextColumn::make('category.name')->badge(),
+                TextColumn::make('download_count')->label('DLs'),
+                TextColumn::make('published_at')->since(),
             ])
             ->paginated([5]);
     }

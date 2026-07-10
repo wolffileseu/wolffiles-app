@@ -2,6 +2,7 @@
 
 namespace App\Models\Pm;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -15,10 +16,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $conversation_id
  * @property int $user_id
- * @property \Carbon\Carbon $joined_at
- * @property \Carbon\Carbon|null $left_at
- * @property \Carbon\Carbon|null $last_read_at
- * @property \Carbon\Carbon|null $deleted_at
+ * @property Carbon $joined_at
+ * @property Carbon|null $left_at
+ * @property Carbon|null $last_read_at
+ * @property Carbon|null $deleted_at
  * @property bool $muted
  * @property bool $is_creator
  */

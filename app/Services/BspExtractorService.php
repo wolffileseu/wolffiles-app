@@ -2,6 +2,12 @@
 
 namespace App\Services;
 
+use Log;
+use Exception;
+use ZipArchive;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
+use Throwable;
 use App\Models\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -74,12 +80,12 @@ class BspExtractorService
             // Also extract and upload custom textures
             $this->extractTextures($pk3Path, $file, $tempDir);
 
-            \Log::info("BSP extracted [{$file->id}]: {$s3BspPath} (" . round(filesize($bspLocalPath) / 1024) . " KB)");
+            Log::info("BSP extracted [{$file->id}]: {$s3BspPath} (" . round(filesize($bspLocalPath) / 1024) . " KB)");
 
             return $s3BspPath;
 
-        } catch (\Exception $e) {
-            \Log::warning("BSP extraction failed [{$file->id}]: {$e->getMessage()}");
+        } catch (Exception $e) {
+            Log::warning("BSP extraction failed [{$file->id}]: {$e->getMessage()}");
             return null;
         } finally {
             // Only clean up if we created the temp dir
@@ -96,7 +102,7 @@ class BspExtractorService
      */
     private function findPk3InZip(string $zipPath, string $tempDir): ?string
     {
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         if ($zip->open($zipPath) !== true) return null;
 
         $pk3Names = [];
@@ -124,8 +130,8 @@ class BspExtractorService
         }
 
         // Find extracted PK3
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($extractDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($extractDir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
         foreach ($iterator as $file) {
             if (str_ends_with(strtolower($file->getFilename()), '.pk3')) {
@@ -175,8 +181,8 @@ class BspExtractorService
                 }
                 $archive->close();
             }
-        } catch (\Throwable $e) {
-            \Log::warning("findPk3InRar ArchiveHelper failed [{$rarPath}]: {$e->getMessage()}");
+        } catch (Throwable $e) {
+            Log::warning("findPk3InRar ArchiveHelper failed [{$rarPath}]: {$e->getMessage()}");
         }
 
         // 7z first: the box ships unrar-free which cannot read RAR5 archives.
@@ -193,14 +199,14 @@ class BspExtractorService
             );
             shell_exec($cmd);
         } else {
-            \Log::warning('findPk3InRar: no 7z/7za binary available');
+            Log::warning('findPk3InRar: no 7z/7za binary available');
             return null;
         }
 
         if (!is_dir($extractDir)) return null;
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($extractDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($extractDir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
         foreach ($iterator as $f) {
             if (str_ends_with(strtolower($f->getFilename()), '.pk3')) {
@@ -241,8 +247,8 @@ class BspExtractorService
             $cmd2 = sprintf('unzip -o %s -d %s 2>/dev/null', escapeshellarg($pk3Path), escapeshellarg($extractDir));
             shell_exec($cmd2);
 
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($extractDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+            $iterator = new RecursiveIteratorIterator(
+                new RecursiveDirectoryIterator($extractDir, RecursiveDirectoryIterator::SKIP_DOTS)
             );
             foreach ($iterator as $file) {
                 if (str_ends_with(strtolower($file->getFilename()), '.bsp')) {
@@ -288,8 +294,8 @@ class BspExtractorService
 
         if (!is_dir($texDir)) return;
 
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($texDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($texDir, RecursiveDirectoryIterator::SKIP_DOTS)
         );
 
         foreach ($iterator as $texFile) {
@@ -323,9 +329,9 @@ class BspExtractorService
     private function cleanDir(string $dir): void
     {
         if (!is_dir($dir)) return;
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \RecursiveDirectoryIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST
+        $files = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::CHILD_FIRST
         );
         foreach ($files as $file) {
             $file->isDir() ? @rmdir($file->getRealPath()) : @unlink($file->getRealPath());

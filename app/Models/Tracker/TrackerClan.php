@@ -2,6 +2,8 @@
 
 namespace App\Models\Tracker;
 
+use App\Models\Clan;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,8 +44,8 @@ class TrackerClan extends Model
     }
     public function activeMembers(): HasMany { return $this->members()->where('is_active', true); }
     public function squads(): HasMany { return $this->hasMany(TrackerClanSquad::class, 'clan_id'); }
-    public function registeredClan(): HasOne { return $this->hasOne(\App\Models\Clan::class, 'tracker_clan_id'); }
-    public function claimedByUser(): BelongsTo { return $this->belongsTo(\App\Models\User::class, 'claimed_by_user_id'); }
+    public function registeredClan(): HasOne { return $this->hasOne(Clan::class, 'tracker_clan_id'); }
+    public function claimedByUser(): BelongsTo { return $this->belongsTo(User::class, 'claimed_by_user_id'); }
 
     public function scopeActive($query) { return $query->where('status', 'active'); }
 }
