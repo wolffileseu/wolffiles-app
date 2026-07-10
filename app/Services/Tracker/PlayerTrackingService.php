@@ -221,6 +221,11 @@ class PlayerTrackingService
         $player->increment('total_kills', $session->kills);
         $player->increment('total_deaths', $session->deaths);
         $player->increment('total_sessions');
+        // total_xp = high-water mark of session score (consistent with PlayerMergeService xp=MAX)
+        if ((int) $session->xp > 0) {
+            \DB::table('tracker_players')->where('id', $player->id)
+                ->update(['total_xp' => \DB::raw('GREATEST(total_xp, ' . (int) $session->xp . ')')]);
+        }
         $player->update(['last_seen_at' => now()]);
     }
 
