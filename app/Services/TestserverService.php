@@ -1179,7 +1179,16 @@ class TestserverService
                     'filename' => $filename,
                     'use_header' => false,
                 ]);
-            return $r->successful() || $r->status() === 204;
+            if (!$r->successful() && $r->status() !== 204) {
+                \Log::error('Pull-API rejected', [
+                    'status' => $r->status(),
+                    'body' => substr($r->body(), 0, 500),
+                    'uuid' => $uuid,
+                    'filename' => $filename,
+                ]);
+                return false;
+            }
+            return true;
         } catch (Throwable $e) {
             \Log::error("Pull failed: {$e->getMessage()}");
             return false;
