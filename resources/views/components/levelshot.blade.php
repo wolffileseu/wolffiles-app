@@ -1,6 +1,6 @@
 @props(['map' => null])
 @if($map)
-    <img src="https://cdn.wolffiles.eu/levelshots/{{ strtolower($map) }}.jpg"
+    <img src="/images/map-thumbs/{{ strtolower($map) }}.jpg"
          alt="{{ $map }}"
          class="w-full rounded-lg"
          loading="lazy"

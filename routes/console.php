@@ -93,3 +93,6 @@ Schedule::command('pm:purge-retention')->dailyAt('03:45')->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=72')->dailyAt('04:30')->withoutOverlapping();
 
 Schedule::command('testserver:rotate-idle')->everyTwoHours()->withoutOverlapping();
+
+// Map-Levelshots fuer Tracker-Maps taeglich extrahieren
+\Illuminate\Support\Facades\Schedule::command('banner:extract-levelshots --tracker-only')->dailyAt('05:30');
