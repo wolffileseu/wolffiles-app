@@ -190,11 +190,17 @@ $canManageServer = auth()->check() && (
             {{-- Current Map --}}
             <div class="bg-gray-800 rounded-lg p-4">
                 <h2 class="text-lg font-semibold text-white mb-3">{{ __('messages.current_map') }}</h2>
-                <x-levelshot :map="$server->current_map" x-ref="levelshot" />
-                <div class="text-2xl font-medium mt-2">
-                    <template x-if="currentMapSlug"><a :href="'/files/' + currentMapSlug" class="text-amber-400 hover:text-amber-300" x-text="currentMap"></a></template><template x-if="currentMapSlug === ''"><span class="text-gray-300" x-text="currentMap"></span></template>
+                <div class="flex items-start justify-between gap-4">
+                    <div class="min-w-0 flex-1">
+                        <div class="text-2xl font-medium">
+                            <template x-if="currentMapSlug"><a :href="'/files/' + currentMapSlug" class="text-amber-400 hover:text-amber-300" x-text="currentMap"></a></template><template x-if="currentMapSlug === ''"><span class="text-gray-300" x-text="currentMap"></span></template>
+                        </div>
+                        <div class="text-gray-400 text-sm mt-1">{{ \App\Services\Tracker\GametypeService::label($server->gametype, $server->game_id) }}</div>
+                    </div>
+                    <div class="w-48 shrink-0">
+                        <x-levelshot :map="$server->current_map" x-ref="levelshot" />
+                    </div>
                 </div>
-                <div class="text-gray-400 text-sm mt-1">{{ \App\Services\Tracker\GametypeService::label($server->gametype, $server->game_id) }}</div>
 
                 {{-- Phase 1b: Map progress (elapsed / remaining / timelimit / percent) --}}
                 <template x-if="isOnline && mapElapsedSeconds !== null">

@@ -351,7 +351,7 @@ class ExtractLevelshots extends Command
             $img = $img->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
         }
 
-        $img->cropThumbnailImage(320, 180);
+        $img->thumbnailImage(320, 320, true); // bestfit, keep aspect ratio, no crop
         $img->setImageFormat('jpeg');
         $img->setFormat('jpeg');
         $img->setImageCompressionQuality(82);
