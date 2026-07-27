@@ -15,7 +15,7 @@
                 {{ __('messages.cookie_text') }}
                 <a href="/page/privacy-policy" class="text-amber-400 hover:underline">{{ __('messages.privacy_policy') }}</a>.
             </p>
-            <div class="flex space-x-3 flex-shrink-0">
+            <div class="flex flex-col sm:flex-row gap-4 flex-shrink-0">
                 <button @click="localStorage.setItem('cookie_consent', 'accepted'); show = false"
                         class="bg-amber-600 hover:bg-amber-700 text-white px-6 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap">
                     {{ __('messages.accept') }}
@@ -23,6 +23,10 @@
                 <button @click="localStorage.setItem('cookie_consent', 'essential'); show = false"
                         class="border border-gray-600 hover:border-gray-500 text-gray-300 px-6 py-2 rounded-lg text-sm transition-colors whitespace-nowrap">
                     {{ __('messages.essential_only') }}
+                </button>
+                <button @click="localStorage.setItem('cookie_consent', 'rejected'); show = false"
+                        class="border border-gray-600 hover:border-gray-500 text-gray-300 px-6 py-2 rounded-lg text-sm transition-colors whitespace-nowrap">
+                    {{ __('messages.decline') }}
                 </button>
             </div>
         </div>
