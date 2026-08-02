@@ -45,7 +45,7 @@ class RelaySession extends Model
 
     public function server(): BelongsTo
     {
-        return $this->belongsTo(TrackerServer::class, 'tracker_server_id');
+        return $this->belongsTo(\App\Models\Tracker\TrackerServer::class, 'tracker_server_id');
     }
 
     public function user(): BelongsTo

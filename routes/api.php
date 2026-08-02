@@ -166,3 +166,17 @@ Route::prefix('v1/tracker')->middleware('throttle:1200,1')->group(function () {
     Route::get('/clans',           [\App\Http\Controllers\Frontend\TrackerExtendedController::class, 'apiClans'])->name('tracker.api.clans');
 });
 
+// Relay nodes for the browser (WASM) client -- ticket issuing + agent callbacks
+Route::prefix('v1/relay')->group(function () {
+    Route::post('/connect',   [\App\Http\Controllers\Api\V1\Relay\RelayController::class, 'connect'])
+        ->middleware('throttle:30,1')
+        ->name('relay.api.connect');
+
+    Route::post('/heartbeat', [\App\Http\Controllers\Api\V1\Relay\RelayController::class, 'heartbeat'])
+        ->middleware('throttle:600,1')
+        ->name('relay.api.heartbeat');
+
+    Route::post('/session',   [\App\Http\Controllers\Api\V1\Relay\RelayController::class, 'session'])
+        ->middleware('throttle:1200,1')
+        ->name('relay.api.session');
+});
