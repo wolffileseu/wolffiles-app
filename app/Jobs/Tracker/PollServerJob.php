@@ -9,11 +9,12 @@ use App\Services\Tracker\ServerQueryService;
 use App\Services\Tracker\EngineVersionParser;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class PollServerJob implements ShouldQueue
+class PollServerJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -22,6 +23,18 @@ class PollServerJob implements ShouldQueue
 
     public function __construct(public int $serverId)
     {}
+
+    /**
+     * Only one queued poll per server at a time. Without this the scheduler
+     * (every 30s) re-dispatches servers whose next_poll_at is still stale
+     * because their job has not been processed yet, which snowballs.
+     */
+    public int $uniqueFor = 300;
+
+    public function uniqueId(): string
+    {
+        return (string) $this->serverId;
+    }
 
     public function handle(): void
     {
