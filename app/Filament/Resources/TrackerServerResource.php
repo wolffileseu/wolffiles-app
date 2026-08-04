@@ -17,6 +17,10 @@ use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\BulkAction;
+use Filament\Notifications\Notification;
+use App\Jobs\Tracker\PollServerJob;
+use Illuminate\Database\Eloquent\Collection;
 use App\Filament\Resources\TrackerServerResource\Pages\ListTrackerServers;
 use App\Filament\Resources\TrackerServerResource\Pages\CreateTrackerServer;
 use App\Filament\Resources\TrackerServerResource\Pages\EditTrackerServer;
@@ -179,6 +183,41 @@ class TrackerServerResource extends Resource
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    BulkAction::make('rescan')
+                        ->label('Rescan')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalHeading('Rescan selected servers')
+                        ->modalDescription('Sets status to active, resets the failure counter and queues an immediate poll.')
+                        ->modalSubmitActionLabel('Rescan')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records) {
+                            $max = 200;
+                            $total = $records->count();
+                            $batch = $records->take($max);
+
+                            foreach ($batch as $record) {
+                                $record->update([
+                                    'status' => 'active',
+                                    'poll_failures' => 0,
+                                    'next_poll_at' => now(),
+                                ]);
+
+                                PollServerJob::dispatch($record->id)->onQueue('tracker-low');
+                            }
+
+                            $n = Notification::make()
+                                ->title($batch->count() . ' server(s) queued for rescan');
+
+                            if ($total > $max) {
+                                $n->body(($total - $max) . ' skipped - limit is ' . $max . ' per run.')->warning();
+                            } else {
+                                $n->success();
+                            }
+
+                            $n->send();
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ]);
