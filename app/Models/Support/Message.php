@@ -33,6 +33,44 @@ class Message extends Model
         'edited_at'     => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function (Message $message) {
+            // Interne Notizen werden nie ausgeliefert -- hier, nicht erst im Job.
+            if ($message->is_internal) {
+                $message->sync_status = SyncStatus::Skipped;
+            }
+        });
+
+        // Ticket-Zeitstempel mitziehen, damit SLA und Sortierung stimmen.
+        static::created(function (Message $message) {
+            $ticket = $message->ticket;
+
+            if (! $ticket) {
+                return;
+            }
+
+            $attributes = ['last_activity_at' => $message->created_at];
+
+            if ($message->author_type === AuthorType::Staff && ! $message->is_internal) {
+                $attributes['last_staff_reply_at'] = $message->created_at;
+
+                if ($ticket->first_response_at === null) {
+                    $attributes['first_response_at'] = $message->created_at;
+                }
+            }
+
+            if (in_array($message->author_type, [AuthorType::User, AuthorType::Guest, AuthorType::Discord, AuthorType::Email], true)) {
+                $attributes['last_user_reply_at'] = $message->created_at;
+                // Neue User-Antwort -> Eskalationssperre aufheben
+                $attributes['escalated_at']        = null;
+                $attributes['autoclose_warned_at'] = null;
+            }
+
+            $ticket->forceFill($attributes)->saveQuietly();
+        });
+    }
+
     public function ticket(): BelongsTo
     {
         return $this->belongsTo(Ticket::class, 'ticket_id');

@@ -147,9 +147,4 @@ class Ticket extends Model
             && $this->user_id === null
             && $this->guest_verified_at === null;
     }
-
-    public function getRouteKeyName(): string
-    {
-        return 'public_id';
-    }
 }
