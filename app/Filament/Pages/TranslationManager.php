@@ -526,6 +526,13 @@ return " . $this->arrayExport($translations) . ";
             'de' => 'German', 'fr' => 'French', 'nl' => 'Dutch',
             'pl' => 'Polish', 'tr' => 'Turkish', 'es' => 'Spanish',
             'it' => 'Italian', 'pt' => 'Portuguese',
+            'ru' => 'Russian', 'sv' => 'Swedish', 'fi' => 'Finnish',
+            'da' => 'Danish', 'no' => 'Norwegian', 'hu' => 'Hungarian',
+            'cs' => 'Czech', 'sk' => 'Slovak', 'ro' => 'Romanian',
+            'hr' => 'Croatian', 'sl' => 'Slovenian', 'sr' => 'Serbian',
+            'bg' => 'Bulgarian', 'uk' => 'Ukrainian', 'el' => 'Greek',
+            'et' => 'Estonian', 'lv' => 'Latvian', 'lt' => 'Lithuanian',
+            'ja' => 'Japanese', 'zh' => 'Chinese (Simplified)', 'ko' => 'Korean',
         ];
         $targetLang = $langNames[$this->selectedLang] ?? $this->selectedLang;
 
