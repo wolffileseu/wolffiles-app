@@ -618,3 +618,14 @@ Route::get('/downloads/wolffiles-uploader', function () {
     return redirect('https://github.com/wolffileseu/wolffiles-uploader/releases/latest', 302);
 })->name('uploader.download');
 
+
+// --- NDA Signatur (oeffentlich, Einmal-Token) ---
+Route::get('/nda/{token}', [\App\Http\Controllers\NdaSigningController::class, 'show'])
+    ->middleware('throttle:20,1')
+    ->where('token', '[A-Za-z0-9]{1,128}')
+    ->name('nda.show');
+
+Route::post('/nda/{token}', [\App\Http\Controllers\NdaSigningController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->where('token', '[A-Za-z0-9]{1,128}')
+    ->name('nda.store');
