@@ -18,7 +18,7 @@ class ClanFastDlController extends Controller
     {
         $userId = auth()->id();
 
-        $clans = FastDlClan::where('leader_user_id', $userId)
+        $clans = FastDlClan::managedBy($userId)
             ->where('is_active', true)
             ->with('game')
             ->get();
@@ -195,7 +195,7 @@ class ClanFastDlController extends Controller
 
     public function deleteFile(Request $request, FastDlClanFile $file)
     {
-        $clan = FastDlClan::where('leader_user_id', auth()->id())
+        $clan = FastDlClan::managedBy()
             ->where('id', $file->clan_id)
             ->firstOrFail();
 
@@ -213,7 +213,7 @@ class ClanFastDlController extends Controller
      */
     protected function resolveClan(Request $request): FastDlClan
     {
-        $query = FastDlClan::where('leader_user_id', auth()->id())
+        $query = FastDlClan::managedBy()
             ->where('is_active', true);
 
         if ($request->filled('clan_id')) {

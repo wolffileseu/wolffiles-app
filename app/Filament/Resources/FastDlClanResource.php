@@ -49,6 +49,14 @@ class FastDlClanResource extends Resource
                     ->relationship('leader', 'name')
                     ->searchable()
                     ->nullable(),
+                Select::make('admins')
+                    ->label('Co-Admins')
+                    ->relationship('admins', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload()
+                    ->helperText('Additional users who may manage this Fast Download. The leader is always included.')
+                    ->columnSpanFull(),
                 Toggle::make('include_base')->default(true)
                     ->helperText('Auto-include base directory (etmain) with all maps'),
                 Toggle::make('is_active')->default(true),
@@ -82,6 +90,8 @@ class FastDlClanResource extends Resource
                 TextColumn::make('slug')->badge()->color('info'),
                 TextColumn::make('game.name')->sortable(),
                 TextColumn::make('leader.name')->label('Leader'),
+                TextColumn::make('admins_count')
+                    ->counts('admins')->label('Admins'),
                 TextColumn::make('selected_directories_count')
                     ->counts('selectedDirectories')->label('Mods'),
                 TextColumn::make('own_files_count')

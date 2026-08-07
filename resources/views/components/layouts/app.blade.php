@@ -156,7 +156,7 @@
                                 </a>
                                 <hr class="border-gray-700 my-1">
                                 <a href="{{ route('files.upload') }}" class="block px-4 py-2 text-sm text-amber-400 hover:bg-gray-700">{{ __('messages.upload_file') }}</a>
-                                @if(auth()->user()->hasRole("clan_leader") || auth()->user()->hasRole("admin"))
+                                @if(auth()->user()->hasRole("clan_leader") || auth()->user()->hasRole("admin") || \App\Models\FastDl\FastDlClan::managedBy(auth()->id())->exists())
                                     <a href="{{ route('clan.fastdl') }}" class="block px-4 py-2 text-sm text-amber-400 hover:bg-gray-700">🖥️ My Fast Download</a>
                                 @endif
                                 @if(auth()->user()->isModerator())
