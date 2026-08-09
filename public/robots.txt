@@ -30,6 +30,9 @@ Crawl-delay: 60
 
 User-agent: *
 Crawl-delay: 10
+Disallow: /servers?
+Disallow: /servers/export
+Disallow: /players?
 Disallow: /admin/
 Disallow: /filament/
 Disallow: /api/

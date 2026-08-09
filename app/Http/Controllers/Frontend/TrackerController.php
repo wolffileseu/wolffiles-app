@@ -306,7 +306,7 @@ class TrackerController extends Controller
             'page'        => $request->get('page', 1),
         ]));
 
-        $payload = Cache::remember($cacheKey, 25, function () use ($request) {
+        $payload = Cache::remember($cacheKey, 60, function () use ($request) {
         $games = TrackerGame::active()->orderBy('sort_order')->get();
 
         $query = $this->buildServerQuery($request);
@@ -353,6 +353,8 @@ class TrackerController extends Controller
 
             return compact('servers', 'games', 'countries', 'mods', 'gametypes', 'engineFamilies');
         });
+
+        $payload['seo'] = ['og:url' => route('tracker.servers')];
 
         return view('frontend.tracker.servers', $payload);
     }

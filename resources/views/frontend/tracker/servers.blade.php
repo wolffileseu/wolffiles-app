@@ -1,4 +1,4 @@
-<x-layouts.app :title="__('messages.server_browser')">
+<x-layouts.app :title="__('messages.server_browser')" :seo="$seo ?? []">
 @php
     // Sort helper for header links (toggle asc/desc on re-click)
     $currentSort = request('sort', 'players');
